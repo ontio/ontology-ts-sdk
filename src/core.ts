@@ -1,15 +1,25 @@
-import * as CryptoJS from 'crypto-js'
-import * as Base58 from 'bs58'
-import * as Ecurve from 'ecurve'
-import * as BigInteger from 'bigi'
+import * as cryptoJS from 'crypto-js'
+import * as base58 from 'bs58'
+import * as ecurve from 'ecurve'
+import * as bigInteger from 'bigi'
 import { ab2hexstring, hexstring2ab } from './utils'
+import { ADDR_VERSION } from './consts'
 
-var ec = require('elliptic').ec
+var ec = require('elliptic')
 var wif = require('wif')
+var secureRandom = require('secure-random')
+
+export function generateRandomArray(len: number): ArrayBuffer {
+    return secureRandom(len);
+}
+
+export function generatePrivateKey(): ArrayBuffer {
+    return generateRandomArray(32);
+}
 
 export function getPublicKey( privateKey: string, encode: boolean ): any {
-    var ecparams = Ecurve.getCurveByName('secp256r1');
-    var curvePt = ecparams.G.multiply(BigInteger.fromBuffer(hexstring2ab(privateKey)));
+    var ecparams = ecurve.getCurveByName('secp256r1');
+    var curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
 
     return curvePt.getEncoded(encode);
 };
@@ -19,28 +29,28 @@ export function createSignatureScript( publicKeyEncoded: string ):string {
 }
 
 export function getHash( SignatureScript:string ):string {
-    var ProgramHexString = CryptoJS.enc.Hex.parse(SignatureScript);
-    var ProgramSha256 = CryptoJS.SHA256(ProgramHexString).toString();
+    var ProgramHexString = cryptoJS.enc.Hex.parse(SignatureScript);
+    var ProgramSha256 = cryptoJS.SHA256(ProgramHexString).toString();
 
-    return CryptoJS.RIPEMD160( CryptoJS.enc.Hex.parse(ProgramSha256) ).toString();
+    return cryptoJS.RIPEMD160( cryptoJS.enc.Hex.parse(ProgramSha256) ).toString();
 }
 
 export function toAddress( programhash: string ): string  {
-    var data = "17" + programhash;
+    var data = ADDR_VERSION + programhash;
 
-    var ProgramHexString = CryptoJS.enc.Hex.parse(data);
-    var ProgramSha256 = CryptoJS.SHA256( ProgramHexString ).toString();
-    var ProgramSha256_2 = CryptoJS.SHA256( CryptoJS.enc.Hex.parse(ProgramSha256) ).toString();
+    var ProgramHexString = cryptoJS.enc.Hex.parse(data);
+    var ProgramSha256 = cryptoJS.SHA256( ProgramHexString ).toString();
+    var ProgramSha256_2 = cryptoJS.SHA256( cryptoJS.enc.Hex.parse(ProgramSha256) ).toString();
     var ProgramSha256Buffer = hexstring2ab(ProgramSha256_2);
 
     var datas = data + ProgramSha256_2.slice(0,8);
 
-    return Base58.encode(hexstring2ab(datas));
+    return base58.encode(hexstring2ab(datas));
 };
 
 export function signatureData( data:string, privateKey:string ):string {
-    let msg = CryptoJS.enc.Hex.parse( data );
-    let msgHash = CryptoJS.SHA256( msg );
+    let msg = cryptoJS.enc.Hex.parse( data );
+    let msgHash = cryptoJS.SHA256( msg );
     
     let elliptic = new ec('p256')
     const sig = elliptic.sign(msgHash.toString(), privateKey, null)
@@ -70,26 +80,6 @@ export function AddContract( txData:string, sign:string, publicKeyEncoded:string
     
     return data;
 }
-
-// export function getPrivateKeyFromWIF( wifkey:string ):string {
-//     let data = Base58.decode(wifkey);
-
-// 	if (data.length != 38 || data[0] != 0x80 || data[33] != 0x01) {
-// 		return "";
-// 	}
-
-// 	let dataHexString = CryptoJS.enc.Hex.parse( ab2hexstring(data.slice( 0, data.length - 4 )) );
-// 	let dataSha256 = CryptoJS.SHA256(dataHexString).toString();
-// 	let dataSha256_2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(dataSha256)).toString();
-//     let dataSha256Buffer = hexstring2ab(dataSha256_2);
-
-// 	if ( ab2hexstring(dataSha256Buffer.slice(0, 4)) != ab2hexstring(data.slice(data.length - 4, data.length)) ) {
-// 		//wif verify failed.
-// 		return "";
-// 	}
-
-// 	return ab2hexstring(data.slice(1, 33));
-// }
 
 export function getPrivateKeyFromWIF( wifkey:string ):string {
     return ab2hexstring(wif.decode(wifkey, 128).privateKey);

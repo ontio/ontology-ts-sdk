@@ -1,4 +1,4 @@
-export const ADDR_VERSION = '17'
+export const ADDR_VERSION = '41'
 
 export const DEFAULT_SCRYPT = {
     cost: 16384,
