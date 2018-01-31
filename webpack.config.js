@@ -8,7 +8,7 @@ module.exports = {
         path: __dirname,
         filename: './lib/browser.js',
         libraryTarget: 'umd',
-        library: 'Onto' // This is the var name in browser
+        library: 'ont' // This is the var name in browser
   },
   
   resolve: {

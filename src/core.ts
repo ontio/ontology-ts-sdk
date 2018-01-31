@@ -5,7 +5,7 @@ import * as bigInteger from 'bigi'
 import { ab2hexstring, hexstring2ab } from './utils'
 import { ADDR_VERSION } from './consts'
 
-var ec = require('elliptic')
+var ec = require('elliptic').ec
 var wif = require('wif')
 var secureRandom = require('secure-random')
 

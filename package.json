@@ -1,12 +1,12 @@
 {
-  "name": "onto-js",
+  "name": "ont-sdk-ts",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config webpack.config.js --progress --color"
   },
-  "author": "zhengqi",
+  "author": "ontologyNetwork",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^8.5.2"
@@ -25,6 +25,7 @@
     "ecurve": "^1.0.6",
     "elliptic": "^6.4.0",
     "js-scrypt": "^0.2.0",
+    "secure-random": "^1.1.1",
     "ts-loader": "^3.2.0",
     "webpack": "^3.10.0",
     "wif": "^2.0.6"
