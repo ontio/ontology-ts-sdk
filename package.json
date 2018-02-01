@@ -4,7 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "jest",
     "build": "webpack --config webpack.config.js --progress --color"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "./node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "/test/.*\\.(ts|tsx|js)$"
   },
   "author": "ontologyNetwork",
   "license": "ISC",
@@ -16,17 +28,26 @@
     "@types/bs58": "^3.0.30",
     "@types/crypto-js": "^3.1.38",
     "@types/ecurve": "^1.0.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-istanbul": "^4.1.5",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "base-x": "^3.0.3",
     "bigi": "^1.4.2",
+    "bignumber.js": "^6.0.0",
     "bs58": "^4.0.1",
     "bs58check": "^2.1.1",
     "crypto-js": "^3.1.9-1",
     "ecdsa": "^0.7.0",
     "ecurve": "^1.0.6",
     "elliptic": "^6.4.0",
+    "jest": "^22.1.4",
     "js-scrypt": "^0.2.0",
     "secure-random": "^1.1.1",
+    "ts-jest": "^22.0.2",
     "ts-loader": "^3.2.0",
+    "typescript": "^2.6.2",
     "webpack": "^3.10.0",
     "wif": "^2.0.6"
   }

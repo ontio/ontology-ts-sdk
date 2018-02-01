@@ -1,0 +1,18 @@
+node_modules
+/.npmignore
+/.project
+/.settings/
+
+
+/docs/_build/
+lib/
+
+# Logs
+*.log
+
+# Coverage
+/.nyc_output
+/coverage
+
+# IDE specific
+/.vscode
