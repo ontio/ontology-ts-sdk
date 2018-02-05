@@ -1,4 +1,4 @@
-import {Account} from '../src/account'
+import {Account, accountData} from '../src/account'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
 
@@ -18,8 +18,12 @@ describe('test account', ()=>{
         expect(accountDataStr).toBeDefined()
     })
     test('test decrypt', () => {
-        let result = account.decrypt(JSON.parse(accountDataStr), "123456");
+        let a = new Account()
+        let result = a.decrypt(JSON.parse(accountDataStr), "123456");
         expect(result).toBe(0)
+        expect(privateKey).toEqual(a.privateKey)
+        a.decrypt(JSON.parse(accountDataStr), '1234567')
+        expect(privateKey).not.toEqual(a.privateKey)
     })
 
 })
