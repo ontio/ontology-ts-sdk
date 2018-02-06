@@ -17,14 +17,21 @@ describe('test account', ()=>{
         accountDataStr = account.createSecp256r1(privateKey, '123456', 'mickey')
         expect(accountDataStr).toBeDefined()
     })
-    test('test decrypt', () => {
+    test('test decrypt with correct password', () => {
         let a = new Account()
         let result = a.decrypt(JSON.parse(accountDataStr), "123456");
+
         expect(result).toBe(true)
         expect(privateKey).toEqual(a.privateKey)
-        
-        a.decrypt(JSON.parse(accountDataStr), '1234567')
-        expect(privateKey).not.toEqual(a.privateKey)
+
     })
 
+
+    test('test decrypt with incorrect password', () => {
+        let a = new Account()
+        let result = a.decrypt(JSON.parse(accountDataStr), "1234567");
+
+        expect(result).toBe(false)
+        expect(privateKey).not.toEqual(a.privateKey)
+    })
 })

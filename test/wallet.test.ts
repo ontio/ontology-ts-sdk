@@ -18,31 +18,30 @@ describe('test wallet', ()=>{
         expect(walletDataStr).toBeDefined()
     })
 
-    it('test load wallet', () => {
+    it('test import wallet', () => {
         let privateKey = core.generatePrivateKeyStr()
         let wifKey = core.getWIFFromPrivateKey(privateKey)
         let encryptedKey = scrypt.encrypt(wifKey, '123456')
 
         let wallet = new Wallet()
-        let result = wallet.loadWallet(encryptedKey, '123456', 'ontid')
+        let result = wallet.importWallet(encryptedKey, '123456', 'ontid')
         expect(result).not.toEqual('')
 
-        result = wallet.loadWallet(encryptedKey, '1234567','ontud')
+        result = wallet.importWallet(encryptedKey, '1234567','ontud')
         expect(result).toEqual('')
     })
 
-    it('test load identity', () => {
+    it('test import identity', () => {
         let wallet = new Wallet()
-        wallet.decryptWallet(walletDataStr)
 
         let privateKey = core.generatePrivateKeyStr()
         let wifKey = core.getWIFFromPrivateKey(privateKey)
         let encryptedKey = scrypt.encrypt(wifKey, '123456')
 
-        wallet.loadIdentity(encryptedKey, '1234567', 'ontid')
+        wallet.importIdentity(walletDataStr ,encryptedKey, '1234567', 'ontid')
         expect(wallet.wallet.identities.length).not.toEqual(2)
 
-        wallet.loadIdentity(encryptedKey, '123456','ontid')
+        wallet.importIdentity(walletDataStr, encryptedKey, '123456','ontid')
         expect(wallet.wallet.identities.length).toEqual(2)
     })
 
