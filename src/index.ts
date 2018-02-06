@@ -15,7 +15,8 @@ export {
     Transaction,
     core,
     utils,
-    CONST
+    CONST,
+    Wallet
   }
   
 // var a = new Claim('{"Name":"zhangsan","Gender":"male","Age":25}',"8de516a7cddf22e328a61faf80f698ad7a410953d86fe06d031e08de7161a051")

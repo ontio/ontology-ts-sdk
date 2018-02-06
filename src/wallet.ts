@@ -7,7 +7,7 @@ import { access } from 'fs';
 import { format } from 'url';
 import * as scrypt from './scrypt'
 
-class walletData {
+export class walletData {
     name: string;
     ontid : string;
     createTime : string;
@@ -68,14 +68,13 @@ export class Wallet {
         if(!privateKey) {
             privateKey = core.generatePrivateKeyStr()
         }
-        let jsonId = identity.createSecp256r1( privateKey, keyphrase, "Default Identity" );
+        let jsonId = identity.createSecp256r1( privateKey, keyphrase, name );
         wallet.identities.push(identity.identity);
-        
         //ontid
         wallet.ontid = identity.identity.ontid
         //TODO : will send ontid to blockchain to register.This is a async process and will take several seconds.
         //will notify the result by triggering event.
-        
+
         // no need to create default account
 
         this.wallet = wallet;
@@ -101,10 +100,9 @@ export class Wallet {
         this.wallet.identities.push(identity)
     }
 
-    decryptWallet( jsonData: string ): number {
+    decryptWallet( jsonData: string, keyphrase : string ): number {
         this.wallet = JSON.parse(jsonData);
 
-        /* 
         // identity
         for ( let i=0; i<this.wallet.identities.length; i++ ){
             this.identity[i] = new Identity();
@@ -116,19 +114,24 @@ export class Wallet {
             this.account[i] = new Account();
             this.account[i].decrypt( this.wallet.accounts[i], keyphrase );
         } 
-        */
 
         return 0;
     }
 
-    //load wallet by scanning qrcode or input encrypted private key and ontid
+    /* load walletData json string to instantiated a wallet */
+    loadWalletFile(walletDataStr : string) : number {
+        this.wallet = JSON.parse(walletDataStr)
+        return 0;
+    }
+
+    //import wallet by scanning qrcode or input encrypted private key and ontid
     //1. check password
     //2. check ontid
     //3. return new wallet json string
     /* 
     *@return {string} if return "", password is error; otherwise return json string
     */
-    loadWallet(encryptedPrivateKey : string, password : string, ontid : string) : string {
+    importWallet(encryptedPrivateKey : string, password : string, ontid : string) : string {
         //decrypt with password to get privateKey
         let wifKey = scrypt.decrypt(encryptedPrivateKey, password)
         if(!wifKey){
@@ -143,23 +146,25 @@ export class Wallet {
     }
 
     /* 
-    load an identity and return modified wallet json string to save
+    load an identity and return modified walletData json string to save
+    @param { string } walletDataString
     @param { string } encryptedPrivateKey
     @param { string } password
     @param { string } ontid
-    @return {string} modified wallet json string
+    @return { string } modified wallet json string
     */
-    loadIdentity(encryptedPrivateKey : string, password : string, onid : string) {
+    importIdentity( walletDataStr : string, encryptedPrivateKey : string, password : string, onid : string) {
         //decrypt with password to get privateKey
+        this.wallet = JSON.parse(walletDataStr)
         let wifKey = scrypt.decrypt(encryptedPrivateKey, password)
         if (!wifKey) {
             return '';
         }
         let privateKey = core.getPrivateKeyFromWIF(wifKey)
-        //TODO: call request to check onid
+        //TODO: call request to check onid, this is a sync process
 
         let identity = new Identity()
-        identity.createSecp256r1(privateKey, password, '')//set label as '' 
+        identity.createSecp256r1(privateKey, password, '')//set label as '', maybe will change it  
         this.addIdentity(identity.identity)
         return JSON.stringify(this.wallet)
     }

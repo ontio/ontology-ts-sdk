@@ -16,3 +16,6 @@ lib/
 
 # IDE specific
 /.vscode
+
+/.DS_Store
+src/.DS_Store

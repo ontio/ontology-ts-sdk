@@ -4,6 +4,7 @@ import { signatureData } from './core'
 import * as Utils from './utils'
 
 export class Metadata {
+    
     constructor(metadata : {} ){
         this.CreateTime = metadata.CreateTime
         this.Issuer = metadata.Issuer
@@ -84,7 +85,7 @@ export class Claim {
         this.Signature = Signature
 
         claimData.Signature = Signature;
-
-        return JSON.stringify(claimData);
+        this.signedData = JSON.stringify(claimData)
+        return this.signedData;
     }
 }

@@ -5,7 +5,10 @@ import { num2hexstring, num2VarInt, reverseHex, Fixed8 } from '../utils'
  * @property {string} prevHash - Transaction hash, Uint256
  * @property {number} prevIndex - Index of the coin in the previous transaction, Uint16
  */
-
+export class TransactionInput {
+    prevHash : string
+    prevIndex : number
+}
 
 /**
  * Serializes a TransactionInput.
@@ -33,13 +36,18 @@ export const deserializeTransactionInput = (stream) => {
  * @property {number|Fixed8} value - value of output, Fixed8
  * @property {string} scriptHash - Uint160
  */
-export const TransactionOutput = (input) => {
-    return {
-        assetId: input.assetId,
-        value: new Fixed8(input.value),
-        scriptHash: input.scriptHash
+export class TransactionOutput {
+    assetId : string
+    value : number|Fixed8
+    scriptHash : string
+
+    constructor(input) {
+        this.assetId = input.assetId
+        this.value = new Fixed8(input.value)
+        this.scriptHash = input.scriptHash
     }
 }
+
 /**
  * Serializes a TransactionOutput.
  * @param {TransactionOutput} output
@@ -69,13 +77,19 @@ export const deserializeTransactionOutput = (stream) => {
  * @property {number|Fixed8} value - value of output, Fixed8
  * @property {string} scriptHash - Uint160
  */
-export const BalanceInput = (input) => {
-    return {
-        assetId: input.assetId,
-        value: new Fixed8(input.value),
-        scriptHash: input.scriptHash
-    }
+export class BalanceInput {
+    assetId : string
+    value : number|Fixed8
+    scriptHash : string
 }
+
+// export const BalanceInput = (input) => {
+//     return {
+//         assetId: input.assetId,
+//         value: new Fixed8(input.value),
+//         scriptHash: input.scriptHash
+//     }
+// }
 /**
  * Serializes a BalanceInput.
  * @param {BalanceInput} output
@@ -103,6 +117,11 @@ export const deserializeBalanceInput = (stream) => {
  * @property {number} usage - Identifying byte
  * @property {string} data - Data
  */
+export class TransactionAttribute {
+    usage : number
+    data : string
+}
+
 const maxTransactionAttributeSize = 65535
 
 /**

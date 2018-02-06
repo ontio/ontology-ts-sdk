@@ -77,16 +77,20 @@ export class Account {
         return JSON.stringify(this.account);
     }
 
-    decrypt( ac: accountData, keyphrase: string ): number {
+    decrypt( ac: accountData, keyphrase: string ): boolean {
         this.account = ac;
 
         this.wifKey = scrypt.decrypt( this.account.key, keyphrase );
+        if(!this.wifKey) {
+            //keyphase is error
+            return false
+        }
         console.log( "decrypt Account wifKey:", this.wifKey );
 
         this.privateKey = core.getPrivateKeyFromWIF( this.wifKey );
         console.log( "decrypt Account privateKey:", this.privateKey );
 
-        return 0;
+        return true;
     }
 }
 
