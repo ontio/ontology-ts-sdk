@@ -1,6 +1,6 @@
 import { Account } from './account'
 import { Identity } from './identity'
-import { Packet } from './packet'
+import { Wallet } from './wallet'
 import { Claim } from './claim'
 import { Transaction } from './transaction'
 import * as scrypt from './scrypt'
@@ -53,7 +53,7 @@ export {
 // console.log("ontid:",a.identity.ontid);
 // a.decrypt( b, "123456" );
 
-//var a = new Packet();
+//var a = new Wallet();
 // var b = a.create( "myName", "123456" );
 // console.log(b);
 //var b = '{"name":"myName","version":"1.0","scrypt":{"n":16384,"r":8,"p":8},"identities":[{"ontid":"did:ont:TRzzdEQDcyZLtrrgjA7iqxDM8ETv5VnHtZ","label":"Default Identity","isDefault":true,"lock":false,"controls":[{"algorithm":"ECDSA","parameters":{"curve":"secp256r1"},"id":"1","key":"6PYWBhHThQpuXzVKYD33RVNtKwjkY7oGYkbg1s1xZvnzdSQQEnW5wGpZQq"}],"extra":null}],"accounts":[{"address":"TFXZXPFCxvvunYxrUtxkNsKo9X9fHxATiD","label":"Default Account","isDefault":true,"lock":false,"algorithm":"ECDSA","parameters":{"curve":"secp256r1"},"key":"6PYMFiDpGEQnkmxGniLR4fhMkgFQmMv2RDGGhvtP1P5jZG2G3udvrb2zsX","contract":{"script":"210270cfbe2c5e3509f6ce639e6643409f71d537db8c3ced407c6774ea8b9d493868ac","parameters":[],"deployed":false},"extra":null}],"extra":null}';

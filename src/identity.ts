@@ -85,19 +85,23 @@ export class Identity {
         return JSON.stringify(this.identity);
     }
 
-    decrypt( id: identityData, keyphrase: string ): number {
+    decrypt( id: identityData, keyphrase: string ): boolean {
         this.identity = id;
-        //console.log( this.identity );
-
+        // console.log( this.identity );
+        console.log(this.identity.controls)
         for ( let i=0; i<this.identity.controls.length; i++ ) {
             this.wifKey[i] = scrypt.decrypt( this.identity.controls[i].key, keyphrase );
+            if(!this.wifKey[i]) {
+                //keyphrase is error
+                return false
+            }
             console.log( "decrypt Identity wifKey[" + i + "]:", this.wifKey[i] );
 
             this.privateKey[i] = core.getPrivateKeyFromWIF( this.wifKey[i] );
             console.log( "decrypt Identity privateKey[" + i + "]:", this.privateKey[i] );
         }
 
-        return 0;
+        return true;
     }
 }
 
