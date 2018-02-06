@@ -2,7 +2,7 @@ import {Wallet} from '../src/wallet'
 import {Account, accountData} from '../src/account'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
-
+import * as scrypt from '../src/scrypt'
 
 describe('test wallet', ()=>{
     var wallet:Wallet,
@@ -10,6 +10,7 @@ describe('test wallet', ()=>{
     beforeAll(()=>{
         console.log(Wallet)
         wallet = new Wallet()
+        let privateKey = core.generatePrivateKeyStr()
         walletDataStr = wallet.create('mickey', '123456')
     })
 
@@ -17,22 +18,32 @@ describe('test wallet', ()=>{
         expect(walletDataStr).toBeDefined()
     })
 
-    it('test wallet decrypt', ()=>{
-        let result = wallet.decrypt(walletDataStr, '123456')
-        expect(result).toBe(0)
+    it('test load wallet', () => {
+        let privateKey = core.generatePrivateKeyStr()
+        let wifKey = core.getWIFFromPrivateKey(privateKey)
+        let encryptedKey = scrypt.encrypt(wifKey, '123456')
+
+        let wallet = new Wallet()
+        let result = wallet.loadWallet(encryptedKey, '123456', 'ontid')
+        expect(result).not.toEqual('')
+
+        result = wallet.loadWallet(encryptedKey, '1234567','ontud')
+        expect(result).toEqual('')
     })
 
-    it('test add account', () => {
-        let privateKey = utils.ab2hexstring(core.generatePrivateKey());    
-        let account = new Account()
-        account.createSecp256r1(privateKey, '123456', 'mickey')
-        wallet.addAccount(account.account)
-        expect(wallet.wallet.accounts.length).toEqual(2)
-        expect(wallet.wallet.accounts[1].label).toEqual('mickey')
+    it('test load identity', () => {
+        let wallet = new Wallet()
+        wallet.decryptWallet(walletDataStr)
 
-        //test repeat add
-        wallet.addAccount(account.account)
-        expect(wallet.wallet.accounts.length).not.toEqual(2)
+        let privateKey = core.generatePrivateKeyStr()
+        let wifKey = core.getWIFFromPrivateKey(privateKey)
+        let encryptedKey = scrypt.encrypt(wifKey, '123456')
+
+        wallet.loadIdentity(encryptedKey, '1234567', 'ontid')
+        expect(wallet.wallet.identities.length).not.toEqual(2)
+
+        wallet.loadIdentity(encryptedKey, '123456','ontid')
+        expect(wallet.wallet.identities.length).toEqual(2)
     })
 
 })

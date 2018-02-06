@@ -20,10 +20,12 @@ describe('test identity', () => {
     test('test decrypt', () => {
         let a = new Identity()
         let result = a.decrypt(JSON.parse(identityDataStr), "123456");
-        expect(result).toBe(0)
+        expect(result).toBe(true)
         expect(privateKey).toEqual(a.privateKey[0])
-        a.decrypt(JSON.parse(identityDataStr), '1234567')
-        expect(privateKey).not.toEqual(a.privateKey[0])
+
+        result = a.decrypt(JSON.parse(identityDataStr), '1234567')
+        // expect(privateKey).not.toEqual(a.privateKey[0])
+        expect(result).toEqual(false)
     })
 
 })

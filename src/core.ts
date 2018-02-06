@@ -2,9 +2,8 @@ import * as cryptoJS from 'crypto-js'
 import * as base58 from 'bs58'
 import * as ecurve from 'ecurve'
 import * as bigInteger from 'bigi'
-import { ab2hexstring, hexstring2ab } from './utils'
+import { Fixed8, ab2hexstring, hexstring2ab } from './utils'
 import { ADDR_VERSION } from './consts'
-import { Fixed8 } from './utils'
 var ec = require('elliptic')
 var wif = require('wif')
 var secureRandom = require('secure-random')
@@ -15,6 +14,10 @@ export function generateRandomArray(len: number): ArrayBuffer {
 
 export function generatePrivateKey(): ArrayBuffer {
     return generateRandomArray(32);
+}
+
+export function generatePrivateKeyStr() : string {
+    return ab2hexstring(generatePrivateKey())
 }
 
 export function getPublicKey(privateKey: string, encode: boolean): any {
@@ -87,4 +90,17 @@ export function getPrivateKeyFromWIF(wifkey: string): string {
 
 export function getWIFFromPrivateKey(privateKey: string): string {
     return wif.encode(128, Buffer.from(privateKey, 'hex'), true);
+}
+
+export function getAddressFromPrivateKey(privateKey: string): string {
+    let publickeyEncode = getPublicKey(privateKey, true).toString('hex');
+    //console.log( "publickeyEncode: ", publickeyEncode );
+
+    let signatureScript = createSignatureScript(publickeyEncode);
+    //console.log( "signatureScript: ", signatureScript );
+
+    let programHash = getHash(signatureScript);
+    //console.log( "programHash: ", programHash );
+
+    return toAddress(programHash);
 }

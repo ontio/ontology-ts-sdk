@@ -1,11 +1,11 @@
 import * as CryptoJS from 'crypto-js'
 var ec = require('elliptic').ec
-
+import { signatureData } from './core'
 import * as Utils from './utils'
 
 export class Metadata {
     constructor(metadata : {} ){
-        this.Context = metadata.Context
+        this.CreateTime = metadata.CreateTime
         this.Issuer = metadata.Issuer
         this.Subject = metadata.Subject
         this.Expires = metadata.Expires
@@ -24,16 +24,16 @@ export class Claim {
     Metadata : Metadata
     Signature : {}
 
-    constructor(context:string,id:string, claim: {}, metadata:Metadata, privateKey: string ) {
+    constructor(context:string, claim: object, metadata:Metadata, privateKey: string ) {
         this.Context = context
-        this.Id = id
+        this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(claim))).toString()
         this.Claim = claim
         this.Metadata = metadata
-        this.unsignedData = this.create( claim );
+        this.unsignedData = this.create();
         this.signedData = this.sign( this.unsignedData, privateKey );
     }
 
-    create( claim : {} ): string {
+    create(): string {
         // let claimData = { "Context":"", "Id":"", "Claim":{}, "Metadata":{} };
         // let MetaData  = { "CreateTime":"", "Issuer":"", "Subject":"", "Expires":"", "Revocation":"", "Crl":"" };
         // //let Signature = { "Format":"", "Algorithm":"", "Value":"" };
@@ -54,26 +54,33 @@ export class Claim {
         // claimData.Metadata = MetaData;
         // //claimData.Signature = Signature;
 
-        return JSON.stringify(this);
+        let claimBody = {
+            Context : this.Context,
+            Id : this.Id,
+            Claim : this.Claim,
+            Metadata : this.Metadata
+        }
+        return JSON.stringify( claimBody );
     }
 
     sign( unsignedData: string, privateKey: string ): string {
-        let msg = CryptoJS.enc.Hex.parse(unsignedData);
-        let msgHash = CryptoJS.SHA256(msg);
-        let elliptic = new ec('p256') 
-        const sig = elliptic.sign(msgHash.toString(), privateKey, null)
-        const signatureValue = Buffer.concat([
-            sig.r.toArrayLike(Buffer, 'be', 32),
-            sig.s.toArrayLike(Buffer, 'be', 32)
-          ])
+        // let msg = CryptoJS.enc.Hex.parse(unsignedData);
+        // let msgHash = CryptoJS.SHA256(msg);
+        // let elliptic = new ec('p256') 
+        // const sig = elliptic.sign(msgHash.toString(), privateKey, null)
+        // const signatureValue = Buffer.concat([
+        //     sig.r.toArrayLike(Buffer, 'be', 32),
+        //     sig.s.toArrayLike(Buffer, 'be', 32)
+        //   ])
         //let signatureValue = Secp256r1.sign(new Buffer(msgHash.toString(), "HEX"), new Buffer(privateKey, "HEX"));
     
+        let signatureValue = signatureData(unsignedData, privateKey)
         let claimData = JSON.parse(unsignedData);
         let Signature = { "Format":"", "Algorithm":"", "Value":"" };
 
         Signature.Format = "pgp";
         Signature.Algorithm = "ECDSAwithSHA256";
-        Signature.Value = signatureValue.toString('hex');
+        Signature.Value = signatureValue;
         this.Signature = Signature
 
         claimData.Signature = Signature;

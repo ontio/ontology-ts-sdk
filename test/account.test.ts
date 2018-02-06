@@ -20,8 +20,9 @@ describe('test account', ()=>{
     test('test decrypt', () => {
         let a = new Account()
         let result = a.decrypt(JSON.parse(accountDataStr), "123456");
-        expect(result).toBe(0)
+        expect(result).toBe(true)
         expect(privateKey).toEqual(a.privateKey)
+        
         a.decrypt(JSON.parse(accountDataStr), '1234567')
         expect(privateKey).not.toEqual(a.privateKey)
     })
