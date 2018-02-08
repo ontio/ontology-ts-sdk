@@ -316,3 +316,35 @@ export class StringStream {
 		return len
 	}
 }
+
+export class EventEmitter {
+	handlers : {  }
+	constructor(){
+		this.handlers = {}
+	}
+
+	//register event type and handler
+	on ( type : string, handler : ()=> void) {
+		if(typeof this.handlers[type] == 'undefined') {
+			this.handlers[type] = []
+		}
+		this.handlers[type].push(handler)
+	}
+
+	//trigger event
+	//@param { string } type 
+	//@param { any } event , is the parameter
+	trigger (type : string, event? : any) {
+		if(this.handlers[type] instanceof Array) {
+			var handlers = this.handlers[type]
+			for(let i = 0, len = handlers.length; i< len; i++) {
+				handlers[i](event)
+			}
+		}
+	}
+
+	//remove event listener
+	off (type : string) {
+		delete this.handlers[type]
+	}
+}
