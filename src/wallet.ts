@@ -1,6 +1,6 @@
 import * as core from './core'
 import { identityData, controlData, Identity } from './identity'
-import { accountData, Account } from './account'
+import {  Account } from './account'
 import { DEFAULT_SCRYPT } from './consts'
 import { formatDate, ab2hexstring, hexstring2ab } from './utils'
 import { access } from 'fs';
@@ -17,87 +17,65 @@ export class walletData {
         "r": number;
         "p": number;
     };
-    identities: Array<identityData>;
-    accounts: Array<accountData>;
+    identities: Array<Identity>;
+    accounts: Array<Account>;
     extra: null;
 };
 
 export class Wallet {
-    jsonWallet = {
-        name: "",
-        ontid : "",
-        createTime : "",
-        version: "",
-        scrypt: {
-            "n": 0,
-            "r": 0,
-            "p": 0
-        },
-        identities: [],
-        accounts: [],
-        extra: null,
+    name: string;
+    ontid: string;
+    createTime: string;
+    version: string;
+    scrypt: {
+        "n": number;
+        "r": number;
+        "p": number;
     };
-
-    wallet: walletData;
+    identities: Array<Identity>;
+    accounts: Array<Account>;
+    extra: null;
+    //what for?
     identity: Array<Identity> = [];
     account: Array<Account> = [];
+
 
     constructor() {
     }
 
-    create(name: string, keyphrase: string, privateKey? : string ): string {
-        // wallet
-        let wallet = (<walletData>this.jsonWallet);
-
-        wallet.name = name;
+    //create a empty wallet
+     create(name: string, keyphrase: string, privateKey? : string ): Wallet {
+        this.name = name;
         
         //createtime
-        wallet.createTime = (new Date).toISOString()
-        wallet.version = "1.0";
-        wallet.scrypt = {
+        this.createTime = (new Date).toISOString()
+        this.version = "1.0";
+        this.scrypt = {
             "n": 16384,
             "r": 8,
             "p": 8
         };
 
-        // let privateKeyForIdentity = ab2hexstring( core.generatePrivateKey() );
-        // let privateKeyForAccount = ab2hexstring( core.generatePrivateKey() );
-
-        // identity
-        let identity = new Identity();
-        if(!privateKey) {
-            privateKey = core.generatePrivateKeyStr()
-        }
-        let jsonId = identity.createSecp256r1( privateKey, keyphrase, name );
-        wallet.identities.push(identity.identity);
-        //ontid
-        wallet.ontid = identity.identity.ontid
-        //TODO : will send ontid to blockchain to register.This is a async process and will take several seconds.
-        //will notify the result by triggering event.
-
-        // no need to create default account
-
-        this.wallet = wallet;
-
-        return JSON.stringify(this.wallet);
+        return this
     }
 
-    addAccount(account: accountData) : void {
-        for (let ac of this.wallet.accounts) {
-            if(ac.key === accountData.key) {
+
+    addAccount(account: Account) : void {
+        for (let ac of this.accounts) {
+            if(ac.key === account.key) {
                 return;
             }
         }
-        this.wallet.accounts.push(account)
+        this.accounts.push(account)
     }
 
-    addIdentity(identity : identityData) :void {
-        for (let item of this.wallet.identities) {
+    addIdentity(identity : Identity) :void {
+        for (let item of this.identities) {
             if (item.ontid === identity.ontid) {
                 return;
             }
         }
-        this.wallet.identities.push(identity)
+        this.identities.push(identity)
     }
 
     decryptWallet( jsonData: string, keyphrase : string ): number {
@@ -114,7 +92,7 @@ export class Wallet {
             this.account[i] = new Account();
             this.account[i].decrypt( this.wallet.accounts[i], keyphrase );
         } 
-
+ 
         return 0;
     }
 
@@ -167,6 +145,61 @@ export class Wallet {
         identity.createSecp256r1(privateKey, password, '')//set label as '', maybe will change it  
         this.addIdentity(identity.identity)
         return JSON.stringify(this.wallet)
+    }
+
+    setDefaultAccount(index : number) : boolean {
+        let length = this.accounts.length
+        if(index < 0 || index > length -1) {
+            return false
+        }
+        for(let i = 0; i< length ;i++) {
+            this.accounts[i].isDefault = index === i ? true : false
+        }
+        return true
+    }
+
+    setDefaultIdentity(index : number) : boolean {
+        let length = this.identities.length
+        if (index < 0 || index > length - 1) {
+            return false
+        }
+        for (let i = 0; i < length; i++) {
+            this.identities[i].isDefault = index === i ? true : false
+        }
+        return true
+    }
+
+    toJson() : string {
+        let obj = {
+            name: this.name,
+            ontid: this.ontid,
+            createTime: this.createTime,
+            version: this.version,
+            scrypt: this.scrypt,
+            identities: this.identities,
+            accounts : this.accounts,
+            extra: null
+        }
+
+        return JSON.stringify(obj)
+    }
+
+    static parseJson(json : string) : Wallet {
+        let wallet = new Wallet()
+        let obj = JSON.parse(json)
+        wallet.name = obj.name
+        wallet.ontid = obj.ontid
+        wallet.createTime = obj.createTime
+        wallet.version = obj.version
+        wallet.scrypt = obj.scrypt
+        wallet.identities = obj.identities
+        wallet.accounts = obj.accounts
+        wallet.extra = obj.extra 
+        return wallet
+    }
+
+    signatureData() : string {
+        return ''
     }
 }
 

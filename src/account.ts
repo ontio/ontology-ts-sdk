@@ -2,7 +2,7 @@ import * as core from './core'
 import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
 
-export class accountData {
+export class Account {
     address: string;
     label: string;
     isDefault: boolean;
@@ -18,28 +18,7 @@ export class accountData {
         deployed: boolean;
     };
     extra: null;
-};
 
-export class Account {
-    jsonAccount = {
-        address: "",
-        label: "",
-        isDefault: false,
-        lock: false,
-        algorithm: "",
-        parameters: {
-            curve: "",
-        },
-        key: "",
-        contract: {
-            script: "",
-            parameters: [],
-            deployed: false,
-        },
-        extra: null,
-    };
-
-    account: accountData;
     privateKey: string;
     wifKey: string;
 
@@ -53,34 +32,65 @@ export class Account {
         this.wifKey = core.getWIFFromPrivateKey( privateKey );
         //console.log( "wifKey:",this.wifKey );
 
-        // account
-        let account = (<accountData>this.jsonAccount);
+        let contract = {
+            script : '',
+            parameters : [],
+            deployed : false
+        }
 
-        account.address = "";
-        account.label = label;
-        account.isDefault = true;
-        account.lock = false;
-        account.algorithm = "ECDSA";
-        account.parameters = {
+        this.address = "";
+        this.label = label;
+        this.isDefault = false;
+        this.lock = false;
+        this.algorithm = "ECDSA";
+        this.parameters = {
             "curve":"secp256r1"
         };
-        account.key = scrypt.encrypt( this.wifKey, keyphrase );
+        this.key = scrypt.encrypt( this.wifKey, keyphrase );
 
         let publicKeyEncoded = ab2hexstring( core.getPublicKey( privateKey, true ) );
-        account.contract.script = core.createSignatureScript( publicKeyEncoded );
+        contract.script = core.createSignatureScript( publicKeyEncoded );
+        this.contract = contract 
 
-        let programHash = core.getHash( account.contract.script );
-        account.address = core.toAddress( programHash );
+        let programHash = core.getHash( this.contract.script );
+        this.address = core.toAddress( programHash );
 
-        this.account = account;
-
-        return JSON.stringify(this.account);
+        return this.toJson();
     }
 
-    decrypt( ac: accountData, keyphrase: string ): boolean {
-        this.account = ac;
+    toJson() : string {
+        let obj = {
+            address: this.address,
+            label: this.label,
+            isDefault: this.isDefault,
+            lock: this.lock,
+            algorithm: this.algorithm,
+            parameters: this.parameters,
+            key: this.key,
+            contract: this.contract,
+            extra: this.extra
+        }
+        return JSON.stringify(obj)
+    }
 
-        this.wifKey = scrypt.decrypt( this.account.key, keyphrase );
+    static parseJson( json : string ) : Account {
+        let obj = JSON.parse(json)
+        let account = new Account()
+        account.address = obj.address
+        account.label = obj.label
+        account.isDefault = obj.isDefault
+        account.lock = obj.lock
+        account.algorithm = obj.algorithm
+        account.parameters = obj.parameters
+        account.key = obj.key
+        account.contract = obj.contract
+        account.extra = obj.extra
+        return account;
+    }
+
+    decrypt( keyphrase: string ): boolean {
+
+        this.wifKey = scrypt.decrypt( this.key, keyphrase );
         if(!this.wifKey) {
             //keyphase is error
             return false
@@ -92,5 +102,7 @@ export class Account {
 
         return true;
     }
+
+
 }
 
