@@ -1,31 +1,6 @@
 import BN from 'bignumber.js'
 import {SHA256, enc} from 'crypto-js'
-
-/* 
-* format date to 'YYYY-MM-DD hh:mm:ss'
-*/
-export const formatDate = (date : Date) =>  {
-	let YYYY = date.getFullYear(),
-		MM = date.getMonth()+1,
-		DD = date.getDate(),
-		hh = date.getHours(),
-		mm = date.getMinutes(),
-		ss = date.getSeconds()
-	return YYYY + '-' + (MM > 9?MM : '0'+MM) + '-' + 
-	(DD > 9? DD : '0'+DD) + ' ' + hh + ':' + mm + ':' + ss;
-}
-/**
- * Performs 2 SHA256.
- * @param {string} hex - String to hash
- * @returns {string} hash output
- */
-export const hash256 = (hex) => {
-	if (typeof hex !== 'string') throw new Error('reverseHex expects a string')
-	if (hex.length % 2 !== 0) throw new Error(`Incorrect Length: ${hex}`)
-	let hexEncoded = enc.Hex.parse(hex)
-	let ProgramSha256 = SHA256(hexEncoded).toString()
-	return SHA256(ProgramSha256).toString()
-}
+import { WEBVIEW_SCHEME } from './consts'
 
 export function hexstring2ab(str:string): number[] {
 	var result = [];
@@ -50,6 +25,36 @@ export function ab2hexstring(arr: any): string {
 	return result;
 }
 
+
+// ArrayBuffer转为字符串，参数为ArrayBuffer对象
+export function ab2str(buf : ArrayBuffer | number[]) : string {
+	let abView
+	if(buf instanceof ArrayBuffer) {
+		abView = new Uint8Array(buf)
+	} else if(Array.isArray(buf)) {
+		let abView = Uint8Array.of(buf)
+	}
+	return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+
+// 字符串转为ArrayBuffer对象，参数为字符串
+export function str2ab(str : string) {
+	var buf = new ArrayBuffer(str.length ); // 每个字符占用1个字节
+	var bufView = new Uint8Array(buf);
+	for (var i = 0, strLen = str.length; i < strLen; i++) {
+		bufView[i] = str.charCodeAt(i);
+	}
+	return buf;
+}
+
+export function str2hexstr(str : string) {
+	return ab2hexstring(str2ab(str))
+}
+
+export function hexstr2str(str : string) {
+	return ab2str(hexstring2ab(str))
+}
+
 export function hexXor(str1:string, str2:string): string {
 	if (str1.length !== str2.length) throw new Error('strings are disparate lengths')
 	if (str1.length % 2 !== 0) throw new Error('strings must be hex')
@@ -69,9 +74,9 @@ export function hexXor(str1:string, str2:string): string {
 * @param {boolean} littleEndian - Encode the hex in little endian form
 * @return {string}
 */
-export const num2hexstring = (num, size = 1, littleEndian = false) => {
+export const num2hexstring = (num : number, size = 1, littleEndian = false) => {
 	if (typeof num !== 'number') throw new Error('num must be numeric')
-	if (num < 0) throw new RangeError('num is unsigned (>= 0)')
+	if (num < 0) throw new RangeError('num must be >=0')
 	if (size % 1 !== 0) throw new Error('size must be a whole integer')
 	if (!Number.isSafeInteger(num)) throw new RangeError(`num (${num}) must be a safe integer`)
 	size = size * 2
@@ -86,7 +91,7 @@ export const num2hexstring = (num, size = 1, littleEndian = false) => {
  * @param {number} num - The number
  * @returns {string} hexstring of the variable Int.
  */
-export const num2VarInt = (num) => {
+export const num2VarInt = (num : number) => {
 	if (num < 0xfd) {
 		return num2hexstring(num)
 	} else if (num <= 0xffff) {
@@ -108,7 +113,7 @@ export const num2VarInt = (num) => {
  * @param {string} hex - HEX string
  * @return {string} HEX string reversed in 2s.
  */
-export const reverseHex = hex => {
+export const reverseHex = (hex : string ) => {
 	if (typeof hex !== 'string') throw new Error('reverseHex expects a string')
 	if (hex.length % 2 !== 0) throw new Error(`Incorrect Length: ${hex}`)
 	let out = ''
@@ -118,159 +123,14 @@ export const reverseHex = hex => {
 	return out
 }
 
-
-/**
- * @class Fixed8
- * @classdesc A wrapper around bignumber.js that adds on helper methods commonly used in neon-js
- * @param {string|int} value
- * @param {number} [base]
- */
-export class Fixed8 extends BN {
-	constructor(input, base = undefined) {
-		if (typeof input === 'number') input = input.toFixed(8)
-		super(input, base)
-	}
-
-	toHex() {
-		const hexstring = this.mul(100000000).round().toString(16)
-		return '0'.repeat(16 - hexstring.length) + hexstring
-	}
-
-	toReverseHex() {
-		return reverseHex(this.toHex())
-	}
-
-	// [util.inspect.custom](depth, opts) {
-	// 	return this.toFixed(8)
-	// }
-
-	static fromHex(hex) {
-		return new Fixed8(hex, 16).div(100000000)
-	}
-
-	static fromReverseHex(hex) {
-		return this.fromHex(reverseHex(hex))
-	}
-
-	/**
-	 * Returns a Fixed8 whose value is rounded upwards to the next whole number.
-	 * @return {Fixed8}
-	 */
-	ceil() {
-		return new Fixed8(super.ceil())
-	}
-
-	/**
-	 * Returns a Fixed8 whose value is rounded downwards to the previous whole number.
-	 * @return {Fixed8}
-	 */
-	floor() {
-		return new Fixed8(super.floor())
-	}
-
-	/**
-	 * Returns a Fixed8 rounded to the nearest dp decimal places according to rounding mode rm.
-	 * If dp is null, round to whole number.
-	 * If rm is null, round according to default rounding mode.
-	 * @param {number} [dp]
-	 * @param {number} [rm]
-	 * @return {Fixed8}
-	 */
-	round(dp = null, rm = null) {
-		return new Fixed8(super.round(dp, rm))
-	}
-
-	/**
-	 * See [[dividedBy]]
-	 * @param {string|number|Fixed8}
-	 * @param {number} [base]
-	 * @return {Fixed8}
-	 */
-	div(n, base = null) {
-		return this.dividedBy(n, base)
-	}
-
-	/**
-	 * Returns a Fixed8 whose value is the value of this Fixed8 divided by `n`
-	 * @param {string|number|Fixed8}
-	 * @param {number} [base]
-	 * @return {Fixed8}
-	 * @alias [[div]]
-	 */
-	dividedBy(n, base = null) {
-		return new Fixed8(super.dividedBy(n, base))
-	}
-
-	/**
-	 * See [[times]]
-	 * @param {string|number|Fixed8}
-	 * @param {number} [base]
-	 * @return {Fixed8}
-	 */
-	mul(n, base = null) {
-		return this.times(n, base)
-	}
-
-	/**
-	 * Returns a Fixed8 whose value is the value of this Fixed8 multipled by `n`
-	 * @param {string|number|Fixed8}
-	 * @param {number} [base]
-	 * @return {Fixed8}
-	 * @alias [[mul]]
-	 */
-	times(n, base = null) {
-		return new Fixed8(super.times(n, base))
-	}
-
-	/**
-	 * See [[plus]]
-	 * @param {string|number|Fixed8}
-	 * @param {number} [base]
-	 * @return {Fixed8}
-	 */
-	add(n, base = null) {
-		return this.plus(n, base)
-	}
-
-	/**
-	 * Returns a Fixed8 whose value is the value of this Fixed8 plus `n`
-	 * @param {string|number|Fixed8}
-	 * @param {number} [base]
-	 * @return {Fixed8}
-	 * @alias [[add]]
-	 */
-	plus(n, base = null) {
-		return new Fixed8(super.plus(n, base))
-	}
-
-	/**
-	 * See [[minus]]
-	 * @param {string|number|Fixed8}
-	 * @param {number} [base]
-	 * @return {Fixed8}
-	 */
-	sub(n, base = null) {
-		return this.minus(n, base)
-	}
-
-	/**
-	 * Returns a Fixed8 whose value is the value of this Fixed8 minus `n`
-	 * @param {string|number|Fixed8}
-	 * @param {number} [base]
-	 * @return {Fixed8}
-	 * @alias [[sub]]
-	 */
-	minus(n, base = null) {
-		return new Fixed8(super.minus(n, base))
-	}
-}
-
 /**
  * @class StringStream
  * @classdesc A simple string stream that allows user to read a string byte by byte using read().
  * @param {string} str - The string to read as a stream.
  */
 export class StringStream {
+	str : string
+	pter : number
 	constructor(str = '') {
 		this.str = str
 		this.pter = 0
@@ -347,4 +207,14 @@ export class EventEmitter {
 	off (type : string) {
 		delete this.handlers[type]
 	}
+}
+
+export const sendBackResult2Native = (result : string, callback : string) => {
+	if(window && window.prompt) {
+		window.prompt(`${WEBVIEW_SCHEME}://${callback}?params=${result}`)
+	}
+} 
+
+export const checkOntid = (ontid : string) => {
+
 }

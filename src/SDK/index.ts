@@ -2,33 +2,69 @@ import {Wallet} from '../wallet'
 import {Identity} from '../identity'
 import {Account} from '../account'
 import {Claim} from '../claim'
-
+import * as scrypt from '../scrypt'
 import {sendBackResult2Native} from '../utils'
+import * as core from '../core'
 
-export class Sdk {
+export class SDK {
 
     static createWallet(name : string, password : string, callback?: string) : string {
         let wallet = new Wallet()
-        let walletDataStr = wallet.create(name, password)
+        wallet.create(name, password)
+        let identity = new Identity()
+        let privateKey = core.generatePrivateKeyStr()
+        identity.create(privateKey, password,'')
+        //TODO register ontid
+        wallet.ontid = identity.ontid
+        wallet.addIdentity(identity)
+        let walletDataStr = wallet.toJson()
         if(callback) {
             sendBackResult2Native(walletDataStr, callback)
         }
         return walletDataStr
     }
 
-    static importWallet(encryptedPrivateKey : string, password : string, ontid : string, callback ?: string) : string {
+    static importIdentityWithoutWallet(identityDataStr : string ,encryptedPrivateKey : string, password : string, ontid : string, callback ?: string) : string {
         let wallet = new Wallet()
-        let result = wallet.importWallet(encryptedPrivateKey, password, ontid)
-        if(callback) {
+        wallet.create('',password)
+        //TODO check ontid
+        wallet.ontid = ontid
+        let identity = (<Identity>{})
+        try {
+            identity = Identity.importIdentity(identityDataStr ,encryptedPrivateKey, password, ontid)
+        } catch (err) {
+            let result = {
+                error : err
+            }
+            if(callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+        }
+        wallet.addIdentity(identity)
+        let result = wallet.toJson()
+        if(callback) {    
             sendBackResult2Native(result, callback)
         }
         return result
     }
 
-    static importIdentity(walletDataStr: string, encryptedPrivateKey : string, password : string, 
+    static importIdentityWithWallet(walletDataStr: string,identityDataStr : string, encryptedPrivateKey : string, password : string, 
         ontid : string, callback : string) : string {
-            let wallet = new Wallet()
-            let result = wallet.importIdentity(walletDataStr, encryptedPrivateKey, password, ontid)
+            let wallet = Wallet.parseJson(walletDataStr)
+            //TODO check ontid
+            let identity = (<Identity>{})
+            try {
+                identity = Identity.importIdentity(identityDataStr,encryptedPrivateKey, password,ontid)
+            } catch(err) {
+                let result = {
+                    error: err
+                }
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(result), callback)
+                }
+            }
+            wallet.addIdentity(identity)
+            let result = wallet.toJson()
             if(callback) {
                 sendBackResult2Native(result, callback)
             }
@@ -37,39 +73,25 @@ export class Sdk {
 
     static createIdentity(privateKey : string, password : string, label : string, callback ?: string) : string {
         let identity = new Identity()
-        let result = identity.createSecp256r1(privateKey, password, label)
+        identity.create(privateKey, password, label)
+        let result = identity.toJson()
         if(callback) {
             sendBackResult2Native(result, callback)
         }
         return result
     }
 
-    static decryptIdentity(identityDataStr : string, password : string, callback ?: string) : boolean {
-        let identity = new Identity()
-        let result = identity.decrypt(identityDataStr, password)
-        if(callback) {
-            sendBackResult2Native(result.toString(), callback)
-        }
-        return result
-    }
 
     static createAccount(privateKey: string, password: string, label: string, callback?: string): string {
         let account = new Account()
-        let result = account.createSecp256r1(privateKey, password, label)
+        account.create(privateKey, password, label)
+        let result = account.toJson()
         if (callback) {
             sendBackResult2Native(result, callback)
         }
         return result
     }
 
-    static decryptAccount(accountDataStr: string, password: string, callback?: string): boolean {
-        let account = new Account()
-        let result = account.decrypt(accountDataStr, password)
-        if (callback) {
-            sendBackResult2Native(result.toString(), callback)
-        }
-        return result
-    }
 
     static signClaim(context: string, claimData : string, metadata : string,
          privateKey : string, callback :string) : string {

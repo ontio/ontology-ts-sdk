@@ -1,6 +1,7 @@
 import * as core from './core'
 import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
+import {DEFAULT_ALGORITHM} from './consts'
 
 export class Account {
     address: string;
@@ -25,7 +26,7 @@ export class Account {
     constructor() {
     }
 
-    createSecp256r1( privateKey: string, keyphrase: string, label: string ): string {
+    create( privateKey: string, password: string, label: string, algorithmObj ?: {} ): Account {
         this.privateKey = privateKey;
         //console.log( "privateKey:",this.privateKey );
 
@@ -42,11 +43,17 @@ export class Account {
         this.label = label;
         this.isDefault = false;
         this.lock = false;
-        this.algorithm = "ECDSA";
-        this.parameters = {
-            "curve":"secp256r1"
-        };
-        this.key = scrypt.encrypt( this.wifKey, keyphrase );
+
+        //algorithm
+        if(algorithmObj) {
+            this.algorithm = algorithmObj.algorithm
+            this.parameters = algorithmObj.parameters
+        } else {
+            this.algorithm = DEFAULT_ALGORITHM.algorithm
+            this.parameters = DEFAULT_ALGORITHM.parameters
+        }
+        
+        this.key = scrypt.encrypt( this.wifKey, password );
 
         let publicKeyEncoded = ab2hexstring( core.getPublicKey( privateKey, true ) );
         contract.script = core.createSignatureScript( publicKeyEncoded );
@@ -55,7 +62,24 @@ export class Account {
         let programHash = core.getHash( this.contract.script );
         this.address = core.toAddress( programHash );
 
-        return this.toJson();
+        return this;
+    }
+
+
+
+    static importAccount(accountDataStr : string ,encryptedPrivateKey : string, password : string ) : Account {
+        let account = new Account()
+        let  wifKey = scrypt.decrypt(encryptedPrivateKey, password);
+        if (!wifKey) {
+            //keyphase is error
+            throw "Password error";
+            
+        }
+        let privateKey = core.getPrivateKeyFromWIF(wifKey)
+        //TODO check ontid
+        //if exist
+    
+        return Account.parseJson(accountDataStr)
     }
 
     toJson() : string {
@@ -68,7 +92,9 @@ export class Account {
             parameters: this.parameters,
             key: this.key,
             contract: this.contract,
-            extra: this.extra
+            extra: this.extra,
+            privateKey : this.privateKey,
+            wifKey : this.wifKey
         }
         return JSON.stringify(obj)
     }
@@ -85,24 +111,10 @@ export class Account {
         account.key = obj.key
         account.contract = obj.contract
         account.extra = obj.extra
+        account.privateKey = obj.privateKey
+        account.wifKey = obj.wifKey
         return account;
     }
-
-    decrypt( keyphrase: string ): boolean {
-
-        this.wifKey = scrypt.decrypt( this.key, keyphrase );
-        if(!this.wifKey) {
-            //keyphase is error
-            return false
-        }
-        console.log( "decrypt Account wifKey:", this.wifKey );
-
-        this.privateKey = core.getPrivateKeyFromWIF( this.wifKey );
-        console.log( "decrypt Account privateKey:", this.privateKey );
-
-        return true;
-    }
-
 
 }
 
