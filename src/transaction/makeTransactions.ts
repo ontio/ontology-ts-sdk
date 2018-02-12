@@ -7,7 +7,7 @@ import Parameter from '../Abi/parameter'
 import Program from './Program'
 
 export const makeInvokeTransaction = (scriptHash : string, func : AbiFunction) => {
-    let tx = {}
+    let tx = (<any>{})
     tx.type = 0xd1
     tx.version = 0x00
 
@@ -35,4 +35,8 @@ export const makeInvokeTransaction = (scriptHash : string, func : AbiFunction) =
     tx.txAttributes = [attr]
 
     return new Transaction(tx)
+}
+
+export const deserializeDDO = (hexstr : string) => {
+    
 }

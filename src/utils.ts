@@ -1,6 +1,7 @@
 import BN from 'bignumber.js'
 import {SHA256, enc} from 'crypto-js'
 import { WEBVIEW_SCHEME } from './consts'
+import axios from 'axios'
 
 export function hexstring2ab(str:string): number[] {
 	var result = [];
@@ -215,6 +216,10 @@ export const sendBackResult2Native = (result : string, callback : string) => {
 	}
 } 
 
-export const checkOntid = (ontid : string) => {
-
+export const axiosPost = (url:string, params:any) => {
+	return axios.post(url, params).then((res) => {
+		return res
+	}).catch((err) => {
+		return err
+	})
 }

@@ -20,7 +20,7 @@ describe('test claim', () => {
         privateKey : string
 
     beforeAll(() => {
-        privateKey = generatePrivateKeyStr
+        privateKey = generatePrivateKeyStr()
     })
 
     test('test sign claim', () => {

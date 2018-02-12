@@ -17,7 +17,7 @@ export default  {
             "returntype": "Any"
         },
         {
-            "name": "RegIdWithPublicKey",
+            "name": "RegIdByPublicKey",
             "parameters": [
                 {
                     "name": "id",

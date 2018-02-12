@@ -2,7 +2,7 @@ import * as core from './core'
 import { identityData, controlData, Identity } from './identity'
 import {  Account } from './account'
 import { DEFAULT_SCRYPT } from './consts'
-import { formatDate, ab2hexstring, hexstring2ab } from './utils'
+import { ab2hexstring, hexstring2ab } from './utils'
 import { access } from 'fs';
 import { format } from 'url';
 import * as scrypt from './scrypt'
