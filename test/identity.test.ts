@@ -6,29 +6,39 @@ describe('test identity', () => {
 
     var privateKey: string,
         identityDataStr: string,
-        identity: Identity
+        identity: Identity,
+        encryptedPrivateKey
 
     beforeAll(() => {
         privateKey = utils.ab2hexstring(core.generatePrivateKey());
     })
 
-    test('test createSecp256r1', () => {
+    test('test create', () => {
         identity = new Identity()
-        identityDataStr = identity.createSecp256r1(privateKey, '123456', 'mickey')
+        identity.create(privateKey, '123456', 'mickey')
+        encryptedPrivateKey = identity.controls[0].key
+        identityDataStr = identity.toJson()
         expect(identityDataStr).toBeDefined()
     })
-    test('test decrypt with correct password', () => {
-        let a = new Identity()
-        let result = a.decrypt(JSON.parse(identityDataStr), "123456");
-        expect(result).toBe(true)
-        expect(privateKey).toEqual(a.privateKey[0])
+
+    test('test import with correct password', () => {
+        console.log('encryptedkey: ' + encryptedPrivateKey)
+        let a 
+        try {
+         a = Identity.importIdentity(identityDataStr, encryptedPrivateKey, '123456', '')
+        } catch(err) {
+            console.log(err)
+        }
+        expect(a.label).toBe('mickey')
     })
 
-    test('test decrypt with incorrect password', () => {
-        let a = new Identity()
-        let result = a.decrypt(JSON.parse(identityDataStr), "1234567");
-        expect(result).toBe(false)
-        expect(privateKey).not.toEqual(a.privateKey[0])
+    test('test import with incorrect password', () => {
+        try {
+            let a = Identity.importIdentity(identityDataStr, encryptedPrivateKey, '123457', '')
+        } catch (err) {
+            console.log(err)
+            expect(err).toEqual('Password error')
+        }
     })
 
 })

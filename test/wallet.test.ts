@@ -3,6 +3,7 @@ import {Account, accountData} from '../src/account'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
 import * as scrypt from '../src/scrypt'
+import { Identity } from '../src/identity';
 
 describe('test wallet', ()=>{
     var wallet:Wallet,
@@ -11,38 +12,29 @@ describe('test wallet', ()=>{
         console.log(Wallet)
         wallet = new Wallet()
         let privateKey = core.generatePrivateKeyStr()
-        walletDataStr = wallet.create('mickey', '123456')
+        wallet.create('mickey', '123456')
+        walletDataStr = wallet.toJson()
     })
 
     it('test create wallet with name and password', ()=>{
         expect(walletDataStr).toBeDefined()
     })
 
-    it('test import wallet', () => {
+    it('test add identity', () => {
         let privateKey = core.generatePrivateKeyStr()
-        let wifKey = core.getWIFFromPrivateKey(privateKey)
-        let encryptedKey = scrypt.encrypt(wifKey, '123456')
 
-        let wallet = new Wallet()
-        let result = wallet.importWallet(encryptedKey, '123456', 'ontid')
-        expect(result).not.toEqual('')
-
-        result = wallet.importWallet(encryptedKey, '1234567','ontud')
-        expect(result).toEqual('')
+        let identity = new Identity()
+        identity.create(privateKey, '123456', 'mickey')
+        wallet.addIdentity(identity)
+        expect(wallet.identities.length).toEqual(1)
     })
 
-    it('test import identity', () => {
-        let wallet = new Wallet()
-
+    it('test add account', () => {
         let privateKey = core.generatePrivateKeyStr()
-        let wifKey = core.getWIFFromPrivateKey(privateKey)
-        let encryptedKey = scrypt.encrypt(wifKey, '123456')
-
-        wallet.importIdentity(walletDataStr ,encryptedKey, '1234567', 'ontid')
-        expect(wallet.wallet.identities.length).not.toEqual(2)
-
-        wallet.importIdentity(walletDataStr, encryptedKey, '123456','ontid')
-        expect(wallet.wallet.identities.length).toEqual(2)
+        let ac = new Account()
+        ac.create(privateKey, '123456', 'mickey')
+        wallet.addAccount(ac)
+        expect(wallet.accounts.length).toEqual(1)
     })
 
 })

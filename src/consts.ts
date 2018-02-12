@@ -11,3 +11,14 @@ export const DEFAULT_SCRYPT = {
 export const OEP_HEADER = '0142'
 
 export const OEP_FLAG = 'e0'
+
+
+// Ont://nativeMethod?param1=xxx&param2=yyy
+export const WEBVIEW_SCHEME = 'Ont'
+
+export const DEFAULT_ALGORITHM = {
+  algorithm : "ECDSA",
+  parameters : {
+    "curve": "secp256r1"
+  }
+}

@@ -6,34 +6,37 @@ describe('test account', ()=>{
   
     var privateKey:string,
         accountDataStr:string,
-        account:Account
+        account:Account,
+        encryptedPrivateKey : string
 
     beforeAll(()=>{
         privateKey = utils.ab2hexstring(core.generatePrivateKey());    
     })
 
-    test('test createSecp256r1', ()=>{
+    test('test create', ()=>{
         account = new Account()
-        accountDataStr = account.createSecp256r1(privateKey, '123456', 'mickey')
-        console.log(accountDataStr)
+        account.create(privateKey, '123456', 'mickey')
+        encryptedPrivateKey = account.key
+        accountDataStr = account.toJson()
         expect(accountDataStr).toBeDefined()
     })
-    test('test decrypt with correct password', () => {
-        
-        let a = Account.parseJson(accountDataStr)
-        let result = a.decrypt( "123456");
+    test('test import account with correct password', () => {
+        let a
+        try {
+           a = Account.importAccount(accountDataStr, encryptedPrivateKey, '123456')
+        } catch(err) {}
 
-        expect(result).toBe(true)
-        expect(privateKey).toEqual(a.privateKey)
+        expect(a.label).toBe('mickey')
 
     })
 
 
-    test('test decrypt with incorrect password', () => {
-        let a = Account.parseJson(accountDataStr)
-        let result = a.decrypt("1234567");
+    test('test import  with incorrect password', () => {
+        try {
+            let a = Account.importAccount(accountDataStr,encryptedPrivateKey, '1234567')
+        } catch(err) {
+            expect(err).toEqual('Password error')
+        }
 
-        expect(result).toBe(false)
-        expect(privateKey).not.toEqual(a.privateKey)
     })
 })

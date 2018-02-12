@@ -7,7 +7,7 @@ import * as scrypt from './scrypt'
 import * as core from './core'
 import * as utils from './utils'
 import * as CONST from './consts'
-import { Sdk } from './SDK/index'
+import { SDK } from './SDK/index'
 export {
     Account,
     Identity,
@@ -17,7 +17,7 @@ export {
     utils,
     CONST,
     Wallet,
-    Sdk
+    SDK
   }
   
 // var a = new Claim('{"Name":"zhangsan","Gender":"male","Age":25}',"8de516a7cddf22e328a61faf80f698ad7a410953d86fe06d031e08de7161a051")

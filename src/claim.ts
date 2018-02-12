@@ -4,7 +4,7 @@ import { signatureData } from './core'
 import * as Utils from './utils'
 
 export class Metadata {
-    
+
     constructor(metadata : {} ){
         this.CreateTime = metadata.CreateTime
         this.Issuer = metadata.Issuer
@@ -25,7 +25,7 @@ export class Claim {
     Metadata : Metadata
     Signature : {}
 
-    constructor(context:string, claim: object, metadata:Metadata, privateKey: string ) {
+    constructor(context:string, claim: {}, metadata:Metadata, privateKey: string ) {
         this.Context = context
         this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(claim))).toString()
         this.Claim = claim

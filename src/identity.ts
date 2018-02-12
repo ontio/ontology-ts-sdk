@@ -27,7 +27,7 @@ export class Identity {
     label: string;
     isDefault: boolean;
     lock: boolean;
-    controls: Array<controlData>;
+    controls: Array<controlData> = [];
     extra: null;
 
     //why not put in controlData
@@ -61,7 +61,7 @@ export class Identity {
             control.parameters = DEFAULT_ALGORITHM.parameters
         }
 
-        //generate id to simple?
+        //generate id too simple?
         control.id = "1";
         control.key = scrypt.encrypt( this.wifKey[0], keyphrase );
 
@@ -72,11 +72,11 @@ export class Identity {
         let signatureScript = core.createSignatureScript( publicKeyEncoded );
         let programHash = core.getHash( signatureScript );
         this.ontid = "did:ont:" + core.toAddress( programHash );
-
+        //TODO register ontid
         return this
     }
 
-    static importIdentity(encryptedPrivateKey : string, password : string, ontid : string, algorithmObj ?: {}) : Identity {
+    static importIdentity(identityDataStr : string ,encryptedPrivateKey : string, password : string, ontid : string) : Identity {
         let identity = new Identity()
         let wifKey = scrypt.decrypt(encryptedPrivateKey, password);
         if (!wifKey) {
@@ -84,32 +84,9 @@ export class Identity {
             throw "Password error";
         }
         let privateKey = core.getPrivateKeyFromWIF(wifKey)
-        identity.privateKey[0] = privateKey
-        identity.wifKey[0] = wifKey
-        identity.ontid = ontid
-        identity.label = ""
-        identity.lock = false
-        identity.isDefault = false
-
-        // control
-        let control = (<controlData>{})
-
-        //algorithm
-        if (algorithmObj) {
-            control.algorithm = algorithmObj.algorithm
-            control.parameters = algorithmObj.parameters
-        } else {
-            control.algorithm = DEFAULT_ALGORITHM.algorithm
-            control.parameters = DEFAULT_ALGORITHM.parameters
-        }
-
-        //generate id to simple?
-        control.id = "1";
-        control.key = encryptedPrivateKey
-
-        identity.controls.push(control);
-
-        return identity
+        //TODO check ontid
+        //if ontid exist
+        return Identity.parseJson(identityDataStr)
     }
 
     toJson(): string {
@@ -141,5 +118,12 @@ export class Identity {
         id.wifKey = obj.wifKey
         return id;
     }
+
+    //TODO
+    registerOntid() : boolean {
+
+        return true
+    }
+
 }
 
