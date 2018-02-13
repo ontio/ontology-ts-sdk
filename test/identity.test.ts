@@ -1,4 +1,4 @@
-import { Identity, identityData } from '../src/identity'
+import { Identity } from '../src/identity'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
 

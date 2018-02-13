@@ -2,7 +2,7 @@ import AbiInfo from '../src/Abi/AbiInfo'
 import AbiFunction from '../src/Abi/AbiFunction'
 import Parameter from '../src/Abi/parameter'
 
-import json from './data/NeoContract1.abi'
+import json from '../src/smartcontract/data/NeoContract1.abi'
 import Transaction from '../src/transaction/transaction'
 import Program from '../src/transaction/Program'
 
@@ -20,7 +20,7 @@ describe('test AbiInfo', () => {
 
     test('test read json', () => {
          a = AbiInfo.parseJson(JSON.stringify(json))
-         f = a.getFunction('RegIdWithPublicKey')
+        f = a.getFunction('RegIdByPublicKey')
 
         expect(f.parameters.length).toEqual(2)
 

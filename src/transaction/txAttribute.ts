@@ -1,5 +1,5 @@
 import TransactionAttributeUsage from './txAttributeUsage'
-import { num2hexstring, StringStream, num2VarInt, str2hexstr } from '../utils';
+import { num2hexstring, StringReader, num2VarInt, str2hexstr } from '../utils';
 import { Transaction } from '../transaction';
 import { userInfo } from 'os';
 /**
@@ -24,11 +24,11 @@ export default class TransactionAttribute {
         return result
     }
 
-    deserialize( ss : StringStream) : void {
+    deserialize( ss : StringReader) : void {
         //usage
         const usage = parseInt(ss.read(1), 16)
         //get hash with publicKey
-        const dataLen = parseInt(ss.read(1), 16)
+        const dataLen = ss.readNextLen()
         const data = ss.read(dataLen)
         this.usage = usage
         this.data = data

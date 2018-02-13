@@ -5,7 +5,7 @@
 */
 import Payload from './payload'
 import Parameter from '../Abi/parameter'
-import { num2VarInt, num2hexstring, StringStream, str2hexstr, hexstr2str } from '../utils'
+import { num2VarInt, num2hexstring, StringReader, str2hexstr, hexstr2str } from '../utils'
 
 export default class InvokeCode extends Payload {
     //the length is of bytes 20
@@ -52,20 +52,20 @@ export default class InvokeCode extends Payload {
         return result
     }
 
-    deserialize(ss : StringStream) : void {
+    deserialize(ss : StringReader) : void {
         //scriptHash, fixed langth
         this.scriptHash = ss.read(20)
         //payload total lenght
-        const payloadLen = ss.readVarInt()
+        const payloadLen = ss.readNextLen()
         
         //read params start
         let params = []
-        let nextByte = ss.readVarInt()
+        let nextByte = ss.readNextLen()
         //params's length start from 0x50
         while(nextByte < 0x50) {
             let p = ss.read(nextByte)
             params.push(p)
-            nextByte = ss.readVarInt()
+            nextByte = ss.readNextLen()
         }
         //params end
         let end = ss.read(1)
@@ -77,7 +77,7 @@ export default class InvokeCode extends Payload {
             }
         }
         //function name
-        let funNameLen = ss.readVarInt()
+        let funNameLen = ss.readNextLen()
         let func = ss.read(funNameLen)
         func = hexstr2str(func)
         //payload end

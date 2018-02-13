@@ -28,6 +28,8 @@
     "@types/bs58": "^3.0.30",
     "@types/crypto-js": "^3.1.38",
     "@types/ecurve": "^1.0.0",
+    "@types/jest": "^22.1.2",
+    "axios": "^0.17.1",
     "base-x": "^3.0.3",
     "bigi": "^1.4.2",
     "bignumber.js": "^6.0.0",

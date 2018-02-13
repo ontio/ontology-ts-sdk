@@ -2,7 +2,7 @@ import * as cryptoJS from 'crypto-js'
 import * as base58 from 'bs58'
 import * as ecurve from 'ecurve'
 import * as bigInteger from 'bigi'
-import { Fixed8, ab2hexstring, hexstring2ab } from './utils'
+import { ab2hexstring, hexstring2ab } from './utils'
 import { ADDR_VERSION } from './consts'
 var ec = require('elliptic').ec
 var wif = require('wif')

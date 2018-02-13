@@ -1,6 +1,7 @@
 import * as Ecurve from 'ecurve'
 import * as Core from './core'
 
+//Deprecated. Wiil be removed.
 export class Transaction {
     constructor() {
     }
