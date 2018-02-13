@@ -26,7 +26,7 @@ export class Account {
     constructor() {
     }
 
-    create( privateKey: string, password: string, label: string, algorithmObj ?: {} ): Account {
+    create( privateKey: string, password: string, label: string, algorithmObj ?: any ): Account {
         this.privateKey = privateKey;
         //console.log( "privateKey:",this.privateKey );
 

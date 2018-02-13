@@ -81,6 +81,7 @@ describe('test make invokecode tx', ()=> {
             done()
         }
         socket.onerror = (event) => {
+            //no server or server is stopped
             console.log(event)
             done()
         }

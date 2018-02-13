@@ -1,4 +1,4 @@
-import {StringStream, hexstr2str} from '../utils'
+import {StringReader, hexstr2str} from '../utils'
 
 export class DDOAttribute {
     path : string
@@ -13,11 +13,11 @@ export class DDO {
     constructor() {}
 
     static deserialize(hexstr : string) : DDO {
-        const ss = new StringStream(hexstr)
+        const ss = new StringReader(hexstr)
         let ddo = new DDO()
         //total length of public keys - 4 bytes
         const pkTotalLen = parseInt(ss.read(4), 16)
-        const pkNum = ss.readVarInt()
+        const pkNum = ss.readNextLen()
         
         for(let i=0; i<pkNum; i++) {   
             //length of public key - 4 bytes
@@ -27,7 +27,7 @@ export class DDO {
 
         //attribute number - 4bytes
         const attrTotalLen = parseInt(ss.read(4),16)
-        const attrNum = ss.readVarInt()
+        const attrNum = ss.readNextLen()
         for(let i=0; i<attrNum;i++) {
             let attrLen = parseInt(ss.read(4),16)
             let attr = new DDOAttribute()

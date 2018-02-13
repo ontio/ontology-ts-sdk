@@ -3,7 +3,7 @@ import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
 import {DEFAULT_ALGORITHM} from './consts'
 
-export class controlData {
+export class ControlData {
     algorithm: string;
     parameters: {
         curve: string;
@@ -12,22 +12,13 @@ export class controlData {
     key: string;
 }
 
-export class identityData {
-    ontid: string;
-    label: string;
-    isDefault: boolean;
-    lock: boolean;
-    controls: Array<controlData>;
-    extra: null;
-}
-
 export class Identity {
 
     ontid: string;
     label: string;
     isDefault: boolean;
     lock: boolean;
-    controls: Array<controlData> = [];
+    controls: Array<ControlData> = [];
     extra: null;
 
     //why not put in controlData
@@ -37,7 +28,7 @@ export class Identity {
     constructor() {
     }
 
-    create( privateKey: string, keyphrase: string, label: string, algorithmObj ?: {} ): Identity {
+    create( privateKey: string, keyphrase: string, label: string, algorithmObj ?: any ): Identity {
         this.privateKey[0] = privateKey;
         //console.log( "privateKey:",this.privateKey[0] );
 
@@ -50,7 +41,7 @@ export class Identity {
         this.lock = false;
 
         // control
-        let control = (<controlData> {})
+        let control = (<ControlData> {})
 
         //algorithm
         if (algorithmObj) {
@@ -122,6 +113,11 @@ export class Identity {
     //TODO
     registerOntid() : boolean {
 
+        return true
+    }
+
+    //TODO
+    checkOntid() : boolean {
         return true
     }
 

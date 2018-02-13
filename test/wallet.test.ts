@@ -1,5 +1,5 @@
 import {Wallet} from '../src/wallet'
-import {Account, accountData} from '../src/account'
+import {Account} from '../src/account'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
 import * as scrypt from '../src/scrypt'

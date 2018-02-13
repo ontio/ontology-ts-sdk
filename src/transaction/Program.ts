@@ -1,4 +1,4 @@
-import {num2VarInt, num2hexstring, StringStream} from '../utils'
+import {num2VarInt, num2hexstring, StringReader} from '../utils'
 import OPCODE from './opcode'
 
 export default class Program {
@@ -26,14 +26,14 @@ export default class Program {
         return result
     }
 
-    static deserialize(ss : StringStream) : Program {
+    static deserialize(ss : StringReader) : Program {
         let p = new Program()
-        const sigTotalLen = ss.readVarInt()
-        const sigLen = ss.readVarInt()
+        const sigTotalLen = ss.readNextLen()
+        const sigLen = ss.readNextLen()
         const sig = ss.read(sigLen)
 
-        const pkTotalLen = ss.readVarInt()
-        const pkLen = ss.readVarInt()
+        const pkTotalLen = ss.readNextLen()
+        const pkLen = ss.readNextLen()
         const pk = ss.read(pkLen)
         p.code = sig
         p.parameter = pk

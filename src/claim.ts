@@ -4,32 +4,39 @@ import { signatureData } from './core'
 import * as Utils from './utils'
 
 export class Metadata {
+    createTime : string
+    issuer : string
+    subject : string
+    expires : string
+    revocation : string
+    crl : string
 
-    constructor(metadata : {} ){
-        this.CreateTime = metadata.CreateTime
-        this.Issuer = metadata.Issuer
-        this.Subject = metadata.Subject
-        this.Expires = metadata.Expires
-        this.Revocation = metadata.Revocation
-        this.Crl = metadata.Crl
-    }
+    constructor(){}
+}
+
+export class Signature {
+    format : string
+    algorithm : string
+    value : string
+
+    constructor() { }
 }
 
 export class Claim {
     unsignedData: string;
     signedData: string;
 
-    Context : string
-    Id : string
-    Claim : {}
-    Metadata : Metadata
-    Signature : {}
+    context : string
+    id : string
+    claim : {}
+    metadata : Metadata
+    signature : Signature
 
     constructor(context:string, claim: {}, metadata:Metadata, privateKey: string ) {
-        this.Context = context
-        this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(claim))).toString()
-        this.Claim = claim
-        this.Metadata = metadata
+        this.context = context
+        this.id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(claim))).toString()
+        this.claim = claim
+        this.metadata = metadata
         this.unsignedData = this.create();
         this.signedData = this.sign( this.unsignedData, privateKey );
     }
@@ -56,10 +63,10 @@ export class Claim {
         // //claimData.Signature = Signature;
 
         let claimBody = {
-            Context : this.Context,
-            Id : this.Id,
-            Claim : this.Claim,
-            Metadata : this.Metadata
+            context : this.context,
+            id : this.id,
+            claim : this.claim,
+            metadata : this.metadata
         }
         return JSON.stringify( claimBody );
     }
@@ -77,14 +84,14 @@ export class Claim {
     
         let signatureValue = signatureData(unsignedData, privateKey)
         let claimData = JSON.parse(unsignedData);
-        let Signature = { "Format":"", "Algorithm":"", "Value":"" };
+        let sig = new Signature();
 
-        Signature.Format = "pgp";
-        Signature.Algorithm = "ECDSAwithSHA256";
-        Signature.Value = signatureValue;
-        this.Signature = Signature
+        sig.format = "pgp";
+        sig.algorithm = "ECDSAwithSHA256";
+        sig.value = signatureValue;
+        this.signature = sig
 
-        claimData.Signature = Signature;
+        claimData.signature = sig;
         this.signedData = JSON.stringify(claimData)
         return this.signedData;
     }

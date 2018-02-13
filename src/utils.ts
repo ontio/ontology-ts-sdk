@@ -1,4 +1,3 @@
-import BN from 'bignumber.js'
 import {SHA256, enc} from 'crypto-js'
 import { WEBVIEW_SCHEME } from './consts'
 import axios from 'axios'
@@ -27,18 +26,12 @@ export function ab2hexstring(arr: any): string {
 }
 
 
-// ArrayBuffer转为字符串，参数为ArrayBuffer对象
+// Turn ArrayBuffer or array-like oject into normal string
 export function ab2str(buf : ArrayBuffer | number[]) : string {
-	let abView
-	if(buf instanceof ArrayBuffer) {
-		abView = new Uint8Array(buf)
-	} else if(Array.isArray(buf)) {
-		let abView = Uint8Array.of(buf)
-	}
 	return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
-// 字符串转为ArrayBuffer对象，参数为字符串
+// Turn normal string into ArrayBuffer
 export function str2ab(str : string) {
 	var buf = new ArrayBuffer(str.length ); // 每个字符占用1个字节
 	var bufView = new Uint8Array(buf);
@@ -76,7 +69,6 @@ export function hexXor(str1:string, str2:string): string {
 * @return {string}
 */
 export const num2hexstring = (num : number, size = 1, littleEndian = false) => {
-	if (typeof num !== 'number') throw new Error('num must be numeric')
 	if (num < 0) throw new RangeError('num must be >=0')
 	if (size % 1 !== 0) throw new Error('size must be a whole integer')
 	if (!Number.isSafeInteger(num)) throw new RangeError(`num (${num}) must be a safe integer`)
@@ -88,7 +80,7 @@ export const num2hexstring = (num : number, size = 1, littleEndian = false) => {
 }
 
 /**
- * Converts a number to a variable length Int. Used for array length header
+ * Converts a number to a hex
  * @param {number} num - The number
  * @returns {string} hexstring of the variable Int.
  */
@@ -108,14 +100,13 @@ export const num2VarInt = (num : number) => {
 }
 
 /**
- * Reverses a HEX string, treating 2 chars as a byte.
+ * Reverses a hex string, 2 chars as 1 byte
  * @example
  * reverseHex('abcdef') = 'efcdab'
  * @param {string} hex - HEX string
- * @return {string} HEX string reversed in 2s.
+ * @return {string} reversed hex string.
  */
 export const reverseHex = (hex : string ) => {
-	if (typeof hex !== 'string') throw new Error('reverseHex expects a string')
 	if (hex.length % 2 !== 0) throw new Error(`Incorrect Length: ${hex}`)
 	let out = ''
 	for (let i = hex.length - 2; i >= 0; i -= 2) {
@@ -125,51 +116,51 @@ export const reverseHex = (hex : string ) => {
 }
 
 /**
- * @class StringStream
- * @classdesc A simple string stream that allows user to read a string byte by byte using read().
- * @param {string} str - The string to read as a stream.
+ * @class StringReader
+ * @classdesc A string helper used to read given string as bytes.2 chars as one byte.
+ * @param {string} str - The string to read.
  */
-export class StringStream {
+export class StringReader {
 	str : string
-	pter : number
+	pos : number
 	constructor(str = '') {
 		this.str = str
-		this.pter = 0
+		this.pos = 0
 	}
 
 	/**
-	 * Checks if reached the end of the stream. Does not mean stream is actually empty (this.str is not empty)
+	 * Checks if reached the end of the string.
 	 * @returns {boolean}
 	 */
 	isEmpty() {
-		return this.pter >= this.str.length
+		return this.pos >= this.str.length
 	}
 
 	/**
-	 * Reads some bytes off the stream.
+	 * Reads some bytes.
 	 * @param {number} bytes - Number of bytes to read
 	 * @returns {string}
 	 */
-	read(bytes) {
-		if (this.isEmpty()) throw new Error()
-		const out = this.str.substr(this.pter, bytes * 2)
-		this.pter += bytes * 2
+	read(bytes : number) {
+		if (this.isEmpty()) throw new Error('StringReader reached the end.')
+		const out = this.str.substr(this.pos, bytes * 2)
+		this.pos += bytes * 2
 		return out
 	}
 
 	/**
-	 * Reads some bytes off the stream using the first byte as the length indicator.
+	 * First, read one byte as the length of bytes to read. Then read the following bytes.
 	 * @return {string}
 	 */
-	readVarBytes() {
-		return this.read(this.readVarInt())
+	readNextBytes() {
+		return this.read(this.readNextLen())
 	}
 
 	/**
-	 * Reads a variable Int.
+	 * Reads one byte which indicates the length of following bytes to read.
 	 * @returns {number}
 	 */
-	readVarInt() {
+	readNextLen() {
 		let len = parseInt(this.read(1), 16)
 		if (len === 0xfd) len = parseInt(reverseHex(this.read(2)), 16)
 		else if (len === 0xfe) len = parseInt(reverseHex(this.read(4)), 16)
@@ -179,7 +170,7 @@ export class StringStream {
 }
 
 export class EventEmitter {
-	handlers : {  }
+	handlers : any
 	constructor(){
 		this.handlers = {}
 	}
@@ -217,9 +208,9 @@ export const sendBackResult2Native = (result : string, callback : string) => {
 } 
 
 export const axiosPost = (url:string, params:any) => {
-	return axios.post(url, params).then((res) => {
+	return axios.post(url, params).then((res : any) => {
 		return res
-	}).catch((err) => {
+	}).catch((err : any) => {
 		return err
 	})
 }
