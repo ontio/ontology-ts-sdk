@@ -3,6 +3,12 @@ import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
 import {DEFAULT_ALGORITHM} from './consts'
 
+export class Contract {
+    script : string
+    parameters : Array<string>
+    deployed : boolean
+}
+
 export class Account {
     address: string;
     label: string;
@@ -13,11 +19,7 @@ export class Account {
         curve: string;
     };
     key: string;
-    contract: {
-        script: string;
-        parameters: Array<string>;
-        deployed: boolean;
-    };
+    contract: Contract
     extra: null;
 
     privateKey: string;
@@ -44,7 +46,7 @@ export class Account {
         this.isDefault = false;
         this.lock = false;
 
-        //algorithm
+        //algorithm - no use here for now
         if(algorithmObj) {
             this.algorithm = algorithmObj.algorithm
             this.parameters = algorithmObj.parameters

@@ -25,7 +25,7 @@ export class Wallet {
     }
 
     //create a empty wallet
-     create(name: string, privateKey? : string ): Wallet {
+     create(name: string): Wallet {
         this.name = name;
         
         //createtime

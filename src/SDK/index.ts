@@ -10,7 +10,7 @@ export class SDK {
 
     static createWallet(name : string, password : string, callback?: string) : string {
         let wallet = new Wallet()
-        wallet.create(name, password)
+        wallet.create(name)
         let identity = new Identity()
         let privateKey = core.generatePrivateKeyStr()
         identity.create(privateKey, password,'')

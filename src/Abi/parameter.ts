@@ -21,7 +21,7 @@ export default class Parameter {
         return this.value
     }
 
-    setValue(value: {}): boolean {
+    setValue(value: any): boolean {
         if (value.type === this.type && value.name === this.name && value.value) {
             this.value = value.value
             return true

@@ -3,7 +3,7 @@ import Parameter from './parameter'
 export default class AbiFunction {
     name : string
     returntype : string
-    parameters : Array<Parameter> 
+    parameters : Array<Parameter> =[] 
 
     constructor(name : string, returntype : string, parameters: [any]) {
         this.name = name
@@ -22,7 +22,7 @@ export default class AbiFunction {
         return null
     }
 
-    setParamsValue(...args) : void {
+    setParamsValue(...args : any[]) : void {
         for(let i=0, len=args.length; i<len;i++) {
             for(let j =0 ; j < this.parameters.length; j++) {
                 if(args[i].name === this.parameters[j].getName()) {

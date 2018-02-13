@@ -67,7 +67,8 @@ export class Identity {
         return this
     }
 
-    static importIdentity(identityDataStr : string ,encryptedPrivateKey : string, password : string, ontid : string) : Identity {
+    static importIdentity(identityDataStr : string ,encryptedPrivateKey : string, password : string, 
+        ontid : string) : Identity {
         let identity = new Identity()
         let wifKey = scrypt.decrypt(encryptedPrivateKey, password);
         if (!wifKey) {
