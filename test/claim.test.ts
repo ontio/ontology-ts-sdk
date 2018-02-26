@@ -24,10 +24,8 @@ describe('test claim', () => {
     })
 
     test('test sign claim', () => {
-        claim = new Claim(context, claimData, metaData, privateKey)
-        let unsigned = claim.unsignedData
-        let signed = claim.signedData
-
+        claim = new Claim(context, claimData, metaData)
+        let signed = claim.sign(privateKey)
         expect(signed).toBeDefined()
     })
 

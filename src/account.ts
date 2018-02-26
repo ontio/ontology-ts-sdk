@@ -2,7 +2,7 @@ import * as core from './core'
 import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
 import {DEFAULT_ALGORITHM} from './consts'
-
+import {ERROR_CODE} from './error'
 export class Contract {
     script : string
     parameters : Array<string>
@@ -73,13 +73,10 @@ export class Account {
         let account = new Account()
         let  wifKey = scrypt.decrypt(encryptedPrivateKey, password);
         if (!wifKey) {
-            //keyphase is error
-            throw "Password error";
-            
+            throw ERROR_CODE.Decrypto_ERROR
         }
         let privateKey = core.getPrivateKeyFromWIF(wifKey)
-        //TODO check ontid
-        //if exist
+        
     
         return Account.parseJson(accountDataStr)
     }

@@ -1,7 +1,7 @@
 import {Wallet} from '../wallet'
 import {Identity} from '../identity'
 import {Account} from '../account'
-import {Claim} from '../claim'
+import {Claim, Metadata} from '../claim'
 import * as scrypt from '../scrypt'
 import {sendBackResult2Native} from '../utils'
 import * as core from '../core'
@@ -13,9 +13,9 @@ export class SDK {
         wallet.create(name)
         let identity = new Identity()
         let privateKey = core.generatePrivateKeyStr()
-        identity.create(privateKey, password,'')
+        identity.create(privateKey, password,name)
         //TODO register ontid
-        wallet.ontid = identity.ontid
+        wallet.defaultOntid = identity.ontid
         wallet.addIdentity(identity)
         let walletDataStr = wallet.toJson()
         if(callback) {
@@ -24,11 +24,10 @@ export class SDK {
         return walletDataStr
     }
 
-    static importIdentityWithoutWallet(identityDataStr : string ,encryptedPrivateKey : string, password : string, ontid : string, callback ?: string) : string {
+    static importIdentityByQrcode(identityDataStr : string ,encryptedPrivateKey : string, password : string, ontid : string, callback ?: string) : string {
         let wallet = new Wallet()
-        wallet.create('',password)
-        //TODO check ontid
-        wallet.ontid = ontid
+        wallet.create('Default name')
+        wallet.defaultOntid = ontid
         let identity = (<Identity>{})
         try {
             identity = Identity.importIdentity(identityDataStr ,encryptedPrivateKey, password, ontid)
@@ -48,7 +47,30 @@ export class SDK {
         return result
     }
 
-    static importIdentityWithWallet(walletDataStr: string,identityDataStr : string, encryptedPrivateKey : string, password : string, 
+    static importIdentityByInput(encryptedPrivateKey:string, ontid : string, password : string, callback : string) : string {
+        let wallet = new Wallet()
+        wallet.create('Default name')
+        let identity = (<Identity>{})
+        try {
+            identity = Identity.importIdentity('', encryptedPrivateKey, password, ontid)
+        } catch (err) {
+            let result = {
+                error: err
+            }
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+        }
+        wallet.addIdentity(identity)
+        wallet.defaultOntid = ontid
+        let result = wallet.toJson()
+        if (callback) {
+            sendBackResult2Native(result, callback)
+        }
+        return result
+    }
+
+    static addIdentityToWallet(walletDataStr: string,identityDataStr : string, encryptedPrivateKey : string, password : string, 
         ontid : string, callback : string) : string {
             let wallet = Wallet.parseJson(walletDataStr)
             //TODO check ontid
@@ -92,16 +114,58 @@ export class SDK {
         return result
     }
 
-
-    static signClaim(context: string, claimData : string, metadata : string,
-         privateKey : string, callback :string) : string {
-             let claimDataObj = JSON.parse(claimData)
-             let metadataObj = JSON.parse(metadata)
-            let claim = new Claim(context, claimDataObj, metadataObj, privateKey)
+    static signSelfClaim(context: string, claimData : string, ontid : string,
+         encryptedPrivateKey : string, password : string, callback :string) : string {
+        let wifKey = scrypt.decrypt(encryptedPrivateKey, password);
+        if (!wifKey) {
+            let result = {
+                error: 'Password or encrypted privateKey error'
+            }
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+            return result.error
+        }
+        //TODO check ontid
+        let privateKey = core.getPrivateKeyFromWIF(wifKey)
+            let claimDataObj = JSON.parse(claimData)
+            let metadata = new Metadata()
+            metadata.createTime = (new Date()).toISOString()
+            metadata.issuer = ontid
+            metadata.subject = ontid
+            let claim = new Claim(context, claimDataObj, metadata)
+            claim.sign(privateKey)
             if(callback) {
                 sendBackResult2Native(claim.signedData, callback)
             }
             return claim.signedData
+    }
+
+    static encryptPrivateKey( privateKey : string, password : string, callback : string) : string {
+        let wifKey = core.getWIFFromPrivateKey(privateKey)
+        let encryptedPrivateKey = scrypt.encrypt(wifKey, password)
+        if(callback) {
+            sendBackResult2Native(encryptedPrivateKey, callback)
+        }
+        return encryptedPrivateKey
+    }
+
+    static decryptEncryptedPrivateKey( encryptedPrivateKey : string, password : string, callback : string) : string {
+        let wifKey = scrypt.decrypt(encryptedPrivateKey, password);
+        if (!wifKey) {
+            let result = {
+                error: 'Password or encrypted privateKey error'
+            }
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+            return result.error
+        }
+        let privateKey = core.getPrivateKeyFromWIF(wifKey)
+        if (callback) {
+            sendBackResult2Native(privateKey, callback)
+        }
+        return privateKey
     }
 
 }

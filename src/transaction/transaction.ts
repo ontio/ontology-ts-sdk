@@ -29,7 +29,7 @@ class Transaction {
        
     }
 
-    serialize (privateKey : string) : string {
+    serialize () : string {
         let unsigned = this.serializeUnsignedData()
         let signed = this.serializeSignedData()
 
