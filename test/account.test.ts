@@ -1,7 +1,7 @@
 import {Account} from '../src/account'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
-
+import {ERROR_CODE} from '../src/error'
 describe('test account', ()=>{
   
     var privateKey:string,
@@ -30,12 +30,13 @@ describe('test account', ()=>{
 
     })
 
+    
 
     test('test import  with incorrect password', () => {
         try {
             let a = Account.importAccount(accountDataStr,encryptedPrivateKey, '1234567')
         } catch(err) {
-            expect(err).toEqual('Password error')
+            expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)
         }
 
     })

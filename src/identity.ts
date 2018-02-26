@@ -2,6 +2,7 @@ import * as core from './core'
 import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
 import {DEFAULT_ALGORITHM} from './consts'
+import {ERROR_CODE} from './error'
 
 export class ControlData {
     algorithm: string;
@@ -67,18 +68,40 @@ export class Identity {
         return this
     }
 
+
+
     static importIdentity(identityDataStr : string ,encryptedPrivateKey : string, password : string, 
         ontid : string) : Identity {
         let identity = new Identity()
         let wifKey = scrypt.decrypt(encryptedPrivateKey, password);
         if (!wifKey) {
-            //password is error
-            throw "Password error";
+            throw ERROR_CODE.Decrypto_ERROR
         }
         let privateKey = core.getPrivateKeyFromWIF(wifKey)
         //TODO check ontid
+        //if not exist 
+        //throw tx error
         //if ontid exist
-        return Identity.parseJson(identityDataStr)
+        if(identityDataStr) {
+            return Identity.parseJson(identityDataStr)
+        } else {
+            let identity = new Identity()
+            identity.ontid = ontid
+            identity.label = '';
+            identity.isDefault = false;
+            identity.lock = false; 
+            identity.privateKey[0] = privateKey;
+            //console.log( "privateKey:",this.privateKey[0] );
+
+            identity.wifKey[0] = wifKey;
+            let control = (<ControlData>{})
+            control.id = '1'
+            control.algorithm = DEFAULT_ALGORITHM.algorithm
+            control.parameters = DEFAULT_ALGORITHM.parameters
+            control.key = scrypt.encrypt(wifKey, password)
+            identity.controls.push(control)
+            return identity
+        }
     }
 
     toJson(): string {

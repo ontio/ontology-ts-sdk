@@ -36,19 +36,11 @@ describe('test AbiInfo', () => {
     })
 
     test('test make invokecode tx', () => {
-        tx = makeInvokeTransaction( a.hash, f )
-        console.log(tx)
         let privateKey = generatePrivateKeyStr()
-        let unsignedData = tx.serializeUnsignedData()
-        let program = new Program()
-        let signed = signatureData(unsignedData, privateKey)
-        let encodedPk = ab2hexstring(getPublicKey(privateKey, true))
-        program.code = signed
-        program.parameter = encodedPk
-        tx.programs = [program]
-
-        let signedData = tx.serializeSignedData()
-        serialized = unsignedData + signedData
+        tx = makeInvokeTransaction( a.hash, f, privateKey )
+        console.log(tx)
+        
+        serialized = tx.serialize()
         console.log('serialize: '+serialized)
         expect(serialized).toBeDefined()
     })

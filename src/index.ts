@@ -15,6 +15,7 @@ export {
     Transaction,
     core,
     utils,
+    scrypt,
     CONST,
     Wallet,
     SDK

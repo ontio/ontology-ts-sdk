@@ -1,6 +1,7 @@
 import { Identity } from '../src/identity'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
+import {ERROR_CODE} from '../src/error'
 
 describe('test identity', () => {
 
@@ -37,7 +38,7 @@ describe('test identity', () => {
             let a = Identity.importIdentity(identityDataStr, encryptedPrivateKey, '123457', '')
         } catch (err) {
             console.log(err)
-            expect(err).toEqual('Password error')
+            expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)
         }
     })
 

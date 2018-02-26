@@ -32,46 +32,22 @@ export class Claim {
     metadata : Metadata
     signature : Signature
 
-    constructor(context:string, claim: {}, metadata:Metadata, privateKey: string ) {
+    constructor(context:string, claim: {}, metadata:Metadata) {
         this.context = context
         this.id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(claim))).toString()
         this.claim = claim
         this.metadata = metadata
-        this.unsignedData = this.create();
-        this.signedData = this.sign( this.unsignedData, privateKey );
-    }
-
-    create(): string {
-        // let claimData = { "Context":"", "Id":"", "Claim":{}, "Metadata":{} };
-        // let MetaData  = { "CreateTime":"", "Issuer":"", "Subject":"", "Expires":"", "Revocation":"", "Crl":"" };
-        // //let Signature = { "Format":"", "Algorithm":"", "Value":"" };
-
-        // MetaData.CreateTime = "2017-01-01T22:01:20Z";
-        // MetaData.Issuer = "did:ont:8uQhQMGzWxR8vw5P3UWH1j";
-        // MetaData.Subject = "did:ont:4XirzuHiNnTrwfjCMtBEJ6";
-        // MetaData.Expires = "2018-01-01";
-        // MetaData.Revocation = "RevocationList";
-        // MetaData.Crl = "http://192.168.1.1/rev.crl";
-
-        // //Signature.Format = "pgp";
-        // //Signature.Algorithm = "ECDSAwithSHA256";
-
-        // claimData.Context = "claim:standard0001";
-        // claimData.Id = "d3vfrev1590jcw";
-        // claimData.Claim = JSON.parse(claimStr);
-        // claimData.Metadata = MetaData;
-        // //claimData.Signature = Signature;
 
         let claimBody = {
-            context : this.context,
-            id : this.id,
-            claim : this.claim,
-            metadata : this.metadata
-        }
-        return JSON.stringify( claimBody );
+            context: this.context,
+            id: this.id,
+            claim: this.claim,
+            metadata: this.metadata
+        }  
+        this.unsignedData = JSON.stringify(claimBody) 
     }
 
-    sign( unsignedData: string, privateKey: string ): string {
+    sign( privateKey: string ): string {
         // let msg = CryptoJS.enc.Hex.parse(unsignedData);
         // let msgHash = CryptoJS.SHA256(msg);
         // let elliptic = new ec('p256') 
@@ -82,8 +58,8 @@ export class Claim {
         //   ])
         //let signatureValue = Secp256r1.sign(new Buffer(msgHash.toString(), "HEX"), new Buffer(privateKey, "HEX"));
     
-        let signatureValue = signatureData(unsignedData, privateKey)
-        let claimData = JSON.parse(unsignedData);
+        let signatureValue = signatureData(this.unsignedData, privateKey)
+        let claimData = JSON.parse(this.unsignedData);
         let sig = new Signature();
 
         sig.format = "pgp";

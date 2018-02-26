@@ -9,7 +9,7 @@ import * as scrypt from './scrypt'
 
 export class Wallet {
     name: string;
-    ontid: string;
+    defaultOntid: string;
     createTime: string;
     version: string;
     scrypt: {
@@ -87,7 +87,7 @@ export class Wallet {
     toJson() : string {
         let obj = {
             name: this.name,
-            ontid: this.ontid,
+            defaultOntid: this.defaultOntid,
             createTime: this.createTime,
             version: this.version,
             scrypt: this.scrypt,
@@ -103,7 +103,7 @@ export class Wallet {
         let wallet = new Wallet()
         let obj = JSON.parse(json)
         wallet.name = obj.name
-        wallet.ontid = obj.ontid
+        wallet.defaultOntid = obj.defaultOntid
         wallet.createTime = obj.createTime
         wallet.version = obj.version
         wallet.scrypt = obj.scrypt
