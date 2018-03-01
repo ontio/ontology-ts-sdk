@@ -46,6 +46,7 @@ export function encrypt(wifKey: string, keyphrase: string, scryptParams = DEFAUL
     return Bs58check.encode(Buffer.from(assembled, 'hex'));
 }
 
+//why not return privateKey
 export function decrypt(encryptedKey: string, keyphrase: string, scryptParams = DEFAULT_SCRYPT): string {
     let assembled = ab2hexstring(Bs58check.decode(encryptedKey));
     //console.log( "assembled: ", assembled );

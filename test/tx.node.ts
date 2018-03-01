@@ -1,4 +1,4 @@
-import { makeInvokeTransaction } from '../src/transaction/makeTransactions'
+import { makeInvokeTransaction , parseEventNotify} from '../src/transaction/makeTransactions'
 import Transaction from '../src/transaction/transaction'
 import Program from '../src/transaction/Program'
 import { Identity } from '../src/identity'
@@ -60,10 +60,18 @@ const sendTx = (param, callback = null) => {
         socket.send(param)
     }
     socket.onmessage = (event) => {
-        console.log('response for send tx: ' + JSON.stringify(event.data))
+        let res 
+        if(typeof event.data === 'string') {
+            res = JSON.parse(event.data)
+        }
+        console.log('response for send tx: ' + JSON.stringify(res))
         if (callback) {
             callback(event.data)
             socket.close()
+        }
+        if(res.Action === 'Notify'){
+            let result = parseEventNotify(res)
+            console.log('paresed event notify: '+JSON.stringify(result))
         }
         // socket.close()
     }
@@ -113,9 +121,9 @@ const testRegisterOntid = () => {
 const testAddAttribute = () => {
     let f = abiInfo.getFunction('AddAttribute')
     let p1 = new Parameter('id', 'ByteArray', ontid)
-    let p2 = new Parameter('path', 'ByteArray', str2hexstr('Cert'))
+    let p2 = new Parameter('path', 'ByteArray', str2hexstr('Clam:twitter'))
     let p3 = new Parameter('type', 'ByteArray', str2hexstr('String'))
-    let p4 = new Parameter('value', 'ByteArray', str2hexstr('abcd'))
+    let p4 = new Parameter('value', 'ByteArray', str2hexstr('wangwu7@twitter'))
     let p5 = new Parameter('pk', 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2, p3, p4, p5)
@@ -213,9 +221,9 @@ const testGetDDO = () => {
 
 //uncomment one line to test one tx each time.
 
-testRegisterOntid()
+// testRegisterOntid()
 
-// testAddAttribute()
+testAddAttribute()
 
 // testGetDDO()
 

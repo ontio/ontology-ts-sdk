@@ -1,32 +1,55 @@
 
 import {num2hexstring, StringReader, num2VarInt, ab2hexstring} from '../utils'
-import InvokeCode from './InvokeCode'
+import Payload from './payload/payload'
 import txAttributeUsage from './txAttributeUsage'
 import TransactionAttribute from './txAttribute'
 import Program from './Program'
 import AbiFunction from '../Abi/AbiFunction'
+import InvokeCode from './payload/InvokeCode';
+import DeployCode from './payload/DeployCode';
+import UTXOInput from './UTXOInput'
+import TXOutput from './txOutput'
+import Fixed64 from '../common/Fixed64'
+
+export enum TxType  {
+    BookKeeping     = 0x00 ,
+	IssueAsset      = 0x01 ,
+	BookKeeper      = 0x02 ,
+	PrivacyPayload  = 0x20 ,
+	RegisterAsset   = 0x40 ,
+	TransferAsset   = 0x80 ,
+	Record          = 0x81 ,
+	DeployCode      = 0xd0 ,
+	InvokeCode      = 0xd1 ,
+	DataFile        = 0x12 
+}
 
 class Transaction {
-    hash : string
 
-    type : number = 0x80
+    type : number = 0xd1
 
     version : number = 0x00
 
-    payload : InvokeCode
+    payload : Payload
 
     txAttributes : Array<TransactionAttribute> = []
 
-    UTXOInput : number = 0x00
+    UTXOInputs : Array<UTXOInput> = []
 
-    TXOutput : number = 0x00
+    outputs : Array<TXOutput> = []
 
-    gas: string = '0000000000000000'
+    systemFee: Fixed64 
 
     programs : Array<Program> = []
 
+    //cache only, needn't serialize
+    referTx : Array<TXOutput>
+    hash: string
+    networkFee : Fixed64
+
     constructor () {
-       
+       this.hash = ''
+       this.systemFee = new Fixed64()
     }
 
     serialize () : string {
@@ -42,19 +65,26 @@ class Transaction {
         result += num2hexstring(this.version)
         result += this.payload.serialize()
 
+        console.log('last3:' + result.substring(result.length-12))
         //serialize transaction attributes
         result += num2hexstring(this.txAttributes.length)
         for (let i = 0; i < this.txAttributes.length; i++) {
             result += this.txAttributes[i].serialize()
         }
+        console.log('position: '+ result.length)
         //input
-        result += num2VarInt(this.UTXOInput)
+        result += num2hexstring(this.UTXOInputs.length)
+        for (let i=0 ; i< this.UTXOInputs.length; i++) {
+            result += this.UTXOInputs[i].serialize()
+        }
 
         //output
-        result += num2VarInt(this.TXOutput)
-
+        result += num2hexstring(this.outputs.length)
+        for (let i = 0; i < this.outputs.length; i++) {
+            result += this.outputs[i].serialize()
+        }
         //gas
-        result += this.gas 
+        result += this.systemFee.serialize()
 
         return result
     }
@@ -80,7 +110,18 @@ class Transaction {
 
         tx.type = parseInt(ss.read(1), 16)
         tx.version = parseInt(ss.read(1), 16)
-        let payload = new InvokeCode()
+        let payload
+        switch (tx.type) {
+            case TxType.InvokeCode :
+                payload = new InvokeCode()
+                break;
+
+            case TxType.DeployCode:
+                payload = new DeployCode()
+                break;
+            default :
+                payload = new InvokeCode()
+        }
         payload.deserialize(ss)
         tx.payload = payload
         tx.txAttributes = []
@@ -94,11 +135,19 @@ class Transaction {
         }
 
         //input
-        tx.UTXOInput = ss.readNextLen()
+        const inputLen = ss.readNextLen()
+        for (let i = 0; i< inputLen; i++) {
+            let input = UTXOInput.deserialize(ss)
+            tx.UTXOInputs.push(input)
+        }
         //output
-        tx.TXOutput = ss.readNextLen()
+        const outLen = ss.readNextLen()
+        for (let i = 0; i < inputLen; i++) {
+            let output = TXOutput.deserialize(ss)
+            tx.outputs.push(output)
+        }
         //gas '0000000000000000'
-        tx.gas = ss.read(8)
+        tx.systemFee = Fixed64.deserialize(ss)
 
         const programLength = ss.readNextLen()
         for (let i = 0; i < programLength; i++) {

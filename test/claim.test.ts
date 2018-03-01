@@ -9,12 +9,12 @@ describe('test claim', () => {
     }
     var context = 'claim:standard0001'
     var metaData = new Metadata()
-    metaData.createTime = "2017-01-01T22:01:20Z";
-    metaData.issuer = "did:ont:8uQhQMGzWxR8vw5P3UWH1j";
-    metaData.subject = "did:ont:4XirzuHiNnTrwfjCMtBEJ6";
-    metaData.expires = "2018-01-01";
-    metaData.revocation = "RevocationList";
-    metaData.crl = "http://192.168.1.1/rev.crl";
+    metaData.CreateTime = "2017-01-01T22:01:20Z";
+    metaData.Issuer = "did:ont:8uQhQMGzWxR8vw5P3UWH1j";
+    metaData.Subject = "did:ont:4XirzuHiNnTrwfjCMtBEJ6";
+    metaData.Expires = "2018-01-01";
+    metaData.Revocation = "RevocationList";
+    metaData.Crl = "http://192.168.1.1/rev.crl";
 
     var claim : Claim,
         privateKey : string
@@ -31,7 +31,7 @@ describe('test claim', () => {
 
     test('make a signature', ()=>{
         let signed = signatureData(claim.unsignedData, privateKey)
-        let signatureValue = claim.signature.value
+        let signatureValue = claim.Signature.Value
         expect(signed).toEqual(signatureValue)
     })
 })

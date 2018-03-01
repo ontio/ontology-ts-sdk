@@ -29,7 +29,7 @@ export class Identity {
     constructor() {
     }
 
-    create( privateKey: string, keyphrase: string, label: string, algorithmObj ?: any ): Identity {
+    create( privateKey: string, keyphrase: string, label: string, algorithmObj ?: any ) {
         this.privateKey[0] = privateKey;
         //console.log( "privateKey:",this.privateKey[0] );
 
@@ -65,10 +65,9 @@ export class Identity {
         let programHash = core.getHash( signatureScript );
         this.ontid = "did:ont:" + core.toAddress( programHash );
         //TODO register ontid
+        //调用方处理register和监听结果
         return this
     }
-
-
 
     static importIdentity(identityDataStr : string ,encryptedPrivateKey : string, password : string, 
         ontid : string) : Identity {
@@ -82,6 +81,12 @@ export class Identity {
         //if not exist 
         //throw tx error
         //if ontid exist
+        // return checkOntid(ontid, privateKey).then((res : any)=>{
+        //     //ontid exist, handle here
+
+        // }, (err : any) => {
+        //     //not exist
+        // })
         if(identityDataStr) {
             return Identity.parseJson(identityDataStr)
         } else {
@@ -135,7 +140,7 @@ export class Identity {
     }
 
     //TODO
-    registerOntid() : boolean {
+    async registerOntid()  {
 
         return true
     }

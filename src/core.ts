@@ -4,6 +4,10 @@ import * as ecurve from 'ecurve'
 import * as bigInteger from 'bigi'
 import { ab2hexstring, hexstring2ab } from './utils'
 import { ADDR_VERSION } from './consts'
+import * as scrypt from './scrypt'
+import {ERROR_CODE} from './error'
+import {getDDO} from './transaction/makeTransactions'
+
 var ec = require('elliptic').ec
 var wif = require('wif')
 var secureRandom = require('secure-random')
@@ -104,3 +108,22 @@ export function getAddressFromPrivateKey(privateKey: string): string {
 
     return toAddress(programHash);
 }
+
+
+export function generateOntid(privateKey : string) {
+    let publicKeyEncoded = ab2hexstring(getPublicKey(privateKey, true));
+    let signatureScript = createSignatureScript(publicKeyEncoded);
+    let programHash = getHash(signatureScript);
+    let ontid = "did:ont:" + toAddress(programHash);
+    return ontid
+}
+
+export function getOntidFromPrivateKey(encryptedPrivateKey : string, password : string) {
+    let wifKey = scrypt.decrypt(encryptedPrivateKey, password);
+    if (!wifKey) {
+        throw ERROR_CODE.Decrypto_ERROR
+    }
+    let privateKey = getPrivateKeyFromWIF(wifKey)
+    return generateOntid(privateKey)
+}
+

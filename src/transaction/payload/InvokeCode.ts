@@ -4,8 +4,8 @@
 @programHash : Unit160
 */
 import Payload from './payload'
-import Parameter from '../Abi/parameter'
-import { num2VarInt, num2hexstring, StringReader, str2hexstr, hexstr2str } from '../utils'
+import Parameter from '../../Abi/parameter'
+import { num2VarInt, num2hexstring, StringReader, str2hexstr, hexstr2str } from '../../utils'
 
 export default class InvokeCode extends Payload {
     //the length is of bytes 20
