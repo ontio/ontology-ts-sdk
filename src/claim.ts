@@ -4,20 +4,20 @@ import { signatureData } from './core'
 import * as Utils from './utils'
 
 export class Metadata {
-    createTime : string
-    issuer : string
-    subject : string
-    expires : string
-    revocation : string
-    crl : string
+    CreateTime : string
+    Issuer : string
+    Subject : string
+    Expires : string
+    Revocation : string
+    Crl : string
 
     constructor(){}
 }
 
 export class Signature {
-    format : string
-    algorithm : string
-    value : string
+    Format : string
+    Algorithm : string
+    Value : string
 
     constructor() { }
 }
@@ -26,23 +26,23 @@ export class Claim {
     unsignedData: string;
     signedData: string;
 
-    context : string
-    id : string
-    claim : {}
-    metadata : Metadata
-    signature : Signature
+    Context : string
+    Id : string
+    Content : {}
+    Metadata : Metadata
+    Signature : Signature
 
-    constructor(context:string, claim: {}, metadata:Metadata) {
-        this.context = context
-        this.id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(claim))).toString()
-        this.claim = claim
-        this.metadata = metadata
+    constructor(context:string, content: {}, metadata:Metadata) {
+        this.Context = context
+        this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(content))).toString()
+        this.Content = content
+        this.Metadata = metadata
 
         let claimBody = {
-            context: this.context,
-            id: this.id,
-            claim: this.claim,
-            metadata: this.metadata
+            Context: this.Context,
+            Id: this.Id,
+            Content: this.Content,
+            Metadata: this.Metadata
         }  
         this.unsignedData = JSON.stringify(claimBody) 
     }
@@ -62,10 +62,10 @@ export class Claim {
         let claimData = JSON.parse(this.unsignedData);
         let sig = new Signature();
 
-        sig.format = "pgp";
-        sig.algorithm = "ECDSAwithSHA256";
-        sig.value = signatureValue;
-        this.signature = sig
+        sig.Format = "pgp";
+        sig.Algorithm = "ECDSAwithSHA256";
+        sig.Value = signatureValue;
+        this.Signature = sig
 
         claimData.signature = sig;
         this.signedData = JSON.stringify(claimData)

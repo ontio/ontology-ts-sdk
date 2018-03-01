@@ -49,6 +49,29 @@ export function hexstr2str(str : string) {
 	return ab2str(hexstring2ab(str))
 }
 
+//return the length of bytes + bytes, 2 char as one byte
+export function hex2VarBytes(hex : string) {
+	let result = ''
+	result += num2VarInt(hex.length / 2)
+	result += hex
+	return result
+}
+
+//return the length of string(bytes) + string(bytes)
+export function str2VarBytes(str : string) {
+	let result  = ''
+	const hex = str2hexstr(str)
+	const hexLen = num2VarInt(hex.length / 2)
+	result += hexLen
+	result += hex
+	return result
+}
+
+//return the byte of boolean value
+export function bool2VarByte(v : boolean) {
+	return v ? '01' : '00'	
+}
+
 export function hexXor(str1:string, str2:string): string {
 	if (str1.length !== str2.length) throw new Error('strings are disparate lengths')
 	if (str1.length % 2 !== 0) throw new Error('strings must be hex')
@@ -98,6 +121,7 @@ export const num2VarInt = (num : number) => {
 		return 'ff' + num2hexstring(num, 8, true)
 	}
 }
+
 
 /**
  * Reverses a hex string, 2 chars as 1 byte
@@ -157,7 +181,7 @@ export class StringReader {
 	}
 
 	/**
-	 * Reads one byte which indicates the length of following bytes to read.
+	 * Reads one byte as int, which may indicates the length of following bytes to read.
 	 * @returns {number}
 	 */
 	readNextLen() {
@@ -166,6 +190,11 @@ export class StringReader {
 		else if (len === 0xfe) len = parseInt(reverseHex(this.read(4)), 16)
 		else if (len === 0xff) len = parseInt(reverseHex(this.read(8)), 16)
 		return len
+	}
+
+	/* read 2 bytes as uint16 in littleEndian */
+	readUint16() {
+		return parseInt(reverseHex(this.read(2)),16)
 	}
 }
 
