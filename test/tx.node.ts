@@ -1,4 +1,4 @@
-import { makeInvokeTransaction , parseEventNotify} from '../src/transaction/makeTransactions'
+import { makeInvokeTransaction , parseEventNotify, checkOntid, buildRpcParam} from '../src/transaction/makeTransactions'
 import Transaction from '../src/transaction/transaction'
 import Program from '../src/transaction/Program'
 import { Identity } from '../src/identity'
@@ -6,19 +6,20 @@ import * as core from '../src/core'
 import AbiInfo from '../src/Abi/AbiInfo'
 import AbiFunction from '../src/Abi/AbiFunction'
 import Parameter from '../src/Abi/parameter'
-import json from '../src/smartcontract/data/NeoContract1.abi'
-import json2 from '../src/smartcontract/data/NeoContract2.abi'
+import json2 from '../src/smartcontract/data/IdContract.abi'
 import { ab2hexstring, str2hexstr } from '../src/utils'
 import { DEFAULT_ALGORITHM } from '../src/consts';
 import { DDO } from '../src/transaction/DDO'
+import {tx_url, socket_url} from '../src/consts'
+import { checkOntidOnChain, getHash } from '../src/core';
 
-const tx_url = 'http://192.168.3.128:20335/api/v1/transaction'
-const socket_url = 'ws://192.168.3.128:20335'
+
+// const socket_url = 'ws://52.80.115.91:20335'
 const Default_params = {
     "Action": "sendrawtransaction",
     "Version": "1.0.0",
     "Type": "",
-    "Op": "test"
+    "Op": "exec"
 }
 const WebSocket = require('ws');
 
@@ -38,9 +39,9 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 // console.log('privatekey: ' + privateKey)
 // console.log('publick key: ' + publicKey)
 
-privateKey = 'b02304dcb35bc9a055147f07b2a3291db4ac52f664ec38b436470c98db4200d9'
-publicKey = '039392ba7df4a7badc4cc498be257202f9bbb89c887502e9bcb96a6636ee050ba8'
-ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a78596950415a364d61376a6351564b'
+privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b15'
+publicKey = '0207d51033ad887d5f513392a5992b28f2c312e311ee93f80bf8a7362f55af871e'
+ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a796950415a364d6137456a6351565d6c'
 pk2 = '035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c'
 
 // recovery = ab2hexstring(core.generateRandomArray(20))
@@ -51,6 +52,8 @@ oldrecovery = '8143c0070b7bea4895dbe9078abdf655047b5950'
 // identity = new Identity()
 // identity.create(privateKey, '123456', 'mickey')
 // ontid = str2hexstr(identity.ontid)
+
+// ontid = core.generateOntid(privateKey)
 // console.log('ontid: ' + ontid)
 
 const sendTx = (param, callback = null) => {
@@ -66,8 +69,10 @@ const sendTx = (param, callback = null) => {
         }
         console.log('response for send tx: ' + JSON.stringify(res))
         if (callback) {
-            callback(event.data)
-            socket.close()
+            if (res.Result && res.Action != 'sendrawtransaction') {
+                callback(event.data)
+                socket.close()
+            }
         }
         if(res.Action === 'Notify'){
             let result = parseEventNotify(res)
@@ -86,13 +91,15 @@ const getDDOTx = () => {
     let f = abiInfo.getFunction('GetDDO')
 
     let p1 = new Parameter('id', 'ByteArray', ontid)
-    f.setParamsValue(p1)
+    let nonce = ab2hexstring(core.generateRandomArray(10))
+    let p2 = new Parameter('nonce', 'ByteArray', nonce)
+    f.setParamsValue(p1, p2)
 
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction(f, privateKey)
 
     let serialized = tx.serialize()
-    console.log('DDO : ' + serialized)
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized, Op: "PreExec" }))
+    console.log('DDO : ' + getHash(serialized))
+    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
     return param
 }
 
@@ -103,13 +110,13 @@ const parseDDO = (res) => {
 }
 
 const testRegisterOntid = () => {
-    let f = abiInfo.getFunction('RegIdByPublicKey')
+    let f = abiInfo.getFunction('RegIdWithPublicKey')
 
     let p1 = new Parameter('id', 'ByteArray', ontid)
     let p2 = new Parameter('pk', 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction( f, privateKey)
 
     let serialized = tx.serialize()
     // console.log('register tx: ' + serialized)
@@ -121,13 +128,14 @@ const testRegisterOntid = () => {
 const testAddAttribute = () => {
     let f = abiInfo.getFunction('AddAttribute')
     let p1 = new Parameter('id', 'ByteArray', ontid)
-    let p2 = new Parameter('path', 'ByteArray', str2hexstr('Clam:twitter'))
+    let p2 = new Parameter('path', 'ByteArray', str2hexstr('Claim:twitter'))
     let p3 = new Parameter('type', 'ByteArray', str2hexstr('String'))
-    let p4 = new Parameter('value', 'ByteArray', str2hexstr('wangwu7@twitter'))
+    let p4 = new Parameter('value', 'ByteArray', str2hexstr('wangwu12@twitter'))
     let p5 = new Parameter('pk', 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2, p3, p4, p5)
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+
+    let tx = makeInvokeTransaction(f, privateKey)
 
     let serialized = tx.serialize()
     // console.log('addAddribute tx: ' + serialized)
@@ -145,13 +153,24 @@ const testAddPK = () => {
     let p3 = new Parameter('sender', 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction( f, privateKey)
 
     let serialized = tx.serialize()
     // console.log('add pk tx: ' + serialized)
     
     let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
     console.log('add pk param: ' + param)
+    sendTx(param)
+}
+
+const testGetPublicKeys = () => {
+    let f = abiInfo.getFunction('GetPublicKeys')
+    let p1 = new Parameter('id', 'ByteArray', ontid)
+    f.setParamsValue(p1)
+    let tx = makeInvokeTransaction(f, privateKey)
+    let serialized = tx.serialize()
+
+    let param = JSON.stringify(Object.assign({}, Default_params, {Data : serialized}))
     sendTx(param)
 }
 
@@ -163,7 +182,7 @@ const testRemovePK = () => {
     let p3 = new Parameter('sender', 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction(f, privateKey)
 
     let serialized = tx.serialize()
 
@@ -184,7 +203,7 @@ const testAddRecovery = () => {
     let p3 = new Parameter('pk', 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction(f, privateKey)
 
     let serialized = tx.serialize()
 
@@ -205,7 +224,7 @@ const testChangeRecovery = () => {
     let p3 = new Parameter('recovery', 'ByteArray', oldrecovery)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction( f, privateKey)
 
     let serialized = tx.serialize()
 
@@ -216,16 +235,29 @@ const testChangeRecovery = () => {
 
 const testGetDDO = () => {
     let param = getDDOTx()
-    sendTx(param, parseDDO)
+    sendTx(param)
+}
+
+const testCheckOntid = () => {
+    checkOntid(ontid).then((res :any) => {
+        console.log('checkontid res:'+res)
+    }, (err:any)=>{
+        console.log('checkontid err:'+err)
+    })
+    
 }
 
 //uncomment one line to test one tx each time.
 
 // testRegisterOntid()
 
-testAddAttribute()
+// testAddAttribute()
 
 // testGetDDO()
+
+// testGetPublicKeys()
+
+testCheckOntid()
 
 // testAddPK()
 
@@ -234,3 +266,4 @@ testAddAttribute()
 // testAddRecovery()
 
 // testChangeRecovery()
+

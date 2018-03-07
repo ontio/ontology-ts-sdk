@@ -6,7 +6,7 @@ import { ab2hexstring, hexstring2ab } from './utils'
 import { ADDR_VERSION } from './consts'
 import * as scrypt from './scrypt'
 import {ERROR_CODE} from './error'
-import {getDDO} from './transaction/makeTransactions'
+import {checkOntid} from './transaction/makeTransactions'
 
 var ec = require('elliptic').ec
 var wif = require('wif')
@@ -119,11 +119,23 @@ export function generateOntid(privateKey : string) {
 }
 
 export function getOntidFromPrivateKey(encryptedPrivateKey : string, password : string) {
-    let wifKey = scrypt.decrypt(encryptedPrivateKey, password);
-    if (!wifKey) {
-        throw ERROR_CODE.Decrypto_ERROR
-    }
-    let privateKey = getPrivateKeyFromWIF(wifKey)
+    let privateKey = scrypt.decrypt(encryptedPrivateKey, password); 
     return generateOntid(privateKey)
 }
 
+export function checkPrivateKey(encryptedPrivateKey : string, password : string) {
+    let privateKey
+    try {
+       privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+    } catch{
+        return false
+    }
+    
+    return true
+}
+
+export function checkOntidOnChain(encryptedPrivateKey: string, password: string) {
+    let privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+    let ontid = generateOntid(privateKey)
+    return checkOntid(ontid, privateKey)
+}

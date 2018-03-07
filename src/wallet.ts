@@ -84,6 +84,7 @@ export class Wallet {
         return true
     }
 
+
     toJson() : string {
         let obj = {
             name: this.name,

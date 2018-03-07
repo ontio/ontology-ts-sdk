@@ -29,4 +29,6 @@ export enum ERROR_CODE {
     IllegalAssetId	               = 60013	,  //不合法资产编号
     IllegalAmount	               = 60014	,  //不合法数值
     IllegalTxid	                   = 60015	,  //不合法交易编号
+
+    UNKNOWN_ONTID                  = 70000  ,  //不存在的ONT ID
 }

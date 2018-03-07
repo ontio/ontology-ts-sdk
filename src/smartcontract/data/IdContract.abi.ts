@@ -1,5 +1,5 @@
 export default {
-    "hash": "0x8665eebe481029ea4e1fcf32aad2edbbf1728beb",
+    "hash": "0x115c9dbc21636bda827f186b895fce7ea0f9a4d0",
         "entrypoint": "Main",
             "functions":
     [
@@ -19,7 +19,7 @@ export default {
             "returntype": "Array"
         },
         {
-            "name": "RegIdByPublicKey",
+            "name": "RegIdWithPublicKey",
             "parameters":
                 [
                     {
@@ -34,7 +34,7 @@ export default {
             "returntype": "Any"
         },
         {
-            "name": "RegId",
+            "name": "RegIdWithAttributes",
             "parameters":
                 [
                     {
@@ -202,6 +202,10 @@ export default {
                 [
                     {
                         "name": "id",
+                        "type": "ByteArray"
+                    },
+                    {
+                        "name": "nonce",
                         "type": "ByteArray"
                     }
                 ],
