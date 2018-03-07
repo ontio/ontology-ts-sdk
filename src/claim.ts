@@ -48,16 +48,6 @@ export class Claim {
     }
 
     sign( privateKey: string ): string {
-        // let msg = CryptoJS.enc.Hex.parse(unsignedData);
-        // let msgHash = CryptoJS.SHA256(msg);
-        // let elliptic = new ec('p256') 
-        // const sig = elliptic.sign(msgHash.toString(), privateKey, null)
-        // const signatureValue = Buffer.concat([
-        //     sig.r.toArrayLike(Buffer, 'be', 32),
-        //     sig.s.toArrayLike(Buffer, 'be', 32)
-        //   ])
-        //let signatureValue = Secp256r1.sign(new Buffer(msgHash.toString(), "HEX"), new Buffer(privateKey, "HEX"));
-    
         let signatureValue = signatureData(this.unsignedData, privateKey)
         let claimData = JSON.parse(this.unsignedData);
         let sig = new Signature();

@@ -8,11 +8,15 @@ import {DDO} from './DDO'
 import {createSignatureScript, getHash } from '../core'
 import Program from './Program'
 import * as core from '../core'
-import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex} from '../utils'
-import json2 from '../smartcontract/data/NeoContract2.abi'
+import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring} from '../utils'
+import json from '../smartcontract/data/IdContract.abi'
 import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
-const abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
+import {tx_url, socket_url} from '../consts'
+import axios from 'axios'
+
+const abiInfo = AbiInfo.parseJson(JSON.stringify(json))
+
 
 export const Default_params = {
     "Action": "sendrawtransaction",
@@ -20,20 +24,20 @@ export const Default_params = {
     "Type": "",
     "Op": "test"
 }
-export const socket_url = 'ws://192.168.3.128:20335'
+// export const socket_url = 'ws://192.168.3.128:20335'
+// export const net_url = 'http://192.168.3.128:20335/api/v1/transaction'
 
-export const net_url = 'http://192.168.3.128:20335/api/v1/transaction'
-
-export const makeInvokeTransaction = (scriptHash : string, func : AbiFunction, privateKey : string) => {
+export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     let tx = new Transaction()
     tx.type = 0xd1
     tx.version = 0x00
 
     let payload = new InvokeCode()
-    if(scriptHash.startsWith('0x')){
-        // scriptHash = scriptHash.substring(2)
-        scriptHash = reverseHex(scriptHash.substring(2))
+    let scriptHash = abiInfo.getHash()
+    if(scriptHash.substr(0,2)){
+        scriptHash = scriptHash.substring(2)
+        scriptHash = reverseHex(scriptHash)
     }
     payload.scriptHash = scriptHash 
     payload.parameters = func.parameters
@@ -75,7 +79,7 @@ export function buildAddAttributeTxParam (path : string, value : string, ontid :
     let p5 = new Parameter('pk', 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2, p3, p4, p5)
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction( f, privateKey)
 
     let serialized = tx.serialize()
     // console.log('addAddribute tx: ' + serialized)
@@ -87,13 +91,13 @@ export function buildAddAttributeTxParam (path : string, value : string, ontid :
 export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     
-    let f = abiInfo.getFunction('RegIdByPublicKey')
+    let f = abiInfo.getFunction('RegIdWithPublicKey')
 
     let p1 = new Parameter('id', 'ByteArray', str2hexstr(ontid))
     let p2 = new Parameter('pk', 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction( f, privateKey)
 
     let serialized = tx.serialize()
     console.log('register tx: ' + serialized)
@@ -109,33 +113,99 @@ export function buildGetDDOTx(ontid : string, privateKey : string) {
     let p1 = new Parameter('id', 'ByteArray', str2hexstr(ontid))
     f.setParamsValue(p1)
 
-    let tx = makeInvokeTransaction(abiInfo.hash, f, privateKey)
+    let tx = makeInvokeTransaction( f, privateKey)
 
     let serialized = tx.serialize()
     let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized, Op: "PreExec" }))
     return param
 }
 
-export function check(params:type) {
-    
+export function buildRpcParam(ontid : string) {
+    let codeHash = abiInfo.getHash()
+    if(codeHash.startsWith('0x')) {
+        codeHash = codeHash.substring(2)
+        codeHash = reverseHex(codeHash)
+    }
+    if(ontid.substr(0,3) == 'did') {
+        ontid = str2hexstr(ontid)
+    }
+    let hexlen = num2hexstring(ontid.length/2)
+    ontid = hexlen + ontid
+    let result = {
+        "jsonrpc": "2.0",
+        "method": "getstorage",
+        "params": [codeHash, ontid],
+        "id": 10
+    }
+    return result
 }
 
-export function checkOntidOnChain(ontid: string, privateKey: string) {
-   let param = buildGetDDOTx(ontid, privateKey)
+export function checkOntid(ontid: string) {
+   let param = buildRpcParam(ontid)
+    console.log('param: '+JSON.stringify(param))
+    return axios.post(tx_url, param).then((res:any) => {
+        console.log('key:'+JSON.stringify(res.data))
 
-    return axiosPost(net_url, param).then((res:any) => {
-        let result = JSON.parse(res)
-        if(result.Error == ERROR_CODE.SUCCESS) {
-            let ddo = DDO.deserialize(result.Result[0])
-            if(ddo.publicKeys && ddo.publicKeys.length > 0) {
-                return ERROR_CODE.SUCCESS
-            }
+        if(typeof res == 'string') {
+            res = JSON.parse(res)
+        }
+        res = res.data
+        if(res.result == '01') {
+            return ERROR_CODE.SUCCESS
         } else {
-            return  Promise.reject(result.ERROR)
+            return  Promise.reject(ERROR_CODE.UNKNOWN_ONTID)
         }
     }, (err:any) => {
+        console.log('err:'+err)
         return Promise.reject(err)
     })
+}
+
+
+export function registerOntid(ontid : string, privateKey : string, callback : (result:any)=>{}) {
+    let param = buildRegisterOntidTx(ontid, privateKey)
+    //TODO websocket work with browser and node
+    const socket = new WebSocket(socket_url)
+    socket.onopen = () => {
+        console.log('connected')
+        socket.send(param)
+    }
+    socket.onmessage = (event) => {
+        let res
+        if (typeof event.data === 'string') {
+            res = JSON.parse(event.data)
+        }
+        console.log('response for send tx: ' + JSON.stringify(res))
+
+        if (res.Action === 'Notify') {
+            let parsedRes = parseEventNotify(res)
+            console.log('paresed event notify: ' + JSON.stringify(parsedRes))
+            if (parsedRes.Error == 0 && parsedRes.Result.BlockHeight) {
+                let result = {
+                    error: ERROR_CODE.SUCCESS,
+                    desc : parsedRes.Result
+                }
+                callback(result)
+            } else {
+                let errResult = {
+                    error: parsedRes.Error,
+                    desc: parsedRes.Result
+                }
+                callback(errResult)
+            }
+
+            socket.close()
+        }
+    }
+    socket.onerror = (event: any) => {
+        //no server or server is stopped
+        let errResult = {
+            error: event.data
+        }
+        callback(errResult)
+        console.log(event)
+        socket.close()
+    }
 }
 /* {
     "Action": "Notify",

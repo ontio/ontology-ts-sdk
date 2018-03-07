@@ -7,9 +7,10 @@ var Bs58check = require('bs58check')
 import { ab2hexstring, hexXor } from './utils'
 import * as core from './core'
 import { DEFAULT_SCRYPT, OEP_HEADER, OEP_FLAG } from './consts'
+import {ERROR_CODE} from './error'
 
-export function encrypt(wifKey: string, keyphrase: string, scryptParams = DEFAULT_SCRYPT): string {
-    let privateKey = core.getPrivateKeyFromWIF(wifKey);
+export function encrypt(privateKey: string, keyphrase: string, scryptParams = DEFAULT_SCRYPT): string {
+    // let privateKey = core.getPrivateKeyFromWIF(wifKey);
     //console.log( "privateKey: ", privateKey );
 
     let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
@@ -84,12 +85,12 @@ export function decrypt(encryptedKey: string, keyphrase: string, scryptParams = 
 
     if (addressHashNew != addressHash) {
         console.log("keyphrase error.");
-        return "";
+        throw ERROR_CODE.Decrypto_ERROR;
     }
 
     // WIF
-    let wifKey = core.getWIFFromPrivateKey(privateKey);
+    // let wifKey = core.getWIFFromPrivateKey(privateKey);
     //console.log( "wifKey: ", wifKey );
 
-    return wifKey;
+    return privateKey;
 }

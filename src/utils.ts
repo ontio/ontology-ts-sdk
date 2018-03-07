@@ -238,8 +238,11 @@ export const sendBackResult2Native = (result : string, callback : string) => {
 
 export const axiosPost = (url:string, params:any) => {
 	return axios.post(url, params).then((res : any) => {
+		console.log('axios res:'+res)
 		return res
 	}).catch((err : any) => {
+		console.log('axios res:' + JSON.stringify(err))
+
 		return err
 	})
 }

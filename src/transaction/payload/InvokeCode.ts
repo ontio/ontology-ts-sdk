@@ -49,6 +49,7 @@ export default class InvokeCode extends Payload {
         result += funcNameHex
         let totalParamsLength = num2VarInt(result.length / 2)
         result = this.scriptHash + totalParamsLength + result
+
         return result
     }
 

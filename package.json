@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "webpack --config webpack.config.js --progress --color"
+    "build:dev": "webpack --display-error-details --config webpack.config.js --progress --color",
+    "build:prod": "webpack --env.prod --config webpack.config.js --progress --color"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -30,11 +31,16 @@
     "@types/ecurve": "^1.0.0",
     "@types/jest": "^22.1.2",
     "axios": "^0.17.1",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.3",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
     "base-x": "^3.0.3",
     "bigi": "^1.4.2",
     "bignumber.js": "^6.0.0",
     "bs58": "^4.0.1",
     "bs58check": "^2.1.1",
+    "clean-webpack-plugin": "^0.1.18",
     "crypto-js": "^3.1.9-1",
     "ecdsa": "^0.7.0",
     "ecurve": "^1.0.6",
@@ -46,6 +52,7 @@
     "ts-jest": "^22.0.2",
     "ts-loader": "^3.2.0",
     "typescript": "^2.6.2",
+    "uglifyjs-webpack-plugin": "^1.2.2",
     "webpack": "^3.10.0",
     "wif": "^2.0.6",
     "ws": "^4.1.0"

@@ -1,7 +1,7 @@
 import * as core from './core'
 import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
-import {DEFAULT_ALGORITHM} from './consts'
+import {DEFAULT_ALGORITHM, Algorithm} from './consts'
 import {ERROR_CODE} from './error'
 export class Contract {
     script : string
@@ -15,26 +15,16 @@ export class Account {
     isDefault: boolean;
     lock: boolean;
     algorithm: string;
-    parameters: {
-        curve: string;
-    };
+    parameters: {};
     key: string;
     contract: Contract
     extra: null;
-
-    privateKey: string;
-    wifKey: string;
 
     constructor() {
     }
 
     create( privateKey: string, password: string, label: string, algorithmObj ?: any ): Account {
-        this.privateKey = privateKey;
-        //console.log( "privateKey:",this.privateKey );
-
-        this.wifKey = core.getWIFFromPrivateKey( privateKey );
-        //console.log( "wifKey:",this.wifKey );
-
+        
         let contract = {
             script : '',
             parameters : [],
@@ -46,7 +36,6 @@ export class Account {
         this.isDefault = false;
         this.lock = false;
 
-        //algorithm - no use here for now
         if(algorithmObj) {
             this.algorithm = algorithmObj.algorithm
             this.parameters = algorithmObj.parameters
@@ -55,7 +44,7 @@ export class Account {
             this.parameters = DEFAULT_ALGORITHM.parameters
         }
         
-        this.key = scrypt.encrypt( this.wifKey, password );
+        this.key = scrypt.encrypt( privateKey, password );
 
         let publicKeyEncoded = ab2hexstring( core.getPublicKey( privateKey, true ) );
         contract.script = core.createSignatureScript( publicKeyEncoded );
@@ -71,12 +60,8 @@ export class Account {
 
     static importAccount(accountDataStr : string ,encryptedPrivateKey : string, password : string ) : Account {
         let account = new Account()
-        let  wifKey = scrypt.decrypt(encryptedPrivateKey, password);
-        if (!wifKey) {
-            throw ERROR_CODE.Decrypto_ERROR
-        }
-        let privateKey = core.getPrivateKeyFromWIF(wifKey)
-        
+        let  privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+                
     
         return Account.parseJson(accountDataStr)
     }
@@ -91,9 +76,7 @@ export class Account {
             parameters: this.parameters,
             key: this.key,
             contract: this.contract,
-            extra: this.extra,
-            privateKey : this.privateKey,
-            wifKey : this.wifKey
+            extra: this.extra
         }
         return JSON.stringify(obj)
     }
@@ -110,8 +93,6 @@ export class Account {
         account.key = obj.key
         account.contract = obj.contract
         account.extra = obj.extra
-        account.privateKey = obj.privateKey
-        account.wifKey = obj.wifKey
         return account;
     }
 
