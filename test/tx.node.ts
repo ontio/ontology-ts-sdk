@@ -98,7 +98,6 @@ const getDDOTx = () => {
     let tx = makeInvokeTransaction(f, privateKey)
 
     let serialized = tx.serialize()
-    console.log('DDO : ' + getHash(serialized))
     let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
     return param
 }
@@ -253,11 +252,11 @@ const testCheckOntid = () => {
 
 // testAddAttribute()
 
-// testGetDDO()
+testGetDDO()
 
 // testGetPublicKeys()
 
-testCheckOntid()
+// testCheckOntid()
 
 // testAddPK()
 

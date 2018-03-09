@@ -65,13 +65,11 @@ class Transaction {
         result += num2hexstring(this.version)
         result += this.payload.serialize()
 
-        console.log('last3:' + result.substring(result.length-12))
         //serialize transaction attributes
         result += num2hexstring(this.txAttributes.length)
         for (let i = 0; i < this.txAttributes.length; i++) {
             result += this.txAttributes[i].serialize()
         }
-        console.log('position: '+ result.length)
         //input
         result += num2hexstring(this.UTXOInputs.length)
         for (let i=0 ; i< this.UTXOInputs.length; i++) {

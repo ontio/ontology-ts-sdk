@@ -3,6 +3,7 @@ import { Identity } from './identity'
 import { Wallet } from './wallet'
 import { Claim } from './claim'
 import  Transaction  from './transaction/transaction'
+import * as TransactionBuilder from './transaction/makeTransactions'
 import * as scrypt from './scrypt'
 import * as core from './core'
 import * as utils from './utils'
@@ -13,6 +14,7 @@ export {
     Identity,
     Claim,
     Transaction,
+    TransactionBuilder,
     core,
     utils,
     scrypt,

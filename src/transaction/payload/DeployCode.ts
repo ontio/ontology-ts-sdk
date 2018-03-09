@@ -23,7 +23,6 @@ export default class DeployCode extends Payload {
     serialize() : string {
         let result = ''
         result += this.code.serialize()
-
         result += num2VarInt(this.vmType)
 
         result += bool2VarByte(this.needStorage)

@@ -11,42 +11,46 @@ import AbiFunction from '../src/Abi/AbiFunction'
 import Parameter from '../src/Abi/parameter'
 import { tx_url, socket_url } from '../src/consts'
 
+import json from '../src/smartcontract/data/IdContract.abi'
+
 var fs = require('fs')
 let avm = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/IdContract_v0.2.avm')
 var code = ab2hexstring(avm)
-code = getHash(code)
-console.log('code hash: '+code)
+var codehash = getHash(code)
+console.log('code hash: '+codehash)
 
 var privateKey = 'b02304dcb35bc9a055147f07b2a3291db4ac52f664ec38b436470c98db4200d9'
 var ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a78596950415a364d61376a6351564b'
 
 
-var contract = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/ClearingContract.abi.json')
+// var contract = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/IdContract.abi.json')
+
 // console.log('contract: '+contract)
-var abiInfo = AbiInfo.parseJson(contract.toString())
+// var abiInfo = AbiInfo.parseJson(contract.toString())
+var abiInfo = AbiInfo.parseJson(JSON.stringify(json))
 
 var serialized
 
 const WebSocket = require('ws');
 
-    var tx = new Transaction()
-    var fc = new FunctionCode()
-    fc.code = code
-    fc.parameterTypes = [ContractParameterType.String, ContractParameterType.Array]
-    fc.returnType = ContractParameterType.Array
+var tx = new Transaction()
+var fc = new FunctionCode()
+fc.code = code
+fc.parameterTypes = [ContractParameterType.String, ContractParameterType.Array]
+fc.returnType = ContractParameterType.Array
 
-    var dc = new DeployCode()
-    dc.author = 'mickey2'
-    dc.code = fc
-    dc.codeVersion = '1.0'
-    dc.description = 'test'
-    dc.email = 'mickey@wang.com'
-    dc.name = 'test'
-    dc.needStorage = false
-    dc.vmType = 0
+var dc = new DeployCode()
+dc.author = 'mickey8'
+dc.code = fc
+dc.codeVersion = '1.0'
+dc.description = 'test'
+dc.email = 'mickey@wang.com'
+dc.name = 'test'
+dc.needStorage = true
+dc.vmType = 0
 
-    tx.type = TxType.DeployCode
-    tx.payload = dc
+tx.type = TxType.DeployCode
+tx.payload = dc
 
 const sendTx = (param, callback = null) => {
     const socket = new WebSocket(socket_url)
@@ -80,7 +84,7 @@ const sendTx = (param, callback = null) => {
 const buildDeployCodeTx = () => {
     
     serialized = tx.serialize()
-    console.log('tx serialized: ' + serialized)
+    console.log('tx hash: ' + getHash(serialized))
     let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
 
     return param
@@ -115,10 +119,10 @@ const testDeserialize = () => {
 
 
 
-// testDeployCodeTx()
+testDeployCodeTx()
 // testDeserialize()
 
-testContractMehod()
+// testContractMehod()
 
 /* 
 describe('test tx serialize and deserialize', ()=> {    
