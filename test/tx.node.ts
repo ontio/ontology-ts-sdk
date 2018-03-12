@@ -1,4 +1,4 @@
-import { makeInvokeTransaction , parseEventNotify, checkOntid, buildRpcParam, buildRegisterOntidTx } from '../src/transaction/makeTransactions'
+import { makeInvokeTransaction , parseEventNotify, checkOntid, buildRpcParam, buildRegisterOntidTx, buildTxParam } from '../src/transaction/makeTransactions'
 import Transaction from '../src/transaction/transaction'
 import Program from '../src/transaction/Program'
 import { Identity } from '../src/identity'
@@ -8,11 +8,13 @@ import AbiFunction from '../src/Abi/AbiFunction'
 import Parameter from '../src/Abi/parameter'
 import json2 from '../src/smartcontract/data/IdContract.abi'
 import { ab2hexstring, str2hexstr } from '../src/utils'
-import { DEFAULT_ALGORITHM } from '../src/consts';
+import { DEFAULT_ALGORITHM, ONT_NETWORK } from '../src/consts';
 import { DDO } from '../src/transaction/DDO'
 import {tx_url, socket_url} from '../src/consts'
 import { checkOntidOnChain, getHash } from '../src/core';
+import TxSender from '../src/transaction/TxSender'
 
+var txSender = new TxSender(ONT_NETWORK.TEST)
 
 // const socket_url = 'ws://52.80.115.91:20335'
 const Default_params = {
@@ -87,9 +89,9 @@ const sendTx = (param, callback = null) => {
     }
 }
 
-const getDDOTx = () => {
+const testDDOTx = () => {
     let f = abiInfo.getFunction('GetDDO')
-
+ 
     let p1 = new Parameter('id', 'ByteArray', ontid)
     let nonce = ab2hexstring(core.generateRandomArray(10))
     let p2 = new Parameter('nonce', 'ByteArray', nonce)
@@ -97,9 +99,16 @@ const getDDOTx = () => {
 
     let tx = makeInvokeTransaction(f, privateKey)
 
-    let serialized = tx.serialize()
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
-    return param
+    let param = buildTxParam(tx)
+
+    const callback = function (res, socket) {
+        console.log(res)
+        if(res.Action === 'InvokeTransaction') {
+            socket.close()
+        }
+    }
+    
+    txSender.sendTxWithSocket(param, callback)
 }
 
 const parseDDO = (res) => {
@@ -223,10 +232,6 @@ const testChangeRecovery = () => {
     sendTx(param)
 }
 
-const testGetDDO = () => {
-    let param = getDDOTx()
-    sendTx(param)
-}
 
 const testCheckOntid = () => {
     checkOntid(ontid).then((res :any) => {
@@ -239,11 +244,11 @@ const testCheckOntid = () => {
 
 //uncomment one line to test one tx each time.
 
-testRegisterOntid()
+// testRegisterOntid()
 
 // testAddAttribute()
 
-// testGetDDO()
+testDDOTx()
 
 // testGetPublicKeys()
 

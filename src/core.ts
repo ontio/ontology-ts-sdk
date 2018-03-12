@@ -137,5 +137,5 @@ export function checkPrivateKey(encryptedPrivateKey : string, password : string)
 export function checkOntidOnChain(encryptedPrivateKey: string, password: string) {
     let privateKey = scrypt.decrypt(encryptedPrivateKey, password);
     let ontid = generateOntid(privateKey)
-    return checkOntid(ontid, privateKey)
+    return checkOntid(ontid)
 }

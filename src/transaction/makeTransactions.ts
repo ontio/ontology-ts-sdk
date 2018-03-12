@@ -2,8 +2,9 @@ import AbiInfo from '../Abi/AbiInfo'
 import AbiFunction from "../Abi/AbiFunction";
 import Parameter from '../Abi/parameter'
 import InvokeCode from './payload/InvokeCode'
+import DeployCode from './payload/DeployCode'
 import TransactionAttribute from './txAttribute'
-import Transaction from './transaction'
+import Transaction, {TxType} from './transaction'
 import {DDO} from './DDO'
 import {createSignatureScript, getHash } from '../core'
 import Program from './Program'
@@ -14,6 +15,8 @@ import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
 import {tx_url, socket_url} from '../consts'
 import axios from 'axios'
+const WebSocket = require('ws');
+
 
 const abiInfo = AbiInfo.parseJson(JSON.stringify(json))
 
@@ -30,7 +33,7 @@ export const Default_params = {
 export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     let tx = new Transaction()
-    tx.type = 0xd1
+    tx.type = TxType.InvokeCode
     tx.version = 0x00
 
     let payload = new InvokeCode()
@@ -70,6 +73,32 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     return tx
 }
 
+export function makeDeployTransaction (dc : DeployCode, privateKey : string) {
+    let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+
+    let tx = new Transaction()
+    tx.version = 0x00
+
+    tx.payload = dc
+    tx.type = TxType.DeployCode
+
+    //program
+    let unsignedData = tx.serializeUnsignedData()
+    let program = new Program()
+    let signed = core.signatureData(unsignedData, privateKey)
+    program.code = signed
+    program.parameter = publicKey
+    tx.programs = [program]
+    
+    return tx
+}
+
+export function buildTxParam (tx : Transaction, is_pre_exec : boolean = false) {
+    let op = is_pre_exec ? { Op:'PreExec'} : {}
+    let serialized = tx.serialize()
+    return JSON.stringify(Object.assign({}, Default_params, { Data: serialized }, op))
+}
+
 export function buildAddAttributeTxParam (path : string, value : string, ontid : string, privateKey : string) {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     let f = abiInfo.getFunction('AddAttribute')
@@ -85,10 +114,7 @@ export function buildAddAttributeTxParam (path : string, value : string, ontid :
     f.setParamsValue(p1, p2, p3, p4, p5)
     let tx = makeInvokeTransaction( f, privateKey)
 
-    let serialized = tx.serialize()
-    // console.log('addAddribute tx: ' + serialized)
-
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
+    let param = buildTxParam( tx )
     return param
 }
 
@@ -109,10 +135,7 @@ export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
     f.setParamsValue(p1, p2)
     let tx = makeInvokeTransaction( f, privateKey)
 
-    let serialized = tx.serialize()
-    console.log('register tx: ' + serialized)
-
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
+    let param = buildTxParam(tx)
 
     return param
 }
@@ -125,8 +148,8 @@ export function buildGetDDOTx(ontid : string, privateKey : string) {
 
     let tx = makeInvokeTransaction( f, privateKey)
 
-    let serialized = tx.serialize()
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized, Op: "PreExec" }))
+    let param = buildTxParam(tx, true)
+    
     return param
 }
 
@@ -150,7 +173,7 @@ export function buildRpcParam(ontid : string) {
     return result
 }
 
-//cors
+//TODO : cors problem
 export function checkOntid(ontid: string) {
    let param = buildRpcParam(ontid)
     console.log('param: '+JSON.stringify(param))
@@ -181,7 +204,7 @@ export function registerOntid(ontid : string, privateKey : string, callback : (r
         console.log('connected')
         socket.send(param)
     }
-    socket.onmessage = (event) => {
+    socket.onmessage = (event:any) => {
         let res
         if (typeof event.data === 'string') {
             res = JSON.parse(event.data)

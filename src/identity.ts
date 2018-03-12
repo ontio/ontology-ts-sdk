@@ -67,21 +67,35 @@ export class Identity {
     }
 
     static importIdentity(label : string ,encryptedPrivateKey : string, password : string) {
-        let privateKeyCheck = core.checkPrivateKey(encryptedPrivateKey, password)
-        if(!privateKeyCheck) {
-            // return Promise.reject({error:ERROR_CODE.Decrypto_ERROR})
-            throw ERROR_CODE.Decrypto_ERROR
-        }
         //create identity
         let identity = new Identity()
         let privateKey = scrypt.decrypt(encryptedPrivateKey, password);
         if(!label) {
             let d = new Date()
-            let m = d.getMonth()
+            let m = d.getMonth() + 1
             let date = d.getDate()
             label = 'Identity' + (m > 9 ? m : '0' + m) + date
         }
-        identity.create(privateKey, password, label)
+
+       // identity.create(privateKey, password, label) // will take more time
+        identity.ontid = core.generateOntid(privateKey)
+        identity.label = label;
+        identity.isDefault = false;
+        identity.lock = false;
+
+        // control
+        let control = (<ControlData>{})
+
+        //algorithm
+
+        control.algorithm = DEFAULT_ALGORITHM.algorithm
+        control.parameters = DEFAULT_ALGORITHM.parameters
+
+        //start from 1
+        control.id = "1";
+        control.key = encryptedPrivateKey;
+
+        identity.controls.push(control);
 
         //check ontid on chain
         /* return checkOntid(identity.ontid).then((res:any)=>{
