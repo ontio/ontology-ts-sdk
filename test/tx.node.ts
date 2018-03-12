@@ -1,4 +1,4 @@
-import { makeInvokeTransaction , parseEventNotify, checkOntid, buildRpcParam} from '../src/transaction/makeTransactions'
+import { makeInvokeTransaction , parseEventNotify, checkOntid, buildRpcParam, buildRegisterOntidTx } from '../src/transaction/makeTransactions'
 import Transaction from '../src/transaction/transaction'
 import Program from '../src/transaction/Program'
 import { Identity } from '../src/identity'
@@ -41,7 +41,7 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 
 privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b15'
 publicKey = '0207d51033ad887d5f513392a5992b28f2c312e311ee93f80bf8a7362f55af871e'
-ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a796950415a364d6137456a6351565d6c'
+ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a796950415a364d6137456a6351565d3b3b'
 pk2 = '035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c'
 
 // recovery = ab2hexstring(core.generateRandomArray(20))
@@ -109,18 +109,9 @@ const parseDDO = (res) => {
 }
 
 const testRegisterOntid = () => {
-    let f = abiInfo.getFunction('RegIdWithPublicKey')
-
-    let p1 = new Parameter('id', 'ByteArray', ontid)
-    let p2 = new Parameter('pk', 'ByteArray', publicKey)
-
-    f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction( f, privateKey)
-
-    let serialized = tx.serialize()
-    // console.log('register tx: ' + serialized)
     
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
+    let param = buildRegisterOntidTx(ontid, privateKey)
+    
     sendTx(param)
 }
 
@@ -248,11 +239,11 @@ const testCheckOntid = () => {
 
 //uncomment one line to test one tx each time.
 
-// testRegisterOntid()
+testRegisterOntid()
 
 // testAddAttribute()
 
-testGetDDO()
+// testGetDDO()
 
 // testGetPublicKeys()
 

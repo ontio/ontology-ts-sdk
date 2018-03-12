@@ -97,8 +97,14 @@ export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
     
     let f = abiInfo.getFunction('RegIdWithPublicKey')
 
-    let p1 = new Parameter('id', 'ByteArray', str2hexstr(ontid))
-    let p2 = new Parameter('pk', 'ByteArray', publicKey)
+    let name1 = f.parameters[0].getName(),
+        type1 = f.parameters[0].getType()
+    let p1 = new Parameter(name1, type1, ontid)
+
+
+    let name2 = f.parameters[0].getName(),
+        type2 = f.parameters[0].getType()
+    let p2 = new Parameter(name2, type2, publicKey)
 
     f.setParamsValue(p1, p2)
     let tx = makeInvokeTransaction( f, privateKey)
