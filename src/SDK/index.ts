@@ -8,11 +8,12 @@ import * as core from '../core'
 import {buildAddAttributeTxParam, buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid} from '../transaction/makeTransactions'
 import { ERROR_CODE } from '../error';
 import {tx_url, socket_url} from '../consts'
+import { encrypt } from '../scrypt';
 
 export class SDK {
 
     //this method may need to wait too long, will remove it
-    static checkOntid(ontid : string, privateKey : string, result:string, callback : string) {
+    static checkOntid(ontid : string, privateKey : string, result:string, callback ?: string) {
         let param = buildGetDDOTx(ontid, privateKey)
         const socket = new WebSocket(socket_url)
         socket.onopen = () => {
@@ -25,7 +26,9 @@ export class SDK {
                 res = JSON.parse(event.data)
             }
             console.log('response for checkontid: ' + JSON.stringify(res))
-            sendBackResult2Native(result, callback)
+            if(callback) {
+                sendBackResult2Native(result, callback)
+            }
             socket.close()
         }
         socket.onerror = (event: any) => {
@@ -35,7 +38,9 @@ export class SDK {
                 result : '',
                 desc : 'Network Error'
             }
-            sendBackResult2Native(JSON.stringify(errResult), callback)
+            if(callback) {
+                sendBackResult2Native(JSON.stringify(errResult), callback)
+            }
             console.log(event)
             socket.close()
         }
@@ -44,7 +49,7 @@ export class SDK {
 
     //result 要发送的数据
     //callback 回调函数名
-    static sendTx(param : string, result: string, callback : string) {
+    static sendTx(param : string, result: string, callback ?: string) {
         const socket = new WebSocket(socket_url)
         socket.onopen = () => {
             console.log('connected')
@@ -62,7 +67,9 @@ export class SDK {
                         result : result,
                         desc : ''
                     }
-                    sendBackResult2Native(JSON.stringify(obj), callback)
+                    if(callback) {
+                        sendBackResult2Native(JSON.stringify(obj), callback)
+                    }
                 },2000)
             } else {
                 let errResult = {
@@ -70,7 +77,9 @@ export class SDK {
                     result : '',
                     desc: res.Result
                 }
-                sendBackResult2Native(JSON.stringify(errResult), callback)
+                if(callback) {
+                    sendBackResult2Native(JSON.stringify(errResult), callback)
+                }
             }
             socket.close()
             console.log('response for send tx: ' + JSON.stringify(res))
@@ -99,7 +108,7 @@ export class SDK {
                 result: '',
                 desc: 'Network Error'
             }
-            sendBackResult2Native(JSON.stringify(errResult), callback)
+            callback && sendBackResult2Native(JSON.stringify(errResult), callback)
             console.log(event)
             socket.close()
         }
@@ -117,17 +126,45 @@ export class SDK {
         let walletDataStr = wallet.toJson()
         
         let param = buildRegisterOntidTx(identity.ontid, privateKey)
-        if(callback) {
-            SDK.sendTx(param, walletDataStr, callback)
+        
+        SDK.sendTx(param, walletDataStr, callback)
+        let obj = {
+            error : 0,
+            result : walletDataStr,
+            desc : ''
         }
-        // return walletDataStr
+        return obj
+    }
+
+    static importIdentityWithWallet(walletDataStr : string, label : string, encryptedPrivateKey : string, 
+        password : string, callback ?: string) {
+        let identity = new Identity()
+        let wallet = Wallet.parseJson(walletDataStr)
+        try {
+            //TODO check ontid
+            identity = Identity.importIdentity(label, encryptedPrivateKey, password)
+        } catch (err) {
+            let obj  = {
+                error : err,
+                result : ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        }
+        wallet.addIdentity(identity)
+        let walletStr = wallet.toJson()
+        let obj = {
+            error : ERROR_CODE.SUCCESS,
+            result : walletStr,
+            desc : ''
+        }
+        callback && sendBackResult2Native(JSON.stringify(obj), callback)
     }
 
     //send http post to check
-    static importIdentity(label : string, encryptedPrivateKey : string, password : string, callback : string) {
+    static importIdentity(label : string, encryptedPrivateKey : string, password : string, callback ?: string) {
         let identity = new Identity()
         let error = {}
-        try {
+        /* try {
             Identity.importIdentity(label, encryptedPrivateKey, password).then((res:any)=>{
                 if(res.result) {
                     identity = res.result
@@ -163,6 +200,28 @@ export class SDK {
                 error : err
             }
             sendBackResult2Native(JSON.stringify(error), callback)
+        } */
+
+        try {
+            identity = Identity.importIdentity(label, encryptedPrivateKey, password)
+            let wallet = new Wallet()
+            wallet.create(identity.label)
+            wallet.defaultOntid = identity.ontid
+            wallet.addIdentity(identity)
+            let walletStr = wallet.toJson()
+            let obj = {
+                error: ERROR_CODE.SUCCESS,
+                result: walletStr,
+                desc: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            return obj
+        } catch(err) {
+            error = {
+                error: err
+            }
+            callback && sendBackResult2Native(JSON.stringify(error), callback)
+            return error
         }
     }
 

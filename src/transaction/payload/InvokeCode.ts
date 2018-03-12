@@ -50,6 +50,8 @@ export default class InvokeCode extends Payload {
         let totalParamsLength = num2VarInt(result.length / 2)
         result = this.scriptHash + totalParamsLength + result
 
+        console.log('invode serialze: '+ result)
+
         return result
     }
 

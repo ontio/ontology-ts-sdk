@@ -35,10 +35,11 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
 
     let payload = new InvokeCode()
     let scriptHash = abiInfo.getHash()
-    if(scriptHash.substr(0,2)){
+    if(scriptHash.substr(0,2) === '0x'){
         scriptHash = scriptHash.substring(2)
         scriptHash = reverseHex(scriptHash)
     }
+    console.log('codehash: '+scriptHash)
     payload.scriptHash = scriptHash 
     payload.parameters = func.parameters
     payload.functionName = func.name
@@ -72,6 +73,9 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
 export function buildAddAttributeTxParam (path : string, value : string, ontid : string, privateKey : string) {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     let f = abiInfo.getFunction('AddAttribute')
+    if(ontid.substr(0,3) === 'did') {
+        ontid = str2hexstr(ontid)
+    }
     let p1 = new Parameter('id', 'ByteArray', ontid)
     let p2 = new Parameter('path', 'ByteArray', str2hexstr(path))
     let p3 = new Parameter('type', 'ByteArray', str2hexstr('String'))
@@ -93,8 +97,14 @@ export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
     
     let f = abiInfo.getFunction('RegIdWithPublicKey')
 
-    let p1 = new Parameter('id', 'ByteArray', str2hexstr(ontid))
-    let p2 = new Parameter('pk', 'ByteArray', publicKey)
+    let name1 = f.parameters[0].getName(),
+        type1 = f.parameters[0].getType()
+    let p1 = new Parameter(name1, type1, ontid)
+
+
+    let name2 = f.parameters[0].getName(),
+        type2 = f.parameters[0].getType()
+    let p2 = new Parameter(name2, type2, publicKey)
 
     f.setParamsValue(p1, p2)
     let tx = makeInvokeTransaction( f, privateKey)
@@ -140,6 +150,7 @@ export function buildRpcParam(ontid : string) {
     return result
 }
 
+//cors
 export function checkOntid(ontid: string) {
    let param = buildRpcParam(ontid)
     console.log('param: '+JSON.stringify(param))

@@ -40,6 +40,21 @@ export class Wallet {
         return this
     }
 
+    static createIdentityWallet (password : string ,name ?: string) {
+        let wallet = new Wallet()
+        if(!name) {
+            name = 'Default name'
+        }
+        wallet.create(name)
+        let identity = new Identity()
+        let privateKey = core.generatePrivateKeyStr()
+        identity.create(privateKey, password, name)
+
+        wallet.defaultOntid = identity.ontid
+        wallet.addIdentity(identity)
+        return wallet
+    }
+
 
     addAccount(account: Account) : void {
         for (let ac of this.accounts) {

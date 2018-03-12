@@ -1,5 +1,5 @@
 export default {
-    "hash": "0x115c9dbc21636bda827f186b895fce7ea0f9a4d0",
+    "hash": "0x8db63b2ccde3fabaa28bc7edb4f5569ed7ef9959",
         "entrypoint": "Main",
             "functions":
     [
@@ -16,33 +16,33 @@ export default {
                         "type": "Array"
                     }
                 ],
-            "returntype": "Array"
+            "returntype": "Any"
         },
         {
             "name": "RegIdWithPublicKey",
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
-                        "name": "pk",
+                        "name": "publicKey",
                         "type": "ByteArray"
                     }
                 ],
-            "returntype": "Any"
+            "returntype": "Boolean"
         },
         {
             "name": "RegIdWithAttributes",
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
-                        "name": "pk",
+                        "name": "publicKey",
                         "type": "ByteArray"
                     },
                     {
@@ -57,11 +57,11 @@ export default {
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
-                        "name": "newpubkey",
+                        "name": "newPublicKey",
                         "type": "ByteArray"
                     },
                     {
@@ -76,11 +76,11 @@ export default {
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
-                        "name": "oldpubkey",
+                        "name": "oldPublicKey",
                         "type": "ByteArray"
                     },
                     {
@@ -95,7 +95,7 @@ export default {
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
@@ -103,7 +103,7 @@ export default {
                         "type": "ByteArray"
                     },
                     {
-                        "name": "pk",
+                        "name": "publicKey",
                         "type": "ByteArray"
                     }
                 ],
@@ -114,11 +114,11 @@ export default {
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
-                        "name": "newrecovery",
+                        "name": "newRecovery",
                         "type": "ByteArray"
                     },
                     {
@@ -133,7 +133,7 @@ export default {
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
@@ -149,18 +149,18 @@ export default {
                         "type": "ByteArray"
                     },
                     {
-                        "name": "pk",
+                        "name": "publicKey",
                         "type": "ByteArray"
                     }
                 ],
-            "returntype": "Any"
+            "returntype": "Boolean"
         },
         {
             "name": "RemoveAttribute",
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
@@ -168,7 +168,7 @@ export default {
                         "type": "ByteArray"
                     },
                     {
-                        "name": "pk",
+                        "name": "publicKey",
                         "type": "ByteArray"
                     }
                 ],
@@ -179,7 +179,7 @@ export default {
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     }
                 ],
@@ -190,7 +190,7 @@ export default {
             "parameters":
                 [
                     {
-                        "name": "id",
+                        "name": "ontId",
                         "type": "ByteArray"
                     }
                 ],
@@ -223,7 +223,7 @@ export default {
                         "type": "String"
                     },
                     {
-                        "name": "ontid",
+                        "name": "ontId",
                         "type": "ByteArray"
                     }
                 ],
@@ -238,11 +238,11 @@ export default {
                         "type": "String"
                     },
                     {
-                        "name": "ontid",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
-                        "name": "publickey",
+                        "name": "publicKey",
                         "type": "ByteArray"
                     }
                 ],
@@ -257,12 +257,42 @@ export default {
                         "type": "String"
                     },
                     {
-                        "name": "ontid",
+                        "name": "ontId",
                         "type": "ByteArray"
                     },
                     {
-                        "name": "attrname",
+                        "name": "attrName",
                         "type": "ByteArray"
+                    }
+                ],
+            "returntype": "Void"
+        },
+        {
+            "name": "Debug",
+            "parameters":
+                [
+                    {
+                        "name": "func",
+                        "type": "String"
+                    },
+                    {
+                        "name": "info",
+                        "type": "ByteArray"
+                    }
+                ],
+            "returntype": "Void"
+        },
+        {
+            "name": "Debug",
+            "parameters":
+                [
+                    {
+                        "name": "func",
+                        "type": "String"
+                    },
+                    {
+                        "name": "trace",
+                        "type": "Integer"
                     }
                 ],
             "returntype": "Void"

@@ -84,7 +84,7 @@ export class Identity {
         identity.create(privateKey, password, label)
 
         //check ontid on chain
-        return checkOntid(identity.ontid).then((res:any)=>{
+        /* return checkOntid(identity.ontid).then((res:any)=>{
             let result
             if(res == ERROR_CODE.SUCCESS) {
                 result = identity
@@ -102,8 +102,9 @@ export class Identity {
                 result : null,
                 desc : error
             }
-        })
-        // return identity
+        }) */
+
+        return identity
     }
 
     addControl(control : ControlData) {
