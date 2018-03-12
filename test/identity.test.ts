@@ -26,7 +26,7 @@ describe('test identity', () => {
         console.log('encryptedkey: ' + encryptedPrivateKey)
         let a 
         try {
-         a = Identity.importIdentity(identityDataStr, encryptedPrivateKey, '123456', '')
+         a = Identity.importIdentity('', encryptedPrivateKey, '123456')
         } catch(err) {
             console.log(err)
         }
@@ -35,7 +35,7 @@ describe('test identity', () => {
 
     test('test import with incorrect password', () => {
         try {
-            let a = Identity.importIdentity(identityDataStr, encryptedPrivateKey, '123457', '')
+            let a = Identity.importIdentity('', encryptedPrivateKey, '123457')
         } catch (err) {
             console.log(err)
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)

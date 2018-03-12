@@ -2,7 +2,7 @@ import AbiInfo from '../src/Abi/AbiInfo'
 import AbiFunction from '../src/Abi/AbiFunction'
 import Parameter from '../src/Abi/parameter'
 
-import json from '../src/smartcontract/data/NeoContract1.abi'
+import json from '../src/smartcontract/data/IdContract.abi'
 import Transaction from '../src/transaction/transaction'
 import Program from '../src/transaction/Program'
 
@@ -37,7 +37,7 @@ describe('test AbiInfo', () => {
 
     test('test make invokecode tx', () => {
         let privateKey = generatePrivateKeyStr()
-        tx = makeInvokeTransaction( a.hash, f, privateKey )
+        tx = makeInvokeTransaction(  f, privateKey )
         console.log(tx)
         
         serialized = tx.serialize()
