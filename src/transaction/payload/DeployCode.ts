@@ -34,6 +34,7 @@ export default class DeployCode extends Payload {
         result += str2VarBytes(this.author)
 
         result += str2VarBytes(this.email)
+        console.log('email: '+ result)
 
         result += str2VarBytes(this.description)
 

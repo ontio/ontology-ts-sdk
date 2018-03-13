@@ -61,16 +61,14 @@ export class SDK {
                 res = JSON.parse(event.data)
             }
             if(res.Error == ERROR_CODE.SUCCESS) {
-                setTimeout(()=>{
-                    let obj = {
-                        error : ERROR_CODE.SUCCESS,
-                        result : result,
-                        desc : ''
-                    }
-                    if(callback) {
-                        sendBackResult2Native(JSON.stringify(obj), callback)
-                    }
-                },2000)
+                let obj = {
+                    error: ERROR_CODE.SUCCESS,
+                    result: result,
+                    desc: ''
+                }
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(obj), callback)
+                }
             } else {
                 let errResult = {
                     error: res.Error,
@@ -149,6 +147,7 @@ export class SDK {
                 result : ''
             }
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            return obj
         }
         wallet.addIdentity(identity)
         let walletStr = wallet.toJson()
@@ -158,6 +157,7 @@ export class SDK {
             desc : ''
         }
         callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        return obj
     }
 
     //send http post to check

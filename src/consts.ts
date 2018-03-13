@@ -36,3 +36,15 @@ export const Test_http_port = '20336'
 export const tx_url = `http://${Test_node}:${Test_http_port}/`
 export const socket_url = `ws://${Test_node}:${Test_websocket_port}`
 
+export const ONT_NETWORK = {
+  MAIN : 'MainNet',
+  TEST : 'TestNet'
+}
+
+export const ONT_URL = {
+  MAIN_SOCKET : socket_url,
+  TEST_SOCKET : socket_url,
+
+  MAIN_RPC : tx_url,
+  TEST_PRC : tx_url
+}

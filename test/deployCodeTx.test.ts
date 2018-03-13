@@ -3,13 +3,15 @@ import DeployCode from '../src/transaction/payload/DeployCode'
 
 import {getHash} from '../src/core'
 import {ab2hexstring, ab2str,str2hexstr , reverseHex} from '../src/utils'
-import {Default_params, parseEventNotify, makeInvokeTransaction} from '../src/transaction/makeTransactions'
+import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTransaction, buildTxParam} from '../src/transaction/makeTransactions'
 import FunctionCode  from '../src/transaction/FunctionCode';
 import  { ContractParameterType } from '../src/transaction/FunctionCode';
 import AbiInfo from '../src/Abi/AbiInfo'
 import AbiFunction from '../src/Abi/AbiFunction'
 import Parameter from '../src/Abi/parameter'
-import { tx_url, socket_url } from '../src/consts'
+import { tx_url, socket_url , ONT_NETWORK} from '../src/consts'
+
+import TxSender from '../src/transaction/TxSender'
 
 import json from '../src/smartcontract/data/IdContract.abi'
 
@@ -33,83 +35,37 @@ var serialized
 
 const WebSocket = require('ws');
 
-var tx = new Transaction()
-var fc = new FunctionCode()
-fc.code = code
-fc.parameterTypes = [ContractParameterType.String, ContractParameterType.Array]
-fc.returnType = ContractParameterType.Array
+var txSender = new TxSender(ONT_NETWORK.TEST)
 
-var dc = new DeployCode()
-dc.author = 'mickey8'
-dc.code = fc
-dc.codeVersion = '1.0'
-dc.description = 'test'
-dc.email = 'mickey@wang.com'
-dc.name = 'test'
-dc.needStorage = true
-dc.vmType = 0
-
-tx.type = TxType.DeployCode
-tx.payload = dc
-
-const sendTx = (param, callback = null) => {
-    const socket = new WebSocket(socket_url)
-    socket.onopen = () => {
-        console.log('connected')
-        socket.send(param)
-    }
-    socket.onmessage = (event) => {
-        let res
-        if (typeof event.data === 'string') {
-            res = JSON.parse(event.data)
-        }
-        console.log('response for send tx: ' + JSON.stringify(res))
-        if (callback) {
-            callback(event.data)
-            socket.close()
-        }
-        if (res.Action === 'Notify') {
-            let result = parseEventNotify(res)
-            console.log('paresed event notify: ' + JSON.stringify(result))
-        }
-        // socket.close()
-    }
-    socket.onerror = (event) => {
-        //no server or server is stopped
-        console.log(event)
-        socket.close()
-    }
-}
-
-const buildDeployCodeTx = () => {
-    
-    serialized = tx.serialize()
-    console.log('tx hash: ' + getHash(serialized))
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
-
-    return param
-}
 
 const testDeployCodeTx = () => {
-    let param = buildDeployCodeTx()
-    sendTx(param)
-}
+    var fc = new FunctionCode()
+    fc.code = code
+    fc.parameterTypes = [ContractParameterType.String, ContractParameterType.Array]
+    fc.returnType = ContractParameterType.Array
 
-const testContractMehod = () => {
-    let f = abiInfo.getFunction('Deposit')
-    let p1 = new Parameter('ontid', 'ByteArray', ontid)
-    let p2 = new Parameter('asset_id', 'ByteArray', str2hexstr('asset_id'))
-    let p3 = new Parameter('amount', 'Integer', '1004')
+    var dc = new DeployCode()
+    dc.author = 'mickey10'
+    dc.code = fc
+    dc.codeVersion = '1.0'
+    dc.description = 'test'
+    dc.email = ''
+    dc.name = 'test'
+    dc.needStorage = true
+    dc.vmType = 0
 
-    f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f, privateKey)
+    var tx = makeDeployTransaction(dc, privateKey)
     
-    let serialized = tx.serialize()
-    // console.log('addAddribute tx: ' + serialized)
+    var param = buildTxParam(tx)
 
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized, Op: "Exec" }))
-    sendTx(param)
+    const callback =  function(res, socket) {
+        console.log('send tx response: ' + JSON.stringify(res))
+        socket.close()
+    }
+
+    txSender.sendTxWithSocket(param, callback)
 }
+
 
 const testDeserialize = () => {
     let tx = Transaction.deserialize(serialized)
@@ -121,8 +77,6 @@ const testDeserialize = () => {
 
 testDeployCodeTx()
 // testDeserialize()
-
-// testContractMehod()
 
 /* 
 describe('test tx serialize and deserialize', ()=> {    
