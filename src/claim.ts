@@ -19,13 +19,13 @@ export class Signature {
     Algorithm : string
     Value : string
 
-    constructor() { }
+    constructor() {
+        this.Format = "pgp";
+        this.Algorithm = "ECDSAwithSHA256";
+     }
 }
 
 export class Claim {
-    unsignedData: string;
-    signedData: string;
-
     Context : string
     Id : string
     Content : {}
@@ -34,31 +34,31 @@ export class Claim {
 
     constructor(context:string, content: {}, metadata:Metadata) {
         this.Context = context
-        this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(content))).toString()
         this.Content = content
         this.Metadata = metadata
+        let body = {
+            Context : context,
+            Content : content,
+            Metadata : metadata
+        }
+        this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(body))).toString()
+    }
 
+    sign( privateKey: string ) {
         let claimBody = {
             Context: this.Context,
             Id: this.Id,
             Content: this.Content,
             Metadata: this.Metadata
-        }  
-        this.unsignedData = JSON.stringify(claimBody) 
-    }
+        }
+        let unsignedData = JSON.stringify(claimBody) 
+        let signatureValue = signatureData(unsignedData, privateKey)
 
-    sign( privateKey: string ): string {
-        let signatureValue = signatureData(this.unsignedData, privateKey)
-        let claimData = JSON.parse(this.unsignedData);
         let sig = new Signature();
-
-        sig.Format = "pgp";
-        sig.Algorithm = "ECDSAwithSHA256";
         sig.Value = signatureValue;
         this.Signature = sig
 
-        claimData.signature = sig;
-        this.signedData = JSON.stringify(claimData)
-        return this.signedData;
+        return sig
+
     }
 }

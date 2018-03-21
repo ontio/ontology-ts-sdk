@@ -1,114 +1,23 @@
 import {Wallet} from '../wallet'
 import {Identity} from '../identity'
 import {Account} from '../account'
-import {Claim, Metadata} from '../claim'
+import {Claim, Metadata, Signature} from '../claim'
 import * as scrypt from '../scrypt'
-import {sendBackResult2Native, EventEmitter} from '../utils'
+import {sendBackResult2Native, EventEmitter, str2hexstr} from '../utils'
 import * as core from '../core'
-import {buildAddAttributeTxParam, buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid} from '../transaction/makeTransactions'
+import {buildAddAttributeTx, buildTxParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid} from '../transaction/makeTransactions'
 import { ERROR_CODE } from '../error';
-import {tx_url, socket_url} from '../consts'
+import {tx_url, socket_url, ONT_NETWORK} from '../consts'
 import { encrypt } from '../scrypt';
+import TxSender from '../transaction/TxSender'
 
 export class SDK {
 
-    //this method may need to wait too long, will remove it
-    static checkOntid(ontid : string, privateKey : string, result:string, callback ?: string) {
-        let param = buildGetDDOTx(ontid, privateKey)
-        const socket = new WebSocket(socket_url)
-        socket.onopen = () => {
-            console.log('connected')
-            socket.send(param)
-        }
-        socket.onmessage = (event) => {
-            let res
-            if (typeof event.data === 'string') {
-                res = JSON.parse(event.data)
-            }
-            console.log('response for checkontid: ' + JSON.stringify(res))
-            if(callback) {
-                sendBackResult2Native(result, callback)
-            }
-            socket.close()
-        }
-        socket.onerror = (event: any) => {
-            //no server or server is stopped
-            let errResult = {
-                error: ERROR_CODE.NETWORK_ERROR,
-                result : '',
-                desc : 'Network Error'
-            }
-            if(callback) {
-                sendBackResult2Native(JSON.stringify(errResult), callback)
-            }
-            console.log(event)
-            socket.close()
-        }
-    }
-
-
-    //result 要发送的数据
-    //callback 回调函数名
-    static sendTx(param : string, result: string, callback ?: string) {
-        const socket = new WebSocket(socket_url)
-        socket.onopen = () => {
-            console.log('connected')
-            socket.send(param)
-        }
-        socket.onmessage = (event) => {
-            let res
-            if (typeof event.data === 'string') {
-                res = JSON.parse(event.data)
-            }
-            if(res.Error == ERROR_CODE.SUCCESS) {
-                let obj = {
-                    error: ERROR_CODE.SUCCESS,
-                    result: result,
-                    desc: ''
-                }
-                if (callback) {
-                    sendBackResult2Native(JSON.stringify(obj), callback)
-                }
-            } else {
-                let errResult = {
-                    error: res.Error,
-                    result : '',
-                    desc: res.Result
-                }
-                if(callback) {
-                    sendBackResult2Native(JSON.stringify(errResult), callback)
-                }
-            }
-            socket.close()
-            console.log('response for send tx: ' + JSON.stringify(res))
-            
-            /*  wait too long, remove it
-            if (res.Action === 'Notify') {
-                let parsedRes = parseEventNotify(res)
-                console.log('paresed event notify: ' + JSON.stringify(parsedRes))
-                if (parsedRes.Error == 0 && parsedRes.Result.BlockHeight) {
-                    sendBackResult2Native(result, callback)
-                } else {
-                    let errResult = {
-                        error : parsedRes.Error,
-                        desc :  parsedRes.Result
-                    }
-                    sendBackResult2Native(JSON.stringify(errResult), callback)
-                }
-
-                socket.close()
-            } */
-        }
-        socket.onerror = (event:any) => {
-            //no server or server is stopped
-            let errResult = {
-                error: ERROR_CODE.NETWORK_ERROR,
-                result: '',
-                desc: 'Network Error'
-            }
-            callback && sendBackResult2Native(JSON.stringify(errResult), callback)
-            console.log(event)
-            socket.close()
+    static getDecryptError(err:any) {
+        return {
+            error: ERROR_CODE.Decrypto_ERROR,
+            result: '',
+            desc: err.message || ''
         }
     }
 
@@ -121,11 +30,41 @@ export class SDK {
 
         wallet.defaultOntid = identity.ontid
         wallet.addIdentity(identity)
+
+        // let account = new Account()
+        // account.create(privateKey, password, name)
+        // wallet.addAccount(account)
+
         let walletDataStr = wallet.toJson()
+         
+        let tx = buildRegisterOntidTx(identity.ontid, privateKey)
+        let param = buildTxParam(tx)
         
-        let param = buildRegisterOntidTx(identity.ontid, privateKey)
-        
-        SDK.sendTx(param, walletDataStr, callback)
+        const socketCallback = function(res:any, socket:any) {
+            let obj = {
+                error: ERROR_CODE.SUCCESS,
+                result: walletDataStr,
+                desc: ''
+            }
+            if(res.Error === 0) {
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                socket.close()
+            } else {
+                let errResult = {
+                    error: res.Error,
+                    result: '',
+                    desc: res.Result
+                }
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(errResult), callback)
+                }
+                socket.close()
+            }
+        } 
+
+        var txSender = new TxSender(ONT_NETWORK.TEST)
+        txSender.sendTxWithSocket(param, socketCallback)
+
         let obj = {
             error : 0,
             result : walletDataStr,
@@ -142,10 +81,8 @@ export class SDK {
             //TODO check ontid
             identity = Identity.importIdentity(label, encryptedPrivateKey, password)
         } catch (err) {
-            let obj  = {
-                error : err,
-                result : ''
-            }
+            let obj  = this.getDecryptError(err)
+
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
             return obj
         }
@@ -217,9 +154,7 @@ export class SDK {
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
             return obj
         } catch(err) {
-            error = {
-                error: err
-            }
+            error = this.getDecryptError(err)
             callback && sendBackResult2Native(JSON.stringify(error), callback)
             return error
         }
@@ -248,11 +183,8 @@ export class SDK {
         try {
             privateKey = scrypt.decrypt(encryptedPrivateKey, password);
         } catch(err) {
-            let result = {
-                error : err,
-                result : '',
-                desc : ''
-            }
+            let result = this.getDecryptError(err)
+
             if (callback) {
                 sendBackResult2Native(JSON.stringify(result), callback)
             }
@@ -261,7 +193,11 @@ export class SDK {
         
             let claimDataObj = JSON.parse(claimData)
             let metadata = new Metadata()
-            metadata.CreateTime = (new Date()).toISOString()
+            let date = (new Date()).toISOString()
+            if(date.indexOf('.') > -1) {
+                date = date.substring(0, date.indexOf('.')) + 'Z'
+            }
+            metadata.CreateTime = date
             metadata.Issuer = ontid
             metadata.Subject = ontid
             let claim = new Claim(context, claimDataObj, metadata)
@@ -277,16 +213,14 @@ export class SDK {
             return obj
     }
 
+
     static decryptEncryptedPrivateKey( encryptedPrivateKey : string, password : string, callback?: string) {
         let privateKey = ''
         try {
             privateKey = scrypt.decrypt(encryptedPrivateKey, password);
         } catch(err) {
-            let result = {
-                error : err,
-                result : '',
-                desc : ''
-            }
+            let result = this.getDecryptError(err)
+
             if(callback) {
                 sendBackResult2Native(JSON.stringify(result), callback)
             }
@@ -304,19 +238,20 @@ export class SDK {
         return obj
     }
 
-    static buildClaimTx(path: string, value: string, ontid: string, encryptedPrivateKey: string, 
+
+    //subject : 声明接收者ontid
+    static buildClaimTx(path: string, value: string, subject : string, encryptedPrivateKey: string, 
         password : string) {
         let privateKey = ''
         try {
             privateKey = scrypt.decrypt(encryptedPrivateKey, password);
         } catch (err) {
-            let result = {
-                error: err,
-                result : ''
-            }
+            let result = this.getDecryptError(err)
+            
             return result
         }
-        let param = buildAddAttributeTxParam(path, value, ontid, privateKey)
+        let tx = buildAddAttributeTx(path, value, subject,  privateKey)
+        let param = buildTxParam(tx)
         return {
             error : 0,
             result : param,
@@ -324,5 +259,60 @@ export class SDK {
         }
     }
 
+    static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey : string,
+         password : string, callback : string ) {
+            let privateKey = ''
+            try {
+                privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+            } catch (err) {
+                let result = this.getDecryptError(err)
+                callback && sendBackResult2Native(JSON.stringify(result), callback)
+                return result
+            }
+            let path = claimId
+            let value = {
+                Context : context,
+                Ontid : issuer
+            }
+            // let tx = buildAddAttributeTx(path, JSON.stringify(value), subject, privateKey)
+            let tx = buildAddAttributeTx(path, issuer, subject, privateKey)
+            
+            let txId = core.getHash(tx.serialize())
+            let param = buildTxParam(tx)
+            //TODO：根据不同环境选择不同网络
+            var txSender = new TxSender(ONT_NETWORK.TEST)
+            const socketCallback = function(res : any, socket : any) {
+                console.log('res: '+ JSON.stringify(res))
+                if(res.Result.BlockHeight) {
+                    let obj = {
+                        error : ERROR_CODE.SUCCESS,
+                        result : txId
+                    }
+                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                    socket.close()
+                }
+            }
+
+            txSender.sendTxWithSocket(param, socketCallback)
+    }
+
+    static signData(content : string, encryptedPrivateKey : string, password : string, callback? : string) {
+        let privateKey = ''
+        try {
+            privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+        } catch (err) {
+            let result = this.getDecryptError(err)
+
+            callback && sendBackResult2Native(JSON.stringify(result), callback)
+            return result
+        }
+        let value = core.signatureData(content, privateKey)
+
+        let result = new Signature()
+        result.Value = value
+
+        callback && sendBackResult2Native(JSON.stringify(result), callback)
+        return result
+    }
 
 }

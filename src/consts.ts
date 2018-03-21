@@ -1,7 +1,7 @@
 export const ADDR_VERSION = '41'
 
 export const DEFAULT_SCRYPT = {
-    cost: 16384,
+    cost: 4096,// 除以2时间减半
     blockSize: 8,
     parallel: 8,
     size: 64
@@ -28,8 +28,11 @@ export const DEFAULT_ALGORITHM = {
   }
 }
 
-export const Test_node = '52.80.115.91'
+
+// export const Test_node = '52.80.115.91'
 // export const Test_node = '192.168.3.128'
+export const Test_node = '192.168.3.112' //local
+
 export const Test_websocket_port = '20335'
 export const Test_http_port = '20336'
 

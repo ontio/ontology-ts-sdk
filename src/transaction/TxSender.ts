@@ -1,7 +1,13 @@
 import {ONT_NETWORK, ONT_URL} from '../consts'
 import Transaction from './transaction'
 import axios from 'axios'
-const WebSocket = require('ws')
+
+var WebSocket : any
+if(typeof window != 'undefined' && window.WebSocket){
+ WebSocket = window.WebSocket
+} else {
+    WebSocket = require('ws')
+}
 
 export default class TxSender {
     socket_url : string
@@ -54,7 +60,7 @@ export default class TxSender {
         }
     }
 
-    sendWithRpc(param : string) {
+    sendWithRpc(param : any) {
         return axios.post(this.rpc_url, param).then((res: any) => {
             if (typeof res == 'string') {
                 res = JSON.parse(res)

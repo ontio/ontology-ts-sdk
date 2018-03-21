@@ -82,7 +82,7 @@ class Transaction {
             result += this.outputs[i].serialize()
         }
         //gas
-        result += this.systemFee.serialize()
+        // result += this.systemFee.serialize()
 
         return result
     }

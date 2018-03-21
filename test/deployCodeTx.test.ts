@@ -21,7 +21,7 @@ var code = ab2hexstring(avm)
 var codehash = getHash(code)
 console.log('code hash: '+codehash)
 
-var privateKey = 'b02304dcb35bc9a055147f07b2a3291db4ac52f664ec38b436470c98db4200d9'
+var privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
 var ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a78596950415a364d61376a6351564b'
 
 
@@ -50,17 +50,18 @@ const testDeployCodeTx = () => {
     dc.codeVersion = '1.0'
     dc.description = 'test'
     dc.email = ''
-    dc.name = 'test'
+    dc.name = 'test2'
     dc.needStorage = true
     dc.vmType = 0
 
     var tx = makeDeployTransaction(dc, privateKey)
     
     var param = buildTxParam(tx)
+    console.log('param: '+ param)
 
     const callback =  function(res, socket) {
         console.log('send tx response: ' + JSON.stringify(res))
-        socket.close()
+        // socket.close()
     }
 
     txSender.sendTxWithSocket(param, callback)

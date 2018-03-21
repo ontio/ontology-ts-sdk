@@ -18,7 +18,6 @@ export class Identity {
 
     ontid: string;
     label: string;
-    isDefault: boolean;
     lock: boolean;
     controls: Array<ControlData> = [];
     extra: null;
@@ -30,7 +29,6 @@ export class Identity {
         
         this.ontid = "";
         this.label = label;
-        this.isDefault = false;
         this.lock = false;
 
         // control
@@ -58,29 +56,18 @@ export class Identity {
         //调用方处理register和监听结果
         return this
     }
-
-    createRandomLabel() {
-        let d = new Date()
-        let m = d.getMonth()
-        let date = d.getDate()
-        return 'Identity' + (m > 9? m : '0'+m )+ date
-    }
-
+    
     static importIdentity(label : string ,encryptedPrivateKey : string, password : string) {
         //create identity
         let identity = new Identity()
         let privateKey = scrypt.decrypt(encryptedPrivateKey, password);
         if(!label) {
-            let d = new Date()
-            let m = d.getMonth() + 1
-            let date = d.getDate()
-            label = 'Identity' + (m > 9 ? m : '0' + m) + date
+            label = ab2hexstring (core.generateRandomArray(4))
         }
 
        // identity.create(privateKey, password, label) // will take more time
         identity.ontid = core.generateOntid(privateKey)
         identity.label = label;
-        identity.isDefault = false;
         identity.lock = false;
 
         // control
@@ -136,7 +123,6 @@ export class Identity {
         let obj = {
             ontid: this.ontid,
             label: this.label,
-            isDefault: this.isDefault,
             lock: this.lock,
             controls: this.controls,
             extra: this.extra,
@@ -149,7 +135,6 @@ export class Identity {
         let id = new Identity()
         id.ontid = obj.ontid
         id.label = obj.label
-        id.isDefault = obj.isDefault
         id.lock = obj.lock
         id.controls = obj.controls
         id.extra = obj.extra
