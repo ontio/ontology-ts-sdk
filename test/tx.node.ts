@@ -140,6 +140,12 @@ const parseDDO = (result) => {
 
 const testRegisterOntid = () => {
     let tx = buildRegisterOntidTx(str2hexstr(ontid), privateKey)
+    let serialized = tx.serialize()
+    console.log('serialized: '+serialized)
+
+    let temp = Transaction.deserialize(serialized)
+    console.log('deserialized: '+JSON.stringify(temp))
+
     let param = buildTxParam(tx)
     
     txSender.sendTxWithSocket(param, callback)

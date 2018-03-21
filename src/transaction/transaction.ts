@@ -65,10 +65,9 @@ export class PubKey {
         return result
     }
     static deserialize(sr : StringReader) {
-        let pk = new PubKey()
-        pk.x = sr.readNextBytes()
-        pk.y = sr.readNextBytes()
-        return pk
+        let x = sr.readNextBytes()
+        let y = sr.readNextBytes()
+        return new PubKey(x, y)
     }
 }
 
@@ -87,7 +86,7 @@ export class Sig {
         }
         result += num2hexstring(this.M)
 
-        result == num2hexstring(this.sigData.length)
+        result += num2hexstring(this.sigData.length)
         for(let i=0; i< this.sigData.length; i++) {
             result += hex2VarBytes(this.sigData[i])
         }
@@ -135,6 +134,7 @@ export class Transaction {
     hash : Uint256
 
     constructor () {
+        this.networkFee = new Fixed64()
     }
 
     serialize () : string {

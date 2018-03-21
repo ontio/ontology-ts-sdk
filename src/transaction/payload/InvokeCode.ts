@@ -83,7 +83,7 @@ export default class InvokeCode extends Payload {
         result += this.code.serialize()
         return result
     } */
-/* 
+ 
     deserialize(ss : StringReader) : void {
         //scriptHash, fixed langth
         this.scriptHash = ss.read(20)
@@ -115,7 +115,7 @@ export default class InvokeCode extends Payload {
         //payload end
         this.functionName = func
 
-    } */
+    } 
 
     /* deserialize(sr : StringReader) {
         let invokeCode = new InvokeCode()
