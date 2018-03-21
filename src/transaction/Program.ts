@@ -1,4 +1,4 @@
-import {num2VarInt, num2hexstring, StringReader} from '../utils'
+import {num2VarInt, num2hexstring, StringReader, hex2VarBytes} from '../utils'
 import OPCODE from './opcode'
 
 export default class Program {
@@ -22,6 +22,9 @@ export default class Program {
         let pkTotalLen = pkTotal.length / 2
         result += num2VarInt(pkTotalLen)
         result += pkTotal
+        // let result = ''
+        // result += hex2VarBytes(this.parameter)
+        // result += hex2VarBytes(this.code)
 
         return result
     }

@@ -12,7 +12,7 @@ describe('test wallet', ()=>{
         console.log(Wallet)
         wallet = new Wallet()
         let privateKey = core.generatePrivateKeyStr()
-        wallet.create('mickey', '123456')
+        wallet.create('mickey')
         walletDataStr = wallet.toJson()
     })
 

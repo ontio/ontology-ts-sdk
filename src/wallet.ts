@@ -10,6 +10,7 @@ import * as scrypt from './scrypt'
 export class Wallet {
     name: string;
     defaultOntid: string;
+    defaultAccountAddress : string;
     createTime: string;
     version: string;
     scrypt: {
@@ -32,7 +33,7 @@ export class Wallet {
         this.createTime = (new Date).toISOString()
         this.version = "1.0";
         this.scrypt = {
-            "n": 16384,
+            "n": 4096,
             "r": 8,
             "p": 8
         };
@@ -77,26 +78,12 @@ export class Wallet {
 
     
 
-    setDefaultAccount(index : number) : boolean {
-        let length = this.accounts.length
-        if(index < 0 || index > length -1) {
-            return false
-        }
-        for(let i = 0; i< length ;i++) {
-            this.accounts[i].isDefault = index === i ? true : false
-        }
-        return true
+    setDefaultAccount(address : string) : void {
+        this.defaultAccountAddress = address
     }
 
-    setDefaultIdentity(index : number) : boolean {
-        let length = this.identities.length
-        if (index < 0 || index > length - 1) {
-            return false
-        }
-        for (let i = 0; i < length; i++) {
-            this.identities[i].isDefault = index === i ? true : false
-        }
-        return true
+    setDefaultIdentity(ontid : string) : void {
+        this.defaultOntid = ontid
     }
 
 
@@ -104,6 +91,7 @@ export class Wallet {
         let obj = {
             name: this.name,
             defaultOntid: this.defaultOntid,
+            defaultAccountAddress : this.defaultAccountAddress,
             createTime: this.createTime,
             version: this.version,
             scrypt: this.scrypt,
@@ -120,6 +108,7 @@ export class Wallet {
         let obj = JSON.parse(json)
         wallet.name = obj.name
         wallet.defaultOntid = obj.defaultOntid
+        wallet.defaultAccountAddress = obj.defaultAccountAddress
         wallet.createTime = obj.createTime
         wallet.version = obj.version
         wallet.scrypt = obj.scrypt

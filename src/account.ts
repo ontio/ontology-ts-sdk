@@ -12,7 +12,6 @@ export class Contract {
 export class Account {
     address: string;
     label: string;
-    isDefault: boolean;
     lock: boolean;
     algorithm: string;
     parameters: {};
@@ -33,7 +32,6 @@ export class Account {
 
         this.address = "";
         this.label = label;
-        this.isDefault = false;
         this.lock = false;
 
         if(algorithmObj) {
@@ -70,7 +68,6 @@ export class Account {
         let obj = {
             address: this.address,
             label: this.label,
-            isDefault: this.isDefault,
             lock: this.lock,
             algorithm: this.algorithm,
             parameters: this.parameters,
@@ -86,7 +83,6 @@ export class Account {
         let account = new Account()
         account.address = obj.address
         account.label = obj.label
-        account.isDefault = obj.isDefault
         account.lock = obj.lock
         account.algorithm = obj.algorithm
         account.parameters = obj.parameters

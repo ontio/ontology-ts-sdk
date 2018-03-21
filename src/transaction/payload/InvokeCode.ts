@@ -6,6 +6,7 @@
 import Payload from './payload'
 import Parameter from '../../Abi/parameter'
 import { num2VarInt, num2hexstring, StringReader, str2hexstr, hexstr2str } from '../../utils'
+import OPCODE from '../opcode'
 
 export default class InvokeCode extends Payload {
     //the length is of bytes 20
@@ -24,20 +25,36 @@ export default class InvokeCode extends Payload {
         let funcNameHex = str2hexstr(this.functionName)  
         const funcNameLength = num2hexstring(funcNameHex.length/2) 
        
-        //parameters
-        let params = this.parameters.map((p)=>{
+        let params = []
+        for(let i = this.parameters.length-1; i > -1; i--) {
+            let p = this.parameters[i]
             let hexP = p.getValue()
-            let hexPLength = num2hexstring( hexP.length/2) 
-            return {
-                hexPLength,
-                hexP
+            let hexPLength = num2VarInt( hexP.length / 2)
+            let opcode = ''
+            if( hexP.length/2 < OPCODE.PUSHBYTES75) {
+                
+            } else if (hexP.length / 2 < 0x100) {
+                opcode = num2VarInt( OPCODE.PUSHDATA1 )
+            } else if( hexP.length/2 < 0x1000 ) {
+                opcode = num2hexstring( OPCODE.PUSHDATA2, 2, true)
+            } else {
+                opcode = num2hexstring( OPCODE.PUSHDATA4, 4, true)
             }
-        })
+            params.push ({
+                hexPLength,
+                hexP,
+                opcode
+            })
+        }
+
         let result = ''
         //scripthash
         // result += this.scriptHash
         //params
         for(let v of params) {
+            if(v.opcode) {
+                result += v.opcode
+            }
             result += v.hexPLength
             result += v.hexP
         }

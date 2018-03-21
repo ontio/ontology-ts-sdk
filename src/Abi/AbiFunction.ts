@@ -9,7 +9,7 @@ export default class AbiFunction {
         this.name = name
         this.returntype = returntype
         let paramsTemp = parameters.map((item) => new Parameter(item.name, item.type, item.value))
-        this.parameters = paramsTemp.reverse()
+        this.parameters = paramsTemp
     }
 
     getParameter(name : string) : any {
@@ -19,7 +19,8 @@ export default class AbiFunction {
                 return v
             }
         }
-        return null
+        return null;
+        
     }
 
     setParamsValue(...args : any[]) : void {

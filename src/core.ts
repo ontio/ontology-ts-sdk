@@ -110,10 +110,12 @@ export function getAddressFromPrivateKey(privateKey: string): string {
 }
 
 
-export function generateOntid(privateKey : string) {
-    let publicKeyEncoded = ab2hexstring(getPublicKey(privateKey, true));
-    let signatureScript = createSignatureScript(publicKeyEncoded);
-    let programHash = getHash(signatureScript);
+export function generateOntid(nonce : string) {
+    // let publicKeyEncoded = ab2hexstring(getPublicKey(nonce, true));
+    // let signatureScript = createSignatureScript(publicKeyEncoded);
+    // let programHash = getHash(signatureScript);
+    
+    let programHash = getHash(nonce);
     let ontid = "did:ont:" + toAddress(programHash);
     return ontid
 }
@@ -138,4 +140,12 @@ export function checkOntidOnChain(encryptedPrivateKey: string, password: string)
     let privateKey = scrypt.decrypt(encryptedPrivateKey, password);
     let ontid = generateOntid(privateKey)
     return checkOntid(ontid)
+}
+
+export function verifyOntidClaim(claim : any) {
+    if(!claim.Metadata || !claim.Metadata.Issuer) {
+        throw new Error('Invalid claim.')
+    }
+    let issuer = claim.Metadata.Issuer
+    
 }

@@ -3,6 +3,7 @@ import AbiFunction from "../Abi/AbiFunction";
 import Parameter from '../Abi/parameter'
 import InvokeCode from './payload/InvokeCode'
 import DeployCode from './payload/DeployCode'
+import FunctionCode from './FunctionCode'
 import TransactionAttribute from './txAttribute'
 import Transaction, {TxType} from './transaction'
 import {DDO} from './DDO'
@@ -50,13 +51,18 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
 
     let attr = new TransactionAttribute()
     let hash = ''
-    //get publicKey
-    let parameter = func.getParameter('pk')
-    //compute signature with pk
-    if(parameter) {
-        let signatureScript = createSignatureScript(parameter.getValue())
-        hash = getHash(signatureScript)
-    }
+    // //get publicKey
+    // let parameter = func.getParameter('publicKey')
+    // //compute signature with pk
+    // if(parameter) {
+    //     let signatureScript = createSignatureScript(parameter.getValue())
+    //     hash = getHash(signatureScript)
+    // } else {
+    //     console.log('No such parameter: publicKey');
+    // }
+
+    let signatureScript = createSignatureScript(publicKey)
+    hash = getHash(signatureScript)
 
     attr.usage = 0x20
     attr.data = hash
@@ -71,6 +77,27 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     tx.programs = [program]
 
     return tx
+}
+
+export function makeFunctionCode(avmCode : string, parameterTypes:[any], returnType: any) {
+    let fc = new FunctionCode()
+    fc.code = avmCode
+    fc.parameterTypes = parameterTypes || []
+    fc.returnType = returnType || 0xff
+    return fc
+}
+
+export function makeDeployCode(fc : FunctionCode, obj : any) {
+    let dc = new DeployCode()
+    dc.author = obj.author || ''
+    dc.code = fc
+    dc.codeVersion = obj.codeVersion || '1.0'
+    dc.description = obj.description || ''
+    dc.email = obj.email || ''
+    dc.name = obj.name || ''
+    dc.needStorage = obj.needStorage || true
+    dc.vmType = obj.vmType || 0
+    return dc
 }
 
 export function makeDeployTransaction (dc : DeployCode, privateKey : string) {
@@ -99,28 +126,30 @@ export function buildTxParam (tx : Transaction, is_pre_exec : boolean = false) {
     return JSON.stringify(Object.assign({}, Default_params, { Data: serialized }, op))
 }
 
-export function buildAddAttributeTxParam (path : string, value : string, ontid : string, privateKey : string) {
+//all parameters shuld be hex string
+export function buildAddAttributeTx (path : string, value : string, ontid : string, privateKey : string) {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     let f = abiInfo.getFunction('AddAttribute')
     if(ontid.substr(0,3) === 'did') {
         ontid = str2hexstr(ontid)
     }
-    let p1 = new Parameter('id', 'ByteArray', ontid)
-    let p2 = new Parameter('path', 'ByteArray', str2hexstr(path))
-    let p3 = new Parameter('type', 'ByteArray', str2hexstr('String'))
-    let p4 = new Parameter('value', 'ByteArray', str2hexstr(value))
-    let p5 = new Parameter('pk', 'ByteArray', publicKey)
+    let p1 = new Parameter(f.parameters[0].getName(), 'ByteArray', ontid)
+    let p2 = new Parameter(f.parameters[1].getName(), 'ByteArray', path)
+    let p3 = new Parameter(f.parameters[2].getName(), 'ByteArray', str2hexstr('String'))
+    let p4 = new Parameter(f.parameters[3].getName(), 'ByteArray', value)
+    let p5 = new Parameter(f.parameters[4].getName(), 'ByteArray', publicKey)
 
     f.setParamsValue(p1, p2, p3, p4, p5)
     let tx = makeInvokeTransaction( f, privateKey)
-
-    let param = buildTxParam( tx )
-    return param
+    return tx
 }
 
 export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
-    
+    if (ontid.substr(0, 3) == 'did') {
+        ontid = str2hexstr(ontid)
+    }
+    console.log("Register ", ontid)
     let f = abiInfo.getFunction('RegIdWithPublicKey')
 
     let name1 = f.parameters[0].getName(),
@@ -128,46 +157,37 @@ export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
     let p1 = new Parameter(name1, type1, ontid)
 
 
-    let name2 = f.parameters[0].getName(),
-        type2 = f.parameters[0].getType()
+    let name2 = f.parameters[1].getName(),
+        type2 = f.parameters[1].getType()
     let p2 = new Parameter(name2, type2, publicKey)
 
     f.setParamsValue(p1, p2)
     let tx = makeInvokeTransaction( f, privateKey)
 
-    let param = buildTxParam(tx)
-
-    return param
+    return tx
 }
 
 export function buildGetDDOTx(ontid : string, privateKey : string) {
     let f = abiInfo.getFunction('GetDDO')
-
-    let p1 = new Parameter('id', 'ByteArray', str2hexstr(ontid))
-    f.setParamsValue(p1)
-
-    let tx = makeInvokeTransaction( f, privateKey)
-
-    let param = buildTxParam(tx, true)
-    
-    return param
-}
-
-export function buildRpcParam(ontid : string) {
-    let codeHash = abiInfo.getHash()
-    if(codeHash.startsWith('0x')) {
-        codeHash = codeHash.substring(2)
-        codeHash = reverseHex(codeHash)
-    }
-    if(ontid.substr(0,3) == 'did') {
+    if (ontid.substr(0, 3) == 'did') {
         ontid = str2hexstr(ontid)
     }
-    let hexlen = num2hexstring(ontid.length/2)
-    ontid = hexlen + ontid
+
+    let p1 = new Parameter(f.parameters[0].getName(), 'ByteArray', ontid)
+    let nonce = ab2hexstring( core.generateRandomArray(10) )
+    let p2 = new Parameter(f.parameters[1].getName(), 'ByteArray', nonce)
+    f.setParamsValue(p1,p2)
+    let tx = makeInvokeTransaction( f, privateKey)
+    
+    return tx
+}
+//{"jsonrpc": "2.0", "method": "sendrawtransaction", "params": ["raw transactioin in hex"], "id": 0}
+export function buildRpcParam(tx : any) {
+    let param = tx.serialize()
     let result = {
         "jsonrpc": "2.0",
-        "method": "getstorage",
-        "params": [codeHash, ontid],
+        "method": "sendrawtransaction",
+        "params": [param],
         "id": 10
     }
     return result
@@ -178,7 +198,7 @@ export function checkOntid(ontid: string) {
    let param = buildRpcParam(ontid)
     console.log('param: '+JSON.stringify(param))
     return axios.post(tx_url, param).then((res:any) => {
-        console.log('key:'+JSON.stringify(res.data))
+        console.log('post response:'+JSON.stringify(res.data))
 
         if(typeof res == 'string') {
             res = JSON.parse(res)
