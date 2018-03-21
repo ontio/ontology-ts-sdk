@@ -4,8 +4,8 @@ import Parameter from '../Abi/parameter'
 import InvokeCode from './payload/InvokeCode'
 import DeployCode from './payload/DeployCode'
 import FunctionCode from './FunctionCode'
-import TransactionAttribute from './txAttribute'
-import Transaction, {TxType} from './transaction'
+import {Transaction, TxType, Sig, PubKey} from './transaction'
+import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
 import {DDO} from './DDO'
 import {createSignatureScript, getHash } from '../core'
 import Program from './Program'
@@ -33,9 +33,12 @@ export const Default_params = {
 
 export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+    let pkPoint = core.getPublicKeyPoint(privateKey)
     let tx = new Transaction()
-    tx.type = TxType.InvokeCode
+    tx.type = TxType.Invoke
     tx.version = 0x00
+
+    tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
     let payload = new InvokeCode()
     let scriptHash = abiInfo.getHash()
@@ -68,13 +71,15 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     attr.data = hash
     tx.txAttributes = [attr]
 
-    //program
+    //sig
     let unsignedData = tx.serializeUnsignedData()
-    let program = new Program()
+    let sig = new Sig()
     let signed = core.signatureData(unsignedData, privateKey)
-    program.code = signed
-    program.parameter = publicKey
-    tx.programs = [program]
+    sig.M = 1
+    let pk = new PubKey(pkPoint.x, pkPoint.y)
+    sig.pubKeys = [pk]
+    sig.sigData = [signed]
+    tx.sigs = [sig]
 
     return tx
 }

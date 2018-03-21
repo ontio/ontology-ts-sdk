@@ -33,7 +33,7 @@ export const DEFAULT_ALGORITHM = {
 // export const Test_node = '192.168.3.128'
 export const Test_node = '192.168.3.112' //local
 
-export const Test_websocket_port = '20335'
+export const Test_websocket_port = '20385'
 export const Test_http_port = '20336'
 
 export const tx_url = `http://${Test_node}:${Test_http_port}/`

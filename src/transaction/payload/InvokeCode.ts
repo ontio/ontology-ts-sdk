@@ -7,6 +7,8 @@ import Payload from './payload'
 import Parameter from '../../Abi/parameter'
 import { num2VarInt, num2hexstring, StringReader, str2hexstr, hexstr2str } from '../../utils'
 import OPCODE from '../opcode'
+import Fixed64 from '../../common/Fixed64';
+import { VmCode } from '../vmcode';
 
 export default class InvokeCode extends Payload {
     //the length is of bytes 20
@@ -14,10 +16,13 @@ export default class InvokeCode extends Payload {
     parameters : Array<Parameter> = []
     functionName : string
 
+    // gasLimit : Fixed64
+    // code : VmCode
+
     constructor() {
         super()
     }
-
+ 
     serialize() : string {
         let payloadLength 
         let paramsLength = num2hexstring( 0x50 + this.parameters.length) //start from '0x50'
@@ -70,8 +75,15 @@ export default class InvokeCode extends Payload {
         console.log('invode serialze: '+ result)
 
         return result
-    }
+    } 
 
+    /* serialize() {
+        let result = ''
+        result += this.gasLimit.serialize()
+        result += this.code.serialize()
+        return result
+    } */
+/* 
     deserialize(ss : StringReader) : void {
         //scriptHash, fixed langth
         this.scriptHash = ss.read(20)
@@ -103,6 +115,15 @@ export default class InvokeCode extends Payload {
         //payload end
         this.functionName = func
 
-    }
+    } */
+
+    /* deserialize(sr : StringReader) {
+        let invokeCode = new InvokeCode()
+        let gasLimit = Fixed64.deserialize(sr)
+        let code = VmCode.deserialize(sr)
+        invokeCode.gasLimit = gasLimit
+        invokeCode.code = code
+        return invokeCode
+    } */
 
 }

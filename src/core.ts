@@ -31,6 +31,17 @@ export function getPublicKey(privateKey: string, encode: boolean): any {
     return curvePt.getEncoded(encode);
 };
 
+export function getPublicKeyPoint(privateKey: string) {
+    var ecparams = ecurve.getCurveByName('secp256r1')
+    var curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
+    var x = curvePt.affineX.toBuffer(32)
+    var y = curvePt.affineY.toBuffer(32)
+    return {
+        x : ab2hexstring(x),
+        y : ab2hexstring(y)
+    }
+}
+
 export function createSignatureScript(publicKeyEncoded: string): string {
     return "21" + publicKeyEncoded + "ac";
 }
