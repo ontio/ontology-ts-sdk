@@ -56,12 +56,33 @@ export class Account {
 
 
 
-    static importAccount(accountDataStr : string ,encryptedPrivateKey : string, password : string ) : Account {
+    static importAccount(label : string ,encryptedPrivateKey : string, password : string ) : Account {
         let account = new Account()
         let  privateKey = scrypt.decrypt(encryptedPrivateKey, password);
-                
+        let contract = {
+            script: '',
+            parameters: [],
+            deployed: false
+        }
+
+        account.address = "";
+        account.label = label;
+        account.lock = false;
+
+
+        account.algorithm = DEFAULT_ALGORITHM.algorithm
+        account.parameters = DEFAULT_ALGORITHM.parameters
+
+        account.key = encryptedPrivateKey
+
+        let publicKeyEncoded = ab2hexstring(core.getPublicKey(privateKey, true));
+        contract.script = core.createSignatureScript(publicKeyEncoded);
+        account.contract = contract
+
+        let programHash = core.getHash(account.contract.script);
+        account.address = core.toAddress(programHash);
     
-        return Account.parseJson(accountDataStr)
+        return account
     }
 
     toJson() : string {

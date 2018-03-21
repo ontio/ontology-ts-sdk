@@ -177,6 +177,29 @@ export class SDK {
         return result
     }
 
+    static importAccountWithWallet(walletDataStr:string, label : string, encryptedPrivateKey:string, password:string, callback: string) {
+        let wallet = Wallet.parseJson(walletDataStr)
+        let account = new Account()
+        try {
+            account = Account.importAccount(label, encryptedPrivateKey, password)
+        } catch(err) {
+            let result = this.getDecryptError(err)
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+            return result
+        }
+        wallet.addAccount(account)
+        let walletStr = wallet.toJson()
+        let obj = {
+            error: ERROR_CODE.SUCCESS,
+            result: walletStr,
+            desc: ''
+        }
+        callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        return obj
+    }
+
     static signSelfClaim(context: string, claimData : string, ontid : string,
          encryptedPrivateKey : string, password : string, callback :string)  {
         let privateKey = ''
