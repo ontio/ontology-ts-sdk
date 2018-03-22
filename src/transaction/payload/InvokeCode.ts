@@ -12,18 +12,18 @@ import { VmCode } from '../vmcode';
 
 export default class InvokeCode extends Payload {
     //the length is of bytes 20
-    scriptHash : string
+    /* scriptHash : string
     parameters : Array<Parameter> = []
-    functionName : string
+    functionName : string */
 
-    // gasLimit : Fixed64
-    // code : VmCode
+    gasLimit : Fixed64
+    code : VmCode
 
     constructor() {
         super()
     }
  
-    serialize() : string {
+/*     serialize() : string {
         let payloadLength 
         let paramsLength = num2hexstring( 0x50 + this.parameters.length) //start from '0x50'
         const paramsEnd = 'c1'
@@ -75,16 +75,16 @@ export default class InvokeCode extends Payload {
         console.log('invode serialze: '+ result)
 
         return result
-    } 
+    }  */
 
-    /* serialize() {
+    serialize() {
         let result = ''
         result += this.gasLimit.serialize()
         result += this.code.serialize()
         return result
-    } */
+    }
  
-    deserialize(ss : StringReader) : void {
+    /* deserialize(ss : StringReader) : void {
         //scriptHash, fixed langth
         this.scriptHash = ss.read(20)
         //payload total lenght
@@ -115,15 +115,15 @@ export default class InvokeCode extends Payload {
         //payload end
         this.functionName = func
 
-    } 
+    }  */
 
-    /* deserialize(sr : StringReader) {
+    deserialize(sr : StringReader) {
         let invokeCode = new InvokeCode()
         let gasLimit = Fixed64.deserialize(sr)
         let code = VmCode.deserialize(sr)
         invokeCode.gasLimit = gasLimit
         invokeCode.code = code
         return invokeCode
-    } */
+    }
 
 }

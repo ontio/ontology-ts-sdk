@@ -238,6 +238,10 @@ export class Transaction {
 
     }
 
+    getHash() {
+        return ''
+    }
+
 
 }
 
