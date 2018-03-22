@@ -160,8 +160,23 @@ export class SDK {
         }
     }
 
+    static createIdentity(label : string, password : string, callback?: string) {
+        let identity = new Identity()
+        let privateKey = core.generatePrivateKeyStr()
+        identity.create(privateKey, password, label)
+        let result = identity.toJson()
+        if (callback) {
+            let obj = {
+                error: ERROR_CODE.SUCCESS,
+                result: result,
+                desc: ''
+            }
+            sendBackResult2Native(JSON.stringify(obj), callback)
+        }
+        return result
+    }
 
-    static createAccount(password: string, label: string, callback?: string): string {
+    static createAccount(label: string, password: string, callback?: string): string {
         let account = new Account()
         let privateKey = core.generatePrivateKeyStr()        
         account.create(privateKey, password, label)
