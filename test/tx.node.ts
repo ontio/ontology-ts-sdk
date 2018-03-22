@@ -1,6 +1,6 @@
 import { makeInvokeTransaction , parseEventNotify, checkOntid, buildAddAttributeTx, buildGetDDOTx,
     buildRpcParam, buildRegisterOntidTx, buildTxParam } from '../src/transaction/makeTransactions'
-import Transaction from '../src/transaction/transaction'
+import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/InvokeCode'
 import Program from '../src/transaction/Program'
 import { Identity } from '../src/identity'
@@ -44,7 +44,9 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 // console.log('publick key: ' + publicKey)
 
 privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
-publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+publicKey = ab2hexstring(core.getPublicKey(privateKey, false))
+var pkPoint = core.getPublicKeyPoint(privateKey)
+console.log('pk: '+ JSON.stringify(pkPoint))
 
 
 // privateKey = 'cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406'
@@ -58,10 +60,10 @@ newrecovery = '8143c0070b7bea4895dbe9078abdf655047b5949'
 oldrecovery = '8143c0070b7bea4895dbe9078abdf655047b5950'
 
 
-var invoke = new InvokeCode();
-var sr = new StringReader('5999efd79e56f5b4edc78ba2bafae3cd2c3bb68dfd030121023ed0ac36b2222e47f4997e58e420b6e29cf8b7f2d540fce9ec92ebbdf1c72cbe5e7b22436f6e74657874223a22636c61696d3a73746166665f61757468656e7469636174696f6e34222c224f6e746964223a226469643a6f6e743a545675463646483150736b7a574a4146685741466731374e5369744d4445424e6f44227d06537472696e6740623561383762656139326435323532356236656261336236373035393563663862396362623531653937326635636266663439396434383637376464656538612a6469643a6f6e743a544146593162684c446b685a706b4e47685335664775425935474c544d416256584e55c10c416464417474726962757465')
-invoke.deserialize(sr)
-console.log('invoke:'+JSON.stringify(invoke))
+// var invoke = new InvokeCode();
+// var sr = new StringReader('5999efd79e56f5b4edc78ba2bafae3cd2c3bb68dfd030121023ed0ac36b2222e47f4997e58e420b6e29cf8b7f2d540fce9ec92ebbdf1c72cbe5e7b22436f6e74657874223a22636c61696d3a73746166665f61757468656e7469636174696f6e34222c224f6e746964223a226469643a6f6e743a545675463646483150736b7a574a4146685741466731374e5369744d4445424e6f44227d06537472696e6740623561383762656139326435323532356236656261336236373035393563663862396362623531653937326635636266663439396434383637376464656538612a6469643a6f6e743a544146593162684c446b685a706b4e47685335664775425935474c544d416256584e55c10c416464417474726962757465')
+// invoke.deserialize(sr)
+// console.log('invoke:'+JSON.stringify(invoke))
 
 // identity = new Identity()
 // identity.create(privateKey, '123456', 'mickey')
@@ -138,6 +140,12 @@ const parseDDO = (result) => {
 
 const testRegisterOntid = () => {
     let tx = buildRegisterOntidTx(str2hexstr(ontid), privateKey)
+    let serialized = tx.serialize()
+    console.log('serialized: '+serialized)
+
+    let temp = Transaction.deserialize(serialized)
+    console.log('deserialized: '+JSON.stringify(temp))
+
     let param = buildTxParam(tx)
     
     txSender.sendTxWithSocket(param, callback)
@@ -277,13 +285,13 @@ const testCheckOntid = () => {
 
 //uncomment one line to test one tx each time.
 
-// testRegisterOntid()
+testRegisterOntid()
 
 // testAddAttribute()
 
 // testDDOTx()
 
-testDDOByRpc()
+// testDDOByRpc()
 
 // testGetPublicKeys()
 

@@ -4,18 +4,22 @@ import Parameter from '../Abi/parameter'
 import InvokeCode from './payload/InvokeCode'
 import DeployCode from './payload/DeployCode'
 import FunctionCode from './FunctionCode'
-import TransactionAttribute from './txAttribute'
-import Transaction, {TxType} from './transaction'
+import {Transaction, TxType, Sig, PubKey} from './transaction'
+import {Transfers, TokenTransfer, State} from '../smartcontract/token'
+import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
 import {DDO} from './DDO'
 import {createSignatureScript, getHash } from '../core'
 import Program from './Program'
 import * as core from '../core'
-import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring} from '../utils'
+import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes} from '../utils'
 import json from '../smartcontract/data/IdContract.abi'
 import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
-import {tx_url, socket_url} from '../consts'
+import {tx_url, socket_url, TOKEN_TYPE} from '../consts'
 import axios from 'axios'
+import { VmCode, VmType } from './vmcode';
+import * as cryptoJS from 'crypto-js'
+
 const WebSocket = require('ws');
 
 
@@ -31,11 +35,69 @@ export const Default_params = {
 // export const socket_url = 'ws://192.168.3.128:20335'
 // export const net_url = 'http://192.168.3.128:20335/api/v1/transaction'
 
+const ONT_CONTRACT = "ff00000000000000000000000000000000000001"
+export const makeTransferTransaction = (tokenType:string, from : string, to : string, value : string,  privateKey : string)=> {
+    let state = new State()
+    state.from = from
+    state.to = to
+    state.value = value
+    let tf = new TokenTransfer()
+    if(tokenType === TOKEN_TYPE.ONT) {
+        tf.contract = ONT_CONTRACT
+    } else {
+        //TODO
+    }
+    tf.states = [state]
+    let transfer = new Transfers()
+    transfer.params = [tf]
+    
+    let tx = new Transaction()
+    tx.version = 0x00
+    tx.type = TxType.Invoke
+    tx.nonce = ab2hexstring(core.generateRandomArray(4))
+    
+    //inovke
+    let code = ''
+    //TODO: change with token type
+    let flag = 'Token.Common.Transfer'
+    code += str2VarBytes(flag)
+    code += transfer.serialize()
+    let vmcode = new VmCode()
+    vmcode.code = code
+    vmcode.vmType = VmType.NativeVM
+    let invokeCode = new InvokeCode()
+    invokeCode.code = vmcode
+    tx.payload = invokeCode
+    signTransaction(tx, privateKey)
+
+    return tx
+}
+
+export const signTransaction = (tx : Transaction, privateKey : string) => {
+    let pkPoint = core.getPublicKeyPoint(privateKey)
+    
+    let hash = tx.getHash()
+    // var ProgramHexString = cryptoJS.enc.Hex.parse(SignatureScript);
+    // var ProgramSha256 = cryptoJS.SHA256(hash).toString();
+
+    let signed = core.signatureData(hash, privateKey)
+    let sig = new Sig()
+    sig.M = 1   
+    sig.pubKeys = [new PubKey(pkPoint.x, pkPoint.y)]
+    sig.sigData = [signed]
+
+    tx.sigs = [sig]
+}
+
+
 export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+    let pkPoint = core.getPublicKeyPoint(privateKey)
     let tx = new Transaction()
-    tx.type = TxType.InvokeCode
+    tx.type = TxType.Invoke
     tx.version = 0x00
+
+    tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
     let payload = new InvokeCode()
     let scriptHash = abiInfo.getHash()
@@ -68,13 +130,15 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     attr.data = hash
     tx.txAttributes = [attr]
 
-    //program
+    //sig
     let unsignedData = tx.serializeUnsignedData()
-    let program = new Program()
+    let sig = new Sig()
     let signed = core.signatureData(unsignedData, privateKey)
-    program.code = signed
-    program.parameter = publicKey
-    tx.programs = [program]
+    sig.M = 1
+    let pk = new PubKey(pkPoint.x, pkPoint.y)
+    sig.pubKeys = [pk]
+    sig.sigData = [signed]
+    tx.sigs = [sig]
 
     return tx
 }
