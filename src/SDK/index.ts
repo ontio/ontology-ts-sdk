@@ -5,11 +5,12 @@ import {Claim, Metadata, Signature} from '../claim'
 import * as scrypt from '../scrypt'
 import {sendBackResult2Native, EventEmitter, str2hexstr} from '../utils'
 import * as core from '../core'
-import {buildAddAttributeTx, buildTxParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid} from '../transaction/makeTransactions'
+import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid, makeTransferTransaction} from '../transaction/makeTransactions'
 import { ERROR_CODE } from '../error';
-import {tx_url, socket_url, ONT_NETWORK} from '../consts'
+import {tx_url, socket_url, ONT_NETWORK, transfer_url} from '../consts'
 import { encrypt } from '../scrypt';
 import TxSender from '../transaction/TxSender'
+import axios from 'axios'
 
 export class SDK {
 
@@ -247,7 +248,6 @@ export class SDK {
             privateKey = scrypt.decrypt(encryptedPrivateKey, password);
         } catch (err) {
             let result = this.getDecryptError(err)
-            
             return result
         }
         let tx = buildAddAttributeTx(path, value, subject,  privateKey)
@@ -313,6 +313,76 @@ export class SDK {
 
         callback && sendBackResult2Native(JSON.stringify(result), callback)
         return result
+    }
+
+
+    static getBalance(address : string, callback : string) {
+        var url = 'http://192.168.3.141',
+            restPort = '20384',
+            balanceApi = '/api/v1/balance'
+        if(address.length === 40) {
+            address = core.addressToBase58(address)
+        }
+        let request = `${url}:${restPort}${balanceApi}/${address}`
+        axios.get(request).then((res : any) => {
+            if(res.data.Error === 0) {
+                let obj = {
+                    error : 0,
+                    result : res.data.Result
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            } else {
+                let obj = {
+                    error: res.data.Error,
+                    result : ''
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                
+            }
+        }).catch( (err:any) => {
+            let obj = {
+                error: JSON.stringify(err),
+                result: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        })
+    }
+
+    //can only test Ont transfer now
+    static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, callback : string) {
+        let privateKey = ''
+        try {
+            privateKey = scrypt.decrypt(encryptedPrivateKey, password)
+        } catch (err) {
+            let result = this.getDecryptError(err)
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+            return result
+        }
+        let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
+        var param = buildRpcParam(tx)
+
+        axios.post(transfer_url, param).then( (res:any) => {
+            console.log('transfer response: ' + JSON.stringify(res.data))
+            if(res.data.error === 0) {
+                let obj = {
+                    error : 0,
+                    result : '',
+                    desc : 'Send transfer success.'
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            } else {
+                let obj = {
+                    error: res.data.error,
+                    result: '',
+                    desc: 'Send transfer failed.'
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            }
+        }).catch( (err:any) => {
+            console.log(err)
+        })
     }
 
 }

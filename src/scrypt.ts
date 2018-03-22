@@ -22,7 +22,7 @@ export function encrypt(privateKey: string, keyphrase: string, scryptParams = DE
     let programHash = core.getHash(signatureScript);
     //console.log( "programHash: ", programHash );
 
-    let address = core.toAddress(programHash);
+    let address = core.addressToBase58(programHash);
     //console.log( "address: ", address );
 
     let addressSha256 = CryptoJS.SHA256(address).toString();

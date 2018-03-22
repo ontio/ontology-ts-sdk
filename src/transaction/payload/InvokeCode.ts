@@ -21,6 +21,7 @@ export default class InvokeCode extends Payload {
 
     constructor() {
         super()
+        this.gasLimit = new Fixed64()
     }
  
 /*     serialize() : string {
@@ -79,7 +80,9 @@ export default class InvokeCode extends Payload {
 
     serialize() {
         let result = ''
-        result += this.gasLimit.serialize()
+        if(this.gasLimit) {
+            result += this.gasLimit.serialize()
+        }
         result += this.code.serialize()
         return result
     }
@@ -118,12 +121,11 @@ export default class InvokeCode extends Payload {
     }  */
 
     deserialize(sr : StringReader) {
-        let invokeCode = new InvokeCode()
         let gasLimit = Fixed64.deserialize(sr)
         let code = VmCode.deserialize(sr)
-        invokeCode.gasLimit = gasLimit
-        invokeCode.code = code
-        return invokeCode
+        this.gasLimit = gasLimit
+        this.code = code
+        return this
     }
 
 }

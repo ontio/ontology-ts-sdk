@@ -51,3 +51,11 @@ export const ONT_URL = {
   MAIN_RPC : tx_url,
   TEST_PRC : tx_url
 }
+
+//the ip of shuaishuai, only for test
+export const transfer_url = 'http://192.168.3.141:20386'
+
+export const TOKEN_TYPE = {
+  ONT : 'ONT',
+  ONG : 'ONG'
+}

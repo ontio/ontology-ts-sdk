@@ -1,4 +1,4 @@
-import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes } from "../utils";
+import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes, hex2VarBytes } from "../utils";
 import Uint160 from "../common/Uint160";
 import {BigNumber} from 'bignumber.js'
 export class Transfers {
@@ -59,15 +59,16 @@ export class TokenTransfer {
 }
 
 export class State {
-    from  : string
+    from  : string 
     to    : string
-    value : BigNumber
+    value : string
 
     serialize() {
         let result = ''
         result += this.from
         result += this.to
-        result += str2VarBytes(this.value.toString())
+        result += hex2VarBytes(this.value)
+        return result
     }
 
     static deserialize(sr : StringReader) {

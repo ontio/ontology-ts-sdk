@@ -16,7 +16,7 @@ export class Account {
     algorithm: string;
     parameters: {};
     key: string;
-    contract: Contract
+    // contract: Contract
     extra: null;
 
     constructor() {
@@ -24,11 +24,11 @@ export class Account {
 
     create( privateKey: string, password: string, label: string, algorithmObj ?: any ): Account {
         
-        let contract = {
-            script : '',
-            parameters : [],
-            deployed : false
-        }
+        // let contract = {
+        //     script : '',
+        //     parameters : [],
+        //     deployed : false
+        // }
 
         this.address = "";
         this.label = label;
@@ -44,12 +44,11 @@ export class Account {
         
         this.key = scrypt.encrypt( privateKey, password );
 
-        let publicKeyEncoded = ab2hexstring( core.getPublicKey( privateKey, true ) );
-        contract.script = core.createSignatureScript( publicKeyEncoded );
-        this.contract = contract 
+        let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+        
+        let programHash = core.getSingleSigUInt160(publickeyEncode);
 
-        let programHash = core.getHash( this.contract.script );
-        this.address = core.toAddress( programHash );
+        this.address = core.addressToBase58(programHash);
 
         return this;
     }
@@ -72,7 +71,7 @@ export class Account {
             algorithm: this.algorithm,
             parameters: this.parameters,
             key: this.key,
-            contract: this.contract,
+            // contract: this.contract,
             extra: this.extra
         }
         return JSON.stringify(obj)
@@ -87,7 +86,7 @@ export class Account {
         account.algorithm = obj.algorithm
         account.parameters = obj.parameters
         account.key = obj.key
-        account.contract = obj.contract
+        // account.contract = obj.contract
         account.extra = obj.extra
         return account;
     }

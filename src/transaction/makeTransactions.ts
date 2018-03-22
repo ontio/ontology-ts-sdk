@@ -15,9 +15,11 @@ import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexst
 import json from '../smartcontract/data/IdContract.abi'
 import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
-import {tx_url, socket_url} from '../consts'
+import {tx_url, socket_url, TOKEN_TYPE} from '../consts'
 import axios from 'axios'
 import { VmCode, VmType } from './vmcode';
+import * as cryptoJS from 'crypto-js'
+
 const WebSocket = require('ws');
 
 
@@ -33,14 +35,18 @@ export const Default_params = {
 // export const socket_url = 'ws://192.168.3.128:20335'
 // export const net_url = 'http://192.168.3.128:20335/api/v1/transaction'
 
-const contract = "ff00000000000000000000000000000000000001"
-export const makeTransferTransaction = (from : string, to : string, value : string,  privateKey : string)=> {
+const ONT_CONTRACT = "ff00000000000000000000000000000000000001"
+export const makeTransferTransaction = (tokenType:string, from : string, to : string, value : string,  privateKey : string)=> {
     let state = new State()
     state.from = from
     state.to = to
     state.value = value
     let tf = new TokenTransfer()
-    tf.contract = contract
+    if(tokenType === TOKEN_TYPE.ONT) {
+        tf.contract = ONT_CONTRACT
+    } else {
+        //TODO
+    }
     tf.states = [state]
     let transfer = new Transfers()
     transfer.params = [tf]
@@ -52,7 +58,8 @@ export const makeTransferTransaction = (from : string, to : string, value : stri
     
     //inovke
     let code = ''
-    let flag = str2hexstr('Token.Common.Transfer')
+    //TODO: change with token type
+    let flag = 'Token.Common.Transfer'
     code += str2VarBytes(flag)
     code += transfer.serialize()
     let vmcode = new VmCode()
@@ -60,7 +67,7 @@ export const makeTransferTransaction = (from : string, to : string, value : stri
     vmcode.vmType = VmType.NativeVM
     let invokeCode = new InvokeCode()
     invokeCode.code = vmcode
-    
+    tx.payload = invokeCode
     signTransaction(tx, privateKey)
 
     return tx
@@ -70,9 +77,12 @@ export const signTransaction = (tx : Transaction, privateKey : string) => {
     let pkPoint = core.getPublicKeyPoint(privateKey)
     
     let hash = tx.getHash()
+    // var ProgramHexString = cryptoJS.enc.Hex.parse(SignatureScript);
+    // var ProgramSha256 = cryptoJS.SHA256(hash).toString();
+
     let signed = core.signatureData(hash, privateKey)
     let sig = new Sig()
-    sig.M = 1
+    sig.M = 1   
     sig.pubKeys = [new PubKey(pkPoint.x, pkPoint.y)]
     sig.sigData = [signed]
 

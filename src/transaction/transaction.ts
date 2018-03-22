@@ -11,6 +11,8 @@ import TXOutput from './txOutput'
 import Fixed64 from '../common/Fixed64'
 import Uint160 from '../common/Uint160';
 import Uint256 from '../common/uint256';
+import * as core from '../core'
+import * as cryptoJS from 'crypto-js'
 
 export enum TxType  {
     BookKeeping     = 0x00,
@@ -166,8 +168,6 @@ export class Transaction {
         if(this.networkFee) {
             result += this.networkFee.serialize()
         }
-        //gas
-        // result += this.systemFee.serialize()
 
         return result
     }
@@ -239,7 +239,13 @@ export class Transaction {
     }
 
     getHash() {
-        return ''
+        let data = this.serializeUnsignedData()
+
+        var ProgramHexString = cryptoJS.enc.Hex.parse(data);
+        var ProgramSha256 = cryptoJS.SHA256(ProgramHexString).toString();
+        var ProgramSha256_2 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(ProgramSha256)).toString();
+        
+        return ProgramSha256_2
     }
 
 
