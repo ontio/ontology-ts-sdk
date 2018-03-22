@@ -1,16 +1,18 @@
 
 import Payload from './payload'
 import FunctionCode from '../FunctionCode'
-import {LangType, VmType} from '../../smartcontract/types'
-import {str2VarBytes, hex2VarBytes, num2VarInt, bool2VarByte, StringReader, hexstr2str} from '../../utils'
+import {LangType} from '../../smartcontract/types'
+import {VmType} from '../vmcode'
+import {str2VarBytes, hex2VarBytes, num2VarInt, bool2VarByte, StringReader, hexstr2str, num2hexstring} from '../../utils'
 
 export default class DeployCode extends Payload {
-    code : FunctionCode
+    //hex string
+    code : string
     //hex string
     vmType : VmType
     needStorage : boolean
     name : string
-    codeVersion : string
+    version : string
     author : string
     email : string
     description : string
@@ -22,14 +24,15 @@ export default class DeployCode extends Payload {
 
     serialize() : string {
         let result = ''
-        result += this.code.serialize()
-        result += num2VarInt(this.vmType)
+        result += num2hexstring(this.vmType)
+
+        result += hex2VarBytes(this.code)
 
         result += bool2VarByte(this.needStorage)
 
         result += str2VarBytes(this.name)
 
-        result += str2VarBytes(this.codeVersion)
+        result += str2VarBytes(this.version)
 
         result += str2VarBytes(this.author)
 
@@ -42,11 +45,11 @@ export default class DeployCode extends Payload {
 
     deserialize(sr : StringReader) : void {
 
-        let fc = FunctionCode.deserialize(sr)
-        this.code = fc
-
         const vmType = sr.readNextLen()
         this.vmType = vmType
+
+        const code = sr.readNextBytes()
+        this.code = code
 
         const boolValue = sr.read(1)
         this.needStorage = boolValue == '00'? false : true
@@ -55,7 +58,7 @@ export default class DeployCode extends Payload {
         this.name = hexstr2str(name)
 
         const codeVersion = sr.readNextBytes()
-        this.codeVersion = hexstr2str(codeVersion)
+        this.version = hexstr2str(codeVersion)
 
         const author = sr.readNextBytes()
         this.author = hexstr2str(author)

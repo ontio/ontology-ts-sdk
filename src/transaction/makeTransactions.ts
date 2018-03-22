@@ -92,7 +92,6 @@ export const signTransaction = (tx : Transaction, privateKey : string) => {
 
 export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
-    let pkPoint = core.getPublicKeyPoint(privateKey)
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
@@ -106,6 +105,7 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
         scriptHash = reverseHex(scriptHash)
     }
     console.log('codehash: '+scriptHash)
+
     payload.scriptHash = scriptHash 
     payload.parameters = func.parameters
     payload.functionName = func.name
@@ -131,14 +131,7 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     tx.txAttributes = [attr]
 
     //sig
-    let unsignedData = tx.serializeUnsignedData()
-    let sig = new Sig()
-    let signed = core.signatureData(unsignedData, privateKey)
-    sig.M = 1
-    let pk = new PubKey(pkPoint.x, pkPoint.y)
-    sig.pubKeys = [pk]
-    sig.sigData = [signed]
-    tx.sigs = [sig]
+    signTransaction(tx, privateKey)
 
     return tx
 }
@@ -171,15 +164,10 @@ export function makeDeployTransaction (dc : DeployCode, privateKey : string) {
     tx.version = 0x00
 
     tx.payload = dc
-    tx.type = TxType.DeployCode
+    tx.type = TxType.Deploy
 
     //program
-    let unsignedData = tx.serializeUnsignedData()
-    let program = new Program()
-    let signed = core.signatureData(unsignedData, privateKey)
-    program.code = signed
-    program.parameter = publicKey
-    tx.programs = [program]
+    signTransaction(tx, privateKey)
     
     return tx
 }
