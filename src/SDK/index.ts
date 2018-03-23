@@ -64,13 +64,15 @@ export class SDK {
         } 
 
         var txSender = new TxSender(ONT_NETWORK.TEST)
-        txSender.sendTxWithSocket(param, socketCallback)
-
+        //no backend for now
+        // txSender.sendTxWithSocket(param, socketCallback)
+        
         let obj = {
             error : 0,
             result : walletDataStr,
             desc : ''
         }
+        callback && sendBackResult2Native(JSON.stringify(obj), callback)
         return obj
     }
 
@@ -321,7 +323,7 @@ export class SDK {
             restPort = '20384',
             balanceApi = '/api/v1/balance'
         if(address.length === 40) {
-            address = core.addressToBase58(address)
+            address = core.addressToU160(address)
         }
         let request = `${url}:${restPort}${balanceApi}/${address}`
         axios.get(request).then((res : any) => {

@@ -11,7 +11,7 @@ import {DDO} from './DDO'
 import {createSignatureScript, getHash } from '../core'
 import Program from './Program'
 import * as core from '../core'
-import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes} from '../utils'
+import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes, hex2VarBytes, num2VarInt} from '../utils'
 import json from '../smartcontract/data/IdContract.abi'
 import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
@@ -19,6 +19,7 @@ import {tx_url, socket_url, TOKEN_TYPE} from '../consts'
 import axios from 'axios'
 import { VmCode, VmType } from './vmcode';
 import * as cryptoJS from 'crypto-js'
+import opcode from './opcode';
 
 const WebSocket = require('ws');
 
@@ -89,6 +90,95 @@ export const signTransaction = (tx : Transaction, privateKey : string) => {
     tx.sigs = [sig]
 }
 
+export const pushBool = (param : boolean) => {
+    let result = ''
+    if(param) {
+        result += opcode.PUSHT
+    } else {
+        result += opcode.PUSHF
+    }
+    return result
+}
+
+export const pushInt = (param : number) => {
+    let result = ''
+    if(param == -1) {
+        result += opcode.PUSHM1
+    }
+    else if(param == 0) {
+        result += opcode.PUSH0
+    } 
+    else if(param > 0 && param < 16) {
+        let num = opcode.PUSH1 - 1 + param
+        result += num2hexstring(num)
+    }  
+    else {
+        result += num2VarInt(param)
+    } 
+    return result
+}
+
+export const pushHexString = (param : string) => {
+    let result = ''
+    let len = param.length/2
+    if(len < opcode.PUSHBYTES75) {
+        result += num2hexstring(len)
+    } 
+    else if(len < 0x100) {
+        result += opcode.PUSHDATA1
+        result += num2hexstring(len)
+    } 
+    else if(len < 0x10000) {
+        result += opcode.PUSHDATA2
+        result += num2hexstring(len, 2, true)
+    } else {
+        result += opcode.PUSHDATA4
+        result += num2hexstring(len, 4, true)
+    }
+    result += hex2VarBytes(param)
+    return result
+}
+
+
+//params is like [functionName, param1, param2...]
+export const buildSmartContractParam = (params : [any]) => {
+    let result = ''
+    for (let i= params.length -1; i > -1; i--) {
+        const type = Object.prototype.toString.call(params[i])
+        switch (type) {
+            case "[object Boolean]":
+                result += pushBool(params[i])
+                break;
+
+            case "[object Number]":
+                result += pushInt(params[i])
+                break;
+
+            case "[object String]":
+                result += pushHexString(params[i])
+                break;
+
+            /* case "[object Object]":
+                let temp = []
+                let keys = Object.keys(params[i])
+                for(let k of keys) {
+                    temp.push( params[i][k])
+                }
+                result += buildSmartContractParam(temp)
+                break; */
+        
+            default:
+                throw new Error('Unsupported param type: '+params[i])
+        }
+    }
+
+    return result
+}
+
+export const makeInvokeCode = () => {
+    
+}
+
 
 export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
@@ -144,27 +234,27 @@ export function makeFunctionCode(avmCode : string, parameterTypes:[any], returnT
     return fc
 }
 
-export function makeDeployCode(fc : FunctionCode, obj : any) {
+// TODO need update
+export function makeDeployCode(code : string, obj : any) {
     let dc = new DeployCode()
     dc.author = obj.author || ''
-    dc.code = fc
-    dc.codeVersion = obj.codeVersion || '1.0'
+    dc.code = code
+    dc.version = obj.version || '1.0'
     dc.description = obj.description || ''
     dc.email = obj.email || ''
     dc.name = obj.name || ''
     dc.needStorage = obj.needStorage || true
-    dc.vmType = obj.vmType || 0
+    dc.vmType = obj.vmType || VmType.NativeVM
     return dc
 }
 
 export function makeDeployTransaction (dc : DeployCode, privateKey : string) {
-    let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
-
     let tx = new Transaction()
     tx.version = 0x00
 
     tx.payload = dc
     tx.type = TxType.Deploy
+    tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
     //program
     signTransaction(tx, privateKey)

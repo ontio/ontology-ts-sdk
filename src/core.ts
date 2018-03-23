@@ -66,7 +66,7 @@ export function getSingleSigUInt160(publicKeyEncoded: string): string {
     return "01" + PkRipemd160.substr(2);
 }
 
-export function addressToBase58(programhash: string): string {
+export function u160ToAddress(programhash: string): string {
     var data = ADDR_VERSION + programhash;
 
     var ProgramHexString = cryptoJS.enc.Hex.parse(data);
@@ -79,12 +79,12 @@ export function addressToBase58(programhash: string): string {
     return base58.encode(hexstring2ab(datas));
 };
 
-export function addressFromBase58(addressEncoded : string) {
+export function addressToU160(addressEncoded : string) {
     let decoded = base58.decode(addressEncoded)
     let programHash = ab2hexstring(decoded).substr(2,40)
-    let add58 = addressToBase58(programHash)
+    let add58 = u160ToAddress(programHash)
     if(add58 !== addressEncoded) {
-        throw new Error('[addressFromBase58] decode encodeed varify failed')
+        throw new Error('[addressToU160] decode encodeed varify failed')
     }
     return programHash
 }
@@ -137,7 +137,7 @@ export function generateOntid(nonce : string) {
     // let programHash = getHash(signatureScript);
     
     let programHash = getHash(nonce);
-    let ontid = "did:ont:" + addressToBase58(programHash);
+    let ontid = "did:ont:" + u160ToAddress(programHash);
     return ontid
 }
 
