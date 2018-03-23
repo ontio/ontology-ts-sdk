@@ -48,7 +48,7 @@ export class Account {
         
         let programHash = core.getSingleSigUInt160(publickeyEncode);
 
-        this.address = core.addressToBase58(programHash);
+        this.address = core.u160ToAddress(programHash);
 
         return this;
     }

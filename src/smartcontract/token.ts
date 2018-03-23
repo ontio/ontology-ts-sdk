@@ -1,4 +1,4 @@
-import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes, hex2VarBytes } from "../utils";
+import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes, hex2VarBytes, hexstr2str } from "../utils";
 import Uint160 from "../common/Uint160";
 import {BigNumber} from 'bignumber.js'
 export class Transfers {
@@ -59,15 +59,25 @@ export class TokenTransfer {
 }
 
 export class State {
+    //20 bytes address
     from  : string 
     to    : string
     value : string
 
     serialize() {
         let result = ''
+        if(!this.from || this.from.length !== 40) {
+            throw new Error('[State.serialize], Invalid from address '+this.from)
+        }
         result += this.from
+
+        if (!this.to || this.to.length !== 40) {
+            throw new Error('[State.serialize], Invalid to address ' + this.to)
+        }
         result += this.to
-        result += hex2VarBytes(this.value)
+        // result += hex2VarBytes(this.value)
+        let bn = BigNumber(this.value).toString(16)
+        result += hex2VarBytes(bn)
         return result
     }
 
@@ -75,7 +85,7 @@ export class State {
         let s = new State()
         let from = sr.read(20)
         let to   = sr.read(20)
-        let value = BigNumber(parseInt(sr.readNextBytes()))
+        let value = BigNumber(sr.readNextBytes(), 16)
 
         s.from = from
         s.to   = to

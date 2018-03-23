@@ -12,9 +12,11 @@ import { VmCode } from '../vmcode';
 
 export default class InvokeCode extends Payload {
     //the length is of bytes 20
-    /* scriptHash : string
+    /* 
+    scriptHash : string
     parameters : Array<Parameter> = []
-    functionName : string */
+    functionName : string
+     */
 
     gasLimit : Fixed64
     code : VmCode
@@ -71,7 +73,8 @@ export default class InvokeCode extends Payload {
         result += funcNameLength
         result += funcNameHex
         let totalParamsLength = num2VarInt(result.length / 2)
-        result = this.scriptHash + totalParamsLength + result
+        //result = this.scriptHash + totalParamsLength + result
+        
 
         console.log('invode serialze: '+ result)
 
