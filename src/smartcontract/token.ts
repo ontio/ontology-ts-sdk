@@ -75,9 +75,10 @@ export class State {
             throw new Error('[State.serialize], Invalid to address ' + this.to)
         }
         result += this.to
-        // result += hex2VarBytes(this.value)
-        let bn = BigNumber(this.value).toString(16)
-        result += hex2VarBytes(bn)
+        let numHex = str2hexstr(this.value)
+        result += hex2VarBytes(numHex)       
+        // let bn = BigNumber(this.value).toString(16)
+        // result += hex2VarBytes(bn)
         return result
     }
 

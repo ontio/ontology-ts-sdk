@@ -66,7 +66,7 @@ console.log('state deserialized: ' + JSON.stringify(State.deserialize(new String
 
 
 var p = '760bb46952845a4b91b1df447c2f2d15bb40ab1d9a368d9f0ee4bf0d67500160'
-var password = 'passwordtets'
+var password = 'passwordtest'
 var key = scrypt.encrypt(p, password)
 console.log(key)
 

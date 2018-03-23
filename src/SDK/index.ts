@@ -38,32 +38,32 @@ export class SDK {
 
         let walletDataStr = wallet.toJson()
          
-        let tx = buildRegisterOntidTx(identity.ontid, privateKey)
-        let param = buildTxParam(tx)
+        // let tx = buildRegisterOntidTx(identity.ontid, privateKey)
+        // let param = buildTxParam(tx)
         
-        const socketCallback = function(res:any, socket:any) {
-            let obj = {
-                error: ERROR_CODE.SUCCESS,
-                result: walletDataStr,
-                desc: ''
-            }
-            if(res.Error === 0) {
-                callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                socket.close()
-            } else {
-                let errResult = {
-                    error: res.Error,
-                    result: '',
-                    desc: res.Result
-                }
-                if (callback) {
-                    sendBackResult2Native(JSON.stringify(errResult), callback)
-                }
-                socket.close()
-            }
-        } 
+        // const socketCallback = function(res:any, socket:any) {
+        //     let obj = {
+        //         error: ERROR_CODE.SUCCESS,
+        //         result: walletDataStr,
+        //         desc: ''
+        //     }
+        //     if(res.Error === 0) {
+        //         callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        //         socket.close()
+        //     } else {
+        //         let errResult = {
+        //             error: res.Error,
+        //             result: '',
+        //             desc: res.Result
+        //         }
+        //         if (callback) {
+        //             sendBackResult2Native(JSON.stringify(errResult), callback)
+        //         }
+        //         socket.close()
+        //     }
+        // } 
 
-        var txSender = new TxSender(ONT_NETWORK.TEST)
+        // var txSender = new TxSender(ONT_NETWORK.TEST)
         //no backend for now
         // txSender.sendTxWithSocket(param, socketCallback)
         
@@ -390,6 +390,12 @@ export class SDK {
 
     //can only test Ont transfer now
     static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, callback : string) {
+        if (from.length !== 40) {
+            from = core.addressToU160(from)
+        }
+        if (to.length !== 40) {
+            to = core.addressToU160(to)
+        }
         let privateKey = ''
         try {
             privateKey = scrypt.decrypt(encryptedPrivateKey, password)

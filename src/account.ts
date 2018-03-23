@@ -3,6 +3,7 @@ import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
 import {DEFAULT_ALGORITHM, Algorithm} from './consts'
 import {ERROR_CODE} from './error'
+import { addressToU160 } from './core';
 export class Contract {
     script : string
     parameters : Array<string>
@@ -74,12 +75,18 @@ export class Account {
 
         account.key = encryptedPrivateKey
 
-        let publicKeyEncoded = ab2hexstring(core.getPublicKey(privateKey, true));
-        contract.script = core.createSignatureScript(publicKeyEncoded);
-        account.contract = contract
+        // let publicKeyEncoded = ab2hexstring(core.getPublicKey(privateKey, true));
+        // contract.script = core.createSignatureScript(publicKeyEncoded);
+        // account.contract = contract
 
-        let programHash = core.getHash(account.contract.script);
-        account.address = core.toAddress(programHash);
+
+        let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+
+        let programHash = core.getSingleSigUInt160(publickeyEncode);
+
+        let address = core.u160ToAddress(programHash);
+
+        account.address = address
     
         return account
     }
