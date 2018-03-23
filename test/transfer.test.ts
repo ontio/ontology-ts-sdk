@@ -58,16 +58,16 @@ const testGetBalance = () => {
 var state = new State()
 state.from = ab2hexstring(core.generateRandomArray(20))
 state.to = ab2hexstring(core.generateRandomArray(20))
-state.value = '1234567234567893456789823456789345678'
+state.value = '1000'
 var stateSerialized = state.serialize()
 console.log('state serialized: '+ stateSerialized)
 
 console.log('state deserialized: ' + JSON.stringify(State.deserialize(new StringReader(stateSerialized))))
 
 
-var p = '760bb46952845a4b91b1df447c2f2d15bb40ab1d9a368d9f0ee4bf0d67500160'
-var password = 'passwordtets'
-var key = scrypt.encrypt(p, password)
-console.log(key)
+// var p = '760bb46952845a4b91b1df447c2f2d15bb40ab1d9a368d9f0ee4bf0d67500160'
+// var password = 'passwordtest'
+// var key = scrypt.encrypt(p, password)
+// console.log(key)
 
-console.log(scrypt.decrypt(key, password))
+// console.log(scrypt.decrypt(key, password))

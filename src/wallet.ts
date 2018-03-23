@@ -9,8 +9,8 @@ import * as scrypt from './scrypt'
 
 export class Wallet {
     name: string;
-    defaultOntid: string;
-    defaultAccountAddress : string;
+    defaultOntid: string = '';
+    defaultAccountAddress : string = '';
     createTime: string;
     version: string;
     scrypt: {
