@@ -335,6 +335,15 @@ export function buildRpcParam(tx : any) {
     return result
 }
 
+export function buildRestfulParam(tx : any) {
+    let param = tx.serialize()
+    return {
+        "Action" : "sendrawtransaction",
+        "Version" : "1.0.0",
+        "Data" : param
+    }
+}
+
 //TODO : cors problem
 export function checkOntid(ontid: string) {
    let param = buildRpcParam(ontid)

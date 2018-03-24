@@ -53,7 +53,7 @@ export const ONT_URL = {
 }
 
 //the ip of shuaishuai, only for test
-export const transfer_url = 'http://192.168.3.141:20386'
+export const transfer_url = 'http://192.168.3.141:20384/api/v1/transaction'
 
 export const TOKEN_TYPE = {
   ONT : 'ONT',
