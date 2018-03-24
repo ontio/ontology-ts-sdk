@@ -5,7 +5,7 @@ import {Claim, Metadata, Signature} from '../claim'
 import * as scrypt from '../scrypt'
 import {sendBackResult2Native, EventEmitter, str2hexstr} from '../utils'
 import * as core from '../core'
-import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid, makeTransferTransaction} from '../transaction/makeTransactions'
+import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid, makeTransferTransaction, buildRestfulParam} from '../transaction/makeTransactions'
 import { ERROR_CODE } from '../error';
 import {tx_url, socket_url, ONT_NETWORK, transfer_url} from '../consts'
 import { encrypt } from '../scrypt';
@@ -369,11 +369,11 @@ export class SDK {
             return result
         }
         let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
-        var param = buildRpcParam(tx)
+        var param = buildRestfulParam(tx)
 
         axios.post(transfer_url, param).then( (res:any) => {
             console.log('transfer response: ' + JSON.stringify(res.data))
-            if(res.data.error === 0) {
+            if(res.data.Error === 0) {
                 let obj = {
                     error : 0,
                     result : '',
@@ -382,7 +382,7 @@ export class SDK {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
             } else {
                 let obj = {
-                    error: res.data.error,
+                    error: res.data.Error,
                     result: '',
                     desc: 'Send transfer failed.'
                 }
