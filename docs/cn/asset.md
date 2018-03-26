@@ -6,14 +6,10 @@
 {
   address : string,
   label : string,
-  isDefault : boolean,
   lock : boolean,
-  algorithm : boolean,
-  parameters : {
-    curve : string
-  },
+  algorithm : string,
+  parameters : {},
   key : string,
-  contract : {}
   extra : null
 }
 ````
@@ -22,37 +18,15 @@
 
 ```label``` 是账户的名称。
 
-`isDefault` 表明账户是否是默认的账户。默认值为false。
-
 `lock` 表明账户是否是被用户锁住的。客户端不能消费掉被锁的账户中的资金。
 
 `algorithm` 是加密算法名称。
 
 `parameters` 是加密算法所需参数。
 
-```curve``` 是椭圆曲线的名称。
-
 `key` 是NEP-2格式的私钥。该字段可以为null（对于只读地址或非标准地址）。
 
-`contract` 是智能合约对象。该字段可以为null（对于只读的账户地址）。
-
 `extra` 是客户端存储额外信息的字段。该字段可以为null。
-
-#### Contract 具有以下数据结构
-
-````
-{
-  script : string,
-  parameters : [],
-  deployed : boolean
-}
-````
-
-`script` 是智能合约的脚本。当合约已经被部署到区块链上时，该字段可以为null。
-
-`parameters` 是智能合约中函数所需的参数对象，组成的数组。
-
-`deployed` 表明合约是否已被部署到区块链上。默认值为false。
 
 ###  创建账户
 
@@ -68,16 +42,18 @@ account.create(privateKey, password, label, algorithmObj)
 
 ###  导入账户
 
-导入账户的过程中会验证密码和加密后的私钥，如果不正确会抛出相应错误。
+可以通过备份的数据导入账户。
+
+导入账户的过程中会验证密码和加密后的私钥，如果不正确会抛出相应错误码。
 
 ````
 import { Account } from 'Ont'
-//@param {accountDataStr} 账户的json格式字符串
+//@param {label} 账户的名称
 //@param {encryptedPrivateKey} 加密后的私钥
 //@param {password} 用来加密私钥的密码
 var account;
 try {
-    account = Account.importAccount(accountDataStr, encryptedPrivateKey, password)
+    account = Account.importAccount(label, encryptedPrivateKey, password)
 } catch(error) {
     //密码或私钥不正确
 }
@@ -92,7 +68,8 @@ try {
 ````
 {
 	name: string;
-    ontid: string;
+    defaultOntid: string;
+    defaultAccountAddress : string;
     createTime: string;
     version: string;
     scrypt: {
@@ -108,7 +85,9 @@ try {
 
 `name` 是用户为钱包所取的名称。
 
-```ontid``` 是钱包唯一ontid。
+```defaultOntid``` 是钱包默认的数字身份的ONT ID。
+
+```defaultAccountAddress``` 是钱包默认的资产账户的地址
 
 ```createTime``` 是ISO格式表示的钱包的创建时间，如 : "2018-02-06T03:05:12.360Z"
 
@@ -175,13 +154,13 @@ TOKEN_TYPE = {
 
 #### 样例
 ````
-import { makeTransferTransaction } from "../src/transaction/makeTransactions";
+import { makeTransferTransaction, buildRestParam } from "../src/transaction/transactionBuilder";
 
 var tx = makeTransferTransaction( 'ONT', '0144587c1094f6929ed7362d6328cffff4fb4da2', 'ffeeddccbbaa99887766554433221100ffeeddcc', '1000000000', '760bb46952845a4b91b1df447c2f2d15bb40ab1d9a368d9f0ee4bf0d67500160' )
 
-var rpcData = buildRpcParam(tx)
+var restData = buildRestParam(tx)
 
-axios.post('127.0.0.1:20386', rpcData).then(res => {
+axios.post('127.0.0.1:20386', restData).then(res => {
        console.log('transfer response: ' + JSON.stringify(res.data))
    }).catch(err => {
        console.log(err)
