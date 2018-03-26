@@ -1,19 +1,40 @@
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import { Account } from "../src/account";
 import * as core from '../src/core'
 import {Transaction} from '../src/transaction/transaction'
-import { makeTransferTransaction, buildRpcParam } from "../src/transaction/makeTransactions";
+import { makeTransferTransaction, buildRpcParam, buildRestfulParam } from "../src/transaction/transactionBuilder";
 import TxSender from "../src/transaction/TxSender";
 import axios from 'axios'
 import { ab2hexstring, StringReader } from "../src/utils";
 import {State} from '../src/smartcontract/token'
 import * as scrypt from '../src/scrypt'
-
+import {Test_node, HttpRestPort, restApi} from '../src/consts'
 
 var accountFrom = {
-    address: '0144587c1094f6929ed7362d6328cffff4fb4da2',
-    base58Address: 'TA5uYzLU2vBvvfCMxyV2sdzc9kPqJzGZWq',
-    privateKey: '760bb46952845a4b91b1df447c2f2d15bb40ab1d9a368d9f0ee4bf0d67500160'
+    address: '012ad54766b0563e87fbf9ddc178fa924e05bb46',
+    base58Address: 'TA5NzM9iE3VT9X8SGk5h3dii6GPFQh2vme',
+    privateKey: '2ff1de0e26990385c5b7aa580e8516de20c95ac77a794e296be9e6fe005d6ed8'
 }
+
+var encrypted  = scrypt.encrypt(accountFrom.privateKey, '123456')
+console.log('encrypted：'+ encrypted)
 
 console.log('from base58: '+ core.addressToU160(accountFrom.base58Address))
 
@@ -27,14 +48,16 @@ const  testTransferTx = () => {
     var accountTo = ab2hexstring(core.generateRandomArray(20))
     console.log('account to: ' + accountTo)
 
-    var tx = makeTransferTransaction('ONT',accountFrom.address, accountTo, '1000000000', accountFrom.privateKey)
-    var param = buildRpcParam(tx)
+    var tx = makeTransferTransaction('ONT',accountFrom.address, accountTo, '3000000000', accountFrom.privateKey)
+    var param = buildRestfulParam(tx)
     console.log('param : ' + JSON.stringify(param))
 
-    var temp = Transaction.deserialize(tx.serialize())
-    console.log('deserialzied: ' + JSON.stringify(temp))
+    // var temp = Transaction.deserialize(tx.serialize())
+    // console.log('deserialzied: ' + JSON.stringify(temp))
 
-    axios.post(`${url}:${rpcPort}`, param).then(res => {
+    let request = `http://${Test_node}:${HttpRestPort}${restApi.transfer}`
+
+    axios.post(request, param).then(res => {
         console.log('transfer response: ' + JSON.stringify(res.data))
     }).catch(err => {
         console.log(err)
@@ -42,9 +65,8 @@ const  testTransferTx = () => {
 }
 
 const testGetBalance = () => {
-    var restUrl = `${url}:${restPort}${balanceApi}/${accountFrom.base58Address}`
-    console.log('request: '+restUrl)
-    axios.get(restUrl).then((res) => {
+    let request = `http://${Test_node}:${HttpRestPort}${restApi.getBalance}/${accountFrom.base58Address}`
+    axios.get(request).then((res) => {
         console.log(res.data)
     }).catch(err => {
         console.log(err)

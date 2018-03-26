@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -16,26 +17,45 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- 
-import {str2hexstr, hexstr2str ,StringReader} from '../utils'
-const Fixed64Len = 8
-export default class Fixed64 {
-    //8 bytes
-    value : string
+
+import AbiFunction from './abiFunction'
+
+
+export default class AbiInfo {
+    hash : string
+    entrypoint : string
+    functions : Array<AbiFunction> = []
+
     constructor() {
-        this.value = '0000000000000000'
+
     }
 
-    serialize() {
-        // return str2hexstr(this.value)
-        return this.value
+    getHash() : string {
+        return this.hash
     }
 
-    static deserialize(sr:StringReader) {
-        let f = new Fixed64()
-        const v = sr.read(8)
-        // f.value = hexstr2str(v)
-        f.value = v
+    getEntryPoint() : string {
+        return this.entrypoint
+    }
+
+    getFunction(name : string) : AbiFunction {
+        let f = (<AbiFunction>{})
+        for(let v of this.functions) {
+            if(v.name === name) {
+                return new AbiFunction(v.name,v.returntype,v.parameters)
+            }
+        }
         return f
     }
+
+    static parseJson(json : string) : AbiInfo {
+        let a = new AbiInfo()
+        let obj = JSON.parse(json)
+        a.hash = obj.hash
+        a.entrypoint = obj.entrypoint
+        a.functions = obj.functions
+        return a
+    }
+
+
 }

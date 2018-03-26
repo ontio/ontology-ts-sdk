@@ -1,14 +1,31 @@
-import Transaction, {TxType} from '../src/transaction/transaction'
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import {Transaction, TxType} from '../src/transaction/transaction'
 import DeployCode from '../src/transaction/payload/DeployCode'
 
 import {getHash} from '../src/core'
 import {ab2hexstring, ab2str,str2hexstr , reverseHex} from '../src/utils'
-import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTransaction, buildTxParam} from '../src/transaction/makeTransactions'
-import FunctionCode  from '../src/transaction/FunctionCode';
-import  { ContractParameterType } from '../src/transaction/FunctionCode';
-import AbiInfo from '../src/Abi/AbiInfo'
-import AbiFunction from '../src/Abi/AbiFunction'
-import Parameter from '../src/Abi/parameter'
+import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTransaction, buildTxParam} from '../src/transaction/transactionBuilder'
+
+import AbiInfo from '../src/smartcontract/abi/AbiInfo'
+import AbiFunction from '../src/smartcontract/abi/AbiFunction'
+import Parameter from '../src/smartcontract/abi/parameter'
 import { tx_url, socket_url , ONT_NETWORK} from '../src/consts'
 
 import TxSender from '../src/transaction/TxSender'
@@ -39,12 +56,7 @@ var txSender = new TxSender(ONT_NETWORK.TEST)
 
 
 const testDeployCodeTx = () => {
-    var fc = new FunctionCode()
-    fc.code = code
-    fc.parameterTypes = [ContractParameterType.String, ContractParameterType.Array]
-    fc.returnType = ContractParameterType.Array
-
-    var dc = new DeployCode()
+    var dc = (<any> {})
     dc.author = 'mickey10'
     dc.code = fc
     dc.codeVersion = '1.0'
@@ -54,7 +66,8 @@ const testDeployCodeTx = () => {
     dc.needStorage = true
     dc.vmType = 0
 
-    var tx = makeDeployTransaction(dc, privateKey)
+
+    var tx = makeDeployTransaction(code, dc, privateKey)
     
     var param = buildTxParam(tx)
     console.log('param: '+ param)

@@ -1,15 +1,30 @@
-import AbiInfo from '../Abi/AbiInfo'
-import AbiFunction from "../Abi/AbiFunction";
-import Parameter from '../Abi/parameter'
-import InvokeCode from './payload/InvokeCode'
-import DeployCode from './payload/DeployCode'
-import FunctionCode from './FunctionCode'
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import AbiInfo from '../smartcontract/abi/abiInfo'
+import AbiFunction from "../smartcontract/abi/abiFunction";
+import Parameter from '../smartcontract/abi/parameter'
+import InvokeCode from './payload/invokeCode'
+import DeployCode from './payload/deployCode'
 import {Transaction, TxType, Sig, PubKey} from './transaction'
-import {Transfers, TokenTransfer, State} from '../smartcontract/token'
+import {Transfers, Contract, State} from '../smartcontract/token'
 import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
-import {DDO} from './DDO'
 import {createSignatureScript, getHash } from '../core'
-import Program from './Program'
 import * as core from '../core'
 import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes, hex2VarBytes, num2VarInt} from '../utils'
 import json from '../smartcontract/data/IdContract.abi'
@@ -42,15 +57,13 @@ export const makeTransferTransaction = (tokenType:string, from : string, to : st
     state.from = from
     state.to = to
     state.value = value
-    let tf = new TokenTransfer()
-    if(tokenType === TOKEN_TYPE.ONT) {
-        tf.contract = ONT_CONTRACT
-    } else {
-        //TODO
-    }
-    tf.states = [state]
     let transfer = new Transfers()
-    transfer.params = [tf]
+    transfer.states = [state]
+
+    let contract = new Contract()
+    contract.address = ONT_CONTRACT
+    contract.method = 'transfer'
+    contract.args = transfer.serialize()
     
     let tx = new Transaction()
     tx.version = 0x00
@@ -60,9 +73,8 @@ export const makeTransferTransaction = (tokenType:string, from : string, to : st
     //inovke
     let code = ''
     //TODO: change with token type
-    let flag = 'Token.Common.Transfer'
-    code += str2VarBytes(flag)
-    code += transfer.serialize()
+    
+    code += contract.serialize()
     let vmcode = new VmCode()
     vmcode.code = code
     vmcode.vmType = VmType.NativeVM
@@ -190,14 +202,11 @@ export const makeInvokeCode = (params : [any], codeHash : string, vmType : VmTyp
 
 
 export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
-    let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
-
     tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
-    let payload = new InvokeCode()
     let scriptHash = abiInfo.getHash()
     if(scriptHash.substr(0,2) === '0x'){
         scriptHash = scriptHash.substring(2)
@@ -205,29 +214,15 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     }
     console.log('codehash: '+scriptHash)
 
-    payload.scriptHash = scriptHash 
-    payload.parameters = func.parameters
-    payload.functionName = func.name
+    let params = []
+    params.push(func.name)
+    for(let v of func.parameters) {
+        params.push(v.getValue())
+    }
+
+    let payload = makeInvokeCode(param, scriptHash)
+
     tx.payload = payload
-
-    let attr = new TransactionAttribute()
-    let hash = ''
-    // //get publicKey
-    // let parameter = func.getParameter('publicKey')
-    // //compute signature with pk
-    // if(parameter) {
-    //     let signatureScript = createSignatureScript(parameter.getValue())
-    //     hash = getHash(signatureScript)
-    // } else {
-    //     console.log('No such parameter: publicKey');
-    // }
-
-    let signatureScript = createSignatureScript(publicKey)
-    hash = getHash(signatureScript)
-
-    attr.usage = 0x20
-    attr.data = hash
-    tx.txAttributes = [attr]
 
     //sig
     signTransaction(tx, privateKey)
@@ -235,13 +230,6 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     return tx
 }
 
-export function makeFunctionCode(avmCode : string, parameterTypes:[any], returnType: any) {
-    let fc = new FunctionCode()
-    fc.code = avmCode
-    fc.parameterTypes = parameterTypes || []
-    fc.returnType = returnType || 0xff
-    return fc
-}
 
 // TODO need update
 export function makeDeployCode(avmcode : string, obj : any) {
@@ -257,11 +245,13 @@ export function makeDeployCode(avmcode : string, obj : any) {
     return dc
 }
 
-export function makeDeployTransaction (dc : DeployCode, privateKey : string) {
+export function makeDeployTransaction (avmcode : string, deployObj : any, privateKey : string) {
     let tx = new Transaction()
     tx.version = 0x00
 
-    tx.payload = dc
+    let deployCode = makeDeployCode(avmcode, deployObj)
+    tx.payload = deployCode
+    
     tx.type = TxType.Deploy
     tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
@@ -353,27 +343,6 @@ export function buildRestfulParam(tx : any) {
     }
 }
 
-//TODO : cors problem
-export function checkOntid(ontid: string) {
-   let param = buildRpcParam(ontid)
-    console.log('param: '+JSON.stringify(param))
-    return axios.post(tx_url, param).then((res:any) => {
-        console.log('post response:'+JSON.stringify(res.data))
-
-        if(typeof res == 'string') {
-            res = JSON.parse(res)
-        }
-        res = res.data
-        if(res.result == '01') {
-            return ERROR_CODE.SUCCESS
-        } else {
-            return Promise.reject(ERROR_CODE.UNKNOWN_ONTID)
-        }
-    }, (err:any) => {
-        console.log('err:'+err)
-        return Promise.reject(err)
-    })
-}
 
 
 export function registerOntid(ontid : string, privateKey : string, callback : (result:any)=>{}) {

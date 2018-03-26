@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 export const ADDR_VERSION = '41'
 
 export const DEFAULT_SCRYPT = {
@@ -31,9 +49,9 @@ export const DEFAULT_ALGORITHM = {
 
 // export const Test_node = '52.80.115.91'
 // export const Test_node = '192.168.3.128'
-export const Test_node = '192.168.3.141' //local
+export const Test_node = '54.222.182.88'
 
-export const HttpRestPort = '20384'
+export const HttpRestPort = '20334'
 export const HttpWsPort   = '20385'
 export const HttpJsonPort = '20386'
 

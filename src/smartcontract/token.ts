@@ -1,28 +1,55 @@
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes, hex2VarBytes, hexstr2str } from "../utils";
 import Uint160 from "../common/Uint160";
 import {BigNumber} from 'bignumber.js'
-export class Transfers {
-    params : Array<TokenTransfer>
 
-    constructor() {}
+export class Transfers {
+    //byte 
+    version : string
+    states : Array<State> = []
+
+    constructor() {
+        this.version = '00'        
+    }
 
     serialize() {
         let result = ''
-        result += num2hexstring(this.params.length)
-        for(let i=0; i < this.params.length; i++) {
-            result += this.params[i].serialize()
+        result += this.version
+        result += num2hexstring(this.states.length)
+        for (let i = 0; i < this.states.length; i++) {
+            result += this.states[i].serialize()
         }
         return result
     }
 
     static deserialize(sr : StringReader) {
         let t = new Transfers()
-        t.params = []
-        const len = sr.readNextLen()
-        for(let i=0; i<len;i++) {
-            let tf = TokenTransfer.deserialize(sr)
-            t.params.push(tf)
+        const version = sr.read(1)
+        t.version = version
+        let states = []
+        const stateLen = sr.readNextLen()
+        for (let i = 0; i < stateLen; i++) {
+            let state = State.deserialize(sr)
+            states.push(state)
         }
+        t.states = states
         return t
     }
 }
@@ -59,13 +86,20 @@ export class TokenTransfer {
 }
 
 export class State {
+    //byte
+    version : string
     //20 bytes address
     from  : string 
     to    : string
     value : string
 
+    constructor() {
+        this.version = '00'
+    }
+
     serialize() {
         let result = ''
+        result += this.version
         if(!this.from || this.from.length !== 40) {
             throw new Error('[State.serialize], Invalid from address '+this.from)
         }
@@ -85,13 +119,57 @@ export class State {
 
     static deserialize(sr : StringReader) {
         let s = new State()
+        let version = sr.read(1)
         let from = sr.read(20)
         let to   = sr.read(20)
         let value = BigNumber(sr.readNextBytes(), 16)
 
+        s.version = version
         s.from = from
         s.to   = to
         s.value = value
         return s
+    }
+}
+
+export class Contract {
+    //byte
+    version : string
+    //20 bytes
+    address : string
+
+    method : string
+
+    //byte
+    args : string
+
+    constructor() {
+        this.version = '00'
+    }
+
+    serialize() {
+        let result = ''
+        result += this.version
+
+        result += this.address
+
+        result += str2VarBytes(this.method)
+
+        result += hex2VarBytes(this.args)
+
+        return result
+    }
+
+    static deserialize(sr : StringReader) {
+        let c = new Contract()
+        const version = sr.read(1)
+        const address = sr.read(20)
+        const method = sr.readNextBytes()
+        const args = sr.readNextBytes()
+        c.version = version
+        c.address = address
+        c.method = method
+        c.args = args
+        return c
     }
 }

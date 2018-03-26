@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import {Wallet} from '../wallet'
 import {Identity} from '../identity'
 import {Account} from '../account'
@@ -5,9 +23,9 @@ import {Claim, Metadata, Signature} from '../claim'
 import * as scrypt from '../scrypt'
 import {sendBackResult2Native, EventEmitter, str2hexstr} from '../utils'
 import * as core from '../core'
-import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid, makeTransferTransaction, buildRestfulParam} from '../transaction/makeTransactions'
+import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, makeTransferTransaction, buildRestfulParam} from '../transaction/transactionBuilder'
 import { ERROR_CODE } from '../error';
-import {tx_url, socket_url, ONT_NETWORK, transfer_url, Test_node, restApi, HttpRestPort} from '../consts'
+import {tx_url, socket_url, ONT_NETWORK, Test_node, restApi, HttpRestPort } from '../consts'
 import { encrypt } from '../scrypt';
 import TxSender from '../transaction/TxSender'
 import axios from 'axios'
@@ -104,44 +122,7 @@ export class SDK {
     static importIdentity(label : string, encryptedPrivateKey : string, password : string, callback ?: string) {
         let identity = new Identity()
         let error = {}
-        /* try {
-            Identity.importIdentity(label, encryptedPrivateKey, password).then((res:any)=>{
-                if(res.result) {
-                    identity = res.result
-                    let wallet = new Wallet()
-                    wallet.create(identity.label)
-                    wallet.defaultOntid = identity.ontid
-                    wallet.addIdentity(identity)
-                    let walletStr = wallet.toJson()
-                    let obj = {
-                        error : ERROR_CODE.SUCCESS,
-                        result : walletStr,
-                        desc : ''
-                    }
-                    sendBackResult2Native(JSON.stringify(obj), callback)
-                } else {
-                    let obj = {
-                        error : res.error,
-                        result : null,
-                        desc : ''
-                    }
-                    sendBackResult2Native(JSON.stringify(obj), callback)
-                }
-            }, (err:any)=>{
-                let obj = {
-                    error : ERROR_CODE.NETWORK_ERROR,
-                    result : '',
-                    desc : '' 
-                }
-                sendBackResult2Native(JSON.stringify(obj), callback)
-            })
-        } catch(err) {
-            error = {
-                error : err
-            }
-            sendBackResult2Native(JSON.stringify(error), callback)
-        } */
-
+        
         try {
             identity = Identity.importIdentity(label, encryptedPrivateKey, password)
             let wallet = new Wallet()
@@ -360,7 +341,7 @@ export class SDK {
         if(address.length === 40) {
             address = core.addressToU160(address)
         }
-        let request = `http://${Test_node}:${HttpRestPort}${restApi.getBalance}`
+        let request = `http://${Test_node}:${HttpRestPort}${restApi.getBalance}/${address}`
         axios.get(request).then((res : any) => {
             if(res.data.Error === 0) {
                 let obj = {
@@ -386,6 +367,7 @@ export class SDK {
     }
 
     //can only test Ont transfer now
+
     static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, callback : string) {
         if (from.length !== 40) {
             from = core.addressToU160(from)
