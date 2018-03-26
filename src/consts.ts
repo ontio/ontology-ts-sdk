@@ -31,7 +31,16 @@ export const DEFAULT_ALGORITHM = {
 
 // export const Test_node = '52.80.115.91'
 // export const Test_node = '192.168.3.128'
-export const Test_node = '192.168.3.112' //local
+export const Test_node = '192.168.3.141' //local
+
+export const HttpRestPort = '20384'
+export const HttpWsPort   = '20385'
+export const HttpJsonPort = '20386'
+
+export const restApi = {
+  getBalance: '/api/v1/balance',
+  transfer: '/api/v1/transaction'
+}
 
 export const Test_websocket_port = '20385'
 export const Test_http_port = '20336'
@@ -51,9 +60,6 @@ export const ONT_URL = {
   MAIN_RPC : tx_url,
   TEST_PRC : tx_url
 }
-
-//the ip of shuaishuai, only for test
-export const transfer_url = 'http://192.168.3.141:20384/api/v1/transaction'
 
 export const TOKEN_TYPE = {
   ONT : 'ONT',

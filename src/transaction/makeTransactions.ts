@@ -367,7 +367,7 @@ export function checkOntid(ontid: string) {
         if(res.result == '01') {
             return ERROR_CODE.SUCCESS
         } else {
-            return  Promise.reject(ERROR_CODE.UNKNOWN_ONTID)
+            return Promise.reject(ERROR_CODE.UNKNOWN_ONTID)
         }
     }, (err:any) => {
         console.log('err:'+err)
