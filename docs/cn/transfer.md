@@ -10,8 +10,8 @@ to: 接收者的公钥哈希地址
 value: 转账数值，需要乘以10^8以避免小数点后精度损失
 privateKey: 转账者公钥对应的私钥
 ````
-####Token类型：
 
+####Token类型：
 ````
 TOKEN_TYPE = {
   ONT : 'ONT',  //Ontology Token
