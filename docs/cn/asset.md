@@ -60,13 +60,23 @@ wallet.create( name )
 
 #### 2) 创建账户并添加到钱包中
 
-用户需要提供**私钥，密码，账户名称**来创建新的账户。也可以指定创建账户所需的算法对象。创建过程也可以提供默认的算法对象。 同上。
+用户需要提供**私钥，密码，账户名称**来创建新的账户，其中**私钥**可以使用SDK提供的方法生成。。也可以指定创建账户所需的算法对象。算法对象的结构如下：
+
+```
+{
+  algorithm: string // 算法名称
+  parameters: {}    // 算法的参数
+}
+```
+
+如果不传，SDK会使用默认的算法创建账户。
 
 创建好账户后添加到钱包中。
 
 ````
-import {Account} from 'Ont'
+import {Account, Core} from 'Ont'
 var account = new Account()
+var privateKey = Core.generatePrivateKeyStr()
 account.create( privateKey, password, name )
 wallet.addAccount(account)
 ````
@@ -101,17 +111,9 @@ wallet.addAccount(account)
 
 ###  创建账户
 
-该方法的参数中**algorithmObj** 是可选的加密算法对象，结构如下：
-
 ````
-{
-  algorithm: string // 算法名称
-  parameters: {}    // 算法的参数
-}
-````
-
-````
-import {Account} from 'Ont'
+import {Account, Core} from 'Ont'
+var privateKey = Core.generatePrivateKeyStr()
 var account = new Account()
 //@param {string} privateKey 用户的私钥
 //@param {string} password 密码
@@ -138,8 +140,6 @@ try {
     //密码或私钥不正确
 }
 ````
-
-
 
 
 ## 数字资产转账 Transfer
@@ -183,6 +183,9 @@ axios.post('127.0.0.1:20386', restData).then(res => {
 ### 查询余额链接
 
 ````
+//nodeURL 节点的IP地址
+//httpRestPort 节点暴露给Restful接口的端口
+//address 查询余额的地址
 http://${nodeURL}:${httpRestPort}/api/v1/balance/${address}
 ````
 
