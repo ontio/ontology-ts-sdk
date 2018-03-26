@@ -54,7 +54,7 @@
 
 `deployed` 表明合约是否已被部署到区块链上。默认值为false。
 
-### 3.1 创建账户
+###  创建账户
 
 ````
 import {Account} from 'Ont'
@@ -66,7 +66,7 @@ var account = new Account()
 account.create(privateKey, password, label, algorithmObj)
 ````
 
-### 3.2 导入账户
+###  导入账户
 
 导入账户的过程中会验证密码和加密后的私钥，如果不正确会抛出相应错误。
 
@@ -83,6 +83,75 @@ try {
 }
 ````
 
+## 钱包 Wallet
+
+钱包Wallet是一个Json格式的数据存储文件。在本体Ontology中， Wallet既可存储数字身份，也可以存储数字资产。
+
+### Wallet 数据规范
+
+````
+{
+	name: string;
+    ontid: string;
+    createTime: string;
+    version: string;
+    scrypt: {
+        "n": number;
+        "r": number;
+        "p": number;
+    };
+    identities: Array<Identity>;
+    accounts: Array<Account>;
+    extra: null;
+}
+````
+
+`name` 是用户为钱包所取的名称。
+
+```ontid``` 是钱包唯一ontid。
+
+```createTime``` 是ISO格式表示的钱包的创建时间，如 : "2018-02-06T03:05:12.360Z"
+
+`version` 目前为固定值1.0，留待未来功能升级使用。
+
+`scrypt` 是加密算法所需的参数，该算法是在钱包加密和解密私钥时使用。
+
+`identities` 是钱包中所有数字身份对象的数组
+
+```accounts``` 是钱包中所有数字资产账户对象的数组
+
+```extra``` 是客户端由开发者用来存储额外数据字段，可以为null。
+
+希望了解更多钱包数据规范请参考[Wallet_File_Specification](./Wallet_File_Specification.md).
+
+### 创建钱包
+
+用户可以从零开始创建自己的钱包。
+
+#### 1）创建一个空的钱包
+
+用户只需要传入钱包名称。
+
+````
+import {Wallet} from 'Ont'
+var wallet = new Wallet()
+wallet.create( name )
+````
+
+#### 2) 创建账户并添加到钱包中
+
+用户需要提供**私钥，密码，账户名称**来创建新的账户。也可以指定创建账户所需的算法对象。创建过程也可以提供默认的算法对象。 同上。
+
+创建好账户后添加到钱包中。
+
+````
+import {Account} from 'Ont'
+var account = new Account()
+account.create( privateKey, password, name )
+wallet.addAccount(account)
+````
+
+
 ## 数字资产转账 Transfer
 
 ####  转账函数说明
@@ -96,7 +165,7 @@ value: 转账数值，需要乘以10^8以避免小数点后精度损失
 privateKey: 转账者公钥对应的私钥
 ````
 
-####Token类型：
+####Token类型
 ````
 TOKEN_TYPE = {
   ONT : 'ONT',  //Ontology Token
@@ -119,4 +188,31 @@ axios.post('127.0.0.1:20386', rpcData).then(res => {
    })
 ````
 
+## 数字资产查询 getBalance
+####查询余额链接
+````
+http://${nodeURL}:${httpRestPort}/api/v1/balance/${address}
+````
 
+####样例：
+````
+let request = `http://127.0.0.1:20384/api/v1/balance/TA5uYzLU2vBvvfCMxyV2sdzc9kPqJzGZWq`
+	axios.get(request).then((res : any) => {
+		if(res.data.Error === 0) {
+			let obj = {
+				error : 0,
+				result : res.data.Result
+			}
+		} else {
+			let obj = {
+				error: res.data.Error,
+				result : ''
+			}
+		}
+	}).catch( (err:any) => {
+		let obj = {
+			error: JSON.stringify(err),
+			result: ''
+		}
+	})
+````
