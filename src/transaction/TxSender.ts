@@ -1,5 +1,5 @@
 import {ONT_NETWORK, ONT_URL} from '../consts'
-import Transaction from './transaction'
+import {Transaction} from './transaction'
 import axios from 'axios'
 
 var WebSocket : any

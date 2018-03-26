@@ -4,18 +4,23 @@ import Parameter from '../Abi/parameter'
 import InvokeCode from './payload/InvokeCode'
 import DeployCode from './payload/DeployCode'
 import FunctionCode from './FunctionCode'
-import TransactionAttribute from './txAttribute'
-import Transaction, {TxType} from './transaction'
+import {Transaction, TxType, Sig, PubKey} from './transaction'
+import {Transfers, TokenTransfer, State} from '../smartcontract/token'
+import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
 import {DDO} from './DDO'
 import {createSignatureScript, getHash } from '../core'
 import Program from './Program'
 import * as core from '../core'
-import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring} from '../utils'
+import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes, hex2VarBytes, num2VarInt} from '../utils'
 import json from '../smartcontract/data/IdContract.abi'
 import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
-import {tx_url, socket_url} from '../consts'
+import {tx_url, socket_url, TOKEN_TYPE} from '../consts'
 import axios from 'axios'
+import { VmCode, VmType } from './vmcode';
+import * as cryptoJS from 'crypto-js'
+import opcode from './opcode';
+
 const WebSocket = require('ws');
 
 
@@ -31,11 +36,166 @@ export const Default_params = {
 // export const socket_url = 'ws://192.168.3.128:20335'
 // export const net_url = 'http://192.168.3.128:20335/api/v1/transaction'
 
+const ONT_CONTRACT = "ff00000000000000000000000000000000000001"
+export const makeTransferTransaction = (tokenType:string, from : string, to : string, value : string,  privateKey : string)=> {
+    let state = new State()
+    state.from = from
+    state.to = to
+    state.value = value
+    let tf = new TokenTransfer()
+    if(tokenType === TOKEN_TYPE.ONT) {
+        tf.contract = ONT_CONTRACT
+    } else {
+        //TODO
+    }
+    tf.states = [state]
+    let transfer = new Transfers()
+    transfer.params = [tf]
+    
+    let tx = new Transaction()
+    tx.version = 0x00
+    tx.type = TxType.Invoke
+    tx.nonce = ab2hexstring(core.generateRandomArray(4))
+    
+    //inovke
+    let code = ''
+    //TODO: change with token type
+    let flag = 'Token.Common.Transfer'
+    code += str2VarBytes(flag)
+    code += transfer.serialize()
+    let vmcode = new VmCode()
+    vmcode.code = code
+    vmcode.vmType = VmType.NativeVM
+    let invokeCode = new InvokeCode()
+    invokeCode.code = vmcode
+    tx.payload = invokeCode
+    signTransaction(tx, privateKey)
+
+    return tx
+}
+
+export const signTransaction = (tx : Transaction, privateKey : string) => {
+    let pkPoint = core.getPublicKeyPoint(privateKey)
+    
+    let hash = tx.getHash()
+    // var ProgramHexString = cryptoJS.enc.Hex.parse(SignatureScript);
+    // var ProgramSha256 = cryptoJS.SHA256(hash).toString();
+
+    let signed = core.signatureData(hash, privateKey)
+    let sig = new Sig()
+    sig.M = 1   
+    sig.pubKeys = [new PubKey(pkPoint.x, pkPoint.y)]
+    sig.sigData = [signed]
+
+    tx.sigs = [sig]
+}
+
+export const pushBool = (param : boolean) => {
+    let result = ''
+    if(param) {
+        result += opcode.PUSHT
+    } else {
+        result += opcode.PUSHF
+    }
+    return result
+}
+
+export const pushInt = (param : number) => {
+    let result = ''
+    if(param == -1) {
+        result += opcode.PUSHM1
+    }
+    else if(param == 0) {
+        result += opcode.PUSH0
+    } 
+    else if(param > 0 && param < 16) {
+        let num = opcode.PUSH1 - 1 + param
+        result += num2hexstring(num)
+    }  
+    else {
+        result += num2VarInt(param)
+    } 
+    return result
+}
+
+export const pushHexString = (param : string) => {
+    let result = ''
+    let len = param.length/2
+    if(len < opcode.PUSHBYTES75) {
+        result += num2hexstring(len)
+    } 
+    else if(len < 0x100) {
+        result += opcode.PUSHDATA1
+        result += num2hexstring(len)
+    } 
+    else if(len < 0x10000) {
+        result += opcode.PUSHDATA2
+        result += num2hexstring(len, 2, true)
+    } else {
+        result += opcode.PUSHDATA4
+        result += num2hexstring(len, 4, true)
+    }
+    result += hex2VarBytes(param)
+    return result
+}
+
+
+//params is like [functionName, param1, param2...]
+export const buildSmartContractParam = (params : [any]) => {
+    let result = ''
+    for (let i= params.length -1; i > -1; i--) {
+        const type = Object.prototype.toString.call(params[i])
+        switch (type) {
+            case "[object Boolean]":
+                result += pushBool(params[i])
+                break;
+
+            case "[object Number]":
+                result += pushInt(params[i])
+                break;
+
+            case "[object String]":
+                result += pushHexString(params[i])
+                break;
+
+            /* case "[object Object]":
+                let temp = []
+                let keys = Object.keys(params[i])
+                for(let k of keys) {
+                    temp.push( params[i][k])
+                }
+                result += buildSmartContractParam(temp)
+                break; */
+        
+            default:
+                throw new Error('Unsupported param type: '+params[i])
+        }
+    }
+
+    return result
+}
+
+export const makeInvokeCode = (params : [any], codeHash : string, vmType : VmType = VmType.NativeVM) => {
+    let invokeCode = new InvokeCode()
+    let vmCode = new VmCode()
+    let code = buildSmartContractParam(params)
+    code += opcode.APPCALL
+    code += hex2VarBytes(codeHash)
+    vmCode.code = code
+    vmCode.vmType = vmType
+
+    invokeCode.code = vmCode
+    return invokeCode
+}
+
+
 export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     let tx = new Transaction()
-    tx.type = TxType.InvokeCode
+    tx.type = TxType.Invoke
     tx.version = 0x00
+
+    tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
     let payload = new InvokeCode()
     let scriptHash = abiInfo.getHash()
@@ -44,6 +204,7 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
         scriptHash = reverseHex(scriptHash)
     }
     console.log('codehash: '+scriptHash)
+
     payload.scriptHash = scriptHash 
     payload.parameters = func.parameters
     payload.functionName = func.name
@@ -68,13 +229,8 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     attr.data = hash
     tx.txAttributes = [attr]
 
-    //program
-    let unsignedData = tx.serializeUnsignedData()
-    let program = new Program()
-    let signed = core.signatureData(unsignedData, privateKey)
-    program.code = signed
-    program.parameter = publicKey
-    tx.programs = [program]
+    //sig
+    signTransaction(tx, privateKey)
 
     return tx
 }
@@ -87,35 +243,30 @@ export function makeFunctionCode(avmCode : string, parameterTypes:[any], returnT
     return fc
 }
 
-export function makeDeployCode(fc : FunctionCode, obj : any) {
+// TODO need update
+export function makeDeployCode(avmcode : string, obj : any) {
     let dc = new DeployCode()
     dc.author = obj.author || ''
-    dc.code = fc
-    dc.codeVersion = obj.codeVersion || '1.0'
+    dc.code = avmcode
+    dc.version = obj.version || '1.0'
     dc.description = obj.description || ''
     dc.email = obj.email || ''
     dc.name = obj.name || ''
     dc.needStorage = obj.needStorage || true
-    dc.vmType = obj.vmType || 0
+    dc.vmType = obj.vmType || VmType.NativeVM
     return dc
 }
 
 export function makeDeployTransaction (dc : DeployCode, privateKey : string) {
-    let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
-
     let tx = new Transaction()
     tx.version = 0x00
 
     tx.payload = dc
-    tx.type = TxType.DeployCode
+    tx.type = TxType.Deploy
+    tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
     //program
-    let unsignedData = tx.serializeUnsignedData()
-    let program = new Program()
-    let signed = core.signatureData(unsignedData, privateKey)
-    program.code = signed
-    program.parameter = publicKey
-    tx.programs = [program]
+    signTransaction(tx, privateKey)
     
     return tx
 }
@@ -193,6 +344,15 @@ export function buildRpcParam(tx : any) {
     return result
 }
 
+export function buildRestfulParam(tx : any) {
+    let param = tx.serialize()
+    return {
+        "Action" : "sendrawtransaction",
+        "Version" : "1.0.0",
+        "Data" : param
+    }
+}
+
 //TODO : cors problem
 export function checkOntid(ontid: string) {
    let param = buildRpcParam(ontid)
@@ -207,7 +367,7 @@ export function checkOntid(ontid: string) {
         if(res.result == '01') {
             return ERROR_CODE.SUCCESS
         } else {
-            return  Promise.reject(ERROR_CODE.UNKNOWN_ONTID)
+            return Promise.reject(ERROR_CODE.UNKNOWN_ONTID)
         }
     }, (err:any) => {
         console.log('err:'+err)

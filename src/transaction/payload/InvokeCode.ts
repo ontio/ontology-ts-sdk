@@ -7,18 +7,26 @@ import Payload from './payload'
 import Parameter from '../../Abi/parameter'
 import { num2VarInt, num2hexstring, StringReader, str2hexstr, hexstr2str } from '../../utils'
 import OPCODE from '../opcode'
+import Fixed64 from '../../common/Fixed64';
+import { VmCode } from '../vmcode';
 
 export default class InvokeCode extends Payload {
     //the length is of bytes 20
+    /* 
     scriptHash : string
     parameters : Array<Parameter> = []
     functionName : string
+     */
+
+    gasLimit : Fixed64
+    code : VmCode
 
     constructor() {
         super()
+        this.gasLimit = new Fixed64()
     }
-
-    serialize() : string {
+ 
+/*     serialize() : string {
         let payloadLength 
         let paramsLength = num2hexstring( 0x50 + this.parameters.length) //start from '0x50'
         const paramsEnd = 'c1'
@@ -65,14 +73,24 @@ export default class InvokeCode extends Payload {
         result += funcNameLength
         result += funcNameHex
         let totalParamsLength = num2VarInt(result.length / 2)
-        result = this.scriptHash + totalParamsLength + result
+        //result = this.scriptHash + totalParamsLength + result
+        
 
         console.log('invode serialze: '+ result)
 
         return result
-    }
+    }  */
 
-    deserialize(ss : StringReader) : void {
+    serialize() {
+        let result = ''
+        if(this.gasLimit) {
+            result += this.gasLimit.serialize()
+        }
+        result += this.code.serialize()
+        return result
+    }
+ 
+    /* deserialize(ss : StringReader) : void {
         //scriptHash, fixed langth
         this.scriptHash = ss.read(20)
         //payload total lenght
@@ -103,6 +121,14 @@ export default class InvokeCode extends Payload {
         //payload end
         this.functionName = func
 
+    }  */
+
+    deserialize(sr : StringReader) {
+        let gasLimit = Fixed64.deserialize(sr)
+        let code = VmCode.deserialize(sr)
+        this.gasLimit = gasLimit
+        this.code = code
+        return this
     }
 
 }

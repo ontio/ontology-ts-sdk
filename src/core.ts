@@ -31,6 +31,17 @@ export function getPublicKey(privateKey: string, encode: boolean): any {
     return curvePt.getEncoded(encode);
 };
 
+export function getPublicKeyPoint(privateKey: string) {
+    var ecparams = ecurve.getCurveByName('secp256r1')
+    var curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
+    var x = curvePt.affineX.toBuffer(32)
+    var y = curvePt.affineY.toBuffer(32)
+    return {
+        x : ab2hexstring(x),
+        y : ab2hexstring(y)
+    }
+}
+
 export function createSignatureScript(publicKeyEncoded: string): string {
     return "21" + publicKeyEncoded + "ac";
 }
@@ -42,7 +53,20 @@ export function getHash(SignatureScript: string): string {
     return cryptoJS.RIPEMD160(cryptoJS.enc.Hex.parse(ProgramSha256)).toString();
 }
 
-export function toAddress(programhash: string): string {
+export function getMultiSigUInt160() {
+//TODO
+}
+
+export function getSingleSigUInt160(publicKeyEncoded: string): string {
+    var PkHexString = cryptoJS.enc.Hex.parse(publicKeyEncoded);
+    var PkSha256 = cryptoJS.SHA256(PkHexString).toString();
+    var PkRipemd160 = cryptoJS.RIPEMD160(cryptoJS.enc.Hex.parse(PkSha256)).toString();
+
+    //for normal account
+    return "01" + PkRipemd160.substr(2);
+}
+
+export function u160ToAddress(programhash: string): string {
     var data = ADDR_VERSION + programhash;
 
     var ProgramHexString = cryptoJS.enc.Hex.parse(data);
@@ -54,6 +78,16 @@ export function toAddress(programhash: string): string {
 
     return base58.encode(hexstring2ab(datas));
 };
+
+export function addressToU160(addressEncoded : string) {
+    let decoded = base58.decode(addressEncoded)
+    let programHash = ab2hexstring(decoded).substr(2,40)
+    let add58 = u160ToAddress(programHash)
+    if(add58 !== addressEncoded) {
+        throw new Error('[addressToU160] decode encodeed varify failed')
+    }
+    return programHash
+}
 
 export function signatureData(data: string, privateKey: string): string {
     let msg = cryptoJS.enc.Hex.parse(data);
@@ -67,6 +101,15 @@ export function signatureData(data: string, privateKey: string): string {
     ])
 
     return signatureValue.toString('hex');
+}
+
+export function verifySignature(data : string, signature : string, publicKey : string) {
+    let msg = cryptoJS.enc.Hex.parse(data)
+    let msgHash = cryptoJS.SHA256(msg)
+
+    let elliptic = new ec('p256')
+    const result = elliptic.verify(data.toString(), signature, publicKey, null)
+    return result
 }
 
 export function AddContract(txData: string, sign: string, publicKeyEncoded: string): string {
@@ -96,19 +139,6 @@ export function getWIFFromPrivateKey(privateKey: string): string {
     return wif.encode(128, Buffer.from(privateKey, 'hex'), true);
 }
 
-export function getAddressFromPrivateKey(privateKey: string): string {
-    let publickeyEncode = getPublicKey(privateKey, true).toString('hex');
-    //console.log( "publickeyEncode: ", publickeyEncode );
-
-    let signatureScript = createSignatureScript(publickeyEncode);
-    //console.log( "signatureScript: ", signatureScript );
-
-    let programHash = getHash(signatureScript);
-    //console.log( "programHash: ", programHash );
-
-    return toAddress(programHash);
-}
-
 
 export function generateOntid(nonce : string) {
     // let publicKeyEncoded = ab2hexstring(getPublicKey(nonce, true));
@@ -116,7 +146,7 @@ export function generateOntid(nonce : string) {
     // let programHash = getHash(signatureScript);
     
     let programHash = getHash(nonce);
-    let ontid = "did:ont:" + toAddress(programHash);
+    let ontid = "did:ont:" + u160ToAddress(programHash);
     return ontid
 }
 

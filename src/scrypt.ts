@@ -16,13 +16,13 @@ export function encrypt(privateKey: string, keyphrase: string, scryptParams = DE
     let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
     //console.log( "publickeyEncode: ", publickeyEncode );
 
-    let signatureScript = core.createSignatureScript(publickeyEncode);
+    // let signatureScript = core.createSignatureScript(publickeyEncode);
     //console.log( "signatureScript: ", signatureScript );
 
-    let programHash = core.getHash(signatureScript);
+    let u160 = core.getSingleSigUInt160(publickeyEncode);
     //console.log( "programHash: ", programHash );
 
-    let address = core.toAddress(programHash);
+    let address = core.u160ToAddress(u160);
     //console.log( "address: ", address );
 
     let addressSha256 = CryptoJS.SHA256(address).toString();
@@ -75,8 +75,12 @@ export function decrypt(encryptedKey: string, keyphrase: string, scryptParams = 
     let privateKey = hexXor(decrypted.toString(), derived1);
     //console.log( "privateKey: ", privateKey );
 
+    let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+
+    let u160 = core.getSingleSigUInt160(publickeyEncode)
+
     // Address
-    let address = core.getAddressFromPrivateKey(privateKey);
+    let address = core.u160ToAddress(u160);
 
     // AddressHash
     let addressSha256 = CryptoJS.SHA256(address).toString();

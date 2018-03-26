@@ -3,6 +3,7 @@ import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
 import {DEFAULT_ALGORITHM, Algorithm} from './consts'
 import {ERROR_CODE} from './error'
+import { addressToU160 } from './core';
 export class Contract {
     script : string
     parameters : Array<string>
@@ -16,7 +17,7 @@ export class Account {
     algorithm: string;
     parameters: {};
     key: string;
-    contract: Contract
+    // contract: Contract
     extra: null;
 
     constructor() {
@@ -24,11 +25,11 @@ export class Account {
 
     create( privateKey: string, password: string, label: string, algorithmObj ?: any ): Account {
         
-        let contract = {
-            script : '',
-            parameters : [],
-            deployed : false
-        }
+        // let contract = {
+        //     script : '',
+        //     parameters : [],
+        //     deployed : false
+        // }
 
         this.address = "";
         this.label = label;
@@ -44,24 +45,58 @@ export class Account {
         
         this.key = scrypt.encrypt( privateKey, password );
 
-        let publicKeyEncoded = ab2hexstring( core.getPublicKey( privateKey, true ) );
-        contract.script = core.createSignatureScript( publicKeyEncoded );
-        this.contract = contract 
+        let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+        
+        let programHash = core.getSingleSigUInt160(publickeyEncode);
 
-        let programHash = core.getHash( this.contract.script );
-        this.address = core.toAddress( programHash );
+        this.address = core.u160ToAddress(programHash);
 
         return this;
     }
 
 
 
-    static importAccount(accountDataStr : string ,encryptedPrivateKey : string, password : string ) : Account {
+    static importAccount(label : string ,encryptedPrivateKey : string, password : string ) : Account {
         let account = new Account()
         let  privateKey = scrypt.decrypt(encryptedPrivateKey, password);
-                
+<<<<<<< HEAD
+        let contract = {
+            script: '',
+            parameters: [],
+            deployed: false
+        }
+=======
+        // let contract = {
+        //     script: '',
+        //     parameters: [],
+        //     deployed: false
+        // }
+>>>>>>> utxo2balance
+
+        account.address = "";
+        account.label = label;
+        account.lock = false;
+
+
+        account.algorithm = DEFAULT_ALGORITHM.algorithm
+        account.parameters = DEFAULT_ALGORITHM.parameters
+
+        account.key = encryptedPrivateKey
+
+        // let publicKeyEncoded = ab2hexstring(core.getPublicKey(privateKey, true));
+        // contract.script = core.createSignatureScript(publicKeyEncoded);
+        // account.contract = contract
+
+
+        let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+
+        let programHash = core.getSingleSigUInt160(publickeyEncode);
+
+        let address = core.u160ToAddress(programHash);
+
+        account.address = address
     
-        return Account.parseJson(accountDataStr)
+        return account
     }
 
     toJson() : string {
@@ -72,7 +107,7 @@ export class Account {
             algorithm: this.algorithm,
             parameters: this.parameters,
             key: this.key,
-            contract: this.contract,
+            // contract: this.contract,
             extra: this.extra
         }
         return JSON.stringify(obj)
@@ -87,7 +122,7 @@ export class Account {
         account.algorithm = obj.algorithm
         account.parameters = obj.parameters
         account.key = obj.key
-        account.contract = obj.contract
+        // account.contract = obj.contract
         account.extra = obj.extra
         return account;
     }

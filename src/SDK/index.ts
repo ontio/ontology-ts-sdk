@@ -5,11 +5,12 @@ import {Claim, Metadata, Signature} from '../claim'
 import * as scrypt from '../scrypt'
 import {sendBackResult2Native, EventEmitter, str2hexstr} from '../utils'
 import * as core from '../core'
-import {buildAddAttributeTx, buildTxParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid} from '../transaction/makeTransactions'
+import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid, makeTransferTransaction, buildRestfulParam} from '../transaction/makeTransactions'
 import { ERROR_CODE } from '../error';
-import {tx_url, socket_url, ONT_NETWORK} from '../consts'
+import {tx_url, socket_url, ONT_NETWORK, transfer_url, Test_node, restApi, HttpRestPort} from '../consts'
 import { encrypt } from '../scrypt';
 import TxSender from '../transaction/TxSender'
+import axios from 'axios'
 
 export class SDK {
 
@@ -37,39 +38,41 @@ export class SDK {
 
         let walletDataStr = wallet.toJson()
          
-        let tx = buildRegisterOntidTx(identity.ontid, privateKey)
-        let param = buildTxParam(tx)
+        // let tx = buildRegisterOntidTx(identity.ontid, privateKey)
+        // let param = buildTxParam(tx)
         
-        const socketCallback = function(res:any, socket:any) {
-            let obj = {
-                error: ERROR_CODE.SUCCESS,
-                result: walletDataStr,
-                desc: ''
-            }
-            if(res.Error === 0) {
-                callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                socket.close()
-            } else {
-                let errResult = {
-                    error: res.Error,
-                    result: '',
-                    desc: res.Result
-                }
-                if (callback) {
-                    sendBackResult2Native(JSON.stringify(errResult), callback)
-                }
-                socket.close()
-            }
-        } 
+        // const socketCallback = function(res:any, socket:any) {
+        //     let obj = {
+        //         error: ERROR_CODE.SUCCESS,
+        //         result: walletDataStr,
+        //         desc: ''
+        //     }
+        //     if(res.Error === 0) {
+        //         callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        //         socket.close()
+        //     } else {
+        //         let errResult = {
+        //             error: res.Error,
+        //             result: '',
+        //             desc: res.Result
+        //         }
+        //         if (callback) {
+        //             sendBackResult2Native(JSON.stringify(errResult), callback)
+        //         }
+        //         socket.close()
+        //     }
+        // } 
 
-        var txSender = new TxSender(ONT_NETWORK.TEST)
-        txSender.sendTxWithSocket(param, socketCallback)
-
+        // var txSender = new TxSender(ONT_NETWORK.TEST)
+        //no backend for now
+        // txSender.sendTxWithSocket(param, socketCallback)
+        
         let obj = {
             error : 0,
             result : walletDataStr,
             desc : ''
         }
+        callback && sendBackResult2Native(JSON.stringify(obj), callback)
         return obj
     }
 
@@ -160,8 +163,23 @@ export class SDK {
         }
     }
 
+    static createIdentity(label : string, password : string, callback?: string) {
+        let identity = new Identity()
+        let privateKey = core.generatePrivateKeyStr()
+        identity.create(privateKey, password, label)
+        let result = identity.toJson()
+        if (callback) {
+            let obj = {
+                error: ERROR_CODE.SUCCESS,
+                result: result,
+                desc: ''
+            }
+            sendBackResult2Native(JSON.stringify(obj), callback)
+        }
+        return result
+    }
 
-    static createAccount(password: string, label: string, callback?: string): string {
+    static createAccount(label: string, password: string, callback?: string): string {
         let account = new Account()
         let privateKey = core.generatePrivateKeyStr()        
         account.create(privateKey, password, label)
@@ -175,6 +193,29 @@ export class SDK {
             sendBackResult2Native(JSON.stringify(obj), callback)
         }
         return result
+    }
+
+    static importAccountWithWallet(walletDataStr:string, label : string, encryptedPrivateKey:string, password:string, callback: string) {
+        let wallet = Wallet.parseJson(walletDataStr)
+        let account = new Account()
+        try {
+            account = Account.importAccount(label, encryptedPrivateKey, password)
+        } catch(err) {
+            let result = this.getDecryptError(err)
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+            return result
+        }
+        wallet.addAccount(account)
+        let walletStr = wallet.toJson()
+        let obj = {
+            error: ERROR_CODE.SUCCESS,
+            result: walletStr,
+            desc: ''
+        }
+        callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        return obj
     }
 
     static signSelfClaim(context: string, claimData : string, ontid : string,
@@ -247,7 +288,6 @@ export class SDK {
             privateKey = scrypt.decrypt(encryptedPrivateKey, password);
         } catch (err) {
             let result = this.getDecryptError(err)
-            
             return result
         }
         let tx = buildAddAttributeTx(path, value, subject,  privateKey)
@@ -313,6 +353,79 @@ export class SDK {
 
         callback && sendBackResult2Native(JSON.stringify(result), callback)
         return result
+    }
+
+
+    static getBalance(address : string, callback : string) {
+        if(address.length === 40) {
+            address = core.addressToU160(address)
+        }
+        let request = `http://${Test_node}:${HttpRestPort}${restApi.getBalance}`
+        axios.get(request).then((res : any) => {
+            if(res.data.Error === 0) {
+                let obj = {
+                    error : 0,
+                    result : res.data.Result
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            } else {
+                let obj = {
+                    error: res.data.Error,
+                    result : ''
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                
+            }
+        }).catch( (err:any) => {
+            let obj = {
+                error: JSON.stringify(err),
+                result: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        })
+    }
+
+    //can only test Ont transfer now
+    static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, callback : string) {
+        if (from.length !== 40) {
+            from = core.addressToU160(from)
+        }
+        if (to.length !== 40) {
+            to = core.addressToU160(to)
+        }
+        let privateKey = ''
+        try {
+            privateKey = scrypt.decrypt(encryptedPrivateKey, password)
+        } catch (err) {
+            let result = this.getDecryptError(err)
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+            return result
+        }
+        let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
+        var param = buildRestfulParam(tx)
+        let request = `http://${Test_node}:${HttpRestPort}${restApi.transfer}`
+        axios.post(request, param).then( (res:any) => {
+            console.log('transfer response: ' + JSON.stringify(res.data))
+            if(res.data.Error === 0) {
+                let obj = {
+                    error : 0,
+                    result : '',
+                    desc : 'Send transfer success.'
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            } else {
+                let obj = {
+                    error: res.data.Error,
+                    result: '',
+                    desc: 'Send transfer failed.'
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            }
+        }).catch( (err:any) => {
+            console.log(err)
+        })
     }
 
 }
