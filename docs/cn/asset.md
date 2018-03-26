@@ -30,6 +30,15 @@
 
 ###  创建账户
 
+该方法的参数中**algorithmObj** 是可选的加密算法对象，结构如下：
+
+````
+{
+  algorithm: string // 算法名称
+  parameters: {}    // 算法的参数
+}
+````
+
 ````
 import {Account} from 'Ont'
 var account = new Account()
