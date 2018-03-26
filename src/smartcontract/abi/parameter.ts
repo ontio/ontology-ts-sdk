@@ -16,19 +16,35 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as scrypt from '../src/scrypt'
-import * as core from '../src/core'
+ 
+export default class Parameter {
+    private name: string
+    private type: string
+    private value: string 
 
-describe('test scrypt', () => {
-    it('test encrypt and decrypt', () => {
-        let privateKey = core.generatePrivateKeyStr()
-        let encrypt = scrypt.encrypt(privateKey, '123456')
-        expect(encrypt).toBeDefined()
+    constructor(name: string, type: string, value: string = '') {
+        this.name = name
+        this.type = type
+        this.value = value
+    }
 
-        let result = scrypt.decrypt(encrypt, '123456')
-        expect(result).toEqual(privateKey)
+    getName(): string {
+        return this.name
+    }
 
-        result = scrypt.decrypt(encrypt, '1234567')
-        expect(result).not.toEqual(privateKey)
-    })
-})
+    getType(): string {
+        return this.type
+    }
+
+    getValue(): string {
+        return this.value
+    }
+
+    setValue(value: any): boolean {
+        if (value.type === this.type && value.name === this.name && value.value) {
+            this.value = value.value
+            return true
+        }
+        return false
+    }
+}

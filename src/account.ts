@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import * as core from './core'
 import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
@@ -23,7 +41,7 @@ export class Account {
     constructor() {
     }
 
-    create( privateKey: string, password: string, label: string, algorithmObj ?: any ): Account {
+    create( privateKey: string, password: string, label: string, algorithmObj ?: Algorithm ): Account {
         
         // let contract = {
         //     script : '',
@@ -59,19 +77,11 @@ export class Account {
     static importAccount(label : string ,encryptedPrivateKey : string, password : string ) : Account {
         let account = new Account()
         let  privateKey = scrypt.decrypt(encryptedPrivateKey, password);
-<<<<<<< HEAD
-        let contract = {
-            script: '',
-            parameters: [],
-            deployed: false
-        }
-=======
         // let contract = {
         //     script: '',
         //     parameters: [],
         //     deployed: false
         // }
->>>>>>> utxo2balance
 
         account.address = "";
         account.label = label;

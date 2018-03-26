@@ -1,15 +1,29 @@
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import {num2hexstring, StringReader, num2VarInt, ab2hexstring, hex2VarBytes} from '../utils'
 import Payload from './payload/payload'
 import {TransactionAttribute} from './txAttribute'
-import Program from './Program'
-import AbiFunction from '../Abi/AbiFunction'
-import InvokeCode from './payload/InvokeCode';
-import DeployCode from './payload/DeployCode';
-import UTXOInput from './UTXOInput'
-import TXOutput from './txOutput'
-import Fixed64 from '../common/Fixed64'
-import Uint160 from '../common/Uint160';
+import AbiFunction from '../smartcontract/abi/abiFunction'
+import InvokeCode from './payload/invokeCode';
+import DeployCode from './payload/deployCode';
+import Fixed64 from '../common/fixed64'
+import Uint160 from '../common/uint160';
 import Uint256 from '../common/uint256';
 import * as core from '../core'
 import * as cryptoJS from 'crypto-js'

@@ -1,12 +1,29 @@
-import AbiInfo from '../src/Abi/AbiInfo'
-import AbiFunction from '../src/Abi/AbiFunction'
-import Parameter from '../src/Abi/parameter'
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import AbiInfo from '../src/smartcontract/abi/abiInfo'
+import AbiFunction from '../src/smartcontract/abi/abiFunction'
+import Parameter from '../src/smartcontract/abi/parameter'
 
 import json from '../src/smartcontract/data/IdContract.abi'
-import Transaction from '../src/transaction/transaction'
-import Program from '../src/transaction/Program'
+import {Transaction} from '../src/transaction/transaction'
 
-import { makeInvokeTransaction} from '../src/transaction/makeTransactions'
+import { makeInvokeTransaction} from '../src/transaction/transactionBuilder'
 import { Account } from '../src/account';
 import { generatePrivateKeyStr, signatureData, getPublicKey } from '../src/core'
 import {ab2hexstring, str2hexstr} from '../src/utils'

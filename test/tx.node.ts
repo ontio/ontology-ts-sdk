@@ -1,19 +1,36 @@
-import { makeInvokeTransaction , parseEventNotify, checkOntid, buildAddAttributeTx, buildGetDDOTx,
-    buildRpcParam, buildRegisterOntidTx, buildTxParam } from '../src/transaction/makeTransactions'
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import { makeInvokeTransaction , parseEventNotify, buildAddAttributeTx, buildGetDDOTx,
+    buildRpcParam, buildRegisterOntidTx, buildTxParam } from '../src/transaction/transactionBuilder'
 import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/InvokeCode'
-import Program from '../src/transaction/Program'
 import { Identity } from '../src/identity'
 import * as core from '../src/core'
-import AbiInfo from '../src/Abi/AbiInfo'
-import AbiFunction from '../src/Abi/AbiFunction'
-import Parameter from '../src/Abi/parameter'
+import AbiInfo from '../src/smartcontract/abi/AbiInfo'
+import AbiFunction from '../src/smartcontract/abi/abiFunction'
+import Parameter from '../src/smartcontract/abi/parameter'
 import json2 from '../src/smartcontract/data/IdContract.abi'
 import { ab2hexstring, str2hexstr, StringReader } from '../src/utils'
 import { DEFAULT_ALGORITHM, ONT_NETWORK } from '../src/consts';
 import { DDO } from '../src/transaction/DDO'
 import {tx_url, socket_url} from '../src/consts'
-import { checkOntidOnChain, getHash } from '../src/core';
+import { getHash } from '../src/core';
 import TxSender from '../src/transaction/TxSender'
 import axios from 'axios'
 

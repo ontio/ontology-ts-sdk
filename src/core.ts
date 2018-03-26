@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import * as cryptoJS from 'crypto-js'
 import * as base58 from 'bs58'
 import * as ecurve from 'ecurve'
@@ -6,7 +24,6 @@ import { ab2hexstring, hexstring2ab } from './utils'
 import { ADDR_VERSION } from './consts'
 import * as scrypt from './scrypt'
 import {ERROR_CODE} from './error'
-import {checkOntid} from './transaction/makeTransactions'
 
 var ec = require('elliptic').ec
 var wif = require('wif')
@@ -141,10 +158,6 @@ export function getWIFFromPrivateKey(privateKey: string): string {
 
 
 export function generateOntid(nonce : string) {
-    // let publicKeyEncoded = ab2hexstring(getPublicKey(nonce, true));
-    // let signatureScript = createSignatureScript(publicKeyEncoded);
-    // let programHash = getHash(signatureScript);
-    
     let programHash = getHash(nonce);
     let ontid = "did:ont:" + u160ToAddress(programHash);
     return ontid
@@ -166,16 +179,11 @@ export function checkPrivateKey(encryptedPrivateKey : string, password : string)
     return true
 }
 
-export function checkOntidOnChain(encryptedPrivateKey: string, password: string) {
-    let privateKey = scrypt.decrypt(encryptedPrivateKey, password);
-    let ontid = generateOntid(privateKey)
-    return checkOntid(ontid)
-}
 
 export function verifyOntidClaim(claim : any) {
     if(!claim.Metadata || !claim.Metadata.Issuer) {
         throw new Error('Invalid claim.')
     }
     let issuer = claim.Metadata.Issuer
-    
+    //TODO
 }
