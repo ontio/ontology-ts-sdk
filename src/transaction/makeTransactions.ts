@@ -175,8 +175,17 @@ export const buildSmartContractParam = (params : [any]) => {
     return result
 }
 
-export const makeInvokeCode = () => {
-    
+export const makeInvokeCode = (params : [any], codeHash : string, vmType : VmType = VmType.NativeVM) => {
+    let invokeCode = new InvokeCode()
+    let vmCode = new VmCode()
+    let code = buildSmartContractParam(params)
+    code += opcode.APPCALL
+    code += hex2VarBytes(codeHash)
+    vmCode.code = code
+    vmCode.vmType = vmType
+
+    invokeCode.code = vmCode
+    return invokeCode
 }
 
 
@@ -235,10 +244,10 @@ export function makeFunctionCode(avmCode : string, parameterTypes:[any], returnT
 }
 
 // TODO need update
-export function makeDeployCode(code : string, obj : any) {
+export function makeDeployCode(avmcode : string, obj : any) {
     let dc = new DeployCode()
     dc.author = obj.author || ''
-    dc.code = code
+    dc.code = avmcode
     dc.version = obj.version || '1.0'
     dc.description = obj.description || ''
     dc.email = obj.email || ''

@@ -59,11 +59,19 @@ export class Account {
     static importAccount(label : string ,encryptedPrivateKey : string, password : string ) : Account {
         let account = new Account()
         let  privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+<<<<<<< HEAD
         let contract = {
             script: '',
             parameters: [],
             deployed: false
         }
+=======
+        // let contract = {
+        //     script: '',
+        //     parameters: [],
+        //     deployed: false
+        // }
+>>>>>>> utxo2balance
 
         account.address = "";
         account.label = label;
