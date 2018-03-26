@@ -103,6 +103,15 @@ export function signatureData(data: string, privateKey: string): string {
     return signatureValue.toString('hex');
 }
 
+export function verifySignature(data : string, signature : string, publicKey : string) {
+    let msg = cryptoJS.enc.Hex.parse(data)
+    let msgHash = cryptoJS.SHA256(msg)
+
+    let elliptic = new ec('p256')
+    const result = elliptic.verify(data.toString(), signature, publicKey, null)
+    return result
+}
+
 export function AddContract(txData: string, sign: string, publicKeyEncoded: string): string {
     let signatureScript = createSignatureScript(publicKeyEncoded);
 

@@ -1,6 +1,8 @@
 import * as core from '../src/core'
 import * as utils from '../src/utils'
 import * as scrypt from '../src/scrypt'
+import { ab2hexstring } from '../src/utils';
+import { verifySignature } from '../src/core';
 
 describe('test core', ()=>{
 
@@ -33,6 +35,17 @@ describe('test core', ()=>{
         let wif = core.getWIFFromPrivateKey(privateKey)
         let encrypt = scrypt.encrypt(wif, '123456')
         console.log('encrypt: '+ encrypt)
+    })
+
+    test('sign and verify', () => {
+        let privateKey = core.generatePrivateKeyStr()
+        let data = 'hello world'
+        let signed = core.signatureData(data, privateKey)
+        console.log('signed: '+ signed)
+
+        let pk = ab2hexstring(core.getPublicKey(privateKey, false))
+        let verifyResult = core.verifySignature(data, signed, pk)
+        expect(verifySignature).toBeTruthy()
     })
 
 })

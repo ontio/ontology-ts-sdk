@@ -7,7 +7,7 @@ import {sendBackResult2Native, EventEmitter, str2hexstr} from '../utils'
 import * as core from '../core'
 import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, checkOntid, makeTransferTransaction, buildRestfulParam} from '../transaction/makeTransactions'
 import { ERROR_CODE } from '../error';
-import {tx_url, socket_url, ONT_NETWORK, transfer_url} from '../consts'
+import {tx_url, socket_url, ONT_NETWORK, transfer_url, Test_node, restApi, HttpRestPort} from '../consts'
 import { encrypt } from '../scrypt';
 import TxSender from '../transaction/TxSender'
 import axios from 'axios'
@@ -357,13 +357,10 @@ export class SDK {
 
 
     static getBalance(address : string, callback : string) {
-        var url = 'http://192.168.3.141',
-            restPort = '20384',
-            balanceApi = '/api/v1/balance'
         if(address.length === 40) {
             address = core.addressToU160(address)
         }
-        let request = `${url}:${restPort}${balanceApi}/${address}`
+        let request = `http://${Test_node}:${HttpRestPort}${restApi.getBalance}`
         axios.get(request).then((res : any) => {
             if(res.data.Error === 0) {
                 let obj = {
@@ -408,8 +405,8 @@ export class SDK {
         }
         let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
         var param = buildRestfulParam(tx)
-
-        axios.post(transfer_url, param).then( (res:any) => {
+        let request = `http://${Test_node}:${HttpRestPort}${restApi.transfer}`
+        axios.post(request, param).then( (res:any) => {
             console.log('transfer response: ' + JSON.stringify(res.data))
             if(res.data.Error === 0) {
                 let obj = {
