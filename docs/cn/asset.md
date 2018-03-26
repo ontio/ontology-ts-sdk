@@ -1,74 +1,6 @@
-## 数字资产账户 Account
+## 数字资产管理
 
-#### Account 具有以下数据结构。
-
-````
-{
-  address : string,
-  label : string,
-  lock : boolean,
-  algorithm : string,
-  parameters : {},
-  key : string,
-  extra : null
-}
-````
-
-```address``` 是base58编码的账户地址。
-
-```label``` 是账户的名称。
-
-`lock` 表明账户是否是被用户锁住的。客户端不能消费掉被锁的账户中的资金。
-
-`algorithm` 是加密算法名称。
-
-`parameters` 是加密算法所需参数。
-
-`key` 是NEP-2格式的私钥。该字段可以为null（对于只读地址或非标准地址）。
-
-`extra` 是客户端存储额外信息的字段。该字段可以为null。
-
-###  创建账户
-
-该方法的参数中**algorithmObj** 是可选的加密算法对象，结构如下：
-
-````
-{
-  algorithm: string // 算法名称
-  parameters: {}    // 算法的参数
-}
-````
-
-````
-import {Account} from 'Ont'
-var account = new Account()
-//@param {string} privateKey 用户的私钥
-//@param {string} password 密码
-//@param {string} label 账户的名称
-//@param {object} algorithmObj 可选参数，加密算法对象
-account.create(privateKey, password, label, algorithmObj)
-````
-
-###  导入账户
-
-可以通过备份的数据导入账户。
-
-导入账户的过程中会验证密码和加密后的私钥，如果不正确会抛出相应错误码。
-
-````
-import { Account } from 'Ont'
-//@param {label} 账户的名称
-//@param {encryptedPrivateKey} 加密后的私钥
-//@param {password} 用来加密私钥的密码
-var account;
-try {
-    account = Account.importAccount(label, encryptedPrivateKey, password)
-} catch(error) {
-    //密码或私钥不正确
-}
-````
-
-## 钱包 Wallet
+### 钱包 Wallet
 
 钱包Wallet是一个Json格式的数据存储文件。在本体Ontology中， Wallet既可存储数字身份，也可以存储数字资产。
 
@@ -139,6 +71,76 @@ account.create( privateKey, password, name )
 wallet.addAccount(account)
 ````
 
+### Account 数据结构。
+
+````
+{
+  address : string,
+  label : string,
+  lock : boolean,
+  algorithm : string,
+  parameters : {},
+  key : string,
+  extra : null
+}
+````
+
+```address``` 是base58编码的账户地址。
+
+```label``` 是账户的名称。
+
+`lock` 表明账户是否是被用户锁住的。客户端不能消费掉被锁的账户中的资金。
+
+`algorithm` 是加密算法名称。
+
+`parameters` 是加密算法所需参数。
+
+`key` 是NEP-2格式的私钥。该字段可以为null（对于只读地址或非标准地址）。
+
+`extra` 是客户端存储额外信息的字段。该字段可以为null。
+
+###  创建账户
+
+该方法的参数中**algorithmObj** 是可选的加密算法对象，结构如下：
+
+````
+{
+  algorithm: string // 算法名称
+  parameters: {}    // 算法的参数
+}
+````
+
+````
+import {Account} from 'Ont'
+var account = new Account()
+//@param {string} privateKey 用户的私钥
+//@param {string} password 密码
+//@param {string} label 账户的名称
+//@param {object} algorithmObj 可选参数，加密算法对象
+account.create(privateKey, password, label, algorithmObj)
+````
+
+###  导入账户
+
+可以通过备份的数据导入账户。
+
+导入账户的过程中会验证密码和加密后的私钥，如果不正确会抛出相应错误码。
+
+````
+import { Account } from 'Ont'
+//@param {label} 账户的名称
+//@param {encryptedPrivateKey} 加密后的私钥
+//@param {password} 用来加密私钥的密码
+var account;
+try {
+    account = Account.importAccount(label, encryptedPrivateKey, password)
+} catch(error) {
+    //密码或私钥不正确
+}
+````
+
+
+
 
 ## 数字资产转账 Transfer
 
@@ -177,12 +179,15 @@ axios.post('127.0.0.1:20386', restData).then(res => {
 ````
 
 ## 数字资产查询 getBalance
-####查询余额链接
+
+### 查询余额链接
+
 ````
 http://${nodeURL}:${httpRestPort}/api/v1/balance/${address}
 ````
 
-####样例：
+### 样例：
+
 ````
 let request = `http://127.0.0.1:20384/api/v1/balance/TA5uYzLU2vBvvfCMxyV2sdzc9kPqJzGZWq`
 	axios.get(request).then((res : any) => {
