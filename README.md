@@ -13,18 +13,18 @@ The project is an ontology official TypeScript SDK, which is a comprehensive SDK
 
 ## Installation
 
-download source from github
+#### Download
 ```
 git clone 'https://github.com/ontio/ontology-ts-sdk.git'
 ```
-
+#### Install
 ````
 npm install 'ontology-ts-sdk'
 ````
 
-Compile
+#### Compile
 
-turn into the directory and run:
+get into the 'ontology-ts-sdk' directory and run:
 
 ````
 npm run build
@@ -32,7 +32,7 @@ npm run build
 
 you will get the packaged code under '/lib'
 
-Test
+#### Test
 
 test code of the project is in directory '/test'. Run:
 
@@ -40,11 +40,7 @@ test code of the project is in directory '/test'. Run:
 npm run test
 ```
 
-you will get the test result of jest.
-
-References
-
-Import
+#### Import
 
 modules library export by 'Ont'
 
@@ -52,18 +48,16 @@ modules library export by 'Ont'
 import {Wallet} from 'Ont'
 ```
 
-Require
-
-SDK with ES6, ````require```` need to make a clear statement of the modules you need.
+#### Require
 
 ````
 var Ont = require 'Ont'
 var wallet = Ont.Wallet()
 ````
 
-Web
+#### Web require
 
-The browser.js file under the compiled '/lib' folder is referenced to the page:
+The browser.js file under the '/lib' folder need referenced to the page:
 
 ````
 <script src="./lib/browser.js"></script>
