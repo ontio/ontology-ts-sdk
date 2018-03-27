@@ -1,10 +1,10 @@
 
-<h1 align="center">TypeScript SDK For Ontology  </h1>
+<h1 align="center">TypeScript SDK For Ontology blockchain </h1>
 <h4 align="center">Version V0.6.0 </h4>
 
 ## Overview
 
-The project is an ontology official TypeScript SDK, which is a comprehensive SDK. Currently, it supports local wallet management, digital identity management, digital asset management,  deployment and envoke for Smart Contract . The future will also support more rich functions and applications .
+The project is a comprehensive TypeScript library for the Ontology blockchain. Currently, it supports local wallet management, digital identity management, digital asset management,  deployment and envoke for Smart Contract . The future will also support more rich functions and applications .
 
 ## Getting started
 
