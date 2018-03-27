@@ -30,11 +30,11 @@ import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexst
 import json from '../smartcontract/data/IdContract.abi'
 import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
-import {tx_url, socket_url, TOKEN_TYPE} from '../consts'
-import axios from 'axios'
+import {TOKEN_TYPE, HTTP_REST_PORT, TEST_NODE, REST_API} from '../consts'
 import { VmCode, VmType } from './vmcode';
 import * as cryptoJS from 'crypto-js'
 import opcode from './opcode';
+import {BigNumber} from 'bignumber.js'
 
 const WebSocket = require('ws');
 
@@ -48,15 +48,18 @@ export const Default_params = {
     "Type": "",
     "Op": "test"
 }
-// export const socket_url = 'ws://192.168.3.128:20335'
-// export const net_url = 'http://192.168.3.128:20335/api/v1/transaction'
+
 
 const ONT_CONTRACT = "ff00000000000000000000000000000000000001"
 export const makeTransferTransaction = (tokenType:string, from : string, to : string, value : string,  privateKey : string)=> {
     let state = new State()
     state.from = from
     state.to = to
-    state.value = value
+
+    //multi 10^8 to keep precision
+    let valueToSend = new BigNumber(Number(value) * 1e+8).toString()
+
+    state.value = valueToSend
     let transfer = new Transfers()
     transfer.states = [state]
 
@@ -345,52 +348,6 @@ export function buildRestfulParam(tx : any) {
 }
 
 
-
-export function registerOntid(ontid : string, privateKey : string, callback : (result:any)=>{}) {
-    let param = buildRegisterOntidTx(ontid, privateKey)
-    //TODO websocket work with browser and node
-    const socket = new WebSocket(socket_url)
-    socket.onopen = () => {
-        console.log('connected')
-        socket.send(param)
-    }
-    socket.onmessage = (event:any) => {
-        let res
-        if (typeof event.data === 'string') {
-            res = JSON.parse(event.data)
-        }
-        console.log('response for send tx: ' + JSON.stringify(res))
-
-        if (res.Action === 'Notify') {
-            let parsedRes = parseEventNotify(res)
-            console.log('paresed event notify: ' + JSON.stringify(parsedRes))
-            if (parsedRes.Error == 0 && parsedRes.Result.BlockHeight) {
-                let result = {
-                    error: ERROR_CODE.SUCCESS,
-                    desc : parsedRes.Result
-                }
-                callback(result)
-            } else {
-                let errResult = {
-                    error: parsedRes.Error,
-                    desc: parsedRes.Result
-                }
-                callback(errResult)
-            }
-
-            socket.close()
-        }
-    }
-    socket.onerror = (event: any) => {
-        //no server or server is stopped
-        let errResult = {
-            error: event.data
-        }
-        callback(errResult)
-        console.log(event)
-        socket.close()
-    }
-}
 /* {
     "Action": "Notify",
         "Desc": "SUCCESS",

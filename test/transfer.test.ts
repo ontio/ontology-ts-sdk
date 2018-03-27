@@ -20,12 +20,13 @@ import { Account } from "../src/account";
 import * as core from '../src/core'
 import {Transaction} from '../src/transaction/transaction'
 import { makeTransferTransaction, buildRpcParam, buildRestfulParam } from "../src/transaction/transactionBuilder";
-import TxSender from "../src/transaction/TxSender";
+import TxSender from "../src/transaction/txSender";
 import axios from 'axios'
 import { ab2hexstring, StringReader } from "../src/utils";
 import {State} from '../src/smartcontract/token'
 import * as scrypt from '../src/scrypt'
-import {Test_node, HttpRestPort, restApi} from '../src/consts'
+import {TEST_NODE, HTTP_REST_PORT, REST_API} from '../src/consts'
+import {BigNumber} from 'bignumber.js'
 
 var accountFrom = {
     address: '012ad54766b0563e87fbf9ddc178fa924e05bb46',
@@ -46,36 +47,49 @@ var url = 'http://192.168.3.141',
 
 const  testTransferTx = () => {
     var accountTo = ab2hexstring(core.generateRandomArray(20))
-    console.log('account to: ' + accountTo)
+    let base58AccountTo = core.u160ToAddress(accountTo)
+    console.log('account to: ' + base58AccountTo)
 
-    var tx = makeTransferTransaction('ONT',accountFrom.address, accountTo, '3000000000', accountFrom.privateKey)
+    var value = '3.5'
+
+    var tx = makeTransferTransaction('ONT',accountFrom.address, accountTo, value, accountFrom.privateKey)
     var param = buildRestfulParam(tx)
     console.log('param : ' + JSON.stringify(param))
 
     // var temp = Transaction.deserialize(tx.serialize())
     // console.log('deserialzied: ' + JSON.stringify(temp))
 
-    let request = `http://${Test_node}:${HttpRestPort}${restApi.transfer}`
+    let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
 
     axios.post(request, param).then(res => {
         console.log('transfer response: ' + JSON.stringify(res.data))
+        setTimeout( function(){
+            testGetBalance(base58AccountTo)
+        }, 5000)
     }).catch(err => {
         console.log(err)
     })
+
+
 }
 
-const testGetBalance = () => {
-    let request = `http://${Test_node}:${HttpRestPort}${restApi.getBalance}/${accountFrom.base58Address}`
+const testGetBalance = (address) => {
+    let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
     axios.get(request).then((res) => {
-        console.log(res.data)
+        let result = res.data.Result
+        console.log(result)
+        result.ont = new BigNumber(result.ont).multipliedBy(1e-8).toNumber()
+        result.ong = new BigNumber(result.ong).multipliedBy(1e-8).toNumber()
+
+        console.log(result)
     }).catch(err => {
         console.log(err)
     })
 }
 
-// testTransferTx()
+testTransferTx()
 
-// testGetBalance()
+// testGetBalance(accountFrom.base58Address)
 
 // var state = new State()
 // state.from = ab2hexstring(core.generateRandomArray(20))
