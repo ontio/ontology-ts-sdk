@@ -13,7 +13,7 @@ The project is an ontology official TypeScript SDK, which is a comprehensive SDK
 
 ## Installation
 
-download from github
+download source from github
 ```
 git clone 'https://github.com/ontio/ontology-ts-sdk.git'
 ```
@@ -24,29 +24,29 @@ npm install 'ontology-ts-sdk'
 
 Compile
 
-从github下载的源码，进入项目根目录，运行:
+turn into the directory and run:
 
 ````
 npm run build
 ````
 
-你会得到编译后的代码在lib文件夹下。
+you will get the packaged code under '/lib'
 
-测试
+Test
 
-项目的测试代码在根目录```/test``` 文件夹下。运行：
+test code of the project is in directory '/test'. Run:
 
 ```
 npm run test
 ```
 
-你会看到jest测试结果。
+you will get the test result of jest.
 
-引用
+References
 
 Import
 
-模块通过Ont导出。
+modules library export by 'Ont'
 
 ```
 import {Wallet} from 'Ont'
@@ -54,7 +54,7 @@ import {Wallet} from 'Ont'
 
 Require
 
-Sdk 使用ES6的模块解决方案，```require``` 需要明确声明你所需的模块。
+SDK with ES6, ````require```` need to make a clear statement of the modules you need.
 
 ````
 var Ont = require 'Ont'
@@ -63,13 +63,13 @@ var wallet = Ont.Wallet()
 
 Web
 
-将编译后得到的lib文件夹下```browser.js```文件引入到页面中：
+The browser.js file under the compiled '/lib' folder is referenced to the page:
 
 ````
 <script src="./lib/browser.js"></script>
 ````
 
-在代码中使用需要在Ont的全局命名空间下。
+The use of the code is required under the global namespace of Ont.
 
 ```
 var wallet = Ont.Wallet()
