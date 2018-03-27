@@ -147,7 +147,7 @@ export const pushHexString = (param : string) => {
         result += opcode.PUSHDATA4
         result += num2hexstring(len, 4, true)
     }
-    result += hex2VarBytes(param)
+    result += param
     return result
 }
 
@@ -191,7 +191,7 @@ export const makeInvokeCode = (params : [any], codeHash : string, vmType : VmTyp
     let invokeCode = new InvokeCode()
     let vmCode = new VmCode()
     let code = buildSmartContractParam(params)
-    code += opcode.APPCALL
+    code += num2hexstring(opcode.APPCALL)
     code += hex2VarBytes(codeHash)
     vmCode.code = code
     vmCode.vmType = vmType
@@ -215,12 +215,12 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
     console.log('codehash: '+scriptHash)
 
     let params = []
-    params.push(func.name)
+    params.push(str2hexstr(func.name))
     for(let v of func.parameters) {
         params.push(v.getValue())
     }
 
-    let payload = makeInvokeCode(param, scriptHash)
+    let payload = makeInvokeCode(params, scriptHash)
 
     tx.payload = payload
 
@@ -231,25 +231,26 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
 }
 
 
-// TODO need update
-export function makeDeployCode(avmcode : string, obj : any) {
+// 
+export function makeDeployCode(code : VmCode, name : string='' , version : string='1.0', author : string='', 
+email : string='', desp:string='', needStorage : boolean=true) {
     let dc = new DeployCode()
-    dc.author = obj.author || ''
-    dc.code = avmcode
-    dc.version = obj.version || '1.0'
-    dc.description = obj.description || ''
-    dc.email = obj.email || ''
-    dc.name = obj.name || ''
-    dc.needStorage = obj.needStorage || true
-    dc.vmType = obj.vmType || VmType.NativeVM
+    dc.author = author 
+    dc.code = code
+    dc.version = version
+    dc.description = desp
+    dc.email = email
+    dc.name = name
+    dc.needStorage =needStorage
+
     return dc
 }
 
-export function makeDeployTransaction (avmcode : string, deployObj : any, privateKey : string) {
+export function makeDeployTransaction ( deployObj : any, privateKey : string) {
     let tx = new Transaction()
     tx.version = 0x00
 
-    let deployCode = makeDeployCode(avmcode, deployObj)
+    let deployCode = makeDeployCode(deployObj)
     tx.payload = deployCode
     
     tx.type = TxType.Deploy

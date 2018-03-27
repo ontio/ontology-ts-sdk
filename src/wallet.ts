@@ -19,11 +19,12 @@
 import * as core from './core'
 import { Identity } from './identity'
 import { Account } from './account'
-import { DEFAULT_SCRYPT } from './consts'
+import { DEFAULT_SCRYPT, DEFAULT_ALGORITHM } from './consts'
 import { ab2hexstring, hexstring2ab } from './utils'
 import { access } from 'fs';
 import { format } from 'url';
 import * as scrypt from './scrypt'
+import { DEFAULT_ENCODING } from 'crypto';
 
 export class Wallet {
     name: string;
@@ -51,9 +52,9 @@ export class Wallet {
         this.createTime = (new Date).toISOString()
         this.version = "1.0";
         this.scrypt = {
-            "n": 4096,
-            "r": 8,
-            "p": 8
+            "n": DEFAULT_SCRYPT.cost,
+            "r": DEFAULT_SCRYPT.blockSize,
+            "p": DEFAULT_SCRYPT.parallel
         };
 
         return this

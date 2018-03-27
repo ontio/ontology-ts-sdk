@@ -291,15 +291,6 @@ const testChangeRecovery = () => {
 }
 
 
-const testCheckOntid = () => {
-    checkOntid(ontid).then((res :any) => {
-        console.log('checkontid res:'+res)
-    }, (err:any)=>{
-        console.log('checkontid err:'+err)
-    })
-    
-}
-
 //uncomment one line to test one tx each time.
 
 testRegisterOntid()

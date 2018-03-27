@@ -387,7 +387,7 @@ export class SDK {
         }
         let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
         var param = buildRestfulParam(tx)
-        let request = `http://${Test_node}:${HttpRestPort}${restApi.transfer}`
+        let request = `http://${Test_node}:${HttpRestPort}${restApi.sendRawTx}`
         axios.post(request, param).then( (res:any) => {
             console.log('transfer response: ' + JSON.stringify(res.data))
             if(res.data.Error === 0) {

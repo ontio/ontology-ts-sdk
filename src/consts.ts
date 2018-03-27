@@ -57,8 +57,10 @@ export const HttpJsonPort = '20386'
 
 export const restApi = {
   getBalance: '/api/v1/balance',
-  transfer: '/api/v1/transaction'
+  sendRawTx: '/api/v1/transaction'
 }
+
+export const sendRawTxByRestful = `http://${Test_node}:${HttpRestPort}${restApi.sendRawTx}`
 
 export const Test_websocket_port = '20385'
 export const Test_http_port = '20336'

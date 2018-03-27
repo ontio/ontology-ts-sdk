@@ -21,22 +21,21 @@ import DeployCode from '../src/transaction/payload/DeployCode'
 
 import {getHash} from '../src/core'
 import {ab2hexstring, ab2str,str2hexstr , reverseHex} from '../src/utils'
-import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTransaction, buildTxParam} from '../src/transaction/transactionBuilder'
+import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTransaction, buildTxParam, buildRestfulParam, makeDeployCode} from '../src/transaction/transactionBuilder'
 
 import AbiInfo from '../src/smartcontract/abi/AbiInfo'
 import AbiFunction from '../src/smartcontract/abi/AbiFunction'
 import Parameter from '../src/smartcontract/abi/parameter'
-import { tx_url, socket_url , ONT_NETWORK} from '../src/consts'
-
+import { tx_url, socket_url , ONT_NETWORK, Test_http_port, Test_node, sendRawTxByRestful} from '../src/consts'
+import axios from 'axios' 
 import TxSender from '../src/transaction/TxSender'
 
 import json from '../src/smartcontract/data/IdContract.abi'
+import { VmCode, VmType } from '../src/transaction/vmcode';
 
 var fs = require('fs')
 let avm = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/IdContract_v0.2.avm')
-var code = ab2hexstring(avm)
-var codehash = getHash(code)
-console.log('code hash: '+codehash)
+var avmCode = ab2hexstring(avm)
 
 var privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
 var ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a78596950415a364d61376a6351564b'
@@ -56,28 +55,25 @@ var txSender = new TxSender(ONT_NETWORK.TEST)
 
 
 const testDeployCodeTx = () => {
-    var dc = (<any> {})
-    dc.author = 'mickey10'
-    dc.code = fc
-    dc.codeVersion = '1.0'
-    dc.description = 'test'
-    dc.email = ''
-    dc.name = 'test2'
-    dc.needStorage = true
-    dc.vmType = 0
-
-
-    var tx = makeDeployTransaction(code, dc, privateKey)
     
-    var param = buildTxParam(tx)
+    var code = new VmCode()
+    code.code = avmCode
+    code.vmType = VmType.NativeVM
+
+    var dc = makeDeployCode(code)
+    var tx = makeDeployTransaction(dc, privateKey)
+    
+    var param = buildRestfulParam(tx)
+
+    var url = sendRawTxByRestful
+    axios.post(url, param).then((res:any)=> {
+        console.log('deploy res: '+ JSON.stringify(res.data))
+    }).catch(err => {
+        console.log('err: '+ err)
+    })
     console.log('param: '+ param)
 
-    const callback =  function(res, socket) {
-        console.log('send tx response: ' + JSON.stringify(res))
-        // socket.close()
-    }
 
-    txSender.sendTxWithSocket(param, callback)
 }
 
 

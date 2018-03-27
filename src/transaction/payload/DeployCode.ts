@@ -18,12 +18,12 @@
 
 
 import Payload from './payload'
-import {VmType} from '../vmcode'
+import {VmType, VmCode} from '../vmcode'
 import {str2VarBytes, hex2VarBytes, num2VarInt, bool2VarByte, StringReader, hexstr2str, num2hexstring} from '../../utils'
 
 export default class DeployCode extends Payload {
     //hex string
-    code : string
+    code : VmCode
     //hex string
     vmType : VmType
     needStorage : boolean
