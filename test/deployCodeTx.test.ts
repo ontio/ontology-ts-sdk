@@ -26,9 +26,9 @@ import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTrans
 import AbiInfo from '../src/smartcontract/abi/AbiInfo'
 import AbiFunction from '../src/smartcontract/abi/AbiFunction'
 import Parameter from '../src/smartcontract/abi/parameter'
-import { tx_url, socket_url , ONT_NETWORK, Test_http_port, Test_node, sendRawTxByRestful} from '../src/consts'
+import {ONT_NETWORK, TEST_NODE, TEST_ONT_URL} from '../src/consts'
 import axios from 'axios' 
-import TxSender from '../src/transaction/TxSender'
+import TxSender from '../src/transaction/txSender'
 
 import json from '../src/smartcontract/data/IdContract.abi'
 import { VmCode, VmType } from '../src/transaction/vmcode';
@@ -65,7 +65,7 @@ const testDeployCodeTx = () => {
     
     var param = buildRestfulParam(tx)
 
-    var url = sendRawTxByRestful
+    var url = TEST_ONT_URL.sendRawTxByRestful
     axios.post(url, param).then((res:any)=> {
         console.log('deploy res: '+ JSON.stringify(res.data))
     }).catch(err => {

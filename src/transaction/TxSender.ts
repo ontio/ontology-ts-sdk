@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ONT_NETWORK, ONT_URL} from '../consts'
+import {ONT_NETWORK, MAIN_ONT_URL, TEST_ONT_URL} from '../consts'
 import {Transaction} from './transaction'
 import axios from 'axios'
 
@@ -28,22 +28,22 @@ if(typeof window != 'undefined' && window.WebSocket){
 }
 
 export default class TxSender {
-    socket_url : string
-    rpc_url : string
+    SOCKET_URL : string
+    RPC_URL : string
 
     constructor (net : string) {
         if(net === ONT_NETWORK.MAIN) {
-            this.socket_url = ONT_URL.MAIN_SOCKET
-            this.rpc_url = ONT_URL.MAIN_RPC
+            this.SOCKET_URL = MAIN_ONT_URL.SOCKET_URL
+            this.RPC_URL = MAIN_ONT_URL.RPC_URL
         } else {
-            this.socket_url = ONT_URL.TEST_SOCKET
-            this.rpc_url = ONT_URL.TEST_PRC
+            this.SOCKET_URL = TEST_ONT_URL.SOCKET_URL
+            this.RPC_URL = TEST_ONT_URL.RPC_URL
         }
     }
 
     sendTxWithSocket(param : string, callback : (res:any, socket:any) => any) {
         if(!param) return;
-        const socket = new WebSocket(this.socket_url)
+        const socket = new WebSocket(this.SOCKET_URL)
         socket.onopen = () => {
             console.log('connected')
             socket.send(param)

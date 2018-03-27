@@ -25,11 +25,11 @@ import {sendBackResult2Native, EventEmitter, str2hexstr} from '../utils'
 import * as core from '../core'
 import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, makeTransferTransaction, buildRestfulParam} from '../transaction/transactionBuilder'
 import { ERROR_CODE } from '../error';
-import {tx_url, socket_url, ONT_NETWORK, Test_node, restApi, HttpRestPort } from '../consts'
+import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT } from '../consts'
 import { encrypt } from '../scrypt';
-import TxSender from '../transaction/TxSender'
+import TxSender from '../transaction/txSender'
 import axios from 'axios'
-
+import {BigNumber} from 'bignumber.js'
 export class SDK {
 
     static getDecryptError(err:any) {
@@ -341,12 +341,15 @@ export class SDK {
         if(address.length === 40) {
             address = core.addressToU160(address)
         }
-        let request = `http://${Test_node}:${HttpRestPort}${restApi.getBalance}/${address}`
+        let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
         axios.get(request).then((res : any) => {
             if(res.data.Error === 0) {
+                let result = res.data.Result
+                result.ont = new BigNumber(result.ont).multipliedBy(1e-8).toNumber()
+                result.ong = new BigNumber(result.ong).multipliedBy(1e-8).toNumber()
                 let obj = {
                     error : 0,
-                    result : res.data.Result
+                    result : result
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
             } else {
@@ -387,7 +390,7 @@ export class SDK {
         }
         let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
         var param = buildRestfulParam(tx)
-        let request = `http://${Test_node}:${HttpRestPort}${restApi.sendRawTx}`
+        let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
         axios.post(request, param).then( (res:any) => {
             console.log('transfer response: ' + JSON.stringify(res.data))
             if(res.data.Error === 0) {

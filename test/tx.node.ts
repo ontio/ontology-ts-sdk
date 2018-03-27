@@ -22,21 +22,21 @@ import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/InvokeCode'
 import { Identity } from '../src/identity'
 import * as core from '../src/core'
-import AbiInfo from '../src/smartcontract/abi/AbiInfo'
+import AbiInfo from '../src/smartcontract/abi/abiInfo'
 import AbiFunction from '../src/smartcontract/abi/abiFunction'
 import Parameter from '../src/smartcontract/abi/parameter'
 import json2 from '../src/smartcontract/data/IdContract.abi'
 import { ab2hexstring, str2hexstr, StringReader } from '../src/utils'
 import { DEFAULT_ALGORITHM, ONT_NETWORK } from '../src/consts';
-import { DDO } from '../src/transaction/DDO'
-import {tx_url, socket_url} from '../src/consts'
+import { DDO } from '../src/transaction/ddo'
+import { TEST_ONT_URL} from '../src/consts'
 import { getHash } from '../src/core';
-import TxSender from '../src/transaction/TxSender'
+import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
 
 var txSender = new TxSender(ONT_NETWORK.TEST)
 
-// const socket_url = 'ws://52.80.115.91:20335'
+// const SOCKET_URL = 'ws://52.80.115.91:20335'
 const Default_params = {
     "Action": "sendrawtransaction",
     "Version": "1.0.0",
@@ -90,7 +90,7 @@ ontid = core.generateOntid(privateKey)
 console.log('ontid: ' + ontid)
 
 const sendTx = (param, callback = null) => {
-    const socket = new WebSocket(socket_url)
+    const socket = new WebSocket(TEST_ONT_URL.SOCKET_URL)
     socket.onopen = () => {
         console.log('connected')
         socket.send(param)
@@ -142,13 +142,13 @@ const testDDOTx = () => {
     txSender.sendTxWithSocket(param, callback)
 }
 
-const testDDOByRpc = () => {
-    let tx = buildGetDDOTx(ontid, privateKey)
-    let param = buildRpcParam(tx)
-    txSender.sendWithRpc(param).then( res => {
-        console.log('rpc response: '+ JSON.stringify(res))
-    })
-}
+// const testDDOByRpc = () => {
+//     let tx = buildGetDDOTx(ontid, privateKey)
+//     let param = buildRpcParam(tx)
+//     txSender.sendWithRpc(param).then( res => {
+//         console.log('rpc response: '+ JSON.stringify(res))
+//     })
+// }
 
 const parseDDO = (result) => {
     let ddo = DDO.deserialize(result)

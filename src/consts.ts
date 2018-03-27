@@ -46,40 +46,46 @@ export const DEFAULT_ALGORITHM = {
   }
 }
 
+export const TEST_NODE = '54.222.182.88'
+export const MAIN_NODE = '54.222.182.88'
 
-// export const Test_node = '52.80.115.91'
-// export const Test_node = '192.168.3.128'
-export const Test_node = '54.222.182.88'
 
-export const HttpRestPort = '20334'
-export const HttpWsPort   = '20385'
-export const HttpJsonPort = '20386'
+export const HTTP_REST_PORT = '20334'
+export const HTTP_WS_PORT   = '20385'
+export const HTTP_JSON_PORT = '20386'
 
-export const restApi = {
+export const REST_API = {
   getBalance: '/api/v1/balance',
   sendRawTx: '/api/v1/transaction'
 }
 
-export const sendRawTxByRestful = `http://${Test_node}:${HttpRestPort}${restApi.sendRawTx}`
-
-export const Test_websocket_port = '20385'
-export const Test_http_port = '20336'
-
-export const tx_url = `http://${Test_node}:${Test_http_port}/`
-export const socket_url = `ws://${Test_node}:${Test_websocket_port}`
 
 export const ONT_NETWORK = {
   MAIN : 'MainNet',
   TEST : 'TestNet'
 }
 
-export const ONT_URL = {
-  MAIN_SOCKET : socket_url,
-  TEST_SOCKET : socket_url,
+export const TEST_ONT_URL = {
+  SOCKET_URL: `ws://${TEST_NODE}:${HTTP_WS_PORT}/`,
 
-  MAIN_RPC : tx_url,
-  TEST_PRC : tx_url
+  RPC_URL: `http://${TEST_NODE}:${HTTP_JSON_PORT}/`,
+
+  REST_URL: `http://${TEST_NODE}:${HTTP_REST_PORT}/`,
+
+  sendRawTxByRestful : `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
 }
+
+export const MAIN_ONT_URL = {
+  SOCKET_URL: `ws://${MAIN_NODE}:${HTTP_WS_PORT}`,
+
+  RPC_URL: `http://${MAIN_NODE}:${HTTP_JSON_PORT}/`,
+
+  REST_URL: `http://${MAIN_NODE}:${HTTP_REST_PORT}/`,
+
+  sendRawTxByRestful : `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+
+}
+
 
 export const TOKEN_TYPE = {
   ONT : 'ONT',

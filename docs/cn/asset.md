@@ -184,9 +184,9 @@ axios.post('127.0.0.1:20386', restData).then(res => {
 
 ````
 //nodeURL 节点的IP地址
-//httpRestPort 节点暴露给Restful接口的端口
+//HTTP_REST_PORT 节点暴露给Restful接口的端口
 //address 查询余额的地址
-http://${nodeURL}:${httpRestPort}/api/v1/balance/${address}
+http://${nodeURL}:${HTTP_REST_PORT}/api/v1/balance/${address}
 ````
 
 ### 样例：
