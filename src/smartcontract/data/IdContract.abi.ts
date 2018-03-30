@@ -1,5 +1,5 @@
 export default {
-    "hash": "0x8db63b2ccde3fabaa28bc7edb4f5569ed7ef9959",
+    "hash": "80e7d2fc22c24c466f44c7688569cc6e6d6c6f92",
         "entrypoint": "Main",
             "functions":
     [
@@ -50,7 +50,7 @@ export default {
                         "type": "ByteArray"
                     }
                 ],
-            "returntype": "Any"
+            "returntype": "Boolean"
         },
         {
             "name": "AddKey",
@@ -69,7 +69,7 @@ export default {
                         "type": "ByteArray"
                     }
                 ],
-            "returntype": "Any"
+            "returntype": "Boolean"
         },
         {
             "name": "RemoveKey",
@@ -88,7 +88,7 @@ export default {
                         "type": "ByteArray"
                     }
                 ],
-            "returntype": "Any"
+            "returntype": "Boolean"
         },
         {
             "name": "AddRecovery",
@@ -107,7 +107,7 @@ export default {
                         "type": "ByteArray"
                     }
                 ],
-            "returntype": "Any"
+            "returntype": "Boolean"
         },
         {
             "name": "ChangeRecovery",
@@ -126,7 +126,7 @@ export default {
                         "type": "ByteArray"
                     }
                 ],
-            "returntype": "Any"
+            "returntype": "Boolean"
         },
         {
             "name": "AddAttribute",
@@ -172,7 +172,7 @@ export default {
                         "type": "ByteArray"
                     }
                 ],
-            "returntype": "Any"
+            "returntype": "Boolean"
         },
         {
             "name": "GetPublicKeys",

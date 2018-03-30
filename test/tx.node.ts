@@ -17,14 +17,14 @@
  */
 
 import { makeInvokeTransaction , parseEventNotify, buildAddAttributeTx, buildGetDDOTx,
-    buildRpcParam, buildRegisterOntidTx, buildTxParam } from '../src/transaction/transactionBuilder'
+    buildRpcParam, buildRegisterOntidTx, buildTxParam, buildRestfulParam, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder'
 import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/InvokeCode'
 import { Identity } from '../src/identity'
 import * as core from '../src/core'
 import AbiInfo from '../src/smartcontract/abi/abiInfo'
 import AbiFunction from '../src/smartcontract/abi/abiFunction'
-import Parameter from '../src/smartcontract/abi/parameter'
+import {Parameter, ParameterType } from '../src/smartcontract/abi/parameter'
 import json2 from '../src/smartcontract/data/IdContract.abi'
 import { ab2hexstring, str2hexstr, StringReader } from '../src/utils'
 import { DEFAULT_ALGORITHM, ONT_NETWORK } from '../src/consts';
@@ -33,6 +33,8 @@ import { TEST_ONT_URL} from '../src/consts'
 import { getHash } from '../src/core';
 import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
+
+const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92'
 
 var txSender = new TxSender(ONT_NETWORK.TEST)
 
@@ -62,13 +64,17 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 
 privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
 publicKey = ab2hexstring(core.getPublicKey(privateKey, false))
+let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
+
 var pkPoint = core.getPublicKeyPoint(privateKey)
-console.log('pk: '+ JSON.stringify(pkPoint))
+console.log('pk false: '+ publicKey)
+console.log('pk true: ' + publicKey2)
+
 
 
 // privateKey = 'cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406'
 // ontid = '6469643a6f6e743a626f626162636465636465666768c'
-ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJW'
+ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJA'
 pk2 = '035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c'
 
 // recovery = ab2hexstring(core.generateRandomArray(20))
@@ -135,11 +141,25 @@ const callback = function (res, socket) {
 const testDDOTx = () => {
     let tx = buildGetDDOTx(ontid, privateKey)
 
-    let param = buildTxParam(tx, true)
+    // let param = buildTxParam(tx, false)
 
-    console.log('param: '+param)
+    // console.log('param: '+param)
     
-    txSender.sendTxWithSocket(param, callback)
+    // txSender.sendTxWithSocket(param, callback)
+    let param = buildRestfulParam(tx)
+    console.log('param: '+JSON.stringify(param))
+    let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+    console.log(url)
+    axios.post(url, param).then((res) => {
+        console.log(res.data)
+        if(res.data.Result && res.data.Result.length > 0) {
+            const ddo = DDO.deserialize(res.data.Result[0])
+            console.log('ddo: '+JSON.stringify(ddo))
+        }
+    }).catch(err => {
+        console.log(err)
+    })
+    
 }
 
 // const testDDOByRpc = () => {
@@ -155,62 +175,78 @@ const parseDDO = (result) => {
     console.log("parse DDO : " + JSON.stringify(ddo))
 }
 
+
 const testRegisterOntid = () => {
     let tx = buildRegisterOntidTx(str2hexstr(ontid), privateKey)
     let serialized = tx.serialize()
     console.log('serialized: '+serialized)
 
-    let temp = Transaction.deserialize(serialized)
-    console.log('deserialized: '+JSON.stringify(temp))
+    // let param = buildTxParam(tx)
+    // console.log('param : '+param)
+    // txSender.sendTxWithSocket(param, callback)
 
-    let param = buildTxParam(tx)
-    
-    txSender.sendTxWithSocket(param, callback)
+    let param = buildRestfulParam(tx)
+    let url = TEST_ONT_URL.sendRawTxByRestful
+    axios.post(url, param).then((res)=>{
+        console.log(res.data)
+    })
 }
 
 const testAddAttribute = () => {
 
-    // var claimId = 'b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
-    //     context = 'claim:staff_authentication8',
-    //     issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
-    //     let path = claimId
-    //     let type = str2hexstr('String')
-    //     let data = {
-    //         Context : context,
-    //         Ontid : issuer
-    //     }
-    //     let value = JSON.stringify(data)
-    //     value = str2hexstr(value)
-    //     console.log('value: '+value.length)
+    var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
+        context = 'claim:staff_authentication8',
+        issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
+        let path = str2hexstr(claimId)
+        let type = str2hexstr('JSON')
+        let data = {
+            Type : 'JSON',
+            Value : {
+                Context: context,
+                Issuer: issuer
+            }
+        }
+        let value = JSON.stringify(data)
+        console.log('value: '+value)
+        value = str2hexstr(value)
         // let value = str2hexstr(issuer)
     
-    let path = str2hexstr('Claim:twitter')
+    // let path = str2hexstr('Claim:twitter')
     // let type = str2hexstr('String')
-    let value = str2hexstr('wang17@twitter')
+    // let value = str2hexstr('wang17@twitter')
 
 
-    let tx = buildAddAttributeTx(path, value, ontid, privateKey )
+    let tx = buildAddAttributeTx(path, value, type, ontid, privateKey )
     console.log('path: '+ path)
     console.log('value: ' + value)
     console.log('ontid: ' + ontid)
-    console.log('type: '+ str2hexstr('String'))
+    console.log('type: '+ type)
     console.log('privateKey: ' + privateKey)
     console.log('publick: '+publicKey)
     
-    let param = buildTxParam(tx)
-    sendTx(param)
+    // let param = buildTxParam(tx)
+    // console.log('param: '+JSON.stringify(param))
+    // sendTx(param)
+    let param = buildRestfulParam(tx)
+    console.log('param: '+JSON.stringify(param))
+
+    axios.post(TEST_ONT_URL.sendRawTxByRestful, param).then((res)=>{
+        console.log(res.data)
+    }).catch(err => {
+        console.log(err)
+    })
 }
 
 
 const testAddPK = () => {
     let f = abiInfo.getFunction('AddKey')
 
-    let p1 = new Parameter('id', 'ByteArray', ontid)
-    let p2 = new Parameter('newpubkey', 'ByteArray', pk2)
-    let p3 = new Parameter('sender', 'ByteArray', publicKey)
+    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
+    let p2 = new Parameter('newpubkey', ParameterType.ByteArray, pk2)
+    let p3 = new Parameter('sender', ParameterType.ByteArray, publicKey)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction( f, privateKey)
+    let tx = makeInvokeTransaction( f, abiInfo.getHash(), privateKey)
 
     let serialized = tx.serialize()
     // console.log('add pk tx: ' + serialized)
@@ -222,9 +258,9 @@ const testAddPK = () => {
 
 const testGetPublicKeys = () => {
     let f = abiInfo.getFunction('GetPublicKeys')
-    let p1 = new Parameter('id', 'ByteArray', ontid)
+    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
     f.setParamsValue(p1)
-    let tx = makeInvokeTransaction(f, privateKey)
+    let tx = makeInvokeTransaction(f, abiInfo.getHash(),privateKey)
     let serialized = tx.serialize()
 
     let param = JSON.stringify(Object.assign({}, Default_params, {Data : serialized}))
@@ -234,12 +270,12 @@ const testGetPublicKeys = () => {
 const testRemovePK = () => {
     let f = abiInfo.getFunction('RemoveKey')
 
-    let p1 = new Parameter('id', 'ByteArray', ontid)
-    let p2 = new Parameter('oldpubkey', 'ByteArray', pk2)
-    let p3 = new Parameter('sender', 'ByteArray', publicKey)
+    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
+    let p2 = new Parameter('oldpubkey', ParameterType.ByteArray, pk2)
+    let p3 = new Parameter('sender', ParameterType.ByteArray, publicKey)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f, privateKey)
+    let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
 
     let serialized = tx.serialize()
 
@@ -255,12 +291,12 @@ const testRemovePK = () => {
 const testAddRecovery = () => {
     let f = abiInfo.getFunction('AddRecovery')
 
-    let p1 = new Parameter('id', 'ByteArray', ontid)
-    let p2 = new Parameter('recovery', 'ByteArray', oldrecovery)
-    let p3 = new Parameter('pk', 'ByteArray', publicKey)
+    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
+    let p2 = new Parameter('recovery', ParameterType.ByteArray, oldrecovery)
+    let p3 = new Parameter('pk', ParameterType.ByteArray, publicKey)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f, privateKey)
+    let tx = makeInvokeTransaction(f, abiInfo.getHash(),privateKey)
 
     let serialized = tx.serialize()
 
@@ -276,12 +312,12 @@ const testAddRecovery = () => {
 const testChangeRecovery = () => {
     let f = abiInfo.getFunction('ChangeRecovery')
 
-    let p1 = new Parameter('id', 'ByteArray', ontid)
-    let p2 = new Parameter('newrecovery', 'ByteArray', newrecovery)
-    let p3 = new Parameter('recovery', 'ByteArray', oldrecovery)
+    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
+    let p2 = new Parameter('newrecovery', ParameterType.ByteArray, newrecovery)
+    let p3 = new Parameter('recovery', ParameterType.ByteArray, oldrecovery)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction( f, privateKey)
+    let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
 
     let serialized = tx.serialize()
 
@@ -293,11 +329,11 @@ const testChangeRecovery = () => {
 
 //uncomment one line to test one tx each time.
 
-testRegisterOntid()
+// testRegisterOntid()
 
 // testAddAttribute()
 
-// testDDOTx()
+testDDOTx()
 
 // testDDOByRpc()
 

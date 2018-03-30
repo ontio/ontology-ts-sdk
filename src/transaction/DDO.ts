@@ -51,12 +51,13 @@ export class DDO {
             let attr = new DDOAttribute()
             const pathLen = parseInt(ss.read(4), 16)
             attr.path = hexstr2str(ss.read(pathLen))
+            attr.path = ss.read(pathLen)
 
             const type_value_len = parseInt(ss.read(4), 16)
             const typeLen = parseInt(ss.read(1), 16)
             attr.type = hexstr2str(ss.read(typeLen))
 
-            const valueLen = type_value_len - typeLen
+            const valueLen = type_value_len - typeLen - 1
             attr.value = hexstr2str(ss.read(valueLen))
             ddo.attributes.push(attr)
         }

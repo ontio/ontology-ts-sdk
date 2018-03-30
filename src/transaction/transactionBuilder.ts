@@ -18,13 +18,13 @@
 
 import AbiInfo from '../smartcontract/abi/abiInfo'
 import AbiFunction from "../smartcontract/abi/abiFunction";
-import Parameter from '../smartcontract/abi/parameter'
+import {Parameter,  ParameterType } from '../smartcontract/abi/parameter'
 import InvokeCode from './payload/invokeCode'
 import DeployCode from './payload/deployCode'
-import {Transaction, TxType, Sig, PubKey} from './transaction'
+import {Transaction, TxType, Sig, PubKey, KeyType} from './transaction'
 import {Transfers, Contract, State} from '../smartcontract/token'
 import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
-import {createSignatureScript, getHash } from '../core'
+import {createSignatureScript, getHash, getPublicKey } from '../core'
 import * as core from '../core'
 import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes, hex2VarBytes, num2VarInt} from '../utils'
 import json from '../smartcontract/data/IdContract.abi'
@@ -35,6 +35,7 @@ import { VmCode, VmType } from './vmcode';
 import * as cryptoJS from 'crypto-js'
 import opcode from './opcode';
 import {BigNumber} from 'bignumber.js'
+import {SignatureSchema} from '../crypto'
 
 const WebSocket = require('ws');
 
@@ -57,7 +58,7 @@ export const makeTransferTransaction = (tokenType:string, from : string, to : st
     state.to = to
 
     //multi 10^8 to keep precision
-    let valueToSend = new BigNumber(Number(value) * 1e+8).toString()
+    let valueToSend = new BigNumber(Number(value)).toString()
 
     state.value = valueToSend
     let transfer = new Transfers()
@@ -89,17 +90,20 @@ export const makeTransferTransaction = (tokenType:string, from : string, to : st
     return tx
 }
 
-export const signTransaction = (tx : Transaction, privateKey : string) => {
-    let pkPoint = core.getPublicKeyPoint(privateKey)
+export const signTransaction = (tx : Transaction, privateKey : string, schema : SignatureSchema=1) => {
+    let publicKey = core.getPublicKey(privateKey, true).toString('hex')
+    let type = 0x12
+    let pk = new PubKey(type, publicKey)
     
     let hash = tx.getHash()
-    // var ProgramHexString = cryptoJS.enc.Hex.parse(SignatureScript);
-    // var ProgramSha256 = cryptoJS.SHA256(hash).toString();
 
     let signed = core.signatureData(hash, privateKey)
     let sig = new Sig()
+    let s = num2hexstring(schema)
+    // signed = '01' + signed //SHA256withECDSA
+    signed = s + signed
     sig.M = 1   
-    sig.pubKeys = [new PubKey(pkPoint.x, pkPoint.y)]
+    sig.pubKeys = [pk]
     sig.sigData = [signed]
 
     tx.sigs = [sig]
@@ -140,14 +144,14 @@ export const pushHexString = (param : string) => {
         result += num2hexstring(len)
     } 
     else if(len < 0x100) {
-        result += opcode.PUSHDATA1
+        result += num2hexstring(opcode.PUSHDATA1)
         result += num2hexstring(len)
     } 
     else if(len < 0x10000) {
-        result += opcode.PUSHDATA2
+        result += num2hexstring(opcode.PUSHDATA2)
         result += num2hexstring(len, 2, true)
     } else {
-        result += opcode.PUSHDATA4
+        result += num2hexstring(opcode.PUSHDATA4)
         result += num2hexstring(len, 4, true)
     }
     result += param
@@ -156,21 +160,26 @@ export const pushHexString = (param : string) => {
 
 
 //params is like [functionName, param1, param2...]
-export const buildSmartContractParam = (params : [any]) => {
+export const buildSmartContractParam = (functionName : string, params : Array<Parameter>) => {
     let result = ''
     for (let i= params.length -1; i > -1; i--) {
-        const type = Object.prototype.toString.call(params[i])
+        const type = params[i].getType()
         switch (type) {
-            case "[object Boolean]":
-                result += pushBool(params[i])
+            case ParameterType.Boolean:
+                result += pushBool(params[i].getValue())
                 break;
 
-            case "[object Number]":
-                result += pushInt(params[i])
+            case ParameterType.Number:
+                result += pushInt(params[i].getValue())
                 break;
 
-            case "[object String]":
-                result += pushHexString(params[i])
+            case ParameterType.String:
+                let value = str2hexstr(params[i].getValue())
+                result += pushHexString(value)
+                break;
+
+            case ParameterType.ByteArray:
+                result += pushHexString(params[i].getValue())
                 break;
 
             /* case "[object Object]":
@@ -186,16 +195,23 @@ export const buildSmartContractParam = (params : [any]) => {
                 throw new Error('Unsupported param type: '+params[i])
         }
     }
+    let paramsLen = num2hexstring(params.length + 0x50)
+    result += paramsLen
+
+    const paramsEnd = 'c1'
+    result += paramsEnd
+
+    result += hex2VarBytes(functionName)
 
     return result
 }
 
-export const makeInvokeCode = (params : [any], codeHash : string, vmType : VmType = VmType.NativeVM) => {
+export const makeInvokeCode = (functionName : string,  params : Array<Parameter>, codeHash : string, vmType : VmType = VmType.NativeVM) => {
     let invokeCode = new InvokeCode()
     let vmCode = new VmCode()
-    let code = buildSmartContractParam(params)
-    code += num2hexstring(opcode.APPCALL)
-    code += hex2VarBytes(codeHash)
+    let code = buildSmartContractParam(functionName, params)
+    code += num2hexstring(opcode.TAILCALL)
+    code += codeHash
     vmCode.code = code
     vmCode.vmType = vmType
 
@@ -204,26 +220,23 @@ export const makeInvokeCode = (params : [any], codeHash : string, vmType : VmTyp
 }
 
 
-export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) => {
+export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  privateKey : string) => {
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
     tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
-    let scriptHash = abiInfo.getHash()
-    if(scriptHash.substr(0,2) === '0x'){
-        scriptHash = scriptHash.substring(2)
-        scriptHash = reverseHex(scriptHash)
-    }
+    // // let scriptHash = abiInfo.getHash()
+    // if(scriptHash.substr(0,2) === '0x'){
+    //     scriptHash = scriptHash.substring(2)
+    //     scriptHash = reverseHex(scriptHash)
+    // }
     console.log('codehash: '+scriptHash)
 
     let params = []
-    params.push(str2hexstr(func.name))
-    for(let v of func.parameters) {
-        params.push(v.getValue())
-    }
-
-    let payload = makeInvokeCode(params, scriptHash)
+    const functionName = str2hexstr(func.name)
+    
+    let payload = makeInvokeCode(functionName, func.parameters, scriptHash, VmType.NEOVM)
 
     tx.payload = payload
 
@@ -235,10 +248,13 @@ export const makeInvokeTransaction = (func : AbiFunction, privateKey : string) =
 
 
 // 
-export function makeDeployCode(code : VmCode, name : string='' , version : string='1.0', author : string='', 
+export function makeDeployCode(avmCode : string, vmType: VmType = VmType.NEOVM, name : string='' , version : string='1.0', author : string='', 
 email : string='', desp:string='', needStorage : boolean=true) {
     let dc = new DeployCode()
     dc.author = author 
+    let code = new VmCode()
+    code.code = avmCode
+    code.vmType = vmType
     dc.code = code
     dc.version = version
     dc.description = desp
@@ -249,11 +265,10 @@ email : string='', desp:string='', needStorage : boolean=true) {
     return dc
 }
 
-export function makeDeployTransaction ( deployObj : any, privateKey : string) {
+export function makeDeployTransaction ( deployCode : DeployCode, privateKey : string) {
     let tx = new Transaction()
     tx.version = 0x00
 
-    let deployCode = makeDeployCode(deployObj)
     tx.payload = deployCode
     
     tx.type = TxType.Deploy
@@ -272,20 +287,22 @@ export function buildTxParam (tx : Transaction, is_pre_exec : boolean = false) {
 }
 
 //all parameters shuld be hex string
-export function buildAddAttributeTx (path : string, value : string, ontid : string, privateKey : string) {
+export function buildAddAttributeTx (path : string, value : string, type: string, ontid : string, privateKey : string) {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+    //algorithm&curve
+    publicKey = '1202' + publicKey
     let f = abiInfo.getFunction('AddAttribute')
     if(ontid.substr(0,3) === 'did') {
         ontid = str2hexstr(ontid)
     }
-    let p1 = new Parameter(f.parameters[0].getName(), 'ByteArray', ontid)
-    let p2 = new Parameter(f.parameters[1].getName(), 'ByteArray', path)
-    let p3 = new Parameter(f.parameters[2].getName(), 'ByteArray', str2hexstr('String'))
-    let p4 = new Parameter(f.parameters[3].getName(), 'ByteArray', value)
-    let p5 = new Parameter(f.parameters[4].getName(), 'ByteArray', publicKey)
+    let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
+    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, path)
+    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, type)
+    let p4 = new Parameter(f.parameters[3].getName(), ParameterType.ByteArray, value)
+    let p5 = new Parameter(f.parameters[4].getName(), ParameterType.ByteArray, publicKey)
 
     f.setParamsValue(p1, p2, p3, p4, p5)
-    let tx = makeInvokeTransaction( f, privateKey)
+    let tx = makeInvokeTransaction( f,abiInfo.getHash(), privateKey)
     return tx
 }
 
@@ -298,16 +315,19 @@ export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
     let f = abiInfo.getFunction('RegIdWithPublicKey')
 
     let name1 = f.parameters[0].getName(),
-        type1 = f.parameters[0].getType()
+        type1 = ParameterType.ByteArray
     let p1 = new Parameter(name1, type1, ontid)
 
 
     let name2 = f.parameters[1].getName(),
-        type2 = f.parameters[1].getType()
+        type2 = ParameterType.ByteArray
+    //algorithm&curve
+    publicKey = '1202' + publicKey
+
     let p2 = new Parameter(name2, type2, publicKey)
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction( f, privateKey)
+    let tx = makeInvokeTransaction( f, abiInfo.getHash(),  privateKey)
 
     return tx
 }
@@ -318,11 +338,11 @@ export function buildGetDDOTx(ontid : string, privateKey : string) {
         ontid = str2hexstr(ontid)
     }
 
-    let p1 = new Parameter(f.parameters[0].getName(), 'ByteArray', ontid)
+    let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
     let nonce = ab2hexstring( core.generateRandomArray(10) )
-    let p2 = new Parameter(f.parameters[1].getName(), 'ByteArray', nonce)
+    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, nonce)
     f.setParamsValue(p1,p2)
-    let tx = makeInvokeTransaction( f, privateKey)
+    let tx = makeInvokeTransaction( f, abiInfo.getHash(), privateKey)
     
     return tx
 }
@@ -345,6 +365,17 @@ export function buildRestfulParam(tx : any) {
         "Version" : "1.0.0",
         "Data" : param
     }
+}
+
+export function sendRawTxRestfulUrl(url : string, preExec : boolean = false) {
+    if(url.charAt(url.length - 1) === '/') {
+        url = url.substring(0, url.length-1)
+    }
+    let restUrl = url + REST_API.sendRawTx
+    if(preExec) {
+        restUrl += '?preExec=1'
+    }
+    return restUrl
 }
 
 

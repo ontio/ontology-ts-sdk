@@ -19,69 +19,77 @@
 import { Account } from "../src/account";
 import * as core from '../src/core'
 import {Transaction} from '../src/transaction/transaction'
-import { makeTransferTransaction, buildRpcParam, buildRestfulParam } from "../src/transaction/transactionBuilder";
+import { makeTransferTransaction, buildRpcParam, buildRestfulParam, buildTxParam } from "../src/transaction/transactionBuilder";
 import TxSender from "../src/transaction/txSender";
 import axios from 'axios'
 import { ab2hexstring, StringReader } from "../src/utils";
 import {State} from '../src/smartcontract/token'
 import * as scrypt from '../src/scrypt'
-import {TEST_NODE, HTTP_REST_PORT, REST_API} from '../src/consts'
+import {TEST_NODE, HTTP_REST_PORT, REST_API, ONT_NETWORK} from '../src/consts'
 import {BigNumber} from 'bignumber.js'
+import { addressToU160 } from "../src/core";
+
+var txSender = new TxSender(ONT_NETWORK.TEST)
 
 var accountFrom = {
-    address: '012ad54766b0563e87fbf9ddc178fa924e05bb46',
-    base58Address: 'TA5NzM9iE3VT9X8SGk5h3dii6GPFQh2vme',
-    privateKey: '2ff1de0e26990385c5b7aa580e8516de20c95ac77a794e296be9e6fe005d6ed8'
+    hexAddress: '018f0dcf09ec2f0040e6e8d7e54635dba40f7d63',
+    address: 'TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE',
+    privateKey: '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3'
+
+    // address: 'TA98LCZuzins3mUPfDyNRirpQ4YoeRNBan',
+    // privateKey: '6248eefef096ec2eebdff7179a59cc36b5c632720e40fb7e9770dc11024543be'
 }
 
-var encrypted  = scrypt.encrypt(accountFrom.privateKey, '123456')
-console.log('encrypted：'+ encrypted)
+var accPrivateKey = 'b0d87bf265d8d0fc2b09ee0be50e8df6e3f7103b523abc45ec064f65e1249419'
+var accAddress = 'TA5KvS6o9puusWQeiyWDezDWgi5NvKQotf'
+var accHexAddress = '012845c2ed3b508d135066dba00f850a82b192fd'
 
-console.log('from base58: '+ core.addressToU160(accountFrom.base58Address))
-
-
-var url = 'http://192.168.3.141',
-    restPort = '20384',
-    rpcPort = '20386',
-    balanceApi = '/api/v1/balance'
 
 const  testTransferTx = () => {
-    var accountTo = ab2hexstring(core.generateRandomArray(20))
-    let base58AccountTo = core.u160ToAddress(accountTo)
-    console.log('account to: ' + base58AccountTo)
+    
+    var accountToHexAddress = ab2hexstring(core.generateRandomArray(20))
+    let accountToAddress = core.u160ToAddress(accountToHexAddress)
 
-    var value = '3.5'
+    var value = '300'
 
-    var tx = makeTransferTransaction('ONT',accountFrom.address, accountTo, value, accountFrom.privateKey)
-    var param = buildRestfulParam(tx)
-    console.log('param : ' + JSON.stringify(param))
+    var tx = makeTransferTransaction('ONT', accountFrom.hexAddress, accountToHexAddress, value, accountFrom.privateKey)
+    // var tx = makeTransferTransaction('ONT', accHexAddress, accountToHexAddress, value, accPrivateKey)
+    
+    // var param = buildRestfulParam(tx)
+    // // console.log('param : ' + JSON.stringify(param))
 
-    // var temp = Transaction.deserialize(tx.serialize())
-    // console.log('deserialzied: ' + JSON.stringify(temp))
+    // let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
 
-    let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+    // axios.post(request, param).then(res => {
+    //     console.log('transfer response: ' + JSON.stringify(res.data))
+    //     setTimeout( function(){
+    //         // testGetBalance(accountFrom.address, 'transfer 1 from')
+    //         // testGetBalance(accAddress, 'transfer 1 to')
 
-    axios.post(request, param).then(res => {
-        console.log('transfer response: ' + JSON.stringify(res.data))
-        setTimeout( function(){
-            testGetBalance(base58AccountTo)
-        }, 5000)
-    }).catch(err => {
-        console.log(err)
-    })
+    //         testGetBalance(accAddress, 'transfer 1 from')
+    //         testGetBalance(accountToAddress, 'transfer 1 to')
+    //     }, 8000)
+    // }).catch(err => {
+    //     console.log(err)
+    // })
 
+    let param = buildTxParam(tx)
+    var callback = function(res, socket) {
+        console.log('res : '+JSON.stringify(res))
+    }
+    txSender.sendTxWithSocket(param, callback)
 
 }
 
-const testGetBalance = (address) => {
+const testGetBalance = (address, addressName) => {
     let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
     axios.get(request).then((res) => {
         let result = res.data.Result
-        console.log(result)
-        result.ont = new BigNumber(result.ont).multipliedBy(1e-8).toNumber()
-        result.ong = new BigNumber(result.ong).multipliedBy(1e-8).toNumber()
+        // console.log(result)
+        // result.ont = new BigNumber(result.ont).multipliedBy(1e-8).toNumber()
+        // result.ong = new BigNumber(result.ong).multipliedBy(1e-8).toNumber()
 
-        console.log(result)
+        console.log(addressName + ' Get balance:' + JSON.stringify(result))
     }).catch(err => {
         console.log(err)
     })
@@ -89,7 +97,9 @@ const testGetBalance = (address) => {
 
 testTransferTx()
 
-// testGetBalance(accountFrom.base58Address)
+//需要 交易前加上预执行 rpc调用
+
+// testGetBalance('TA59XsiHbsztPg2ZTLsCknEvsDBGQMUm2T','acc address')
 
 // var state = new State()
 // state.from = ab2hexstring(core.generateRandomArray(20))
@@ -101,8 +111,8 @@ testTransferTx()
 // console.log('state deserialized: ' + JSON.stringify(State.deserialize(new StringReader(stateSerialized))))
 
 
-// var p = '760bb46952845a4b91b1df447c2f2d15bb40ab1d9a368d9f0ee4bf0d67500160'
-var p = core.generatePrivateKeyStr()
+var p = '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3'
+// var p = core.generatePrivateKeyStr()
 var password = '123456'
 var key = scrypt.encrypt(p, password)
 console.log(key)
@@ -111,4 +121,13 @@ console.log(key)
 // var password = '123456'
 
 
-console.log(scrypt.decrypt(key, password))
+// console.log(scrypt.decrypt(key, password))
+
+// var key = ''
+// var privateKey = scrypt.decrypt(key,'123123')
+
+// let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+
+// let programHash = core.getSingleSigUInt160(publickeyEncode);
+
+// this.address = core.u160ToAddress(programHash);

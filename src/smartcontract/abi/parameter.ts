@@ -16,13 +16,19 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- 
-export default class Parameter {
-    private name: string
-    private type: string
-    private value: string 
+export enum ParameterType  {
+    Boolean = 'Boolean',
+    Number  = 'Number', 
+    String  = 'String',
+    ByteArray = 'ByteArray'
+}
 
-    constructor(name: string, type: string, value: string = '') {
+export class Parameter {
+    public name: string
+    public type: ParameterType
+    public value: any 
+
+    constructor(name: string, type: ParameterType, value: any) {
         this.name = name
         this.type = type
         this.value = value
@@ -32,11 +38,11 @@ export default class Parameter {
         return this.name
     }
 
-    getType(): string {
+    getType(): ParameterType {
         return this.type
     }
 
-    getValue(): string {
+    getValue(): any {
         return this.value
     }
 

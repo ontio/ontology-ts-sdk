@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {num2hexstring, StringReader, num2VarInt, ab2hexstring, hex2VarBytes} from '../utils'
+import {num2hexstring, StringReader, num2VarInt, ab2hexstring, hex2VarBytes, str2hexstr} from '../utils'
 import Payload from './payload/payload'
 import {TransactionAttribute} from './txAttribute'
 import AbiFunction from '../smartcontract/abi/abiFunction'
@@ -65,25 +65,34 @@ export class Fee {
     payer : Uint160
 }
 
-export class PubKey {
-    x : string
-    y : string
+export enum KeyType {
+    PK_ECDSA  = 0x12,
+	PK_SM2    = 0x13,
+	PK_EDDSA  = 0x14,
+}
 
-    constructor(x: string, y: string) {
-        this.x = x
-        this.y = y
+export class PubKey {
+    type : KeyType
+    publicKey : string
+
+    constructor(type: number, publicKey: string) {
+        this.type = type
+        this.publicKey = publicKey
     }
 
     serialize() {
         let result = ''
-        result += hex2VarBytes(this.x)
-        result += hex2VarBytes(this.y)
-        return result
+        result += '12' //ecdsa
+        result += '02' //p256
+        result += this.publicKey
+        const length = num2hexstring(result.length/2)
+        return length + result
     }
     static deserialize(sr : StringReader) {
-        let x = sr.readNextBytes()
-        let y = sr.readNextBytes()
-        return new PubKey(x, y)
+        let type = parseInt(sr.read(1), 16)
+        let label = sr.read(1)
+        let publicKey = sr.readNextBytes()
+        return new PubKey(type, publicKey)
     }
 }
 

@@ -16,18 +16,17 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Parameter from './parameter'
+import {Parameter} from './parameter'
 
 export default class AbiFunction {
     name : string
     returntype : string
-    parameters : Array<Parameter> =[] 
+    parameters : Array<Parameter> 
 
-    constructor(name : string, returntype : string, parameters: [any]) {
+    constructor(name : string, returntype : string, parameters: [Parameter]) {
         this.name = name
         this.returntype = returntype
-        let paramsTemp = parameters.map((item) => new Parameter(item.name, item.type, item.value))
-        this.parameters = paramsTemp
+        this.parameters = parameters
     }
 
     getParameter(name : string) : any {
@@ -49,6 +48,11 @@ export default class AbiFunction {
                 }
             }
         }
+        // let parameters = []
+        // for (let i = 0, len = args.length; i < len; i++) {
+        //     parameters.push(args[i])
+        // }
+        // this.parameters = parameters
     }
 
     toString() : string {

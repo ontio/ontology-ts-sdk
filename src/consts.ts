@@ -46,13 +46,20 @@ export const DEFAULT_ALGORITHM = {
   }
 }
 
-export const TEST_NODE = '54.222.182.88'
+export const ALGORITHM_TYPE = {
+
+}
+
+export const TEST_NODE = '139.219.111.50'
+// export const TEST_NODE = '192.168.3.97'
+
+// export const TEST_NODE = '54.222.182.88'
 export const MAIN_NODE = '54.222.182.88'
 
 
 export const HTTP_REST_PORT = '20334'
-export const HTTP_WS_PORT   = '20385'
-export const HTTP_JSON_PORT = '20386'
+export const HTTP_WS_PORT   = '20335'
+export const HTTP_JSON_PORT = '20336'
 
 export const REST_API = {
   getBalance: '/api/v1/balance',
