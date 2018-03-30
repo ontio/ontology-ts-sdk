@@ -21,8 +21,8 @@ import {Transaction} from './transaction'
 import axios from 'axios'
 
 var WebSocket : any
-if(typeof window != 'undefined' && window.WebSocket){
- WebSocket = window.WebSocket
+if(typeof window != 'undefined' && (window as any).WebSocket){
+ WebSocket = (window as any).WebSocket
 } else {
     WebSocket = require('ws')
 }
