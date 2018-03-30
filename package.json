@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "./lib/index.js",
+  "types": "./lib/types/index.d.ts",
   "scripts": {
     "test": "jest",
     "build:dev": "webpack --display-error-details --config webpack.config.js --progress --color",
