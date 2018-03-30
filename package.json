@@ -2,7 +2,7 @@
   "name": "ont-sdk-ts",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "jest",
     "build:dev": "webpack --display-error-details --config webpack.config.js --progress --color",
