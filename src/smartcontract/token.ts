@@ -111,7 +111,7 @@ export class State {
         result += this.to
         // let numHex = str2hexstr(this.value)
         // result += hex2VarBytes(numHex)       
-        let bn = BigNumber(this.value).toString(16)
+        let bn = new BigNumber(this.value).toString(16)
         bn = bn.length % 2 === 0 ? bn : '0'+bn
         result += hex2VarBytes(bn)
         return result
@@ -122,7 +122,7 @@ export class State {
         let version = sr.read(1)
         let from = sr.read(20)
         let to   = sr.read(20)
-        let value = BigNumber(sr.readNextBytes(), 16)
+        let value = (new BigNumber(sr.readNextBytes(), 16)).toString()
 
         s.version = version
         s.from = from

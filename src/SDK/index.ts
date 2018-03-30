@@ -28,8 +28,8 @@ import { ERROR_CODE } from '../error';
 import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT, TEST_ONT_URL } from '../consts';
 import { encrypt } from '../scrypt';
 import TxSender from '../transaction/txSender'
-import axios from 'axios';
-import {BigNumber} from 'bignumber.js';
+import axios from 'axios'
+import {BigNumber} from 'bignumber.js'
 import {DDO} from '../transaction/ddo';
 export class SDK {
 

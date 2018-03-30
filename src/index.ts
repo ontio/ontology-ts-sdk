@@ -31,37 +31,57 @@ import * as core from './core'
 import * as utils from './utils'
 import * as CONST from './consts'
 import { SDK } from './SDK/index'
+import { CompleterResult } from 'readline';
 
-var ONT = function () {
-  this.Account = Account,
-  this.Identity = Identity,
-  this.Claim = Claim,
-  this.Transaction = Transaction,
-  this.TransactionBuilder = TransactionBuilder,
-  this.Parameter = Parameter
-  this.ParameterType = ParameterType
-  this.AbiFunction = AbiFunction
-  this.AbiInfo = AbiInfo
-  this.core = core,
-  this.utils = utils,
-  this.scrypt = scrypt,
-  this.CONST = CONST,
-  this.Wallet = Wallet,
-  this.SDK = SDK
+class ONT {
+  Account : any
+  Identity : any
+  Claim : any
+  Transaction : any
+  TransactionBuilder : any
+  Parameter : any
+  ParameterType : any
+  AbiFunction : any
+  AbiInfo : any
+  core : any
+  utils : any
+  scrypt : any
+  CONST : any
+  Wallet : any
+  SDK : any
 
-  this.setNode = function(url : string) {
+  constructor() {
+    this.Account = Account,
+      this.Identity = Identity,
+      this.Claim = Claim,
+      this.Transaction = Transaction,
+      this.TransactionBuilder = TransactionBuilder,
+      this.Parameter = Parameter
+    this.ParameterType = ParameterType
+    this.AbiFunction = AbiFunction
+    this.AbiInfo = AbiInfo
+    this.core = core,
+      this.utils = utils,
+      this.scrypt = scrypt,
+      this.CONST = CONST,
+      this.Wallet = Wallet,
+      this.SDK = SDK
+  }
+  
+
+  setNode (url : string) {
     this.CONST.TEST_NODE = url
   }
 
-  this.setRpcPort = function(port : string) {
+  setRpcPort(port : string) {
     this.CONST.HTTP_JSON_PORT = port
   }
 
-  this.setRestPort = function (port: string) {
+  setRestPort(port: string) {
     this.CONST.HTTP_REST_PORT = port
   }
 
-  this.setWsPort = function (port: string) {
+  setWsPortyarn(port: string) {
     this.CONST.HTTP_WS_PORT = port
   }
 }

@@ -23,7 +23,7 @@ export default class AbiFunction {
     returntype : string
     parameters : Array<Parameter> 
 
-    constructor(name : string, returntype : string, parameters: [Parameter]) {
+    constructor(name : string, returntype : string, parameters: Array<Parameter>) {
         this.name = name
         this.returntype = returntype
         this.parameters = parameters
