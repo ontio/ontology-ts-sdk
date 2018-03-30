@@ -20,8 +20,8 @@ import {Transaction, TxType} from '../src/transaction/transaction'
 import DeployCode from '../src/transaction/payload/DeployCode'
 
 import {getHash} from '../src/core'
-import {ab2hexstring, ab2str,str2hexstr , reverseHex} from '../src/utils'
-import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTransaction, buildTxParam, buildRestfulParam, makeDeployCode} from '../src/transaction/transactionBuilder'
+import {ab2hexstring, ab2str,str2hexstr , reverseHex, num2hexstring} from '../src/utils'
+import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTransaction, buildTxParam, buildRestfulParam, makeDeployCode, buildRpcParam} from '../src/transaction/transactionBuilder'
 
 import AbiInfo from '../src/smartcontract/abi/AbiInfo'
 import AbiFunction from '../src/smartcontract/abi/AbiFunction'
@@ -34,7 +34,7 @@ import json from '../src/smartcontract/data/IdContract.abi'
 import { VmCode, VmType } from '../src/transaction/vmcode';
 
 var fs = require('fs')
-let avm = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/IdContract_v0.2.avm')
+let avm = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/IdContract.avm')
 var avmCode = ab2hexstring(avm)
 
 var privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
@@ -56,22 +56,38 @@ var txSender = new TxSender(ONT_NETWORK.TEST)
 
 const testDeployCodeTx = () => {
     
-    var code = new VmCode()
-    code.code = avmCode
-    code.vmType = VmType.NativeVM
+    // var code = new VmCode()
+    // code.code = avmCode
+    // code.vmType = VmType.NEOVM
 
-    var dc = makeDeployCode(code)
+    let dc = makeDeployCode(avmCode, VmType.NEOVM)
     var tx = makeDeployTransaction(dc, privateKey)
     
-    var param = buildRestfulParam(tx)
+    // var param = buildRestfulParam(tx)
 
-    var url = TEST_ONT_URL.sendRawTxByRestful
-    axios.post(url, param).then((res:any)=> {
-        console.log('deploy res: '+ JSON.stringify(res.data))
+    // var url = TEST_ONT_URL.sendRawTxByRestful
+    // axios.post(url, param).then((res:any)=> {
+    //     console.log('deploy res: '+ JSON.stringify(res.data))
+    // }).catch(err => {
+    //     console.log('err: '+ err)
+    // })
+    // console.log('param: '+ param)
+
+    var url = TEST_ONT_URL.RPC_URL
+    let param = buildRpcParam(tx)
+    console.log('param: '+JSON.stringify(param))
+    axios.post(url, param).then((res)=>{
+        console.log('deploy res: '+JSON.stringify(res.data))
+        getContract()
     }).catch(err => {
-        console.log('err: '+ err)
+        console.log(err)
     })
-    console.log('param: '+ param)
+
+    // var param = buildTxParam(tx)
+    // var callback = function(res, socket) {
+    //     console.log('res: '+ JSON.stringify(res))
+    // }
+    // txSender.sendTxWithSocket(param, callback)
 
 
 }
@@ -82,10 +98,28 @@ const testDeserialize = () => {
     console.log('deserialized: '+ JSON.stringify(tx))
 }
 
+const getContract = () => {
+    // let scriptHash = '0x926f6c6d6ecc698568c7446f464cc222fcd2e707'
+    // scriptHash = scriptHash.substring(2)
+    // scriptHash = reverseHex(scriptHash)
+
+    let scriptHash = getHash(avmCode)
+    scriptHash = num2hexstring(VmType.NEOVM) + scriptHash.substr(2)
+    console.log('contract codehash : '+ scriptHash)
+
+    // let scriptHash = '8046031450d43928654f50dcd50646331bb49e1a'
+    
+    let url = `${TEST_ONT_URL.REST_URL}api/v1/contract/${scriptHash}`
+    axios.get(url).then((res)=>{
+        console.log(res.data)
+    })
+}
 
 
 
-testDeployCodeTx()
+// testDeployCodeTx()
+
+getContract()
 // testDeserialize()
 
 /* 

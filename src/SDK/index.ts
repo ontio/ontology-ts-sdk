@@ -21,15 +21,16 @@ import {Identity} from '../identity'
 import {Account} from '../account'
 import {Claim, Metadata, Signature} from '../claim'
 import * as scrypt from '../scrypt'
-import {sendBackResult2Native, EventEmitter, str2hexstr} from '../utils'
+import {sendBackResult2Native, EventEmitter, str2hexstr, ab2hexstring} from '../utils'
 import * as core from '../core'
-import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, makeTransferTransaction, buildRestfulParam} from '../transaction/transactionBuilder'
+import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, makeTransferTransaction, buildRestfulParam, sendRawTxRestfulUrl} from '../transaction/transactionBuilder'
 import { ERROR_CODE } from '../error';
-import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT } from '../consts'
+import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT, TEST_ONT_URL } from '../consts';
 import { encrypt } from '../scrypt';
 import TxSender from '../transaction/txSender'
-import axios from 'axios'
-import {BigNumber} from 'bignumber.js'
+import axios from 'axios';
+import {BigNumber} from 'bignumber.js';
+import {DDO} from '../transaction/ddo';
 export class SDK {
 
     static getDecryptError(err:any) {
@@ -55,42 +56,33 @@ export class SDK {
         // wallet.addAccount(account)
 
         let walletDataStr = wallet.toJson()
-         
-        // let tx = buildRegisterOntidTx(identity.ontid, privateKey)
-        // let param = buildTxParam(tx)
-        
-        // const socketCallback = function(res:any, socket:any) {
-        //     let obj = {
-        //         error: ERROR_CODE.SUCCESS,
-        //         result: walletDataStr,
-        //         desc: ''
-        //     }
-        //     if(res.Error === 0) {
-        //         callback && sendBackResult2Native(JSON.stringify(obj), callback)
-        //         socket.close()
-        //     } else {
-        //         let errResult = {
-        //             error: res.Error,
-        //             result: '',
-        //             desc: res.Result
-        //         }
-        //         if (callback) {
-        //             sendBackResult2Native(JSON.stringify(errResult), callback)
-        //         }
-        //         socket.close()
-        //     }
-        // } 
-
-        // var txSender = new TxSender(ONT_NETWORK.TEST)
-        //no backend for now
-        // txSender.sendTxWithSocket(param, socketCallback)
-        
         let obj = {
-            error : 0,
-            result : walletDataStr,
-            desc : ''
+            error: 0,
+            result: walletDataStr,
+            desc: ''
         }
-        callback && sendBackResult2Native(JSON.stringify(obj), callback)
+         
+        let tx = buildRegisterOntidTx(identity.ontid, privateKey)
+        let param = buildTxParam(tx)
+        const socketCallback = function(res:any, socket:any) {
+            if(res.Error === 0) {
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                socket.close()
+            } else {
+                let errResult = {
+                    error: res.Error,
+                    result: '',
+                    desc: res.Result
+                }
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(errResult), callback)
+                }
+                socket.close()
+            }
+        } 
+        var txSender = new TxSender(ONT_NETWORK.TEST)
+        txSender.sendTxWithSocket(param, socketCallback)
+        // callback && sendBackResult2Native(JSON.stringify(obj), callback)
         return obj
     }
 
@@ -98,8 +90,10 @@ export class SDK {
         password : string, callback ?: string) {
         let identity = new Identity()
         let wallet = Wallet.parseJson(walletDataStr)
+        let privateKey = ''
         try {
             //TODO check ontid
+            privateKey = scrypt.decrypt(encryptedPrivateKey, password)
             identity = Identity.importIdentity(label, encryptedPrivateKey, password)
         } catch (err) {
             let obj  = this.getDecryptError(err)
@@ -114,16 +108,31 @@ export class SDK {
             result : walletStr,
             desc : ''
         }
-        callback && sendBackResult2Native(JSON.stringify(obj), callback)
-        return obj
+        //check ontid on chain
+        let tx = buildGetDDOTx(identity.ontid, privateKey)
+        let param = buildRestfulParam(tx)
+        let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+        axios.post(url, param).then((res:any) => {
+            if (res.data.Result && res.data.Result.length > 0 && res.data.Result[0] !== '0000000000000000') {
+                                    
+            } else {
+                obj.error = ERROR_CODE.UNKNOWN_ONTID
+                obj.result = ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            return obj 
+        })
+        // callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        // return obj
     }
 
     //send http post to check
     static importIdentity(label : string, encryptedPrivateKey : string, password : string, callback ?: string) {
         let identity = new Identity()
         let error = {}
-        
+        let privateKey
         try {
+            privateKey = scrypt.decrypt(encryptedPrivateKey, password)
             identity = Identity.importIdentity(label, encryptedPrivateKey, password)
             let wallet = new Wallet()
             wallet.create(identity.label)
@@ -135,8 +144,22 @@ export class SDK {
                 result: walletStr,
                 desc: ''
             }
-            callback && sendBackResult2Native(JSON.stringify(obj), callback)
-            return obj
+            //check ontid on chain
+            let tx = buildGetDDOTx(identity.ontid, privateKey)
+            let param = buildRestfulParam(tx)
+            let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+            axios.post(url, param).then((res: any) => {
+                if (res.data.Result && res.data.Result.length > 0 && res.data.Result[0] !== '0000000000000000') {
+
+                } else {
+                    obj.error = ERROR_CODE.UNKNOWN_ONTID
+                    obj.result = ''
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                return obj
+            })
+            // callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            // return obj
         } catch(err) {
             error = this.getDecryptError(err)
             callback && sendBackResult2Native(JSON.stringify(error), callback)
@@ -147,16 +170,28 @@ export class SDK {
     static createIdentity(label : string, password : string, callback?: string) {
         let identity = new Identity()
         let privateKey = core.generatePrivateKeyStr()
-        identity.create(privateKey, password, label)
+        identity.create(privateKey, password, label)        
         let result = identity.toJson()
-        if (callback) {
-            let obj = {
-                error: ERROR_CODE.SUCCESS,
-                result: result,
-                desc: ''
-            }
-            sendBackResult2Native(JSON.stringify(obj), callback)
+        let obj = {
+            error: ERROR_CODE.SUCCESS,
+            result: result,
+            desc: ''
         }
+        //register ontid
+        let tx = buildRegisterOntidTx(identity.ontid, privateKey)
+        let param = buildRestfulParam(tx)
+        const url = TEST_ONT_URL.sendRawTxByRestful
+        axios.post(url, param).then((res: any) => {
+            if(res.data.Error === 0) {
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            } else {
+                let obj = {
+                    error: JSON.stringify(res.data.Error),
+                    result: res.data.Result
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)   
+            }
+        })
         return result
     }
 
@@ -260,25 +295,7 @@ export class SDK {
         return obj
     }
 
-
-    //subject : 声明接收者ontid
-    static buildClaimTx(path: string, value: string, subject : string, encryptedPrivateKey: string, 
-        password : string) {
-        let privateKey = ''
-        try {
-            privateKey = scrypt.decrypt(encryptedPrivateKey, password);
-        } catch (err) {
-            let result = this.getDecryptError(err)
-            return result
-        }
-        let tx = buildAddAttributeTx(path, value, subject,  privateKey)
-        let param = buildTxParam(tx)
-        return {
-            error : 0,
-            result : param,
-            desc : ''
-        }
-    }
+    
 
     static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey : string,
          password : string, callback : string ) {
@@ -290,24 +307,31 @@ export class SDK {
                 callback && sendBackResult2Native(JSON.stringify(result), callback)
                 return result
             }
-            let path = claimId
-            let value = {
-                Context : context,
-                Ontid : issuer
+            let path = str2hexstr('claim' + claimId)
+            let valueObj = {
+                Type : 'JSON',
+                Value : {
+                    Context: context,
+                    Issuer: issuer
+                }
             }
-            // let tx = buildAddAttributeTx(path, JSON.stringify(value), subject, privateKey)
-            let tx = buildAddAttributeTx(path, issuer, subject, privateKey)
+            let type = str2hexstr('JSON')
+            const value = str2hexstr(JSON.stringify(valueObj))
+            let tx = buildAddAttributeTx(path, value,type, subject, privateKey)
             
-            let txId = core.getHash(tx.serialize())
+            // let txId = core.getHash(tx.serialize())
             let param = buildTxParam(tx)
-            //TODO：根据不同环境选择不同网络
+            //通过socket能获得推送的结果
             var txSender = new TxSender(ONT_NETWORK.TEST)
             const socketCallback = function(res : any, socket : any) {
                 console.log('res: '+ JSON.stringify(res))
-                if(res.Result.BlockHeight) {
+                if(res.Action === 'InvokeTransaction' && res.Error === 0) {
+                    const txHash = res.Result[0].TxHash
+                    let hash = ab2hexstring(txHash)
+                    console.log('hash: '+ hash)
                     let obj = {
                         error : ERROR_CODE.SUCCESS,
-                        result : txId
+                        result : hash
                     }
                     callback && sendBackResult2Native(JSON.stringify(obj), callback)
                     socket.close()
@@ -339,14 +363,12 @@ export class SDK {
 
     static getBalance(address : string, callback : string) {
         if(address.length === 40) {
-            address = core.addressToU160(address)
+            address = core.u160ToAddress(address)
         }
         let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
         axios.get(request).then((res : any) => {
             if(res.data.Error === 0) {
                 let result = res.data.Result
-                result.ont = new BigNumber(result.ont).multipliedBy(1e-8).toNumber()
-                result.ong = new BigNumber(result.ong).multipliedBy(1e-8).toNumber()
                 let obj = {
                     error : 0,
                     result : result
@@ -369,15 +391,25 @@ export class SDK {
         })
     }
 
-    //can only test Ont transfer now
-
+    //pls check balance before transfer
     static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, callback : string) {
-        if (from.length !== 40) {
-            from = core.addressToU160(from)
-        }
-        if (to.length !== 40) {
-            to = core.addressToU160(to)
-        }
+        try {
+            if (from.length !== 40) {
+                from = core.addressToU160(from)
+            }
+            if (to.length !== 40) {
+                to = core.addressToU160(to)
+            }
+         } catch(err) {
+            let result = {
+                error : ERROR_CODE.IllegalAddress,
+                result : '',
+                desc : 'Illegal adderss'
+            }
+            callback && sendBackResult2Native(JSON.stringify(result), callback)
+            return result
+         }
+        
         let privateKey = ''
         try {
             privateKey = scrypt.decrypt(encryptedPrivateKey, password)
@@ -388,6 +420,7 @@ export class SDK {
             }
             return result
         }
+
         let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
         var param = buildRestfulParam(tx)
         let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`

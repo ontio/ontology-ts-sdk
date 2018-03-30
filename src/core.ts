@@ -20,10 +20,11 @@ import * as cryptoJS from 'crypto-js'
 import * as base58 from 'bs58'
 import * as ecurve from 'ecurve'
 import * as bigInteger from 'bigi'
-import { ab2hexstring, hexstring2ab } from './utils'
+import { ab2hexstring, hexstring2ab, StringReader, hexstr2str, num2hexstring } from './utils'
 import { ADDR_VERSION } from './consts'
 import * as scrypt from './scrypt'
 import {ERROR_CODE} from './error'
+import { VmType } from './transaction/vmcode';
 
 var ec = require('elliptic').ec
 var wif = require('wif')
@@ -56,6 +57,32 @@ export function getPublicKeyPoint(privateKey: string) {
     return {
         x : ab2hexstring(x),
         y : ab2hexstring(y)
+    }
+}
+
+export function deserializePublickKey(serializedPk : string) {
+    const curveType = parseInt(serializedPk.substr(0, 2), 16)
+    const data = serializedPk.substring(2)
+    let curve = '',
+        ECKey = '',
+        type  = ''
+    switch (curveType) {
+        case 0x12:
+            type = 'ECDSA'
+        break;
+        case 0x13:
+            type = 'SM2'
+        break;
+        case 0x14:
+            type = 'ECDSA'
+        break;
+        default :
+            throw new Error('Invalid curve type')
+    }
+    return {
+        curve,
+        ECKey,
+        type
     }
 }
 
@@ -146,6 +173,12 @@ export function AddContract(txData: string, sign: string, publicKeyEncoded: stri
     data = data + signatureScript;
 
     return data;
+}
+
+export function getContractHash(avmCode : string, vmType : VmType = VmType.NEOVM) {
+    let scriptHash = getHash(avmCode)
+    scriptHash = num2hexstring(vmType) + scriptHash.substr(2)
+    return scriptHash
 }
 
 export function getPrivateKeyFromWIF(wifkey: string): string {

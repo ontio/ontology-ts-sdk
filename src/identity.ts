@@ -21,6 +21,8 @@ import * as scrypt from './scrypt'
 import { ab2hexstring, hexstring2ab } from './utils'
 import {DEFAULT_ALGORITHM, Algorithm} from './consts'
 import {ERROR_CODE} from './error'
+import { buildGetDDOTx, buildRegisterOntidTx, buildRestfulParam } from './transaction/transactionBuilder';
+import { checkPrivateKey } from './core';
 
 export class ControlData {
     algorithm: string;

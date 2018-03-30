@@ -20,6 +20,7 @@ import {Account} from '../src/account'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
 import {ERROR_CODE} from '../src/error'
+import { addressToU160 } from '../src/core';
 describe('test account', ()=>{
   
     var privateKey:string,
@@ -37,6 +38,9 @@ describe('test account', ()=>{
         encryptedPrivateKey = account.key
         accountDataStr = account.toJson()
         expect(accountDataStr).toBeDefined()
+        console.log('address: '+account.address)
+        console.log('privateKey: '+privateKey)
+        console.log('addressU160: '+addressToU160(account.address))
     })
     test('test import account with correct password', () => {
         let a

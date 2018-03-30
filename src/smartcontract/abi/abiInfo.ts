@@ -19,7 +19,7 @@
 
 
 import AbiFunction from './abiFunction'
-
+import {Parameter} from './parameter'
 
 export default class AbiInfo {
     hash : string
@@ -42,7 +42,8 @@ export default class AbiInfo {
         let f = (<AbiFunction>{})
         for(let v of this.functions) {
             if(v.name === name) {
-                return new AbiFunction(v.name,v.returntype,v.parameters)
+                let parameters = v.parameters.map( (p:any) => new Parameter(p.name, p.type, '') )
+                return new AbiFunction(v.name,v.returntype, parameters)
             }
         }
         return f

@@ -64,8 +64,10 @@ export class Account {
         this.key = scrypt.encrypt( privateKey, password );
 
         let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+        //signature type & curve
+        let publicKey = '1202' + publickeyEncode
         
-        let programHash = core.getSingleSigUInt160(publickeyEncode);
+        let programHash = core.getSingleSigUInt160(publicKey);
 
         this.address = core.u160ToAddress(programHash);
 
@@ -82,7 +84,9 @@ export class Account {
         //     parameters: [],
         //     deployed: false
         // }
-
+        if (!label) {
+            label = ab2hexstring(core.generateRandomArray(4))
+        }
         account.address = "";
         account.label = label;
         account.lock = false;
@@ -100,7 +104,10 @@ export class Account {
 
         let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
 
-        let programHash = core.getSingleSigUInt160(publickeyEncode);
+        //signature type & curve
+        let publicKey = '1202' + publickeyEncode
+
+        let programHash = core.getSingleSigUInt160(publicKey);
 
         let address = core.u160ToAddress(programHash);
 

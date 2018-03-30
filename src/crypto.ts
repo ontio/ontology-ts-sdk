@@ -1,0 +1,15 @@
+export enum SignatureSchema {
+    SHA224withECDSA  = 0,
+	SHA256withECDSA,
+	SHA384withECDSA,
+	SHA512withECDSA,
+	SHA3_224withECDSA,
+	SHA3_256withECDSA,
+	SHA3_384withECDSA,
+	SHA3_512withECDSA,
+	RIPEMD160withECDSA,
+
+	SM3withSM2,
+
+	SHA512withEDDSA
+}

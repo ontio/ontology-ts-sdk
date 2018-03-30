@@ -24,8 +24,7 @@ import {str2VarBytes, hex2VarBytes, num2VarInt, bool2VarByte, StringReader, hexs
 export default class DeployCode extends Payload {
     //hex string
     code : VmCode
-    //hex string
-    vmType : VmType
+
     needStorage : boolean
     name : string
     version : string
@@ -40,9 +39,8 @@ export default class DeployCode extends Payload {
 
     serialize() : string {
         let result = ''
-        result += num2hexstring(this.vmType)
 
-        result += hex2VarBytes(this.code)
+        result += this.code.serialize()
 
         result += bool2VarByte(this.needStorage)
 
@@ -61,10 +59,7 @@ export default class DeployCode extends Payload {
 
     deserialize(sr : StringReader) : void {
 
-        const vmType = sr.readNextLen()
-        this.vmType = vmType
-
-        const code = sr.readNextBytes()
+        const code = VmCode.deserialize(sr)
         this.code = code
 
         const boolValue = sr.read(1)

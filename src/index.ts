@@ -22,16 +22,60 @@ import { Wallet } from './wallet'
 import { Claim } from './claim'
 import { Transaction } from './transaction/transaction'
 import * as TransactionBuilder from './transaction/transactionBuilder'
+import {Parameter, ParameterType} from './smartcontract/abi/parameter'
+import AbiFunction from './smartcontract/abi/abiFunction'
+import AbiInfo from './smartcontract/abi/abiInfo'
+
 import * as scrypt from './scrypt'
 import * as core from './core'
 import * as utils from './utils'
 import * as CONST from './consts'
 import { SDK } from './SDK/index'
+
+var ONT = function () {
+  this.Account = Account,
+  this.Identity = Identity,
+  this.Claim = Claim,
+  this.Transaction = Transaction,
+  this.TransactionBuilder = TransactionBuilder,
+  this.Parameter = Parameter
+  this.ParameterType = ParameterType
+  this.AbiFunction = AbiFunction
+  this.AbiInfo = AbiInfo
+  this.core = core,
+  this.utils = utils,
+  this.scrypt = scrypt,
+  this.CONST = CONST,
+  this.Wallet = Wallet,
+  this.SDK = SDK
+
+  this.setNode = function(url : string) {
+    this.CONST.TEST_NODE = url
+  }
+
+  this.setRpcPort = function(port : string) {
+    this.CONST.HTTP_JSON_PORT = port
+  }
+
+  this.setRestPort = function (port: string) {
+    this.CONST.HTTP_REST_PORT = port
+  }
+
+  this.setWsPort = function (port: string) {
+    this.CONST.HTTP_WS_PORT = port
+  }
+}
+
+export default ONT
 export {
     Account,
     Identity,
     Claim,
     Transaction,
+    Parameter,
+    ParameterType,
+    AbiFunction,
+    AbiInfo,
     TransactionBuilder,
     core,
     utils,
