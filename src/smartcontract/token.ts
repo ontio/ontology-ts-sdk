@@ -168,7 +168,7 @@ export class Contract {
         const args = sr.readNextBytes()
         c.version = version
         c.address = address
-        c.method = method
+        c.method = hexstr2str(method)
         c.args = args
         return c
     }
