@@ -195,7 +195,10 @@ export class StringReader {
 	 * @return {string}
 	 */
 	readNextBytes() {
-		return this.read(this.readNextLen())
+		const bytesToRead = this.readNextLen();
+		if (bytesToRead === 0) return '';
+
+		return this.read(bytesToRead);
 	}
 
 	/**
