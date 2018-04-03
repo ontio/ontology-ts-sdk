@@ -19,8 +19,8 @@
 import AbiInfo from '../smartcontract/abi/abiInfo'
 import AbiFunction from "../smartcontract/abi/abiFunction";
 import {Parameter,  ParameterType } from '../smartcontract/abi/parameter'
-import InvokeCode from './payload/invokeCode'
-import DeployCode from './payload/deployCode'
+import InvokeCode from './payload/InvokeCode'
+import DeployCode from './payload/DeployCode'
 import {Transaction, TxType, Sig, PubKey, KeyType} from './transaction'
 import {Transfers, Contract, State} from '../smartcontract/token'
 import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
