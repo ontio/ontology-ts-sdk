@@ -20,7 +20,7 @@
 import Payload from './payload'
 import { num2VarInt, num2hexstring, StringReader, str2hexstr, hexstr2str } from '../../utils'
 import OPCODE from '../opcode'
-import Fixed64 from '../../common/fixed64';
+import Fixed64 from '../../common/Fixed64';
 import { VmCode } from '../vmcode';
 
 export default class InvokeCode extends Payload {

@@ -20,9 +20,9 @@ import {num2hexstring, StringReader, num2VarInt, ab2hexstring, hex2VarBytes, str
 import Payload from './payload/payload'
 import {TransactionAttribute} from './txAttribute'
 import AbiFunction from '../smartcontract/abi/abiFunction'
-import InvokeCode from './payload/invokeCode';
-import DeployCode from './payload/deployCode';
-import Fixed64 from '../common/fixed64'
+import InvokeCode from './payload/InvokeCode';
+import DeployCode from './payload/DeployCode';
+import Fixed64 from '../common/Fixed64'
 import Uint160 from '../common/uint160';
 import Uint256 from '../common/uint256';
 import * as core from '../core'
