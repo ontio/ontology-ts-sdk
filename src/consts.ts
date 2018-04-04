@@ -63,7 +63,8 @@ export const HTTP_JSON_PORT = '20336'
 
 export const REST_API = {
   getBalance: '/api/v1/balance',
-  sendRawTx: '/api/v1/transaction'
+  sendRawTx: '/api/v1/transaction',
+  getMerkleProof : '/api/v1/merkleproof' // end with /txHash
 }
 
 
@@ -73,11 +74,11 @@ export const ONT_NETWORK = {
 }
 
 export const TEST_ONT_URL = {
-  SOCKET_URL: `ws://${TEST_NODE}:${HTTP_WS_PORT}/`,
+  SOCKET_URL: `ws://${TEST_NODE}:${HTTP_WS_PORT}`,
 
-  RPC_URL: `http://${TEST_NODE}:${HTTP_JSON_PORT}/`,
+  RPC_URL: `http://${TEST_NODE}:${HTTP_JSON_PORT}`,
 
-REST_URL: `http://${TEST_NODE}:${HTTP_REST_PORT}/`,
+  REST_URL: `http://${TEST_NODE}:${HTTP_REST_PORT}`,
 
   sendRawTxByRestful : `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
 }

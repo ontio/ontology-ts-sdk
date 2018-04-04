@@ -67,7 +67,7 @@ describe('test claim', () => {
             Context : claim.Context,
             Id : claim.Id,
             Content : claim.Content,
-            Metadata : claim.Metadata,
+            Metadata : claim.Metadata
         })
         let result = verifySignature(JSON.stringify(data), claim.Signature.Value, publicKey)
         expect(result).toBeTruthy()

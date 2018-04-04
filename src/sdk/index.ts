@@ -23,7 +23,8 @@ import {Claim, Metadata, Signature} from '../claim'
 import * as scrypt from '../scrypt'
 import {sendBackResult2Native, EventEmitter, str2hexstr, ab2hexstring} from '../utils'
 import * as core from '../core'
-import {buildAddAttributeTx, buildTxParam, buildRpcParam,  buildRegisterOntidTx, parseEventNotify, buildGetDDOTx, makeTransferTransaction, buildRestfulParam, sendRawTxRestfulUrl} from '../transaction/transactionBuilder'
+import { buildTxParam, buildRpcParam, parseEventNotify, makeTransferTransaction, buildRestfulParam, sendRawTxRestfulUrl} from '../transaction/transactionBuilder'
+import { buildAddAttributeTx, buildRegisterOntidTx, buildGetDDOTx} from '../smartcontract/ontidContract'
 import { ERROR_CODE } from '../error';
 import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT, TEST_ONT_URL } from '../consts';
 import { encrypt } from '../scrypt';
@@ -363,6 +364,13 @@ export class SDK {
                     }
                     callback && sendBackResult2Native(JSON.stringify(obj), callback)
                     socket.close()
+                }
+                if(res.Error !== 0) {
+                    let obj = {
+                        error : res.Error,
+                        result : ''
+                    }
+                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 }
             }
 

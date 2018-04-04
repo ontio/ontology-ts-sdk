@@ -79,8 +79,7 @@ export class DDO {
         //recovery
         const recoveryTotalLen = parseInt(ss.read(4), 16)
         if(recoveryTotalLen > 0 ) {
-            const recLen = parseInt(ss.read(4), 16)
-            const recovery = hexstr2str(ss.read(recLen))
+            const recovery = ss.read(recoveryTotalLen)
             ddo.recovery = recovery
         }
         
