@@ -25,6 +25,7 @@ import DeployCode from './payload/deployCode';
 import Fixed64 from '../common/fixed64'
 import Uint160 from '../common/uint160';
 import Uint256 from '../common/uint256';
+import { KeyType } from '../crypto'
 import * as core from '../core'
 import * as cryptoJS from 'crypto-js'
 
@@ -65,11 +66,6 @@ export class Fee {
     payer : Uint160
 }
 
-export enum KeyType {
-    PK_ECDSA  = 0x12,
-	PK_SM2    = 0x13,
-	PK_EDDSA  = 0x14,
-}
 
 export class PubKey {
     type : KeyType

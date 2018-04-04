@@ -21,10 +21,13 @@ import * as base58 from 'bs58'
 import * as ecurve from 'ecurve'
 import * as bigInteger from 'bigi'
 import { ab2hexstring, hexstring2ab, StringReader, hexstr2str, num2hexstring } from './utils'
-import { ADDR_VERSION } from './consts'
+import { ADDR_VERSION, TEST_ONT_URL } from './consts'
 import * as scrypt from './scrypt'
 import {ERROR_CODE} from './error'
 import { VmType } from './transaction/vmcode';
+import { buildGetDDOTx, buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
+import axios from 'axios'
+import { DDO } from './transaction/ddo'
 
 var ec = require('elliptic').ec
 var wif = require('wif')
@@ -147,12 +150,20 @@ export function signatureData(data: string, privateKey: string): string {
     return signatureValue.toString('hex');
 }
 
-export function verifySignature(data : string, signature : string, publicKey : string) {
+
+/* 
+@data original value of signature
+@signature 
+@publicKey the public key of the signer. is array-like or buffer
+*/
+export function verifySignature(data: string, signature: string, publicKey: any) {
     let msg = cryptoJS.enc.Hex.parse(data)
     let msgHash = cryptoJS.SHA256(msg)
 
     let elliptic = new ec('p256')
-    const result = elliptic.verify(data.toString(), signature, publicKey, null)
+    let r = signature.substr(0, 64)
+    let s = signature.substr(64, 64)
+    const result = elliptic.verify(msgHash.toString(), { r, s }, publicKey, null)
     return result
 }
 
@@ -212,11 +223,30 @@ export function checkPrivateKey(encryptedPrivateKey : string, password : string)
     return true
 }
 
-
+/* 
+@claim claim json object
+*/
 export function verifyOntidClaim(claim : any) {
     if(!claim.Metadata || !claim.Metadata.Issuer) {
         throw new Error('Invalid claim.')
     }
-    let issuer = claim.Metadata.Issuer
-    //TODO
+    let issuerDid = claim.Metadata.Issuer
+    let tx = buildGetDDOTx(issuerDid)
+    let param = buildRestfulParam(tx)
+    let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+    return axios.post(url, param).then( (res:any) => {
+        if (res.data.Result && res.data.Result.length > 0) {
+            console.log('ddo hexstr: '+ res.data.Result[0])
+            const ddo = DDO.deserialize(res.data.Result[0])
+            console.log('ddo: ' + JSON.stringify(ddo))
+            if(ddo.publicKeys.length > 0) {
+                const pk = ddo.publicKeys[0].pk
+                const signature = claim.Signature.Value
+                claim.delete('Signature')
+                return verifySignature(JSON.stringify(claim), signature, hexstring2ab(pk))
+            } else {
+                return false
+            }
+        }
+    })
 }

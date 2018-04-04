@@ -42,7 +42,7 @@ export class Algorithm {
 export const DEFAULT_ALGORITHM = {
   algorithm : "ECDSA",
   parameters : {
-    "curve": "secp256r1"
+    "curve": "secp256r1" // also called p256
   }
 }
 
@@ -77,7 +77,7 @@ export const TEST_ONT_URL = {
 
   RPC_URL: `http://${TEST_NODE}:${HTTP_JSON_PORT}/`,
 
-  REST_URL: `http://${TEST_NODE}:${HTTP_REST_PORT}/`,
+REST_URL: `http://${TEST_NODE}:${HTTP_REST_PORT}/`,
 
   sendRawTxByRestful : `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
 }
