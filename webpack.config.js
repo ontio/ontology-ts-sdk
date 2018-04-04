@@ -26,7 +26,7 @@ let common = {
     'child_process': 'empty'
   },
   plugins: [
-    new CleanWebpackPlugin(['lib/*.js', 'lib/*.js.map'])
+    new CleanWebpackPlugin(['lib/*.js', 'lib/*.js.map', 'lib/types/*'])
   ]
 }
 

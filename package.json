@@ -5,9 +5,9 @@
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
   "scripts": {
-    "test": "jest",
-    "build:dev": "webpack --display-error-details --config webpack.config.js --progress --color",
-    "build:prod": "webpack --env.prod --config webpack.config.js --progress --color"
+    "test": "./node_modules/.bin/jest",
+    "build:dev": "./node_modules/.bin/webpack --display-error-details --config webpack.config.js --progress --color",
+    "build:prod": "./node_modules/.bin/webpack --env.prod --config webpack.config.js --progress --color"
   },
   "jest": {
     "moduleFileExtensions": [

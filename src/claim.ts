@@ -62,7 +62,7 @@ export class Claim {
         this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(body))).toString()
     }
 
-    sign( privateKey: string ) {
+    sign( privateKey: string ) : Signature {
         let claimBody = {
             Context: this.Context,
             Id: this.Id,

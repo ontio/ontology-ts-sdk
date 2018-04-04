@@ -21,7 +21,7 @@ import AbiFunction from "../smartcontract/abi/abiFunction";
 import {Parameter,  ParameterType } from '../smartcontract/abi/parameter'
 import InvokeCode from './payload/invokeCode'
 import DeployCode from './payload/deployCode'
-import {Transaction, TxType, Sig, PubKey, KeyType} from './transaction'
+import {Transaction, TxType, Sig, PubKey} from './transaction'
 import {Transfers, Contract, State} from '../smartcontract/token'
 import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
 import {createSignatureScript, getHash, getPublicKey } from '../core'
@@ -195,6 +195,11 @@ export const buildSmartContractParam = (functionName : string, params : Array<Pa
                 throw new Error('Unsupported param type: '+params[i])
         }
     }
+    //to work with vm
+    if (params.length === 0) {
+        result += '00'
+        params.length = 1
+    }
     let paramsLen = num2hexstring(params.length + 0x50)
     result += paramsLen
 
@@ -220,7 +225,7 @@ export const makeInvokeCode = (functionName : string,  params : Array<Parameter>
 }
 
 
-export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  privateKey : string) => {
+export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  privateKey ?: string) => {
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
@@ -241,7 +246,9 @@ export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  
     tx.payload = payload
 
     //sig
-    signTransaction(tx, privateKey)
+    if(privateKey) {
+        signTransaction(tx, privateKey)
+    }
 
     return tx
 }
@@ -332,7 +339,7 @@ export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
     return tx
 }
 
-export function buildGetDDOTx(ontid : string, privateKey : string) {
+export function buildGetDDOTx(ontid : string) {
     let f = abiInfo.getFunction('GetDDO')
     if (ontid.substr(0, 3) == 'did') {
         ontid = str2hexstr(ontid)
@@ -342,7 +349,7 @@ export function buildGetDDOTx(ontid : string, privateKey : string) {
     let nonce = ab2hexstring( core.generateRandomArray(10) )
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, nonce)
     f.setParamsValue(p1,p2)
-    let tx = makeInvokeTransaction( f, abiInfo.getHash(), privateKey)
+    let tx = makeInvokeTransaction( f, abiInfo.getHash(), '')
     
     return tx
 }

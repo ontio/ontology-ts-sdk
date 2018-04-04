@@ -16,23 +16,26 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as scrypt from '../src/scrypt'
-import * as core from '../src/core'
-import { ERROR_CODE } from '../src/error';
+ 
+import {str2hexstr, hexstr2str ,StringReader} from '../utils'
+const Fixed64Len = 8
+export default class Fixed64 {
+    //8 bytes
+    value : string
+    constructor() {
+        this.value = '0000000000000000'
+    }
 
-describe('test scrypt', () => {
-    it('test encrypt and decrypt', () => {
-        let privateKey = core.generatePrivateKeyStr()
-        let encrypt = scrypt.encrypt(privateKey, '123456')
-        expect(encrypt).toBeDefined()
+    serialize() {
+        // return str2hexstr(this.value)
+        return this.value
+    }
 
-        let result = scrypt.decrypt(encrypt, '123456')
-        expect(result).toEqual(privateKey)
-
-        try {
-            result = scrypt.decrypt(encrypt, '1234567')
-        } catch(err) {
-            expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)
-        }
-    })
-})
+    static deserialize(sr:StringReader) {
+        let f = new Fixed64()
+        const v = sr.read(8)
+        // f.value = hexstr2str(v)
+        f.value = v
+        return f
+    }
+}

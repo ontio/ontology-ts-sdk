@@ -25,11 +25,11 @@ import axios from 'axios'
 import { ab2hexstring, StringReader } from "../src/utils";
 import {State} from '../src/smartcontract/token'
 import * as scrypt from '../src/scrypt'
-import {TEST_NODE, HTTP_REST_PORT, REST_API, ONT_NETWORK} from '../src/consts'
+import {TEST_NODE, HTTP_REST_PORT, REST_API, ONT_NETWORK, TEST_ONT_URL} from '../src/consts'
 import {BigNumber} from 'bignumber.js'
 import { addressToU160 } from "../src/core";
 
-var txSender = new TxSender(ONT_NETWORK.TEST)
+var txSender = new TxSender(TEST_ONT_URL.SOCKET_URL)
 
 var accountFrom = {
     hexAddress: '018f0dcf09ec2f0040e6e8d7e54635dba40f7d63',
@@ -82,7 +82,7 @@ const  testTransferTx = () => {
 }
 
 const testGetBalance = (address, addressName) => {
-    let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
+    let request = `https://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
     axios.get(request).then((res) => {
         let result = res.data.Result
         // console.log(result)
