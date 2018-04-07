@@ -18,9 +18,9 @@
 
 import AbiInfo from '../src/smartcontract/abi/abiInfo'
 import AbiFunction from '../src/smartcontract/abi/abiFunction'
-import Parameter from '../src/smartcontract/abi/parameter'
+import {Parameter} from '../src/smartcontract/abi/parameter'
 
-import json from '../src/smartcontract/data/IdContract.abi'
+import json from '../src/smartcontract/data/idContract.abi'
 import {Transaction} from '../src/transaction/transaction'
 
 import { makeInvokeTransaction} from '../src/transaction/transactionBuilder'
