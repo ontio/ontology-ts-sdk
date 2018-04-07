@@ -31,7 +31,6 @@ import * as core from './core'
 import * as utils from './utils'
 import * as CONST from './consts'
 import { SDK } from './sdk/index'
-import { CompleterResult } from 'readline';
 
 class ONT {
   Account : any
@@ -81,7 +80,7 @@ class ONT {
     this.CONST.HTTP_REST_PORT = port
   }
 
-  setWsPortyarn(port: string) {
+  setSocketPort(port: string) {
     this.CONST.HTTP_WS_PORT = port
   }
 }
