@@ -27,7 +27,7 @@ import AbiFunction from '../src/smartcontract/abi/abiFunction'
 import {Parameter, ParameterType } from '../src/smartcontract/abi/parameter'
 import json2 from '../src/smartcontract/data/IdContract.abi'
 import { ab2hexstring, str2hexstr, StringReader } from '../src/utils'
-import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
+import { DEFAULT_ALGORITHM, ONT_NETWORK } from '../src/consts';
 import { DDO } from '../src/transaction/ddo'
 import { TEST_ONT_URL} from '../src/consts'
 import { getHash } from '../src/core';
@@ -36,7 +36,7 @@ import axios from 'axios'
 
 const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92'
 
-var txSender = new TxSender(TEST_ONT_URL.SOCKET_URL)
+var txSender = new TxSender(ONT_NETWORK.TEST)
 
 // const SOCKET_URL = 'ws://52.80.115.91:20335'
 const Default_params = {
@@ -139,7 +139,7 @@ const callback = function (res, socket) {
 }
 
 const testDDOTx = () => {
-    let tx = buildGetDDOTx(ontid)
+    let tx = buildGetDDOTx(ontid, privateKey)
 
     // let param = buildTxParam(tx, false)
 
@@ -326,38 +326,6 @@ const testChangeRecovery = () => {
     sendTx(param)
 }
 
-const testVerifyOntidClaim = () => {
-    var claim = {
-        "Context": "claim:github_authentication",
-        "Content": {
-            "GistCreateTime": "2018-02-28T03:24:48Z",
-            "Company": "onchain",
-            "Email": "leewi9@yahoo.com",
-            "Alias": "leewi9",
-            "Bio": "software engineer",
-            "Id": "10832544",
-            "GistUrl": "https://gist.github.com/42298ebb0c44054c43f48e1afd763ff6",
-            "Avatar": "https://avatars2.githubusercontent.com/u/10832544?v=4",
-            "Name": "zhouzhou",
-            "Location": ""
-        },
-        "Signature": {
-            "Format": "pgp",
-            "Value": "rsjaenrxJm8qDmhtOHNBNOCOlvz/GC1c6CMnUb7KOb1jmHbMNGB63VXhtKflwSggyu1cVBK14/0t7qELqIrNmQ==",
-            "Algorithm": "ECDSAwithSHA256"
-        },
-        "Metadata": {
-            "Issuer": "did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoK",
-            "CreateTime": "2018-03-07T16:06:21Z",
-            "Subject": "did:ont:TKhyXw8o6Em5GjmJwiPT1oNXsy4p6fYZPB"
-        },
-        "Id": "111ab2f56d106dac92e891b6f7fc4d9546fdf2eb94a364208fa65a9996b03ba0"
-    }
-    core.verifyOntidClaim(claim).then(res =>{
-        console.log('verify result : '+ res)
-    })
-}
-
 
 //uncomment one line to test one tx each time.
 
@@ -366,8 +334,6 @@ const testVerifyOntidClaim = () => {
 // testAddAttribute()
 
 testDDOTx()
-
-// testVerifyOntidClaim()
 
 // testDDOByRpc()
 

@@ -29,9 +29,16 @@ if(typeof window != 'undefined' && (window as any).WebSocket){
 
 export default class TxSender {
     SOCKET_URL : string
+    RPC_URL : string
 
-    constructor (socketUrl : string) {
-        this.SOCKET_URL = socketUrl
+    constructor (net : string) {
+        if(net === ONT_NETWORK.MAIN) {
+            this.SOCKET_URL = MAIN_ONT_URL.SOCKET_URL
+            this.RPC_URL = MAIN_ONT_URL.RPC_URL
+        } else {
+            this.SOCKET_URL = TEST_ONT_URL.SOCKET_URL
+            this.RPC_URL = TEST_ONT_URL.RPC_URL
+        }
     }
 
     sendTxWithSocket(param : string, callback : (res:any, socket:any) => any) {
@@ -48,6 +55,16 @@ export default class TxSender {
             } else {
                 res = event.data
             }
+            // console.log('response for send tx: ' + JSON.stringify(res))
+            // if (callback) {
+            //     callback(event.data)
+            //     socket.close()
+            // }
+            // if (res.Action === 'Notify') {
+            //     let result = parseEventNotify(res)
+            //     console.log('paresed event notify: ' + JSON.stringify(result))
+            // }
+            // socket.close()
         
             //pass socket to let caller decide when to close the it.
             if(callback) {

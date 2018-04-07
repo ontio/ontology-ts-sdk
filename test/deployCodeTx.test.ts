@@ -51,7 +51,7 @@ var serialized
 
 const WebSocket = require('ws');
 
-var txSender = new TxSender(TEST_ONT_URL.SOCKET_URL)
+var txSender = new TxSender(ONT_NETWORK.TEST)
 
 
 const testDeployCodeTx = () => {
@@ -78,9 +78,7 @@ const testDeployCodeTx = () => {
     console.log('param: '+JSON.stringify(param))
     axios.post(url, param).then((res)=>{
         console.log('deploy res: '+JSON.stringify(res.data))
-        setTimeout(function() {
-            getContract()
-        }, 6000)
+        getContract()
     }).catch(err => {
         console.log(err)
     })
@@ -119,9 +117,9 @@ const getContract = () => {
 
 
 
-testDeployCodeTx()
+// testDeployCodeTx()
 
-// getContract()
+getContract()
 // testDeserialize()
 
 /* 

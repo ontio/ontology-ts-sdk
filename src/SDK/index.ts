@@ -32,33 +32,6 @@ import axios from 'axios'
 import {BigNumber} from 'bignumber.js'
 import {DDO} from '../transaction/ddo';
 export class SDK {
-    static SERVER_NODE : string
-    static REST_PORT   : string
-    static SOCKET_PORT : string
-
-    static setServerNode(node : string) {
-        if(node) {
-            SDK.SERVER_NODE = node
-            return;
-        } 
-        throw new Error('Can not set ' + node + 'as server node')
-    }
-
-    static setRestPort(port: string) {
-        if (port) {
-            SDK.REST_PORT = port
-            return;
-        }
-        throw new Error('Can not set ' + port + ' as restful port')
-    }
-
-    static setSocketPort(port: string) {
-        if (port) {
-            SDK.SOCKET_PORT = port 
-            return;
-        }
-        throw new Error('Can not set ' + port + 'as socket port')
-    }
 
     static getDecryptError(err:any) {
         return {
@@ -107,8 +80,7 @@ export class SDK {
                 socket.close()
             }
         } 
-        let socket = `ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`
-        var txSender = new TxSender(socket)
+        var txSender = new TxSender(ONT_NETWORK.TEST)
         txSender.sendTxWithSocket(param, socketCallback)
         // callback && sendBackResult2Native(JSON.stringify(obj), callback)
         return obj
@@ -118,8 +90,10 @@ export class SDK {
         password : string, callback ?: string) {
         let identity = new Identity()
         let wallet = Wallet.parseJson(walletDataStr)
+        let privateKey = ''
         try {
             //TODO check ontid
+            privateKey = scrypt.decrypt(encryptedPrivateKey, password)
             identity = Identity.importIdentity(label, encryptedPrivateKey, password)
         } catch (err) {
             let obj  = this.getDecryptError(err)
@@ -135,10 +109,9 @@ export class SDK {
             desc : ''
         }
         //check ontid on chain
-        let tx = buildGetDDOTx(identity.ontid)
+        let tx = buildGetDDOTx(identity.ontid, privateKey)
         let param = buildRestfulParam(tx)
-        let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}/`
-        let url = sendRawTxRestfulUrl(restUrl, true)
+        let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
         axios.post(url, param).then((res:any) => {
             if (res.data.Result && res.data.Result.length > 0 && res.data.Result[0] !== '0000000000000000') {
                                     
@@ -157,7 +130,9 @@ export class SDK {
     static importIdentity(label : string, encryptedPrivateKey : string, password : string, callback ?: string) {
         let identity = new Identity()
         let error = {}
+        let privateKey
         try {
+            privateKey = scrypt.decrypt(encryptedPrivateKey, password)
             identity = Identity.importIdentity(label, encryptedPrivateKey, password)
             let wallet = new Wallet()
             wallet.create(identity.label)
@@ -170,11 +145,10 @@ export class SDK {
                 desc: ''
             }
             //check ontid on chain
-            let tx = buildGetDDOTx(identity.ontid)
+            let tx = buildGetDDOTx(identity.ontid, privateKey)
             let param = buildRestfulParam(tx)
-            let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}/`            
-            let url = sendRawTxRestfulUrl(restUrl, true)
-            return axios.post(url, param).then((res: any) => {
+            let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+            axios.post(url, param).then((res: any) => {
                 if (res.data.Result && res.data.Result.length > 0 && res.data.Result[0] !== '0000000000000000') {
 
                 } else {
@@ -189,7 +163,7 @@ export class SDK {
         } catch(err) {
             error = this.getDecryptError(err)
             callback && sendBackResult2Native(JSON.stringify(error), callback)
-            return Promise.reject(error) 
+            return error
         }
     }
 
@@ -206,9 +180,8 @@ export class SDK {
         //register ontid
         let tx = buildRegisterOntidTx(identity.ontid, privateKey)
         let param = buildRestfulParam(tx)
-        let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
-
-        axios.post(restUrl, param).then((res: any) => {
+        const url = TEST_ONT_URL.sendRawTxByRestful
+        axios.post(url, param).then((res: any) => {
             if(res.data.Error === 0) {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
             } else {
@@ -349,8 +322,7 @@ export class SDK {
             // let txId = core.getHash(tx.serialize())
             let param = buildTxParam(tx)
             //通过socket能获得推送的结果
-            let socket = `ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`
-            var txSender = new TxSender(socket)
+            var txSender = new TxSender(ONT_NETWORK.TEST)
             const socketCallback = function(res : any, socket : any) {
                 console.log('res: '+ JSON.stringify(res))
                 if(res.Action === 'InvokeTransaction' && res.Error === 0) {
@@ -393,7 +365,7 @@ export class SDK {
         if(address.length === 40) {
             address = core.u160ToAddress(address)
         }
-        let request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalance}/${address}`
+        let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
         axios.get(request).then((res : any) => {
             if(res.data.Error === 0) {
                 let result = res.data.Result
@@ -451,7 +423,7 @@ export class SDK {
 
         let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
         var param = buildRestfulParam(tx)
-        let request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
+        let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
         axios.post(request, param).then( (res:any) => {
             console.log('transfer response: ' + JSON.stringify(res.data))
             if(res.data.Error === 0) {

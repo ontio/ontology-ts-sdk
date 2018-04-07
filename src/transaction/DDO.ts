@@ -17,7 +17,6 @@
  */
 
 import {StringReader, hexstr2str} from '../utils'
-import {PublicKey} from '../crypto'
 
 export class DDOAttribute {
     path : string
@@ -26,64 +25,42 @@ export class DDOAttribute {
     constructor() {}
 }
 export class DDO {
-    publicKeys : Array<PublicKey> = []
+    publicKeys : Array<string> = []
     attributes : Array<DDOAttribute> = []
-    recovery : string
 
     constructor() {}
 
-    static deserialize(hexstr: string): DDO {
+    static deserialize(hexstr : string) : DDO {
         const ss = new StringReader(hexstr)
         let ddo = new DDO()
         //total length of public keys - 4 bytes
-        const pkTotalLen = parseInt(ss.read(4),16)
-        if(pkTotalLen > 0) {
-            const pkNum = parseInt(ss.read(4), 16)
-            for (let i = 0; i < pkNum; i++) {
-                //length of public key - 4 bytes
-                let pkLen = parseInt(ss.read(4), 16)
-                let pubKey = new PublicKey()
-                const rawPk = ss.read(pkLen)
-                const type = parseInt(rawPk.substr(0, 2), 16)
-                const curve = parseInt(rawPk.substr(2, 2), 16)
-                const pk = rawPk.substr(4)
-                pubKey.algorithm = type
-                pubKey.curve = curve
-                pubKey.pk = pk
-                ddo.publicKeys.push(pubKey)
-            }
-        }
+        const pkTotalLen = parseInt(ss.read(4), 16)
+        const pkNum = ss.readNextLen()
         
+        for(let i=0; i<pkNum; i++) {   
+            //length of public key - 4 bytes
+            let pkLen = parseInt(ss.read(4),16) 
+            ddo.publicKeys.push(ss.read(pkLen))
+        }
 
         //attribute number - 4bytes
         const attrTotalLen = parseInt(ss.read(4),16)
-        if(attrTotalLen > 0) {
-            const attrNum = parseInt(ss.read(4), 16)
-            for (let i = 0; i < attrNum; i++) {
-                const totalLen = parseInt(ss.read(4), 16)
+        const attrNum = ss.readNextLen()
+        for(let i=0; i<attrNum;i++) {
+            let attrLen = parseInt(ss.read(4),16)
+            let attr = new DDOAttribute()
+            const pathLen = parseInt(ss.read(4), 16)
+            attr.path = hexstr2str(ss.read(pathLen))
+            attr.path = ss.read(pathLen)
 
-                let attr = new DDOAttribute()
-                const pathLen = parseInt(ss.read(4), 16)
-                attr.path = hexstr2str(ss.read(pathLen))
+            const type_value_len = parseInt(ss.read(4), 16)
+            const typeLen = parseInt(ss.read(1), 16)
+            attr.type = hexstr2str(ss.read(typeLen))
 
-                const type_value_len = parseInt(ss.read(4), 16)
-                const typeLen = parseInt(ss.read(1), 16)
-                attr.type = hexstr2str(ss.read(typeLen))
-
-                const valueLen = type_value_len - typeLen - 1
-                attr.value = hexstr2str(ss.read(valueLen))
-                ddo.attributes.push(attr)
-            }
+            const valueLen = type_value_len - typeLen - 1
+            attr.value = hexstr2str(ss.read(valueLen))
+            ddo.attributes.push(attr)
         }
-        
-        //recovery
-        const recoveryTotalLen = parseInt(ss.read(4), 16)
-        if(recoveryTotalLen > 0 ) {
-            const recLen = parseInt(ss.read(4), 16)
-            const recovery = hexstr2str(ss.read(recLen))
-            ddo.recovery = recovery
-        }
-        
         return ddo
     }
 }

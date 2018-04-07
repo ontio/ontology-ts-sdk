@@ -44,7 +44,7 @@ describe('test identity', () => {
         console.log('encryptedkey: ' + encryptedPrivateKey)
         let a 
         try {
-         a = Identity.importIdentity('mickey', encryptedPrivateKey, '123456')
+         a = Identity.importIdentity('', encryptedPrivateKey, '123456')
         } catch(err) {
             console.log(err)
         }

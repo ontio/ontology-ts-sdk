@@ -18,7 +18,6 @@
 
 import * as scrypt from '../src/scrypt'
 import * as core from '../src/core'
-import { ERROR_CODE } from '../src/error';
 
 describe('test scrypt', () => {
     it('test encrypt and decrypt', () => {
@@ -29,10 +28,7 @@ describe('test scrypt', () => {
         let result = scrypt.decrypt(encrypt, '123456')
         expect(result).toEqual(privateKey)
 
-        try {
-            result = scrypt.decrypt(encrypt, '1234567')
-        } catch(err) {
-            expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)
-        }
+        result = scrypt.decrypt(encrypt, '1234567')
+        expect(result).not.toEqual(privateKey)
     })
 })

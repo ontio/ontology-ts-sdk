@@ -17,7 +17,7 @@
  */
 
 import {Claim , Metadata } from '../src/claim'
-import {generatePrivateKeyStr, signatureData, verifySignature, getPublicKey} from '../src/core'
+import {generatePrivateKeyStr, signatureData} from '../src/core'
 
 describe('test claim', () => {
 
@@ -49,27 +49,11 @@ describe('test claim', () => {
 
     test('make a signature', ()=>{
         const {Id, Metadata, Context, Content} = claim
-        //!!! the order of attributes matters
         let obj = {
-            Context: Context,
-            Id: Id,
-            Content: Content,
-            Metadata: Metadata
+            Id, Metadata, Content, Context
         }
         let signed = signatureData(JSON.stringify(obj), privateKey)
         let signatureValue = claim.Signature.Value
         expect(signed).toEqual(signatureValue)
-    })
-
-    test('verify a signature', () => {
-        let publicKey = getPublicKey(privateKey, true)
-        let data = Object.assign({}, {
-            Context : claim.Context,
-            Id : claim.Id,
-            Content : claim.Content,
-            Metadata : claim.Metadata,
-        })
-        let result = verifySignature(JSON.stringify(data), claim.Signature.Value, publicKey)
-        expect(result).toBeTruthy()
     })
 })
