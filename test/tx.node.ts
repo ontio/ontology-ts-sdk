@@ -19,13 +19,13 @@
 import { makeInvokeTransaction , parseEventNotify, buildAddAttributeTx, buildGetDDOTx,
     buildRpcParam, buildRegisterOntidTx, buildTxParam, buildRestfulParam, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder'
 import {Transaction} from '../src/transaction/transaction'
-import InvokeCode from '../src/transaction/payload/InvokeCode'
+import InvokeCode from '../src/transaction/payload/invokeCode'
 import { Identity } from '../src/identity'
 import * as core from '../src/core'
 import AbiInfo from '../src/smartcontract/abi/abiInfo'
 import AbiFunction from '../src/smartcontract/abi/abiFunction'
 import {Parameter, ParameterType } from '../src/smartcontract/abi/parameter'
-import json2 from '../src/smartcontract/data/IdContract.abi'
+import json2 from '../src/smartcontract/data/idContract.abi'
 import { ab2hexstring, str2hexstr, StringReader } from '../src/utils'
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
 import { DDO } from '../src/transaction/ddo'

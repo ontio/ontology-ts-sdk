@@ -17,31 +17,31 @@
  */
 
 import {Transaction, TxType} from '../src/transaction/transaction'
-import DeployCode from '../src/transaction/payload/DeployCode'
+import DeployCode from '../src/transaction/payload/deployCode'
 
 import {getHash} from '../src/core'
 import {ab2hexstring, ab2str,str2hexstr , reverseHex, num2hexstring} from '../src/utils'
 import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployTransaction, buildTxParam, buildRestfulParam, makeDeployCode, buildRpcParam} from '../src/transaction/transactionBuilder'
 
-import AbiInfo from '../src/smartcontract/abi/AbiInfo'
-import AbiFunction from '../src/smartcontract/abi/AbiFunction'
-import Parameter from '../src/smartcontract/abi/parameter'
+import AbiInfo from '../src/smartcontract/abi/abiInfo'
+import AbiFunction from '../src/smartcontract/abi/abiFunction'
+import {Parameter} from '../src/smartcontract/abi/parameter'
 import {ONT_NETWORK, TEST_NODE, TEST_ONT_URL} from '../src/consts'
 import axios from 'axios' 
 import TxSender from '../src/transaction/txSender'
 
-import json from '../src/smartcontract/data/IdContract.abi'
+import json from '../src/smartcontract/data/idContract.abi'
 import { VmCode, VmType } from '../src/transaction/vmcode';
 
 var fs = require('fs')
-let avm = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/IdContract.avm')
+let avm = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/idContract.avm')
 var avmCode = ab2hexstring(avm)
 
 var privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
 var ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a78596950415a364d61376a6351564b'
 
 
-// var contract = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/IdContract.abi.json')
+// var contract = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/idContract.abi.json')
 
 // console.log('contract: '+contract)
 // var abiInfo = AbiInfo.parseJson(contract.toString())

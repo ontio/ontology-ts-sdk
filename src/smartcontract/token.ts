@@ -17,7 +17,7 @@
  */
 
 import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes, hex2VarBytes, hexstr2str } from "../utils";
-import Uint160 from "../common/Uint160";
+import Uint160 from "../common/uint160";
 import {BigNumber} from 'bignumber.js'
 
 export class Transfers {
