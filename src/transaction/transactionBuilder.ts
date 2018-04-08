@@ -27,7 +27,7 @@ import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
 import {createSignatureScript, getHash, getPublicKey } from '../core'
 import * as core from '../core'
 import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes, hex2VarBytes, num2VarInt} from '../utils'
-import json from '../smartcontract/data/IdContract.abi'
+import json from '../smartcontract/data/idContract.abi'
 import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
 import {TOKEN_TYPE, HTTP_REST_PORT, TEST_NODE, REST_API} from '../consts'
