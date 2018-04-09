@@ -19,6 +19,7 @@
 import {ONT_NETWORK, MAIN_ONT_URL, TEST_ONT_URL} from '../consts'
 import {Transaction} from './transaction'
 import axios from 'axios'
+import { ERROR_CODE } from '../error';
 
 var WebSocket : any
 if(typeof window != 'undefined' && (window as any).WebSocket){
@@ -57,6 +58,17 @@ export default class TxSender {
         socket.onerror = (event : any) => {
             //no server or server is stopped
             console.log(event)
+            let res
+            if (typeof event.data === 'string') {
+                res = JSON.parse(event.data)
+            } else {
+                res = event.data
+            }
+            res.Error = ERROR_CODE.NETWORK_ERROR
+            //pass socket to let caller decide when to close the it.
+            if (callback) {
+                callback(res, socket)
+            }            
             socket.close()
         }
     }

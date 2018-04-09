@@ -34,7 +34,7 @@ import json from '../src/smartcontract/data/idContract.abi'
 import { VmCode, VmType } from '../src/transaction/vmcode';
 
 var fs = require('fs')
-let avm = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/idContract.avm')
+let avm = fs.readFileSync('/Volumes/Workspace/ontio/ontology-ts-sdk/src/smartcontract/data/IdContract.avm')
 var avmCode = ab2hexstring(avm)
 
 var privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
@@ -111,9 +111,12 @@ const getContract = () => {
 
     // let scriptHash = '8046031450d43928654f50dcd50646331bb49e1a'
     
-    let url = `${TEST_ONT_URL.REST_URL}api/v1/contract/${scriptHash}`
+    let url = `${TEST_ONT_URL.REST_URL}/api/v1/contract/${scriptHash}`
+    console.log('url : '+ url)
     axios.get(url).then((res)=>{
         console.log(res.data)
+    }).catch(err => {
+        console.log(err)
     })
 }
 

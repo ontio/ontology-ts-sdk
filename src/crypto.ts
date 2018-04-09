@@ -1,3 +1,5 @@
+import { StringReader } from "./utils";
+
 export enum SignatureSchema {
     SHA224withECDSA  = 0,
 	SHA256withECDSA,
@@ -35,4 +37,34 @@ export class PublicKey {
 	algorithm: number
 	curve: number
 	pk: string
+
+	static deserialize(sr : StringReader) {
+		let pub = new PublicKey()
+		const algorithm = parseInt(sr.read(1), 16)
+		const curve = parseInt(sr.read(1),16)
+		const pk = sr.read(33)
+		pub.algorithm = algorithm
+		pub.curve = curve
+		pub.pk = pk
+		return pub
+	}
+}
+
+export enum PK_STATUS  {
+	IN_USE = '01',
+	REVOKED = '00'
+}
+
+export class PublicKeyStatus {
+	pk : PublicKey
+	status : string
+
+	static deserialize(hexstr : string) : PublicKeyStatus {
+		let ps = new PublicKeyStatus()
+		const sr = new StringReader(hexstr)
+		const status = sr.read(1)
+		ps.status = status
+		ps.pk = PublicKey.deserialize(sr)
+		return ps
+	}
 }

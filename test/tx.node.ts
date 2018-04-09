@@ -16,8 +16,9 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { makeInvokeTransaction , parseEventNotify, buildAddAttributeTx, buildGetDDOTx,
-    buildRpcParam, buildRegisterOntidTx, buildTxParam, buildRestfulParam, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder'
+import { makeInvokeTransaction , parseEventNotify, 
+    buildRpcParam, buildTxParam, buildRestfulParam, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder'
+import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddPKTx, buildGetPublicKeysTx, buildRemovePkTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetPublicKeyIdTx, buildGetPublicKeyStatusTx} from '../src/smartcontract/ontidContract'
 import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/invokeCode'
 import { Identity } from '../src/identity'
@@ -33,6 +34,7 @@ import { TEST_ONT_URL} from '../src/consts'
 import { getHash } from '../src/core';
 import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
+import { PublicKeyStatus } from '../src/crypto';
 
 const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92'
 
@@ -53,6 +55,7 @@ var pk2: string
 var ontid: string
 var oldrecovery : string
 var newrecovery : string
+var pkId : string
 
 var abiInfo: AbiInfo
 var identity: Identity
@@ -63,12 +66,13 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 // console.log('publick key: ' + publicKey)
 
 privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
-publicKey = ab2hexstring(core.getPublicKey(privateKey, false))
-let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
+publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+pkId = ''
+// let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
 
-var pkPoint = core.getPublicKeyPoint(privateKey)
-console.log('pk false: '+ publicKey)
-console.log('pk true: ' + publicKey2)
+// var pkPoint = core.getPublicKeyPoint(privateKey)
+// console.log('pk false: '+ publicKey)
+// console.log('pk true: ' + publicKey2)
 
 
 
@@ -237,91 +241,66 @@ const testAddAttribute = () => {
     })
 }
 
+const testGetPublicKeyId = () => {
+    let tx = buildGetPublicKeyIdTx(ontid, publicKey)
+    let param = buildRestfulParam(tx)
+    console.log(param)
+    let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+    console.log(url)
+    axios.post(url, param).then((res) => {
+        console.log(res.data)
+    }).catch(err => {
+        console.log(err)
+    })
+}
+
+const testGetPublicKeyStatus = () => {
+    let tx = buildGetPublicKeyStatusTx(ontid, '01')
+    let param = buildRestfulParam(tx)
+    let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+    axios.post(url, param).then((res) => {
+        console.log(res.data)
+        let ps = PublicKeyStatus.deserialize(res.data.Result[0])
+        console.log(ps)
+    }).catch(err => {
+        console.log(err)
+    })
+}
 
 const testAddPK = () => {
-    let f = abiInfo.getFunction('AddKey')
-
-    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
-    let p2 = new Parameter('newpubkey', ParameterType.ByteArray, pk2)
-    let p3 = new Parameter('sender', ParameterType.ByteArray, publicKey)
-
-    f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction( f, abiInfo.getHash(), privateKey)
-
-    let serialized = tx.serialize()
-    // console.log('add pk tx: ' + serialized)
-    
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
+    let tx = buildAddPKTx(ontid, pk2, publicKey, privateKey)
+    let param = buildTxParam(tx)
     console.log('add pk param: ' + param)
     sendTx(param)
 }
 
 const testGetPublicKeys = () => {
-    let f = abiInfo.getFunction('GetPublicKeys')
-    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
-    f.setParamsValue(p1)
-    let tx = makeInvokeTransaction(f, abiInfo.getHash(),privateKey)
-    let serialized = tx.serialize()
-
-    let param = JSON.stringify(Object.assign({}, Default_params, {Data : serialized}))
-    sendTx(param)
+    let tx = buildGetPublicKeysTx(ontid, privateKey)
+    // let param = buildTxParam(tx)
+    // sendTx(param)
+    let param = buildRestfulParam(tx)
+    let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+    axios.post(url, param).then(res => {
+        console.log(res.data)
+    })
 }
 
 const testRemovePK = () => {
-    let f = abiInfo.getFunction('RemoveKey')
-
-    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
-    let p2 = new Parameter('oldpubkey', ParameterType.ByteArray, pk2)
-    let p3 = new Parameter('sender', ParameterType.ByteArray, publicKey)
-
-    f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
-
-    let serialized = tx.serialize()
-
-    // let hashed = core.getHash(serialized)
-    // console.log('remove pk tx: ' + serialized)
-    // console.log('hashed:' + hashed)
-    
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
+    let tx = buildRemovePkTx(ontid, pk2, publicKey, privateKey)
+    let param = buildTxParam(tx)
     console.log('remove pk param: ' + param)
     sendTx(param)
 }
 
 const testAddRecovery = () => {
-    let f = abiInfo.getFunction('AddRecovery')
-
-    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
-    let p2 = new Parameter('recovery', ParameterType.ByteArray, oldrecovery)
-    let p3 = new Parameter('pk', ParameterType.ByteArray, publicKey)
-
-    f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f, abiInfo.getHash(),privateKey)
-
-    let serialized = tx.serialize()
-
-    // let hashed = core.getHash(serialized)
-    // console.log('remove pk tx: ' + serialized)
-    // console.log('hashed:' + hashed)
-
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
-    console.log('change recovery param: ' + param)
+    let tx = buildAddRecoveryTx(ontid, oldrecovery, publicKey, privateKey)
+    let param = buildTxParam(tx)
     sendTx(param)
 }
 
 const testChangeRecovery = () => {
-    let f = abiInfo.getFunction('ChangeRecovery')
-
-    let p1 = new Parameter('id', ParameterType.ByteArray, ontid)
-    let p2 = new Parameter('newrecovery', ParameterType.ByteArray, newrecovery)
-    let p3 = new Parameter('recovery', ParameterType.ByteArray, oldrecovery)
-
-    f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
-
-    let serialized = tx.serialize()
-
-    let param = JSON.stringify(Object.assign({}, Default_params, { Data: serialized }))
+    let tx = buildChangeRecoveryTx(ontid, newrecovery, oldrecovery, privateKey)
+    let param = buildTxParam(tx)
     console.log('change recovery param: ' + param)
     sendTx(param)
 }
@@ -365,7 +344,7 @@ const testVerifyOntidClaim = () => {
 
 // testAddAttribute()
 
-testDDOTx()
+// testDDOTx()
 
 // testVerifyOntidClaim()
 
@@ -383,4 +362,6 @@ testDDOTx()
 
 // testChangeRecovery()
 
+// testGetPublicKeyId()
 
+testGetPublicKeyStatus()

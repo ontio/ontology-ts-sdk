@@ -21,13 +21,15 @@ import * as base58 from 'bs58'
 import * as ecurve from 'ecurve'
 import * as bigInteger from 'bigi'
 import { ab2hexstring, hexstring2ab, StringReader, hexstr2str, num2hexstring } from './utils'
-import { ADDR_VERSION, TEST_ONT_URL } from './consts'
+import { ADDR_VERSION, TEST_ONT_URL, REST_API } from './consts'
 import * as scrypt from './scrypt'
 import {ERROR_CODE} from './error'
 import { VmType } from './transaction/vmcode';
-import { buildGetDDOTx, buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
+import { buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
 import axios from 'axios'
 import { DDO } from './transaction/ddo'
+import { getPublicKeyStatus, buildGetDDOTx } from './smartcontract/ontidContract'
+import { verifyLeafHashInclusion } from './merkle'
 
 var ec = require('elliptic').ec
 var wif = require('wif')
@@ -249,4 +251,113 @@ export function verifyOntidClaim(claim : any) {
             }
         }
     })
+}
+
+const getDDO = (ontid : string, url ?: string) => {
+    let tx = buildGetDDOTx(ontid)
+    let param = buildRestfulParam(tx)
+    url = url || TEST_ONT_URL.REST_URL
+    let requestUrl = sendRawTxRestfulUrl(url , true)
+    return axios.post(requestUrl, param).then((res: any) => {
+        if (res.data.Result && res.data.Result.length > 0) {
+            console.log('ddo hexstr: ' + res.data.Result[0])
+            const ddo = DDO.deserialize(res.data.Result[0])
+            console.log('ddo: ' + JSON.stringify(ddo))
+            return ddo
+        }
+    })
+}
+
+export const getMerkleProof = (txHash : string, url ?: string) => {
+    url = url || TEST_ONT_URL.REST_URL
+    let requestUrl = `${url}${REST_API.getMerkleProof}/${txHash} `
+    return axios.get(requestUrl).then((res:any)=> {
+        console.log('merkle : ' + JSON.stringify(res.data))
+        return res.data.Result
+    })
+} 
+
+const getRovocationList = (url : string) => {
+    return axios.get(url).then(res => {
+        return res.data
+    })
+}
+
+const VerifyOntidClaimResult = {
+    CLAIM_NOT_ONCHAIN : 'CLAIM_NOT_ONCHAIN',
+    INVALID_SIGNATURE : 'INVALID_SIGNATURE',
+    PK_IN_REVOKEED    : 'PK_IN_REVOKED',
+    EXPIRED_CLAIM     : 'EXPIRED_CLAIM',
+    REVOKED_CLAIM     : 'REVOKED_CLAIM',
+    VALID_CLAIM       : 'VALID_CLAIM'
+}
+
+/* 
+*@claim : claim json object
+*@url : the node to send tx, eg: http://192.168.3.111:20334
+*/
+
+export async function verifyOntidClaimAsync(claim : any, url ?: string) {
+    if (!claim.Metadata || !claim.Metadata.Issuer) {
+        throw new Error('Invalid claim.')
+    }
+
+    //verify expiration
+    const expiration = new Date( claim.Metadata.Expires )
+    let d = new Date()
+    if(d > expiration) {
+        return VerifyOntidClaimResult.EXPIRED_CLAIM
+    }
+
+    // verify signature 
+    let issuerDid = claim.Metadata.Issuer
+    //issuer is : ONTID#PkId
+    let issuerPkId = issuerDid.substr(issuerDid.indexOf('#') + 1)
+    //pkStatus = { publicKey, status : [IN USE, Revoked] }
+    let pkStatus = await getPublicKeyStatus(issuerDid, issuerPkId, url)
+    if (pkStatus.status === 'Revoked') {
+        return VerifyOntidClaimResult.PK_IN_REVOKEED
+    }
+
+    //verify signature
+    const pk = pkStatus.publicKey.substr(0,4) === '1202' ? pkStatus.publicKey.substr(4) : pkStatus.publicKey
+    //the order of claim's attributes matters.
+    let signature = Object.assign({}, {
+        Context: claim.Context,
+        Id: claim.Id,
+        Content: claim.Content,
+        Metadata: claim.Metadata,
+    })
+
+    let result = verifySignature(JSON.stringify(claim), JSON.stringify(signature), hexstring2ab(pk))
+    if(!result) {
+        return VerifyOntidClaimResult.INVALID_SIGNATURE
+    }
+    if(claim.Proof) {
+        // verify merkle
+        let merkle = claim.Proof
+        const leafHash = merkle.BlockRoot
+        const leafIndex = merkle.BlockHeight
+        const proof = merkle.TargetHashes
+        const rootHash = merkle.CurBlockRoot
+        const treeSize = merkle.CurBlockHeight
+
+        let verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize)
+        if (!verifyMerkleResult) {
+            return VerifyOntidClaimResult.CLAIM_NOT_ONCHAIN
+        }
+    }
+    
+
+    //verify revoke - optional
+    if(claim.Metadata.Revocation) {
+        let url = claim.Metadata.Crl        
+        if(claim.Metadata.Revocation === 'RevocationList' && claim.Metadata.Crl) {
+            
+        } else if(claim.Metadata.Revocation === 'RevocationUrl') {
+
+        }
+    }
+
+    return VerifyOntidClaimResult.VALID_CLAIM
 }

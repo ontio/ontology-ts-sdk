@@ -159,7 +159,7 @@ export const pushHexString = (param : string) => {
 }
 
 
-//params is like [functionName, param1, param2...]
+//params is like [param1, param2...]
 export const buildSmartContractParam = (functionName : string, params : Array<Parameter>) => {
     let result = ''
     for (let i= params.length -1; i > -1; i--) {
@@ -293,72 +293,12 @@ export function buildTxParam (tx : Transaction, is_pre_exec : boolean = false) {
     return JSON.stringify(Object.assign({}, Default_params, { Data: serialized }, op))
 }
 
-//all parameters shuld be hex string
-export function buildAddAttributeTx (path : string, value : string, type: string, ontid : string, privateKey : string) {
-    let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
-    //algorithm&curve
-    publicKey = '1202' + publicKey
-    let f = abiInfo.getFunction('AddAttribute')
-    if(ontid.substr(0,3) === 'did') {
-        ontid = str2hexstr(ontid)
-    }
-    let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
-    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, path)
-    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, type)
-    let p4 = new Parameter(f.parameters[3].getName(), ParameterType.ByteArray, value)
-    let p5 = new Parameter(f.parameters[4].getName(), ParameterType.ByteArray, publicKey)
-
-    f.setParamsValue(p1, p2, p3, p4, p5)
-    let tx = makeInvokeTransaction( f,abiInfo.getHash(), privateKey)
-    return tx
-}
-
-export function buildRegisterOntidTx (ontid: string,  privateKey: string) {
-    let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
-    if (ontid.substr(0, 3) == 'did') {
-        ontid = str2hexstr(ontid)
-    }
-    console.log("Register ", ontid)
-    let f = abiInfo.getFunction('RegIdWithPublicKey')
-
-    let name1 = f.parameters[0].getName(),
-        type1 = ParameterType.ByteArray
-    let p1 = new Parameter(name1, type1, ontid)
-
-
-    let name2 = f.parameters[1].getName(),
-        type2 = ParameterType.ByteArray
-    //algorithm&curve
-    publicKey = '1202' + publicKey
-
-    let p2 = new Parameter(name2, type2, publicKey)
-
-    f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction( f, abiInfo.getHash(),  privateKey)
-
-    return tx
-}
-
-export function buildGetDDOTx(ontid : string) {
-    let f = abiInfo.getFunction('GetDDO')
-    if (ontid.substr(0, 3) == 'did') {
-        ontid = str2hexstr(ontid)
-    }
-
-    let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
-    let nonce = ab2hexstring( core.generateRandomArray(10) )
-    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, nonce)
-    f.setParamsValue(p1,p2)
-    let tx = makeInvokeTransaction( f, abiInfo.getHash(), '')
-    
-    return tx
-}
 //{"jsonrpc": "2.0", "method": "sendrawtransaction", "params": ["raw transactioin in hex"], "id": 0}
-export function buildRpcParam(tx : any) {
+export function buildRpcParam(tx : any, method ?: string) {
     let param = tx.serialize()
     let result = {
         "jsonrpc": "2.0",
-        "method": "sendrawtransaction",
+        "method": method || "sendrawtransaction",
         "params": [param],
         "id": 10
     }
