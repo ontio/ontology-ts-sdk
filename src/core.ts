@@ -25,10 +25,10 @@ import { ADDR_VERSION, TEST_ONT_URL, REST_API } from './consts'
 import * as scrypt from './scrypt'
 import {ERROR_CODE} from './error'
 import { VmType } from './transaction/vmcode';
-import { buildGetDDOTx, buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
+import { buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
 import axios from 'axios'
 import { DDO } from './transaction/ddo'
-import { getPublicKeyStatus } from './smartcontract/ontidContract'
+import { getPublicKeyStatus, buildGetDDOTx } from './smartcontract/ontidContract'
 import { verifyLeafHashInclusion } from './merkle'
 
 var ec = require('elliptic').ec
@@ -268,12 +268,12 @@ const getDDO = (ontid : string, url ?: string) => {
     })
 }
 
-const getMerkleProof = (txHash : string, url ?: string) => {
+export const getMerkleProof = (txHash : string, url ?: string) => {
     url = url || TEST_ONT_URL.REST_URL
     let requestUrl = `${url}${REST_API.getMerkleProof}/${txHash} `
     return axios.get(requestUrl).then((res:any)=> {
         console.log('merkle : ' + JSON.stringify(res.data))
-        return res.data
+        return res.data.Result
     })
 } 
 
@@ -333,19 +333,21 @@ export async function verifyOntidClaimAsync(claim : any, url ?: string) {
     if(!result) {
         return VerifyOntidClaimResult.INVALID_SIGNATURE
     }
-    
-    // verify merkle
-    let merkle = await getMerkleProof(claim.txHash, url)
-    const leafHash = merkle.BlockRoot
-    const leafIndex = merkle.BlockHeight
-    const proof = merkle.TargetHashes
-    const rootHash = merkle.CurBlockRoot
-    const treeSize = merkle.CurBlockHeight
+    if(claim.Proof) {
+        // verify merkle
+        let merkle = claim.Proof
+        const leafHash = merkle.BlockRoot
+        const leafIndex = merkle.BlockHeight
+        const proof = merkle.TargetHashes
+        const rootHash = merkle.CurBlockRoot
+        const treeSize = merkle.CurBlockHeight
 
-    let verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize)
-    if(!verifyMerkleResult) {
-        return VerifyOntidClaimResult.CLAIM_NOT_ONCHAIN
+        let verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize)
+        if (!verifyMerkleResult) {
+            return VerifyOntidClaimResult.CLAIM_NOT_ONCHAIN
+        }
     }
+    
 
     //verify revoke - optional
     if(claim.Metadata.Revocation) {

@@ -294,11 +294,11 @@ export function buildTxParam (tx : Transaction, is_pre_exec : boolean = false) {
 }
 
 //{"jsonrpc": "2.0", "method": "sendrawtransaction", "params": ["raw transactioin in hex"], "id": 0}
-export function buildRpcParam(tx : any) {
+export function buildRpcParam(tx : any, method ?: string) {
     let param = tx.serialize()
     let result = {
         "jsonrpc": "2.0",
-        "method": "sendrawtransaction",
+        "method": method || "sendrawtransaction",
         "params": [param],
         "id": 10
     }

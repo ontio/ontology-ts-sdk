@@ -60,8 +60,8 @@ export function calculateRootHashFromAuditPath(leafHash : string, leafIndex : nu
             calculatedHash = hashChildren(calculatedHash, proof[pos])
             pos += 1
         }
-        leafIndex /= 2
-        lastNode /= 2
+        leafIndex = Math.floor( leafIndex / 2 )
+        lastNode = Math.floor( lastNode / 2)
     }
     if(pos < pathLen) {
         throw new Error('Proof too long')

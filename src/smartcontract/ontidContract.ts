@@ -11,7 +11,7 @@ import {ab2hexstring, str2hexstr} from '../utils'
 import {Transaction} from '../transaction/transaction'
 import {makeInvokeTransaction} from '../transaction/transactionBuilder'
  
-import abiJson from '../smartcontract/data/IdContract.abi'
+import abiJson from '../smartcontract/data/idContract.abi'
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson))
 
 
@@ -22,10 +22,6 @@ export function getPublicKeyStatus(ontid : string, pkId : string, url ?: string)
     return axios.post(url, param).then(res => {
         return res.data
     })
-}
-
-export function buildGetPublicKeyStatusTx(ontid : string, pkId : string) {
-
 }
 
 export function buildRegisterOntidTx(ontid: string, privateKey: string) {
@@ -157,6 +153,33 @@ export function buildChangeRecoveryTx(ontid : string, newrecovery : string, oldr
     let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, oldrecovery)
 
     f.setParamsValue(p1, p2, p3)
+    let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
+    return tx
+}
+
+export function buildGetPublicKeyStatusTx(ontid: string, pkId: string, privateKey?: string) {
+    let f = abiInfo.getFunction('GetPublicKeyStatus')
+    if (ontid.substr(0, 3) === 'did') {
+        ontid = str2hexstr(ontid)
+    }
+    let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
+    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pkId)
+
+    f.setParamsValue(p1, p2)
+    let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
+    return tx
+}
+
+export function buildGetPublicKeyIdTx(ontid: string, pk: string, privateKey ?: string) {
+    let f = abiInfo.getFunction('GetPublicKeyId')
+    if (ontid.substr(0, 3) === 'did') {
+        ontid = str2hexstr(ontid)
+    }
+    pk = '1202' + pk
+    let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
+    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk)
+
+    f.setParamsValue(p1, p2)
     let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
     return tx
 }

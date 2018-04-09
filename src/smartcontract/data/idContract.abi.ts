@@ -1,5 +1,5 @@
 export default {
-    "hash": "80a45524f3f6a5b98d633e5c7a7458472ec5d625",
+    "hash": "8055b362904715fd84536e754868f4c8d27ca3f6",
         "entrypoint": "Main",
             "functions":
     [
@@ -187,6 +187,47 @@ export default {
         },
         {
             "name": "GetAttributes",
+            "parameters":
+                [
+                    {
+                        "name": "ontId",
+                        "type": "ByteArray"
+                    }
+                ],
+            "returntype": "ByteArray"
+        },
+        {
+            "name": "GetPublicKeyId",
+            "parameters":
+                [
+                    {
+                        "name": "ontId",
+                        "type": "ByteArray"
+                    },
+                    {
+                        "name": "publicKey",
+                        "type": "ByteArray"
+                    }
+                ],
+            "returntype": "ByteArray"
+        },
+        {
+            "name": "GetPublicKeyStatus",
+            "parameters":
+                [
+                    {
+                        "name": "ontId",
+                        "type": "ByteArray"
+                    },
+                    {
+                        "name": "pkId",
+                        "type": "ByteArray"
+                    }
+                ],
+            "returntype": "ByteArray"
+        },
+        {
+            "name": "GetRecovery",
             "parameters":
                 [
                     {

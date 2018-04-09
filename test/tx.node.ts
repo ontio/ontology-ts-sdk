@@ -18,7 +18,7 @@
 
 import { makeInvokeTransaction , parseEventNotify, 
     buildRpcParam, buildTxParam, buildRestfulParam, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder'
-import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddPKTx, buildGetPublicKeysTx, buildRemovePkTx, buildAddRecoveryTx, buildChangeRecoveryTx} from '../src/smartcontract/ontidContract'
+import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddPKTx, buildGetPublicKeysTx, buildRemovePkTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetPublicKeyIdTx, buildGetPublicKeyStatusTx} from '../src/smartcontract/ontidContract'
 import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/invokeCode'
 import { Identity } from '../src/identity'
@@ -34,6 +34,7 @@ import { TEST_ONT_URL} from '../src/consts'
 import { getHash } from '../src/core';
 import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
+import { PublicKeyStatus } from '../src/crypto';
 
 const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92'
 
@@ -54,6 +55,7 @@ var pk2: string
 var ontid: string
 var oldrecovery : string
 var newrecovery : string
+var pkId : string
 
 var abiInfo: AbiInfo
 var identity: Identity
@@ -65,6 +67,7 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 
 privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
 publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+pkId = ''
 // let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
 
 // var pkPoint = core.getPublicKeyPoint(privateKey)
@@ -238,6 +241,31 @@ const testAddAttribute = () => {
     })
 }
 
+const testGetPublicKeyId = () => {
+    let tx = buildGetPublicKeyIdTx(ontid, publicKey)
+    let param = buildRestfulParam(tx)
+    console.log(param)
+    let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+    console.log(url)
+    axios.post(url, param).then((res) => {
+        console.log(res.data)
+    }).catch(err => {
+        console.log(err)
+    })
+}
+
+const testGetPublicKeyStatus = () => {
+    let tx = buildGetPublicKeyStatusTx(ontid, '01')
+    let param = buildRestfulParam(tx)
+    let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
+    axios.post(url, param).then((res) => {
+        console.log(res.data)
+        let ps = PublicKeyStatus.deserialize(res.data.Result[0])
+        console.log(ps)
+    }).catch(err => {
+        console.log(err)
+    })
+}
 
 const testAddPK = () => {
     let tx = buildAddPKTx(ontid, pk2, publicKey, privateKey)
@@ -332,6 +360,8 @@ const testVerifyOntidClaim = () => {
 
 // testAddRecovery()
 
-testChangeRecovery()
+// testChangeRecovery()
 
+// testGetPublicKeyId()
 
+testGetPublicKeyStatus()
