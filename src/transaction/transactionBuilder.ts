@@ -288,7 +288,7 @@ export function makeDeployTransaction ( deployCode : DeployCode, privateKey : st
 }
 
 export function buildTxParam (tx : Transaction, is_pre_exec : boolean = false) {
-    let op = is_pre_exec ? { Op:'PreExec'} : {}
+    let op = is_pre_exec ? { 'PreExec':"1"} : {}
     let serialized = tx.serialize()
     return JSON.stringify(Object.assign({}, Default_params, { Data: serialized }, op))
 }

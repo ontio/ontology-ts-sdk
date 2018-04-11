@@ -52,37 +52,39 @@ const  testTransferTx = () => {
 
     var value = '300'
 
-    var tx = makeTransferTransaction('ONT', accountFrom.hexAddress, accountToHexAddress, value, accountFrom.privateKey)
+
+    var tx = makeTransferTransaction('ONT', accountFrom.hexAddress, addressToU160('TA5uka5Y2PtuWvVRAdpEhddxCtPTpff847'), value, 
+    accountFrom.privateKey)
     // var tx = makeTransferTransaction('ONT', accHexAddress, accountToHexAddress, value, accPrivateKey)
     
-    // var param = buildRestfulParam(tx)
+    var param = buildRestfulParam(tx)
     // // console.log('param : ' + JSON.stringify(param))
 
-    // let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+    let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
 
-    // axios.post(request, param).then(res => {
-    //     console.log('transfer response: ' + JSON.stringify(res.data))
-    //     setTimeout( function(){
-    //         // testGetBalance(accountFrom.address, 'transfer 1 from')
-    //         // testGetBalance(accAddress, 'transfer 1 to')
+    axios.post(request, param).then(res => {
+        console.log('transfer response: ' + JSON.stringify(res.data))
+        setTimeout( function(){
+            // testGetBalance(accountFrom.address, 'transfer 1 from')
+            // testGetBalance(accAddress, 'transfer 1 to')
 
-    //         testGetBalance(accAddress, 'transfer 1 from')
-    //         testGetBalance(accountToAddress, 'transfer 1 to')
-    //     }, 8000)
-    // }).catch(err => {
-    //     console.log(err)
-    // })
+            testGetBalance(accountFrom.address, 'transfer 1 from')
+            testGetBalance('TA5uka5Y2PtuWvVRAdpEhddxCtPTpff847', 'transfer 1 to')
+        }, 8000)
+    }).catch(err => {
+        console.log(err)
+    })
 
-    let param = buildTxParam(tx)
-    var callback = function(res, socket) {
-        console.log('res : '+JSON.stringify(res))
-    }
-    txSender.sendTxWithSocket(param, callback)
+    // let param = buildTxParam(tx)
+    // var callback = function(err, res, socket) {
+    //     console.log('res : '+JSON.stringify(res))
+    // }
+    // txSender.sendTxWithSocket(param, callback)
 
 }
 
 const testGetBalance = (address, addressName) => {
-    let request = `https://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
+    let request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`
     axios.get(request).then((res) => {
         let result = res.data.Result
         // console.log(result)
@@ -99,7 +101,7 @@ testTransferTx()
 
 //需要 交易前加上预执行 rpc调用
 
-// testGetBalance('TA59XsiHbsztPg2ZTLsCknEvsDBGQMUm2T','acc address')
+// testGetBalance('TA5uka5Y2PtuWvVRAdpEhddxCtPTpff847','acc address')
 
 // var state = new State()
 // state.from = ab2hexstring(core.generateRandomArray(20))

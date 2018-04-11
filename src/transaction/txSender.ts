@@ -17,29 +17,21 @@
  */
 
 import {ONT_NETWORK, MAIN_ONT_URL, TEST_ONT_URL} from '../consts'
-import {Transaction} from './transaction'
-import axios from 'axios'
-import { ERROR_CODE } from '../error';
 
-var WebSocket : any
-if(typeof window != 'undefined' && (window as any).WebSocket){
- WebSocket = (window as any).WebSocket
-} else {
-    WebSocket = require('ws')
-}
+const WebSocket = require('html5-websocket')
 
 export default class TxSender {
     SOCKET_URL : string
 
-    constructor (socketUrl : string) {
-        this.SOCKET_URL = socketUrl
+    constructor (socketUrl ?: string) {
+        this.SOCKET_URL = socketUrl || TEST_ONT_URL.SOCKET_URL
     }
 
-    sendTxWithSocket(param : string, callback : (res:any, socket:any) => any) {
+    sendTxWithSocket(param : string, callback : (err : any, res:any, socket:any) => any) {
         if(!param) return;
         const socket = new WebSocket(this.SOCKET_URL)
         socket.onopen = () => {
-            console.log('connected')
+            // console.log('connected')
             socket.send(param)
         }
         socket.onmessage = (event : any) => {
@@ -52,23 +44,13 @@ export default class TxSender {
         
             //pass socket to let caller decide when to close the it.
             if(callback) {
-                callback(res, socket)
+                callback(null, res, socket)
             }
         }
-        socket.onerror = (event : any) => {
+        socket.onerror = (err : any) => {
             //no server or server is stopped
-            console.log(event)
-            let res
-            if (typeof event.data === 'string') {
-                res = JSON.parse(event.data)
-            } else {
-                res = event.data
-            }
-            res.Error = ERROR_CODE.NETWORK_ERROR
-            //pass socket to let caller decide when to close the it.
-            if (callback) {
-                callback(res, socket)
-            }            
+            console.log(err)
+            callback(err, null, null)
             socket.close()
         }
     }

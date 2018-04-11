@@ -65,7 +65,7 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 // console.log('privatekey: ' + privateKey)
 // console.log('publick key: ' + publicKey)
 
-privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
+privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95'
 publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
 pkId = ''
 // let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
@@ -78,7 +78,7 @@ pkId = ''
 
 // privateKey = 'cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406'
 // ontid = '6469643a6f6e743a626f626162636465636465666768c'
-ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJA'
+ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJW'
 pk2 = '035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c'
 
 // recovery = ab2hexstring(core.generateRandomArray(20))
@@ -145,11 +145,12 @@ const callback = function (res, socket) {
 const testDDOTx = () => {
     let tx = buildGetDDOTx(ontid)
 
-    // let param = buildTxParam(tx, false)
+    // let param = buildTxParam(tx, true)
 
     // console.log('param: '+param)
     
     // txSender.sendTxWithSocket(param, callback)
+
     let param = buildRestfulParam(tx)
     console.log('param: '+JSON.stringify(param))
     let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
@@ -185,39 +186,40 @@ const testRegisterOntid = () => {
     let serialized = tx.serialize()
     console.log('serialized: '+serialized)
 
-    // let param = buildTxParam(tx)
+    let param = buildTxParam(tx)
+    sendTx(param)
     // console.log('param : '+param)
     // txSender.sendTxWithSocket(param, callback)
 
-    let param = buildRestfulParam(tx)
-    let url = TEST_ONT_URL.sendRawTxByRestful
-    axios.post(url, param).then((res)=>{
-        console.log(res.data)
-    })
+    // let param = buildRestfulParam(tx)
+    // let url = TEST_ONT_URL.sendRawTxByRestful
+    // axios.post(url, param).then((res)=>{
+    //     console.log(res.data)
+    // })
 }
 
 const testAddAttribute = () => {
 
-    var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
-        context = 'claim:staff_authentication8',
-        issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
-        let path = str2hexstr(claimId)
-        let type = str2hexstr('JSON')
-        let data = {
-            Type : 'JSON',
-            Value : {
-                Context: context,
-                Issuer: issuer
-            }
-        }
-        let value = JSON.stringify(data)
-        console.log('value: '+value)
-        value = str2hexstr(value)
+    // var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
+    //     context = 'claim:staff_authentication8',
+    //     issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
+    //     let path = str2hexstr(claimId)
+    //     let type = str2hexstr('JSON')
+    //     let data = {
+    //         Type : 'JSON',
+    //         Value : {
+    //             Context: context,
+    //             Issuer: issuer
+    //         }
+    //     }
+    //     let value = JSON.stringify(data)
+    //     console.log('value: '+value)
+    //     value = str2hexstr(value)
         // let value = str2hexstr(issuer)
     
-    // let path = str2hexstr('Claim:twitter')
-    // let type = str2hexstr('String')
-    // let value = str2hexstr('wang17@twitter')
+    let path = str2hexstr('Claim:twitter')
+    let type = str2hexstr('String')
+    let value = str2hexstr('wang17@twitter')
 
 
     let tx = buildAddAttributeTx(path, value, type, ontid, privateKey )
@@ -344,7 +346,7 @@ const testVerifyOntidClaim = () => {
 
 // testAddAttribute()
 
-// testDDOTx()
+testDDOTx()
 
 // testVerifyOntidClaim()
 
@@ -364,4 +366,4 @@ const testVerifyOntidClaim = () => {
 
 // testGetPublicKeyId()
 
-testGetPublicKeyStatus()
+// testGetPublicKeyStatus()
