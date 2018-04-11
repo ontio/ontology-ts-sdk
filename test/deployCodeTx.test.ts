@@ -86,7 +86,7 @@ const testDeployCodeTx = () => {
     })
 
     // var param = buildTxParam(tx)
-    // var callback = function(res, socket) {
+    // var callback = function(err, res, socket) {
     //     console.log('res: '+ JSON.stringify(res))
     // }
     // txSender.sendTxWithSocket(param, callback)
