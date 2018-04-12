@@ -20,6 +20,8 @@ import { Account } from './account'
 import { Identity } from './identity'
 import { Wallet } from './wallet'
 import { Claim } from './claim'
+import * as crypto from './crypto'
+import { DDO, DDOAttribute } from './transaction/ddo';
 import { Transaction } from './transaction/transaction'
 import * as TransactionBuilder from './transaction/transactionBuilder'
 import {Parameter, ParameterType} from './smartcontract/abi/parameter'
@@ -30,6 +32,7 @@ import * as OntidContract from './smartcontract/ontidContract'
 import RestClient from './network/rest/restClient'
 import RpcClient from './network/rpc/rpcClient'
 import { WebsocketClient } from './network/websocket/websocketClient'
+import * as WebsocketBuilder from './network/websocket/websocketBuilder'
 
 import * as scrypt from './scrypt'
 import * as core from './core'
@@ -41,6 +44,8 @@ class ONT {
   Account : any
   Identity : any
   Claim : any
+  DDO : any
+  DDOAttribute : any
   Transaction : any
   TransactionBuilder : any
   Parameter : any
@@ -48,6 +53,7 @@ class ONT {
   AbiFunction : any
   AbiInfo : any
   core : any
+  crypto: any
   utils : any
   scrypt : any
   CONST : any
@@ -57,12 +63,15 @@ class ONT {
   OntidContract : any
   RestClient : any
   RpcClient : any
+  WebsocketBuilder: any
   WebsocketClient : any
 
   constructor() {
     this.Account = Account,
     this.Identity = Identity,
     this.Claim = Claim,
+    this.DDO = DDO,
+    this.DDOAttribute = DDOAttribute,
     this.Transaction = Transaction,
     this.TransactionBuilder = TransactionBuilder,
     this.Parameter = Parameter
@@ -70,6 +79,7 @@ class ONT {
     this.AbiFunction = AbiFunction
     this.AbiInfo = AbiInfo
     this.core = core,
+    this.crypto = crypto,
     this.utils = utils,
     this.scrypt = scrypt,
     this.CONST = CONST,
@@ -79,6 +89,7 @@ class ONT {
     this.OntidContract = OntidContract
     this.RestClient = RestClient
     this.RpcClient = RpcClient
+    this.WebsocketBuilder = WebsocketBuilder
     this.WebsocketClient = WebsocketClient
   }
   
@@ -105,6 +116,8 @@ export {
   Account,
   Identity,
   Claim,
+  DDO,
+  DDOAttribute,
   Transaction,
   Parameter,
   ParameterType,
@@ -112,6 +125,7 @@ export {
   AbiInfo,
   TransactionBuilder,
   core,
+  crypto,
   utils,
   scrypt,
   CONST,
@@ -121,6 +135,7 @@ export {
   OntidContract,
   RestClient,
   RpcClient,
+  WebsocketBuilder,
   WebsocketClient
 }
   
