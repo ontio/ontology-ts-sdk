@@ -214,18 +214,32 @@ export const buildSmartContractParam = (functionName : string, params : Array<Pa
 export const makeInvokeCode = (functionName : string,  params : Array<Parameter>, codeHash : string, vmType : VmType = VmType.NativeVM) => {
     let invokeCode = new InvokeCode()
     let vmCode = new VmCode()
-    let code = buildSmartContractParam(functionName, params)
-    code += num2hexstring(opcode.TAILCALL)
-    code += codeHash
-    vmCode.code = code
-    vmCode.vmType = vmType
+    // let code = buildSmartContractParam(functionName, params)
+    // code += num2hexstring(opcode.TAILCALL)
+    // code += codeHash
+    // vmCode.code = code
+    // vmCode.vmType = vmType
+    let args = buildSmartContractParam(functionName, params)
+    if(vmType === VmType.NEOVM) {
+        let contract = new Contract()
+        contract.address = codeHash
+        contract.args = args
+        contract.method = ''
+        let code = contract.serialize()
+        code = num2hexstring(opcode.APPCALL) + code
 
+        vmCode.code = code
+        vmCode.vmType = vmType
+    } else if(vmType === VmType.WASMVM) {
+
+    }
+    
     invokeCode.code = vmCode
     return invokeCode
 }
 
 
-export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  privateKey ?: string) => {
+export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  privateKey ?: string, vmType : VmType = VmType.NEOVM) => {
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
@@ -241,7 +255,7 @@ export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  
     let params = []
     const functionName = str2hexstr(func.name)
     
-    let payload = makeInvokeCode(functionName, func.parameters, scriptHash, VmType.NEOVM)
+    let payload = makeInvokeCode(functionName, func.parameters, scriptHash, vmType)
 
     tx.payload = payload
 

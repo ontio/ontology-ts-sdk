@@ -200,28 +200,27 @@ const testRegisterOntid = () => {
 
 const testAddAttribute = () => {
 
-    // var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
-    //     context = 'claim:staff_authentication8',
-    //     issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
-    //     let path = str2hexstr(claimId)
-    //     let type = str2hexstr('JSON')
-    //     let data = {
-    //         Type : 'JSON',
-    //         Value : {
-    //             Context: context,
-    //             Issuer: issuer
-    //         }
-    //     }
-    //     let value = JSON.stringify(data)
-    //     console.log('value: '+value)
-    //     value = str2hexstr(value)
-        // let value = str2hexstr(issuer)
+    var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
+        context = 'claim:staff_authentication8',
+        issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
+        let path = str2hexstr(claimId)
+        let type = str2hexstr('JSON')
+        let data = {
+            Type : 'JSON',
+            Value : {
+                Context: context,
+                Issuer: issuer
+            }
+        }
+        let value = JSON.stringify(data)
+        value = str2hexstr(value)
+        console.log('value: '+value)
+
     
-    let path = str2hexstr('Claim:twitter')
-    let type = str2hexstr('String')
-    let value = str2hexstr('wang17@twitter')
-
-
+    // let path = str2hexstr('Claim:twitter')
+    // let type = str2hexstr('String')
+    // let value = str2hexstr('wang17@twitter')
+    
     let tx = buildAddAttributeTx(path, value, type, ontid, privateKey )
     console.log('path: '+ path)
     console.log('value: ' + value)
@@ -230,17 +229,17 @@ const testAddAttribute = () => {
     console.log('privateKey: ' + privateKey)
     console.log('publick: '+publicKey)
     
-    // let param = buildTxParam(tx)
-    // console.log('param: '+JSON.stringify(param))
-    // sendTx(param)
-    let param = buildRestfulParam(tx)
+    let param = buildTxParam(tx)
     console.log('param: '+JSON.stringify(param))
+    sendTx(param)
+    // let param = buildRestfulParam(tx)
+    // console.log('param: '+JSON.stringify(param))
 
-    axios.post(TEST_ONT_URL.sendRawTxByRestful, param).then((res)=>{
-        console.log(res.data)
-    }).catch(err => {
-        console.log(err)
-    })
+    // axios.post(TEST_ONT_URL.sendRawTxByRestful, param).then((res)=>{
+    //     console.log(res.data)
+    // }).catch(err => {
+    //     console.log(err)
+    // })
 }
 
 const testGetPublicKeyId = () => {
@@ -257,13 +256,17 @@ const testGetPublicKeyId = () => {
 }
 
 const testGetPublicKeyStatus = () => {
-    let tx = buildGetPublicKeyStatusTx(ontid, '01')
+    let tx = buildGetPublicKeyStatusTx(ontid, '02')
     let param = buildRestfulParam(tx)
     let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
     axios.post(url, param).then((res) => {
         console.log(res.data)
-        let ps = PublicKeyStatus.deserialize(res.data.Result[0])
-        console.log(ps)
+        let result = res.data.Result[0]
+        let ps
+        if(result && result.length > 0) {
+             ps = PublicKeyStatus.deserialize(result)
+        }
+        console.log('ps :' + JSON.stringify(ps))
     }).catch(err => {
         console.log(err)
     })
@@ -342,11 +345,11 @@ const testVerifyOntidClaim = () => {
 
 //uncomment one line to test one tx each time.
 
-// testRegisterOntid()
+testRegisterOntid()
 
 // testAddAttribute()
 
-testDDOTx()
+// testDDOTx()
 
 // testVerifyOntidClaim()
 
@@ -367,3 +370,8 @@ testDDOTx()
 // testGetPublicKeyId()
 
 // testGetPublicKeyStatus()
+
+// let txHash = '82c17d7430140a1f3863b8f6f03db07bbdfbdb7da22ffdb2358a1d2e185f8bf3'
+// core.getMerkleProof(txHash).then( res => {
+//     console.log(res)
+// })

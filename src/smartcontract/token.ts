@@ -135,6 +135,10 @@ export class State {
 export class Contract {
     //byte
     version : string
+
+    //TODO
+    code : string
+
     //20 bytes
     address : string
 
@@ -145,11 +149,14 @@ export class Contract {
 
     constructor() {
         this.version = '00'
+        this.code = ''
     }
 
     serialize() {
         let result = ''
         result += this.version
+
+        result += str2VarBytes(this.code)
 
         result += this.address
 
@@ -163,10 +170,12 @@ export class Contract {
     static deserialize(sr : StringReader) {
         let c = new Contract()
         const version = sr.read(1)
+        const code = sr.readNextBytes()
         const address = sr.read(20)
         const method = sr.readNextBytes()
         const args = sr.readNextBytes()
         c.version = version
+        c.code = code
         c.address = address
         c.method = hexstr2str(method)
         c.args = args

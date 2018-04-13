@@ -209,7 +209,8 @@ export class SDK {
         let param = buildRestfulParam(tx)
         let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
 
-        axios.post(restUrl, param).then((res: any) => {
+        //this return is need or there is bug in android
+        return axios.post(restUrl, param).then((res: any) => {
             if(res.data.Error === 0) {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
             } else {
@@ -217,10 +218,10 @@ export class SDK {
                     error: JSON.stringify(res.data.Error),
                     result: res.data.Result
                 }
-                callback && sendBackResult2Native(JSON.stringify(obj), callback)   
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)  
+                return obj 
             }
         })
-        return result
     }
 
     static createAccount(label: string, password: string, callback?: string): string {
@@ -352,7 +353,15 @@ export class SDK {
             //通过socket能获得推送的结果
             let socket = `ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`
             var txSender = new TxSender(socket)
-            const socketCallback = function(res : any, socket : any) {
+            const socketCallback = function(err : any, res : any, socket : any) {
+                if (err) {
+                    let obj = {
+                        error: err,
+                        result: ''
+                    }
+                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                    return
+                }
                 console.log('res: '+ JSON.stringify(res))
                 if(res.Action === 'InvokeTransaction' && res.Error === 0) {
                     const txHash = res.Result[0].TxHash
@@ -364,13 +373,6 @@ export class SDK {
                     }
                     callback && sendBackResult2Native(JSON.stringify(obj), callback)
                     socket.close()
-                }
-                if(res.Error !== 0) {
-                    let obj = {
-                        error : res.Error,
-                        result : ''
-                    }
-                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 }
             }
 

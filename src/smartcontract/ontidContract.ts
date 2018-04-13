@@ -15,15 +15,6 @@ import abiJson from '../smartcontract/data/idContract.abi'
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson))
 
 
-export function getPublicKeyStatus(ontid : string, pkId : string, url ?: string) {
-    url = url || TEST_ONT_URL.REST_URL
-    let requestUrl = sendRawTxRestfulUrl(url, true)
-    let param = ''
-    return axios.post(url, param).then(res => {
-        return res.data
-    })
-}
-
 export function buildRegisterOntidTx(ontid: string, privateKey: string) {
     let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
     if (ontid.substr(0, 3) == 'did') {
@@ -157,7 +148,7 @@ export function buildChangeRecoveryTx(ontid : string, newrecovery : string, oldr
     return tx
 }
 
-export function buildGetPublicKeyStatusTx(ontid: string, pkId: string, privateKey?: string) {
+export function buildGetPublicKeyStatusTx(ontid: string, pkId: string) {
     let f = abiInfo.getFunction('GetPublicKeyStatus')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -166,11 +157,11 @@ export function buildGetPublicKeyStatusTx(ontid: string, pkId: string, privateKe
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pkId)
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
+    let tx = makeInvokeTransaction(f, abiInfo.getHash())
     return tx
 }
 
-export function buildGetPublicKeyIdTx(ontid: string, pk: string, privateKey ?: string) {
+export function buildGetPublicKeyIdTx(ontid: string, pk: string) {
     let f = abiInfo.getFunction('GetPublicKeyId')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -180,6 +171,6 @@ export function buildGetPublicKeyIdTx(ontid: string, pk: string, privateKey ?: s
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk)
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(f, abiInfo.getHash(), privateKey)
+    let tx = makeInvokeTransaction(f, abiInfo.getHash())
     return tx
 }
