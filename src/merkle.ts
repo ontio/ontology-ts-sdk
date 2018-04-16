@@ -77,31 +77,19 @@ export function hashChildren(left : string, right : string) {
     return cryptoJS.SHA256(hex).toString(); 
 }
 
-export async function constructClaimProof(txHash : string, contractAddr : string) {
-    let restClient = new RestClient()
-    const res = await restClient.getMerkleProof(txHash)
-    const merkleProof = res.Result
-    const proof = merkleProof.TargetHashes
-    let leafIndex = merkleProof.BlockHeight
-    let lastNode = merkleProof.CurBlockHeight - 1
+export function getProofNodes(leafIndex : number, treeSize : number, proof : Array<string>) {
+    let lastNode = treeSize - 1
     let pos = 0
     let pathLen = proof.length
-    let claimProof = {
-        "Type": "MerkleProof",
-        "TxnHash": txHash,
-        "ContractAddr": contractAddr,
-        "BlockHeight": merkleProof.BlockHeight,
-        "MerkleRoot": merkleProof.CurBlockRoot,
-        "Nodes": new Array<any>()
-    }
+    
     let nodes = new Array<any>()
-    while(lastNode > 0) {
-        if(pos > pathLen) {
-            throw new Error('Proof too short');            
+    while (lastNode > 0) {
+        if (pos > pathLen) {
+            throw new Error('Proof too short');
         }
         let node = {
             TargetHash: proof[pos],
-            Direction : ''
+            Direction: ''
         }
         if (leafIndex % 2 === 1) {
             node.Direction = 'Left'
@@ -114,9 +102,34 @@ export async function constructClaimProof(txHash : string, contractAddr : string
         leafIndex = Math.floor(leafIndex / 2)
         lastNode = Math.floor(lastNode / 2)
     }
+    return nodes
+}
+
+export async function constructClaimProof(txHash : string, contractAddr : string) {
+    let restClient = new RestClient()
+    const res = await restClient.getMerkleProof(txHash)
+    console.log(res.Result)
+    const merkleProof = res.Result
+    const proof = merkleProof.TargetHashes
+    let leafIndex = merkleProof.BlockHeight
+    let treeSize = merkleProof.CurBlockHeight
+    let pos = 0
+    let pathLen = proof.length
+    let claimProof = {
+        "Type": "MerkleProof",
+        "TxnHash": txHash,
+        "ContractAddr": contractAddr,
+        "BlockHeight": merkleProof.BlockHeight,
+        "MerkleRoot": merkleProof.CurBlockRoot,
+        "Nodes": new Array<any>()
+    }
+    let nodes = new Array<any>()
+    nodes = getProofNodes(leafIndex, treeSize, proof)
     claimProof.Nodes = nodes
     return claimProof
 }
+
+
 
 
 // "TxnHash": "c89e76ee58ae6ad99cfab829d3bf5bd7e5b9af3e5b38713c9d76ef2dcba2c8e0",

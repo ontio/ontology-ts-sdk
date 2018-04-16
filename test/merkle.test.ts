@@ -1,4 +1,4 @@
-import {verifyLeafHashInclusion, verifyClaimProof, constructClaimProof} from '../src/merkle'
+import {verifyLeafHashInclusion, verifyClaimProof, constructClaimProof, getProofNodes} from '../src/merkle'
 
 const merkle = {
     Type: 'MerkleProof',
@@ -33,11 +33,20 @@ test('test verify leaf in tree', () => {
 })
 
 test('test verifyMerkleProof', async () => {
-    let txHash = '768af645b5fe30a3480bb104cf9150e4573b120f7da9660cbe3609437f43e84d'
+    let txHash = '9376dc41a98a52cdaeac04e43033102ba5167ef914c929093bf316d4c23cc89d'
     let contractAddr = '1234567890'
     let claimProof = await constructClaimProof(txHash, contractAddr)
     console.log(claimProof)
     const result = verifyClaimProof(claimProof.TxnHash, claimProof.MerkleRoot, claimProof.Nodes)
     console.log(result)
     expect(result).toBeTruthy()
+})
+
+test('test getProofNodes', ()=> {
+    let merkle = { "TransactionsRoot": "9376dc41a98a52cdaeac04e43033102ba5167ef914c929093bf316d4c23cc89d", "Type": "MerkleProof", "CurBlockRoot": "b70494ad2d446004cd2cb4a5746829192402dfcbbc0300c0f6ee67c40ad94971", "CurBlockHeight": 3975, "BlockHeight": 3807, "TargetHashes": ["f1c52b64834de776dd75899b7a737586649262ef2f6b7a2e2403ad2f6806a563", "763cf365f5d54763eddf7d790a8f238f42c84efe6083fc3d0dcdbda1bba42e1d", "a4d84c9eae6877f0f8dbd4e7dd16cac5662def94ec5a1560b635c06277c1157e", "f53a8ef0da3764781d2e1fb910ee24e060b49bb48c49d264624149c802a9c051", "c17bffb1d0d6cc6156835250fdb6560a0c55085c1c252ace0ebad99b49dc8904", "c72bad737b03a3f1474439415670fef914d51329364846b5c0de9430bda2fdce", "286700b35b38d66aedd53f4f0f6ecfd9647825160cb11d1159695977a827413b", "bac6b66302d3ce0ba7921d09b498b8fdbed97c92c8cec01b6bc7d4e1093664f9", "e279ddafd7c0e24f5e11fad048863f2464c53185ee28aec2aa7625b1351bc3c0", "2efe9edb28594bf2c40d23b256db86a9b47617e738f6f1989a1a88c86417342c", "8498af2fc96c62427b2992ece3842cabe69ccc8d2b7df1b634ea6263c3b9b35b", "73fc0e4d1163018bf721ce2d31bb42004d7f4604d6896443c2d38ece602e3909"] }
+    const leafIndex = merkle.BlockHeight
+    const treeSize = merkle.CurBlockHeight
+    const proof = merkle.TargetHashes
+    let proofNodes = getProofNodes(leafIndex, treeSize, proof)
+    console.log(proofNodes)
 })

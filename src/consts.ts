@@ -50,8 +50,8 @@ export const ALGORITHM_TYPE = {
 
 }
 
-export const TEST_NODE = '139.219.111.50'
-// export const TEST_NODE = '127.0.0.1'
+// export const TEST_NODE = '139.219.111.50'
+export const TEST_NODE = '192.168.50.10'
 
 // export const TEST_NODE = '54.222.182.88'
 export const MAIN_NODE = '54.222.182.88'

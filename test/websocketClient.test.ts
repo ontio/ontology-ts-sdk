@@ -7,9 +7,34 @@ describe('test websocket', () => {
     
     var wsClient = new WebsocketClientApi()
     var txSender = new TxSender(TEST_ONT_URL.SOCKET_URL)
-    // test('send heartbeat', () => {
-    //     wsClient.sendHeartBeat()
-    // })
+
+    test('send heartbeat', () => {
+        let param =  wsClient.sendHeartBeat()
+        let callback = function (err, res, socket) {
+            if (err) {
+                console.log(err)
+                return;
+            }
+            console.log('send heartbeat')
+            console.log(res)
+            socket.close()
+        }
+        txSender.sendTxWithSocket(param, callback)
+    })
+
+    test('send subscribe', () => {
+        let param = wsClient.sendSubscribe()
+        let callback = function (err, res, socket) {
+            if (err) {
+                console.log(err)
+                return;
+            }
+            console.log('send subscribe')
+            console.log(res)
+            socket.close()
+        }
+        txSender.sendTxWithSocket(param, callback)
+    })
 
     test('test sendRawTransaction', ()=> {
         let ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJW'
