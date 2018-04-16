@@ -16,6 +16,16 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* 
+********************************* Notice ********************************************
+*************************************************************************************
+* All the methods in this file is only for our native app development!!!
+* We do not recommend you to use these methods directly.
+* You can refer to these methods or the test cases to implement the same methods.
+*************************************************************************************
+*************************************************************************************
+*/
+
 import {Wallet} from '../wallet'
 import {Identity} from '../identity'
 import {Account} from '../account'
@@ -140,7 +150,7 @@ export class SDK {
         let param = buildRestfulParam(tx)
         let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}/`
         let url = sendRawTxRestfulUrl(restUrl, true)
-        axios.post(url, param).then((res:any) => {
+        return axios.post(url, param).then((res:any) => {
             if (res.data.Result && res.data.Result.length > 0 && res.data.Result[0] !== '0000000000000000') {
                                     
             } else {
@@ -150,8 +160,6 @@ export class SDK {
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
             return obj 
         })
-        // callback && sendBackResult2Native(JSON.stringify(obj), callback)
-        // return obj
     }
 
     //send http post to check
@@ -209,7 +217,7 @@ export class SDK {
         let param = buildRestfulParam(tx)
         let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
 
-        axios.post(restUrl, param).then((res: any) => {
+        return axios.post(restUrl, param).then((res: any) => {
             if(res.data.Error === 0) {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
             } else {
@@ -219,27 +227,25 @@ export class SDK {
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)   
             }
+            return obj
         })
-        return result
     }
 
-    static createAccount(label: string, password: string, callback?: string): string {
+    static createAccount(label: string, password: string, callback?: string) {
         let account = new Account()
         let privateKey = core.generatePrivateKeyStr()        
         account.create(privateKey, password, label)
         let result = account.toJson()
-        if (callback) {
-            let obj = {
-                error : ERROR_CODE.SUCCESS,
-                result : result,
-                desc : ''
-            }
-            sendBackResult2Native(JSON.stringify(obj), callback)
+        let obj = {
+            error : ERROR_CODE.SUCCESS,
+            result : result,
+            desc : ''
         }
-        return result
+        callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        return obj
     }
 
-    static importAccountWithWallet(walletDataStr:string, label : string, encryptedPrivateKey:string, password:string, callback: string) {
+    static importAccountWithWallet(walletDataStr:string, label : string, encryptedPrivateKey:string, password:string, callback ?: string) {
         let wallet = Wallet.parseJson(walletDataStr)
         let account = new Account()
         try {
@@ -263,7 +269,7 @@ export class SDK {
     }
 
     static signSelfClaim(context: string, claimData : string, ontid : string,
-         encryptedPrivateKey : string, password : string, callback :string)  {
+         encryptedPrivateKey : string, password : string, callback ?:string)  {
         let privateKey = ''
         try {
             privateKey = scrypt.decrypt(encryptedPrivateKey, password);
@@ -326,7 +332,7 @@ export class SDK {
     
 
     static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey : string,
-         password : string, callback : string ) {
+         password : string, callback ?: string ) {
             let privateKey = ''
             try {
                 privateKey = scrypt.decrypt(encryptedPrivateKey, password);
@@ -397,12 +403,12 @@ export class SDK {
     }
 
 
-    static getBalance(address : string, callback : string) {
+    static getBalance(address : string, callback ?: string) {
         if(address.length === 40) {
             address = core.u160ToAddress(address)
         }
         let request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalance}/${address}`
-        axios.get(request).then((res : any) => {
+        return axios.get(request).then((res : any) => {
             if(res.data.Error === 0) {
                 let result = res.data.Result
                 let obj = {
@@ -410,13 +416,14 @@ export class SDK {
                     result : result
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                return obj                
             } else {
                 let obj = {
                     error: res.data.Error,
                     result : ''
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                
+                return obj                
             }
         }).catch( (err:any) => {
             let obj = {
@@ -424,6 +431,7 @@ export class SDK {
                 result: ''
             }
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            return Promise.reject(obj)
         })
     }
 
@@ -460,7 +468,7 @@ export class SDK {
         let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
         var param = buildRestfulParam(tx)
         let request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
-        axios.post(request, param).then( (res:any) => {
+        return axios.post(request, param).then( (res:any) => {
             console.log('transfer response: ' + JSON.stringify(res.data))
             if(res.data.Error === 0) {
                 let obj = {
@@ -469,6 +477,7 @@ export class SDK {
                     desc : 'Send transfer success.'
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                return obj                
             } else {
                 let obj = {
                     error: res.data.Error,
@@ -476,9 +485,11 @@ export class SDK {
                     desc: 'Send transfer failed.'
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                return obj                
             }
         }).catch( (err:any) => {
             console.log(err)
+            return Promise.reject(err)
         })
     }
 

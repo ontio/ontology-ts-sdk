@@ -121,6 +121,6 @@ export {
   OntidContract,
   RestClient,
   RpcClient,
-  Web
+  WebSocketClientApi
 }
   
