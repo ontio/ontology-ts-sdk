@@ -51,8 +51,7 @@ describe('test core', ()=>{
 
     test('encrypt private key', () => {
         let privateKey = 'b02304dcb35bc9a055147f07b2a3291db4ac52f664ec38b436470c98db4200d9'
-        let wif = core.getWIFFromPrivateKey(privateKey)
-        let encrypt = scrypt.encrypt(wif, '123456')
+        let encrypt = scrypt.encrypt(privateKey, '123456')
         console.log('encrypt: '+ encrypt)
     })
 
