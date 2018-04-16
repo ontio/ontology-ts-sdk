@@ -65,7 +65,7 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 // console.log('privatekey: ' + privateKey)
 // console.log('publick key: ' + publicKey)
 
-privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95'
+privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b96'
 publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
 pkId = ''
 // let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
@@ -188,8 +188,8 @@ const testRegisterOntid = () => {
 
     let param = buildTxParam(tx)
     sendTx(param)
-    // console.log('param : '+param)
-    // txSender.sendTxWithSocket(param, callback)
+    console.log('param : '+param)
+    txSender.sendTxWithSocket(param, callback)
 
     // let param = buildRestfulParam(tx)
     // let url = TEST_ONT_URL.sendRawTxByRestful

@@ -137,7 +137,7 @@ export class Contract {
     version : string
 
     //TODO
-    code : string
+    code : string = '00'
 
     //20 bytes
     address : string
@@ -149,14 +149,14 @@ export class Contract {
 
     constructor() {
         this.version = '00'
-        this.code = ''
     }
 
     serialize() {
         let result = ''
         result += this.version
 
-        result += str2VarBytes(this.code)
+        // result += hex2VarBytes(this.code)
+        result += this.code
 
         result += this.address
 

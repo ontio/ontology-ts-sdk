@@ -18,21 +18,31 @@
 
 import * as CryptoJS from 'crypto-js'
 var ec = require('elliptic').ec
-import { signatureData } from './core'
+import { signatureData, getPublicKey } from './core'
 import * as Utils from './utils'
+import { buildGetPublicKeyIdTx } from './smartcontract/ontidContract';
+import { ab2hexstring } from './utils';
+import { buildRestfulParam } from './transaction/transactionBuilder';
+import RestClient from './network/rest/restClient'
+
+export enum RevocationType {
+    Contract = 'Contract',
+    RevocationList = 'RevocationList'
+}
 
 export class Metadata {
     CreateTime : string
     Issuer : string
     Subject : string
     Expires : string
-    Revocation : string
-    Crl : string
-
+    Revocation : {}
+    // Crl : string
     constructor(){}
 }
 
 export class Signature {
+    //issuer's ontid + # + pkId
+    PublicKeyId : string
     Format : string
     Algorithm : string
     Value : string
@@ -62,7 +72,7 @@ export class Claim {
         this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(body))).toString()
     }
 
-    sign( privateKey: string ) : Signature {
+    sign( privateKey: string ) {
         let claimBody = {
             Context: this.Context,
             Id: this.Id,
@@ -74,9 +84,19 @@ export class Claim {
 
         let sig = new Signature();
         sig.Value = signatureValue;
-        this.Signature = sig
 
-        return sig
+        //get pkId
+        const issuer = this.Metadata.Issuer
+        const pk = ab2hexstring(getPublicKey(privateKey, true))
+        let tx = buildGetPublicKeyIdTx(issuer, pk)
+        let restClient = new RestClient()
+        return restClient.sendRawTransaction(tx.serialize(), true).then( res => {
+
+            this.Signature = sig
+        })
+
+
+        // return sig
 
     }
 }

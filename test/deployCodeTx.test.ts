@@ -34,11 +34,22 @@ import json from '../src/smartcontract/data/idContract.abi'
 import { VmCode, VmType } from '../src/transaction/vmcode';
 
 var fs = require('fs')
-let avm = fs.readFileSync('/Volumes/Workspace/ontio/ontology-ts-sdk/src/smartcontract/data/IdContract.avm')
-var avmCode = ab2hexstring(avm)
+var path = require('path')
+let idContractAvm = fs.readFileSync(path.join(__dirname, '../src/smartcontract/data/IdContract.avm'))
+var idContractAvmCode = ab2hexstring(idContractAvm)
+
+let recordContractAvm = fs.readFileSync(path.join(__dirname, '../src/smartcontract/data/recordContract.avm'))
+var recordContractAvmCode = ab2hexstring(recordContractAvm)
 
 var privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'
 var ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a78596950415a364d61376a6351564b'
+
+const getCodeHashFromAvmCode = (avmCode) => {
+    let scriptHash = getHash(avmCode)
+    scriptHash = num2hexstring(VmType.NEOVM) + scriptHash.substr(2)
+    console.log('contract codehash : ' + scriptHash)
+    return scriptHash
+}
 
 
 // var contract = fs.readFileSync('/Users/mickeywang/Desktop/Workspace/ont-sdk-ts-local/src/smartcontract/data/idContract.abi.json')
@@ -54,7 +65,7 @@ const WebSocket = require('ws');
 var txSender = new TxSender(TEST_ONT_URL.SOCKET_URL)
 
 
-const testDeployCodeTx = () => {
+const testDeployCodeTx = (avmCode) => {
     
     // var code = new VmCode()
     // code.code = avmCode
@@ -79,7 +90,7 @@ const testDeployCodeTx = () => {
     axios.post(url, param).then((res)=>{
         console.log('deploy res: '+JSON.stringify(res.data))
         setTimeout(function() {
-            getContract()
+            getContract(avmCode)
         }, 6000)
     }).catch(err => {
         console.log(err)
@@ -100,18 +111,9 @@ const testDeserialize = () => {
     console.log('deserialized: '+ JSON.stringify(tx))
 }
 
-const getContract = () => {
-    // let scriptHash = '0x926f6c6d6ecc698568c7446f464cc222fcd2e707'
-    // scriptHash = scriptHash.substring(2)
-    // scriptHash = reverseHex(scriptHash)
-
-    let scriptHash = getHash(avmCode)
-    scriptHash = num2hexstring(VmType.NEOVM) + scriptHash.substr(2)
-    console.log('contract codehash : '+ scriptHash)
-
-    // let scriptHash = '8046031450d43928654f50dcd50646331bb49e1a'
-    
-    let url = `${TEST_ONT_URL.REST_URL}/api/v1/contract/${scriptHash}`
+const getContract = (avmCode) => {
+    const codeHash = getCodeHashFromAvmCode(avmCode)
+    let url = `${TEST_ONT_URL.REST_URL}/api/v1/contract/${codeHash}`
     console.log('url : '+ url)
     axios.get(url).then((res)=>{
         console.log(res.data)
@@ -122,7 +124,8 @@ const getContract = () => {
 
 
 
-testDeployCodeTx()
+// testDeployCodeTx(idContractAvmCode)
+testDeployCodeTx(recordContractAvmCode)
 
 // getContract()
 // testDeserialize()

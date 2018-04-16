@@ -245,11 +245,11 @@ export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  
     tx.version = 0x00
     tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
-    // // let scriptHash = abiInfo.getHash()
-    // if(scriptHash.substr(0,2) === '0x'){
-    //     scriptHash = scriptHash.substring(2)
-    //     scriptHash = reverseHex(scriptHash)
-    // }
+    // let scriptHash = abiInfo.getHash()
+    if(scriptHash.substr(0,2) === '0x'){
+        scriptHash = scriptHash.substring(2)
+        scriptHash = reverseHex(scriptHash)
+    }
     console.log('codehash: '+scriptHash)
 
     let params = []
@@ -369,7 +369,7 @@ const enum EventType {
 }
 export function parseEventNotify(result : any)  {
     //parse state
-    let state = result.Result.State[0].Value
+    let state = result.Result.States[0].Value
     let parsedState = <any>{}
     const type = hexstr2str(state[0].Value)
     parsedState.type = type

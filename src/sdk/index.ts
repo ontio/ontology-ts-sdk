@@ -92,8 +92,14 @@ export class SDK {
          
         let tx = buildRegisterOntidTx(identity.ontid, privateKey)
         let param = buildTxParam(tx)
-        const socketCallback = function(res:any, socket:any) {
-            if(res.Error === 0) {
+        const socketCallback = function(err: any, res:any, socket:any) {
+            if(err) {
+                obj.result = ''
+                obj.error = ERROR_CODE.NETWORK_ERROR
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                return
+            }
+            if(res && res.Error === 0) {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 socket.close()
             } else {
@@ -149,6 +155,12 @@ export class SDK {
             }
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
             return obj 
+        }).catch(err => {
+            let obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result : ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
         })
         // callback && sendBackResult2Native(JSON.stringify(obj), callback)
         // return obj
@@ -184,6 +196,12 @@ export class SDK {
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 return obj
+            }).catch(err => {
+                let obj = {
+                    error: ERROR_CODE.NETWORK_ERROR,
+                    result : ''
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
             })
             // callback && sendBackResult2Native(JSON.stringify(obj), callback)
             // return obj
@@ -221,6 +239,12 @@ export class SDK {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)  
                 return obj 
             }
+        }).catch(err => {
+            let obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
         })
     }
 
@@ -356,7 +380,7 @@ export class SDK {
             const socketCallback = function(err : any, res : any, socket : any) {
                 if (err) {
                     let obj = {
-                        error: err,
+                        error: ERROR_CODE.NETWORK_ERROR,
                         result: ''
                     }
                     callback && sendBackResult2Native(JSON.stringify(obj), callback)
@@ -422,7 +446,7 @@ export class SDK {
             }
         }).catch( (err:any) => {
             let obj = {
-                error: JSON.stringify(err),
+                error: ERROR_CODE.NETWORK_ERROR,
                 result: ''
             }
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
@@ -480,7 +504,11 @@ export class SDK {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
             }
         }).catch( (err:any) => {
-            console.log(err)
+            let obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
         })
     }
 
