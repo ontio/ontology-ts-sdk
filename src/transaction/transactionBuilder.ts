@@ -21,7 +21,7 @@ import AbiFunction from "../smartcontract/abi/abiFunction";
 import {Parameter,  ParameterType } from '../smartcontract/abi/parameter'
 import InvokeCode from './payload/invokeCode'
 import DeployCode from './payload/deployCode'
-import {Transaction, TxType, Sig, PubKey} from './transaction'
+import {Transaction, TxType, Sig, PubKey, Fee} from './transaction'
 import {Transfers, Contract, State} from '../smartcontract/token'
 import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
 import {createSignatureScript, getHash, getPublicKey } from '../core'
@@ -211,16 +211,59 @@ export const buildSmartContractParam = (functionName : string, params : Array<Pa
     return result
 }
 
-export const makeInvokeCode = (functionName : string,  params : Array<Parameter>, codeHash : string, vmType : VmType = VmType.NativeVM) => {
+export const buildWasmContractParam = (params : Array<Parameter>) => {
+    let pList = new Array()
+    for(let p of params) {
+        let type = p.getType()
+        let o
+        switch (type) {
+            case ParameterType.String:
+                o = {
+                    type: 'string',
+                    value: p.getValue()
+                }
+                break;
+            case ParameterType.Int:
+                o = {
+                    type : 'int',
+                    value : p.getValue().toString()
+                }
+                break;
+            case ParameterType.Long:
+                o = {
+                    type : 'int64',
+                    value : p.getValue()
+                }
+                break;
+            case ParameterType.IntArray:
+                o = {
+                    type : 'int_array',
+                    value : p.getValue()
+                }
+                break;
+            case ParameterType.LongArray:
+                o = {
+                    type : 'int_array',
+                    value : p.getValue()
+                }
+                break;
+            default:
+                break;
+        }
+        pList.push(o)
+    }
+    let result = {
+        "Params" : pList
+    }
+    return str2hexstr(JSON.stringify(result))
+}
+
+export const makeInvokeCode = (funcName : string,  params : Array<Parameter>, codeHash : string, vmType : VmType = VmType.NEOVM) => {
     let invokeCode = new InvokeCode()
     let vmCode = new VmCode()
-    // let code = buildSmartContractParam(functionName, params)
-    // code += num2hexstring(opcode.TAILCALL)
-    // code += codeHash
-    // vmCode.code = code
-    // vmCode.vmType = vmType
-    let args = buildSmartContractParam(functionName, params)
+    const functionName = str2hexstr(funcName)
     if(vmType === VmType.NEOVM) {
+        let args = buildSmartContractParam(functionName, params)
         let contract = new Contract()
         contract.address = codeHash
         contract.args = args
@@ -231,19 +274,28 @@ export const makeInvokeCode = (functionName : string,  params : Array<Parameter>
         vmCode.code = code
         vmCode.vmType = vmType
     } else if(vmType === VmType.WASMVM) {
+        let args = buildWasmContractParam(params)
+        let contract = new Contract()
+        contract.version = '01'
+        contract.address = codeHash
+        contract.method = funcName
+        contract.args = args
+        let code = contract.serialize()
 
+        vmCode.code = code
+        vmCode.vmType = vmType
     }
     
     invokeCode.code = vmCode
     return invokeCode
 }
 
-
-export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  privateKey ?: string, vmType : VmType = VmType.NEOVM) => {
+export const makeInvokeTransaction = (funcName : string, parameters : Array<Parameter>, scriptHash : string, vmType : VmType = VmType.NEOVM, fees : Array<Fee> = []) => {
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
     tx.nonce = ab2hexstring(core.generateRandomArray(4))
+    tx.fee = fees
 
     // let scriptHash = abiInfo.getHash()
     if(scriptHash.substr(0,2) === '0x'){
@@ -252,53 +304,47 @@ export const makeInvokeTransaction = (func : AbiFunction, scriptHash : string,  
     }
     console.log('codehash: '+scriptHash)
 
-    let params = []
-    const functionName = str2hexstr(func.name)
-    
-    let payload = makeInvokeCode(functionName, func.parameters, scriptHash, vmType)
+    let payload = makeInvokeCode(funcName, parameters, scriptHash, vmType)
 
     tx.payload = payload
 
     //sig
-    if(privateKey) {
-        signTransaction(tx, privateKey)
-    }
+    // if(privateKey) {
+    //     signTransaction(tx, privateKey)
+    // }
 
     return tx
 }
 
 
 // 
-export function makeDeployCode(avmCode : string, vmType: VmType = VmType.NEOVM, name : string='' , version : string='1.0', author : string='', 
+export function makeDeployCodeTransaction(code : string, vmType: VmType = VmType.NEOVM, name : string='' , codeVersion : string='1.0', author : string='', 
 email : string='', desp:string='', needStorage : boolean=true) {
     let dc = new DeployCode()
     dc.author = author 
-    let code = new VmCode()
-    code.code = avmCode
-    code.vmType = vmType
-    dc.code = code
-    dc.version = version
+    let vmCode = new VmCode()
+    vmCode.code = code
+    vmCode.vmType = vmType
+    dc.code = vmCode
+    dc.version = codeVersion
     dc.description = desp
     dc.email = email
     dc.name = name
     dc.needStorage =needStorage
 
-    return dc
-}
-
-export function makeDeployTransaction ( deployCode : DeployCode, privateKey : string) {
     let tx = new Transaction()
     tx.version = 0x00
 
-    tx.payload = deployCode
-    
+    tx.payload = dc
+
     tx.type = TxType.Deploy
     tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
     //program
-    signTransaction(tx, privateKey)
-    
+    // signTransaction(tx, privateKey)
+
     return tx
+
 }
 
 export function buildTxParam (tx : Transaction, is_pre_exec : boolean = false) {
@@ -369,7 +415,7 @@ const enum EventType {
 }
 export function parseEventNotify(result : any)  {
     //parse state
-    let state = result.Result.States[0].Value
+    let state = result.Result.States
     let parsedState = <any>{}
     const type = hexstr2str(state[0].Value)
     parsedState.type = type

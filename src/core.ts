@@ -97,11 +97,20 @@ export function createSignatureScript(publicKeyEncoded: string): string {
     return "21" + publicKeyEncoded + "ac";
 }
 
-export function getHash(SignatureScript: string): string {
-    var ProgramHexString = cryptoJS.enc.Hex.parse(SignatureScript);
-    var ProgramSha256 = cryptoJS.SHA256(ProgramHexString).toString();
+export function sha256(data : string) {
+    var hex = cryptoJS.enc.Hex.parse(data);
+    var sha256 = cryptoJS.SHA256(hex).toString();
+    return sha256
+}
 
-    return cryptoJS.RIPEMD160(cryptoJS.enc.Hex.parse(ProgramSha256)).toString();
+export function ripemd160(data : string) {
+    var hex = cryptoJS.enc.Hex.parse(data)
+    var ripemd160 = cryptoJS.RIPEMD160(hex).toString()
+    return ripemd160
+}
+
+export function getHash(SignatureScript: string): string {
+    return ripemd160(sha256(SignatureScript))
 }
 
 export function getMultiSigUInt160() {
@@ -169,25 +178,6 @@ export function verifySignature(data: string, signature: string, publicKey: any)
     let s = signature.substr(64, 64)
     const result = elliptic.verify(msgHash.toString(), { r, s }, publicKey, null)
     return result
-}
-
-export function AddContract(txData: string, sign: string, publicKeyEncoded: string): string {
-    let signatureScript = createSignatureScript(publicKeyEncoded);
-
-    // sign num
-    var data = txData + "01";
-    // sign struct len
-    data = data + "41";
-    // sign data len
-    data = data + "40";
-    // sign data
-    data = data + sign;
-    // Contract data len
-    data = data + "23";
-    // script data
-    data = data + signatureScript;
-
-    return data;
 }
 
 export function getContractHash(avmCode : string, vmType : VmType = VmType.NEOVM) {

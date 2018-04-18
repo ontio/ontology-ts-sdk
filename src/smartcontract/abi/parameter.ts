@@ -20,7 +20,13 @@ export enum ParameterType  {
     Boolean = 'Boolean',
     Number  = 'Number', 
     String  = 'String',
-    ByteArray = 'ByteArray'
+    ByteArray = 'ByteArray',
+
+    //for wasm
+    Int = 'Int',
+    Long = 'Long',
+    IntArray = 'IntArray',
+    LongArray = 'LongArray'
 }
 
 export class Parameter {

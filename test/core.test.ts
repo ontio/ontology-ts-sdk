@@ -21,47 +21,47 @@ import * as core from '../src/core'
 import * as utils from '../src/utils'
 import * as scrypt from '../src/scrypt'
 import { ab2hexstring } from '../src/utils';
-import { verifySignature, getMerkleProof, verifyExpiration, getPkStatus, verifyClaimSignature, getOntidFromPrivateKey, generateOntid, getPublicKey } from '../src/core';
+import { verifySignature, getMerkleProof, verifyExpiration, getPkStatus, verifyClaimSignature, getOntidFromPrivateKey, generateOntid, getPublicKey, sha256 } from '../src/core';
 import { PK_STATUS } from '../src/crypto';
 import {Claim, Metadata } from '../src/claim'
 
 describe('test core', ()=>{
 
-    // var privateKey:string,
-    //     wifKey:string
+    var privateKey:string,
+        wifKey:string
 
-    // beforeAll(() => {
-    //     privateKey = utils.ab2hexstring( core.generatePrivateKey() )
-    // })
+    beforeAll(() => {
+        privateKey = utils.ab2hexstring( core.generatePrivateKey() )
+    })
 
-    // test('test getWIFFromPrivateKey', () => {
-    //     wifKey = core.getWIFFromPrivateKey(privateKey)
-    //     expect(wifKey).toBeDefined()
-    // })
+    test('test getWIFFromPrivateKey', () => {
+        wifKey = core.getWIFFromPrivateKey(privateKey)
+        expect(wifKey).toBeDefined()
+    })
 
-    // test('test getPrivateKeyFromWIF', () => {
-    //     let key = core.getPrivateKeyFromWIF(wifKey)
-    //     expect(key).toEqual(privateKey)
-    // })
+    test('test getPrivateKeyFromWIF', () => {
+        let key = core.getPrivateKeyFromWIF(wifKey)
+        expect(key).toEqual(privateKey)
+    })
 
-    // test('get public key', () => {
-    //     let pkBuffer = core.getPublicKey(privateKey, true)
-    //     let pk = utils.ab2hexstring(pkBuffer)
-    //     console.log('get pk: ' + pk)
-    //     expect(pk).toBeDefined()
-    // })
+    test('get public key', () => {
+        let pkBuffer = core.getPublicKey(privateKey, true)
+        let pk = utils.ab2hexstring(pkBuffer)
+        console.log('get pk: ' + pk)
+        expect(pk).toBeDefined()
+    })
 
-    // test('sign and verify', () => {
-    //     let privateKey = core.generatePrivateKeyStr()
-    //     let data = 'hello world'
-    //     let signed = core.signatureData(data, privateKey)
-    //     console.log('signed: ' + signed)
+    test('sign and verify', () => {
+        let privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95'
+        let data = 'hello world'
+        let signed = core.signatureData(data, privateKey)
+        console.log('signed: ' + signed)
 
-    //     let pk = core.getPublicKey(privateKey, true)
-    //     let verifyResult = core.verifySignature(data, signed, pk)
-    //     console.log('verifyResult: ' + verifyResult)
-    //     expect(verifyResult).toBeTruthy()
-    // })
+        let pk = core.getPublicKey(privateKey, true)
+        let verifyResult = core.verifySignature(data, signed, pk)
+        console.log('verifyResult: ' + verifyResult)
+        expect(verifyResult).toBeTruthy()
+    })
 
     var claim = {
         "Context": "claim:github_authentication",
