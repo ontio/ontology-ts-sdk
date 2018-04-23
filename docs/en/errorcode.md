@@ -1,4 +1,7 @@
-## Error code
+[中文](../cn/errorcode.md) | Enlish
+
+<h1 align="center">Error Code </h1>
+<p align="center" class="version">Version 0.7.0 </p>
 
 | Return Code | Description                   | Explaination                                     |
 | :----       | ----------------------------- | -----------------                                |
