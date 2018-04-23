@@ -1,85 +1,106 @@
 export default {
-    "hash":"80f6bff7645a84298a1a52aa3745f84dba6615cf",
-    "entrypoint":"Main",
-    "functions":
-    [
-        {
-            "name":"Main",
-            "parameters":
-            [
+    "hash": "0xb0a4c0ab7cc1f28c78cdf91fd92ac6e3cd5288a5",
+        "entrypoint": "Main",
+            "functions": [
                 {
-                    "name":"operation",
-                    "type":"String"
+                    "name": "Main",
+                    "parameters": [
+                        {
+                            "name": "operation",
+                            "type": "String"
+                        },
+                        {
+                            "name": "args",
+                            "type": "Array"
+                        }
+                    ],
+                    "returntype": "Any"
                 },
                 {
-                    "name":"args",
-                    "type":"Array"
-                }
-            ],
-            "returntype":"Any"
-        },
-        {
-            "name":"Put",
-            "parameters":
-            [
-                {
-                    "name":"key",
-                    "type":"ByteArray"
+                    "name": "Commit",
+                    "parameters": [
+                        {
+                            "name": "claimId",
+                            "type": "ByteArray"
+                        },
+                        {
+                            "name": "ontId",
+                            "type": "ByteArray"
+                        }
+                    ],
+                    "returntype": "Boolean"
                 },
                 {
-                    "name":"value",
-                    "type":"ByteArray"
-                }
-            ],
-            "returntype":"Boolean"
-        },
-        {
-            "name":"Get",
-            "parameters":
-            [
-                {
-                    "name":"key",
-                    "type":"ByteArray"
-                }
-            ],
-            "returntype":"ByteArray"
-        }
-    ],
-    "events":
-    [
-        {
-            "name":"putRecord",
-            "parameters":
-            [
-                {
-                    "name":"arg1",
-                    "type":"String"
+                    "name": "Revoke",
+                    "parameters": [
+                        {
+                            "name": "claimId",
+                            "type": "ByteArray"
+                        },
+                        {
+                            "name": "ontId",
+                            "type": "ByteArray"
+                        }
+                    ],
+                    "returntype": "Boolean"
                 },
                 {
-                    "name":"arg2",
-                    "type":"ByteArray"
-                },
-                {
-                    "name":"arg3",
-                    "type":"ByteArray"
+                    "name": "GetStatus",
+                    "parameters": [
+                        {
+                            "name": "claimId",
+                            "type": "ByteArray"
+                        }
+                    ],
+                    "returntype": "ByteArray"
                 }
             ],
-            "returntype":"Void"
-        },
-        {
-            "name":"getRecord",
-            "parameters":
-            [
-                {
-                    "name":"arg1",
-                    "type":"String"
-                },
-                {
-                    "name":"arg2",
-                    "type":"ByteArray"
-                }
-            ],
-            "returntype":"Void"
-        }
-    ]
+                "events": [
+                    {
+                        "name": "ErrorMsg",
+                        "parameters": [
+                            {
+                                "name": "arg1",
+                                "type": "ByteArray"
+                            },
+                            {
+                                "name": "arg2",
+                                "type": "String"
+                            }
+                        ],
+                        "returntype": "Void"
+                    },
+                    {
+                        "name": "putrecord",
+                        "parameters": [
+                            {
+                                "name": "arg1",
+                                "type": "String"
+                            },
+                            {
+                                "name": "arg2",
+                                "type": "ByteArray"
+                            },
+                            {
+                                "name": "arg3",
+                                "type": "ByteArray"
+                            }
+                        ],
+                        "returntype": "Void"
+                    },
+                    {
+                        "name": "getRecord",
+                        "parameters": [
+                            {
+                                "name": "arg1",
+                                "type": "String"
+                            },
+                            {
+                                "name": "arg2",
+                                "type": "ByteArray"
+                            }
+                        ],
+                        "returntype": "Void"
+                    }
+                ]
 }
