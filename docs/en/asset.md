@@ -1,7 +1,11 @@
 
-## Digital Asset Management
+[中文](../cn/asset.md) | Enlish
 
-### Wallet
+<h1 align="center">Digital Asset Management </h1>
+<p align="center" class="version">Version 0.7.0 </p>
+
+
+## Wallet
 
 Wallet is a data storing file of JSON format. In the terms of Ontology, Wallet could store not only the digital identity but also digital assets.
 

@@ -1,6 +1,11 @@
-## Create Digital Identity
+[中文](../cn/../cn/identity_claim.md) | Enlish
 
-### 2.1 Generate identity
+<h1 align="center">Identity and Claim </h1>
+<p align="center" class="version">Version 0.7.0 </p>
+
+
+
+### 1.1 Generate identity
 
 ONT ID is a decentralized identity that managed users’ various digital identity authentications.Identity is one of the core classes exposed from ONT SDK, which contains the ONT ID that represent the identity.
 
@@ -32,7 +37,7 @@ identity.create(privateKey, password)
 console.log(identity.ontid)
 ```
 
-### 2.2 Register ONT ID to the blockchain
+### 1.2 Register ONT ID to the blockchain
 
 After the identity is created the user needs to send the ONT ID to the blockchain to make it a truly decentralized identity.
 

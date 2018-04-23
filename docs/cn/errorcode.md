@@ -1,4 +1,8 @@
-## 错误码
+[English](../en/errorcode.md) | 中文
+
+<h1 align="center">错误码</h1>
+<p align="center" class="version">Version V0.7.0 </p>
+
 
 | 返回代码  | 描述信息                          | 说明                |
 | :---- | ----------------------------- | ----------------- |

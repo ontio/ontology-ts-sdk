@@ -1,6 +1,9 @@
-## 创建数字身份
+[English](../en/identity_claim.md) | 中文
 
-### 2.1 创建身份
+<h1 align="center">数字身份与可信声明</h1>
+<p align="center" class="version">Version 0.7.0 </p>
+
+## 1.1 创建身份
 
 ONT ID是一个去中心化的身份标识，能够管理用户的各种数字身份认证。数字身份(Identity)是ONT SDK导出的一个核心类，该类包含代表身份的ONT ID属性。
 
@@ -32,7 +35,7 @@ identity.create(privateKey, password)
 console.log(identity.ontid)
 ```
 
-### 2.2 将ONT ID登记到链上
+### 1.2 将ONT ID登记到链上
 
 身份创建完成后，还需要将身份的ONT ID注册到链上，身份才算真正地创建完成。
 
@@ -72,7 +75,7 @@ txSender.sendTxWithSocket( param, callback )
 
 关于链上推送返回的具体信息，可以参见[ONT ID智能合约的设计与调用相关文档](./ONTID_protocol_spec.md/#g._事件推送)。
 
-## 3. 签发可信声明
+## 2. 签发可信声明
 
 用户可能会有多种不同的身份。比如拥有公安部颁发的身份证的用户，都拥有中国公民这种身份，用户可以在生活中的某些场景中，出示自己的身份证，来声明自己的这种身份；身份证就是公安部对我们公民身份的认证。
 
@@ -183,7 +186,7 @@ txSender.sendTxWithSocket(param, callback)
 }
 ````
 
-## 4. 验证可信声明
+## 3. 验证可信声明
 
 在上面一节我们举例说明了如何获取第三方授予的身份声明，用户在需要的时候可以出示这些声明。同时，这些声明可以通过SDK提供的方法来验证是否是真实的、未篡改的。
 
