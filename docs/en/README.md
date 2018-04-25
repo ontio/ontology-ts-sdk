@@ -14,6 +14,6 @@ Ontology official TypeScript SDK(also supports JavaScript), which is a comprehen
 - [Wallet File Specification](Wallet_File_Specification.md)
 - [Digtal Identity & Verifiable Claim](identity_claim.md)
 - [Digtal Asset](asset.md)
-- [Deploy and invoke smart contract](smart_contract en.md)
+- [Deploy and invoke smart contract](smart_contract.md)
 - [Error Code](errorcode.md)
 
