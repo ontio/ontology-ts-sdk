@@ -31,10 +31,14 @@ import { ab2hexstring, str2hexstr, StringReader } from '../src/utils'
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
 import { DDO } from '../src/transaction/ddo'
 import { TEST_ONT_URL} from '../src/consts'
-import { getHash } from '../src/core';
+import { getHash, generateOntid } from '../src/core';
 import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
 import { PublicKeyStatus } from '../src/crypto';
+import WebsocketClientApi from '../src/network/websocket/websocketClient';
+import { VmType } from '../src/transaction/vmcode';
+import { RestClient, WebSocketClientApi } from '../src/index';
+
 
 const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92'
 
@@ -78,6 +82,7 @@ pkId = ''
 
 // privateKey = 'cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406'
 // ontid = '6469643a6f6e743a626f626162636465636465666768c'
+// ontid = generateOntid(privateKey)
 ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJW'
 pk2 = '035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c'
 
@@ -103,7 +108,13 @@ const sendTx = (param, callback = null) => {
     const socket = new WebSocket(TEST_ONT_URL.SOCKET_URL)
     socket.onopen = () => {
         console.log('connected')
+        // let wsapi = new WebSocketClientApi()
+        // let subscribe = wsapi.sendSubscribe(true)
+        // socket.send(subscribe)
+        // setTimeout(()=>{
+        // },2000)
         socket.send(param)
+        
     }
     socket.onmessage = (event) => {
         let res 
@@ -120,6 +131,7 @@ const sendTx = (param, callback = null) => {
         if(res.Action === 'Notify'){
             let result = parseEventNotify(res)
             console.log('paresed event notify: '+JSON.stringify(result))
+            socket.close()
         }
         // socket.close()
     }
@@ -134,11 +146,11 @@ const callback = function (res, socket) {
     console.log('response: '+ JSON.stringify(res))
 
     // parseDDO(res.Result)
-    if (res.Action === 'Notify') {
+    // if (res.Action === 'Notify') {
 
-        let result = parseEventNotify(res)
-        console.log('paresed event notify: ' + JSON.stringify(result))
-    }
+    //     let result = parseEventNotify(res)
+    //     console.log('paresed event notify: ' + JSON.stringify(result))
+    // }
     
 }
 
@@ -184,7 +196,7 @@ const parseDDO = (result) => {
 const testRegisterOntid = () => {
     let tx = buildRegisterOntidTx(str2hexstr(ontid), privateKey)
     let serialized = tx.serialize()
-    console.log('serialized: '+serialized)
+    console.log('tx serialized: '+serialized)
 
     let param = buildTxParam(tx)
     sendTx(param)
@@ -230,17 +242,17 @@ const testAddAttribute = () => {
     console.log('privateKey: ' + privateKey)
     console.log('publick: '+publicKey)
     
-    // let param = buildTxParam(tx)
-    // console.log('param: '+JSON.stringify(param))
-    // sendTx(param)
-    let param = buildRestfulParam(tx)
+    let param = buildTxParam(tx)
     console.log('param: '+JSON.stringify(param))
+    sendTx(param)
+    // let param = buildRestfulParam(tx)
+    // console.log('param: '+JSON.stringify(param))
 
-    axios.post(TEST_ONT_URL.sendRawTxByRestful, param).then((res)=>{
-        console.log(res.data)
-    }).catch(err => {
-        console.log(err)
-    })
+    // axios.post(TEST_ONT_URL.sendRawTxByRestful, param).then((res)=>{
+    //     console.log(res.data)
+    // }).catch(err => {
+    //     console.log(err)
+    // })
 }
 
 const testGetPublicKeyId = () => {
@@ -257,13 +269,17 @@ const testGetPublicKeyId = () => {
 }
 
 const testGetPublicKeyStatus = () => {
-    let tx = buildGetPublicKeyStatusTx(ontid, '01')
+    let tx = buildGetPublicKeyStatusTx(ontid, '02')
     let param = buildRestfulParam(tx)
     let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
     axios.post(url, param).then((res) => {
         console.log(res.data)
-        let ps = PublicKeyStatus.deserialize(res.data.Result[0])
-        console.log(ps)
+        let result = res.data.Result[0]
+        let ps
+        if(result && result.length > 0) {
+             ps = PublicKeyStatus.deserialize(result)
+        }
+        console.log('ps :' + JSON.stringify(ps))
     }).catch(err => {
         console.log(err)
     })
@@ -307,36 +323,21 @@ const testChangeRecovery = () => {
     sendTx(param)
 }
 
-const testVerifyOntidClaim = () => {
-    var claim = {
-        "Context": "claim:github_authentication",
-        "Content": {
-            "GistCreateTime": "2018-02-28T03:24:48Z",
-            "Company": "onchain",
-            "Email": "leewi9@yahoo.com",
-            "Alias": "leewi9",
-            "Bio": "software engineer",
-            "Id": "10832544",
-            "GistUrl": "https://gist.github.com/42298ebb0c44054c43f48e1afd763ff6",
-            "Avatar": "https://avatars2.githubusercontent.com/u/10832544?v=4",
-            "Name": "zhouzhou",
-            "Location": ""
-        },
-        "Signature": {
-            "Format": "pgp",
-            "Value": "rsjaenrxJm8qDmhtOHNBNOCOlvz/GC1c6CMnUb7KOb1jmHbMNGB63VXhtKflwSggyu1cVBK14/0t7qELqIrNmQ==",
-            "Algorithm": "ECDSAwithSHA256"
-        },
-        "Metadata": {
-            "Issuer": "did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoK",
-            "CreateTime": "2018-03-07T16:06:21Z",
-            "Subject": "did:ont:TKhyXw8o6Em5GjmJwiPT1oNXsy4p6fYZPB"
-        },
-        "Id": "111ab2f56d106dac92e891b6f7fc4d9546fdf2eb94a364208fa65a9996b03ba0"
-    }
-    core.verifyOntidClaim(claim).then(res =>{
-        console.log('verify result : '+ res)
-    })
+const testInvokeWasmContract = () => {
+    const codeHash = '9007be541a1aef3d566aa219a74ef16e71644715'
+    const params = [new Parameter('p1', ParameterType.Int, 20), new Parameter('p2', ParameterType.Int, 30)]
+    const funcName = 'add'
+    let tx = makeInvokeTransaction(funcName, params, codeHash, VmType.WASMVM)
+    // let txParam = tx.serialize()
+    // console.log('wasm param:' + txParam)
+    // let restClient = new RestClient()
+    // restClient.sendRawTransaction(txParam).then( res => {
+    //     console.log(res)
+    
+    // })
+    let param = buildTxParam(tx)
+    console.log(param)
+    sendTx(param)
 }
 
 
@@ -344,9 +345,9 @@ const testVerifyOntidClaim = () => {
 
 // testRegisterOntid()
 
-// testAddAttribute()
+testAddAttribute()
 
-testDDOTx()
+// testDDOTx()
 
 // testVerifyOntidClaim()
 
@@ -367,3 +368,15 @@ testDDOTx()
 // testGetPublicKeyId()
 
 // testGetPublicKeyStatus()
+
+// let txHash = '82c17d7430140a1f3863b8f6f03db07bbdfbdb7da22ffdb2358a1d2e185f8bf3'
+// core.getMerkleProof(txHash).then( res => {
+//     console.log(res)
+// })
+
+// testInvokeWasmContract()
+
+// testRecordPutTx()
+
+// testRecordGetTx()
+

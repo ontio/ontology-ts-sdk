@@ -28,8 +28,10 @@ import { VmType } from './transaction/vmcode';
 import { buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
 import axios from 'axios'
 import { DDO } from './transaction/ddo'
-import { getPublicKeyStatus, buildGetDDOTx } from './smartcontract/ontidContract'
+import { buildGetDDOTx, buildGetPublicKeyStatusTx } from './smartcontract/ontidContract'
 import { verifyLeafHashInclusion } from './merkle'
+import RestClient from './network/rest/restClient'
+import { PublicKeyStatus, PK_STATUS } from './crypto';
 
 var ec = require('elliptic').ec
 var wif = require('wif')
@@ -79,7 +81,7 @@ export function deserializePublickKey(serializedPk : string) {
             type = 'SM2'
         break;
         case 0x14:
-            type = 'ECDSA'
+            type = 'EDDSA'
         break;
         default :
             throw new Error('Invalid curve type')
@@ -95,11 +97,20 @@ export function createSignatureScript(publicKeyEncoded: string): string {
     return "21" + publicKeyEncoded + "ac";
 }
 
-export function getHash(SignatureScript: string): string {
-    var ProgramHexString = cryptoJS.enc.Hex.parse(SignatureScript);
-    var ProgramSha256 = cryptoJS.SHA256(ProgramHexString).toString();
+export function sha256(data : string) {
+    var hex = cryptoJS.enc.Hex.parse(data);
+    var sha256 = cryptoJS.SHA256(hex).toString();
+    return sha256
+}
 
-    return cryptoJS.RIPEMD160(cryptoJS.enc.Hex.parse(ProgramSha256)).toString();
+export function ripemd160(data : string) {
+    var hex = cryptoJS.enc.Hex.parse(data)
+    var ripemd160 = cryptoJS.RIPEMD160(hex).toString()
+    return ripemd160
+}
+
+export function getHash(SignatureScript: string): string {
+    return ripemd160(sha256(SignatureScript))
 }
 
 export function getMultiSigUInt160() {
@@ -167,25 +178,6 @@ export function verifySignature(data: string, signature: string, publicKey: any)
     let s = signature.substr(64, 64)
     const result = elliptic.verify(msgHash.toString(), { r, s }, publicKey, null)
     return result
-}
-
-export function AddContract(txData: string, sign: string, publicKeyEncoded: string): string {
-    let signatureScript = createSignatureScript(publicKeyEncoded);
-
-    // sign num
-    var data = txData + "01";
-    // sign struct len
-    data = data + "41";
-    // sign data len
-    data = data + "40";
-    // sign data
-    data = data + sign;
-    // Contract data len
-    data = data + "23";
-    // script data
-    data = data + signatureScript;
-
-    return data;
 }
 
 export function getContractHash(avmCode : string, vmType : VmType = VmType.NEOVM) {
@@ -271,6 +263,7 @@ const getDDO = (ontid : string, url ?: string) => {
 export const getMerkleProof = (txHash : string, url ?: string) => {
     url = url || TEST_ONT_URL.REST_URL
     let requestUrl = `${url}${REST_API.getMerkleProof}/${txHash} `
+    console.log(requestUrl)
     return axios.get(requestUrl).then((res:any)=> {
         console.log('merkle : ' + JSON.stringify(res.data))
         return res.data.Result
@@ -286,7 +279,8 @@ const getRovocationList = (url : string) => {
 const VerifyOntidClaimResult = {
     CLAIM_NOT_ONCHAIN : 'CLAIM_NOT_ONCHAIN',
     INVALID_SIGNATURE : 'INVALID_SIGNATURE',
-    PK_IN_REVOKEED    : 'PK_IN_REVOKED',
+    PK_IN_REVOKED     : 'PK_IN_REVOKED',
+    NO_ISSUER_PK      : 'NO_ISSUER_PK',
     EXPIRED_CLAIM     : 'EXPIRED_CLAIM',
     REVOKED_CLAIM     : 'REVOKED_CLAIM',
     VALID_CLAIM       : 'VALID_CLAIM'
@@ -303,49 +297,36 @@ export async function verifyOntidClaimAsync(claim : any, url ?: string) {
     }
 
     //verify expiration
-    const expiration = new Date( claim.Metadata.Expires )
-    let d = new Date()
-    if(d > expiration) {
+    let verifyExpirationResult = verifyExpiration(claim.Metadata.Expires)
+    if (!verifyExpirationResult) {
         return VerifyOntidClaimResult.EXPIRED_CLAIM
     }
 
-    // verify signature 
     let issuerDid = claim.Metadata.Issuer
+    let didEnd = issuerDid.indexOf('#')
+    let issuerOntid = issuerDid.substring(0, didEnd)
     //issuer is : ONTID#PkId
-    let issuerPkId = issuerDid.substr(issuerDid.indexOf('#') + 1)
+    let issuerPkId = issuerDid.substr(didEnd + 1)
     //pkStatus = { publicKey, status : [IN USE, Revoked] }
-    let pkStatus = await getPublicKeyStatus(issuerDid, issuerPkId, url)
-    if (pkStatus.status === 'Revoked') {
-        return VerifyOntidClaimResult.PK_IN_REVOKEED
+    let pkStatus = await getPkStatus(issuerOntid, issuerPkId)
+    if(!pkStatus) {
+        return VerifyOntidClaimResult.NO_ISSUER_PK
+    }
+    if (pkStatus && pkStatus.status === PK_STATUS.REVOKED) {
+        return VerifyOntidClaimResult.PK_IN_REVOKED
     }
 
     //verify signature
-    const pk = pkStatus.publicKey.substr(0,4) === '1202' ? pkStatus.publicKey.substr(4) : pkStatus.publicKey
+    const pk = pkStatus.pk.pk
     //the order of claim's attributes matters.
-    let signature = Object.assign({}, {
-        Context: claim.Context,
-        Id: claim.Id,
-        Content: claim.Content,
-        Metadata: claim.Metadata,
-    })
-
-    let result = verifySignature(JSON.stringify(claim), JSON.stringify(signature), hexstring2ab(pk))
+    let result = verifyClaimSignature(claim, pk)
     if(!result) {
         return VerifyOntidClaimResult.INVALID_SIGNATURE
     }
-    if(claim.Proof) {
-        // verify merkle
-        let merkle = claim.Proof
-        const leafHash = merkle.BlockRoot
-        const leafIndex = merkle.BlockHeight
-        const proof = merkle.TargetHashes
-        const rootHash = merkle.CurBlockRoot
-        const treeSize = merkle.CurBlockHeight
-
-        let verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize)
-        if (!verifyMerkleResult) {
-            return VerifyOntidClaimResult.CLAIM_NOT_ONCHAIN
-        }
+    let verifyMerkleResult = await verifyMerkleProof(claim)
+    
+    if (!verifyMerkleResult) {
+        return VerifyOntidClaimResult.CLAIM_NOT_ONCHAIN
     }
     
 
@@ -361,3 +342,61 @@ export async function verifyOntidClaimAsync(claim : any, url ?: string) {
 
     return VerifyOntidClaimResult.VALID_CLAIM
 }
+
+export function verifyExpiration(dateString : string) {
+    let expiration = new Date(dateString)
+    if(expiration.toString() === 'Invalid Date') {
+        throw new Error('Invalid date string: ' + dateString)
+    }
+    let d = new Date()
+    if(d > expiration) {
+        return false
+    } else {
+        return true
+    }
+}
+
+export async function getPkStatus(ontid : string, pkId : string) {
+    let tx = buildGetPublicKeyStatusTx(ontid, pkId)
+    let restClient = new RestClient()
+    let res = await restClient.sendRawTransaction(tx.serialize(), true)
+    let pkStatus
+    if(res.Result[0] && res.Result[0].length > 0) {
+        pkStatus = PublicKeyStatus.deserialize(res.Result[0])
+    }
+    return pkStatus
+}
+
+export function verifyClaimSignature(claim : any, pk : string) {
+    let signatureOriginal = Object.assign({}, {
+        Context: claim.Context,
+        Id: claim.Id,
+        Content: claim.Content,
+        Metadata: claim.Metadata,
+    })
+    //remove algorithm&curve
+    pk = pk.substr(0, 4) === '1202' ? pk.substr(4) : pk
+    let result = verifySignature(JSON.stringify(signatureOriginal), claim.Signature.Value, hexstring2ab(pk))
+    return result
+}
+
+export async function verifyMerkleProof(claim : any ) {
+    const txHash = claim.Proof.TxnHash
+    const blockHeight = claim.Proof.BlockHeight
+    let merkle = await getMerkleProof(txHash)
+
+    const leafHash = merkle.TransactionsRoot
+    const leafIndex = merkle.BlockHeight
+    const proof = merkle.TargetHashes
+    const rootHash = merkle.CurBlockRoot
+    const treeSize = merkle.CurBlockHeight
+
+    //1. verify blockHeight
+    if(blockHeight !== leafIndex) {
+        return false
+    }
+    //2. verify merkle
+    let verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize)
+    return verifyMerkleResult
+}
+

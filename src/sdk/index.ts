@@ -102,8 +102,14 @@ export class SDK {
          
         let tx = buildRegisterOntidTx(identity.ontid, privateKey)
         let param = buildTxParam(tx)
-        const socketCallback = function(res:any, socket:any) {
-            if(res.Error === 0) {
+        const socketCallback = function(err: any, res:any, socket:any) {
+            if(err) {
+                obj.result = ''
+                obj.error = ERROR_CODE.NETWORK_ERROR
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                return
+            }
+            if(res && res.Error === 0) {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 socket.close()
             } else {
@@ -159,6 +165,12 @@ export class SDK {
             }
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
             return obj 
+        }).catch(err => {
+            let obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result : ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
         })
     }
 
@@ -192,6 +204,12 @@ export class SDK {
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 return obj
+            }).catch(err => {
+                let obj = {
+                    error: ERROR_CODE.NETWORK_ERROR,
+                    result : ''
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
             })
             // callback && sendBackResult2Native(JSON.stringify(obj), callback)
             // return obj
@@ -217,6 +235,7 @@ export class SDK {
         let param = buildRestfulParam(tx)
         let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
 
+        //this return is need or there is bug in android
         return axios.post(restUrl, param).then((res: any) => {
             if(res.data.Error === 0) {
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
@@ -225,9 +244,15 @@ export class SDK {
                     error: JSON.stringify(res.data.Error),
                     result: res.data.Result
                 }
-                callback && sendBackResult2Native(JSON.stringify(obj), callback)   
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)  
+                return obj 
             }
-            return obj
+        }).catch(err => {
+            let obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
         })
     }
 
@@ -358,7 +383,15 @@ export class SDK {
             //通过socket能获得推送的结果
             let socket = `ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`
             var txSender = new TxSender(socket)
-            const socketCallback = function(res : any, socket : any) {
+            const socketCallback = function(err : any, res : any, socket : any) {
+                if (err) {
+                    let obj = {
+                        error: ERROR_CODE.NETWORK_ERROR,
+                        result: ''
+                    }
+                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                    return
+                }
                 console.log('res: '+ JSON.stringify(res))
                 if(res.Action === 'InvokeTransaction' && res.Error === 0) {
                     const txHash = res.Result[0].TxHash
@@ -370,13 +403,6 @@ export class SDK {
                     }
                     callback && sendBackResult2Native(JSON.stringify(obj), callback)
                     socket.close()
-                }
-                if(res.Error !== 0) {
-                    let obj = {
-                        error : res.Error,
-                        result : ''
-                    }
-                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 }
             }
 
@@ -427,7 +453,7 @@ export class SDK {
             }
         }).catch( (err:any) => {
             let obj = {
-                error: JSON.stringify(err),
+                error: ERROR_CODE.NETWORK_ERROR,
                 result: ''
             }
             callback && sendBackResult2Native(JSON.stringify(obj), callback)
@@ -446,7 +472,7 @@ export class SDK {
             }
          } catch(err) {
             let result = {
-                error : ERROR_CODE.IllegalAddress,
+                error : ERROR_CODE.INVALID_PARAMS,
                 result : '',
                 desc : 'Illegal adderss'
             }
@@ -488,8 +514,11 @@ export class SDK {
                 return obj                
             }
         }).catch( (err:any) => {
-            console.log(err)
-            return Promise.reject(err)
+            let obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
         })
     }
 

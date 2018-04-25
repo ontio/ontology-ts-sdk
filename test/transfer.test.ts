@@ -32,9 +32,15 @@ import { addressToU160 } from "../src/core";
 var txSender = new TxSender(TEST_ONT_URL.SOCKET_URL)
 
 var accountFrom = {
-    hexAddress: '018f0dcf09ec2f0040e6e8d7e54635dba40f7d63',
-    address: 'TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE',
-    privateKey: '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3'
+    //testnet
+    // hexAddress: '018f0dcf09ec2f0040e6e8d7e54635dba40f7d63',
+    // address: 'TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE',
+    // privateKey: '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3'
+
+    //local
+    hexAddress: '013c7fd22a239be26196629ec9f4185c18ddc9f7',
+    address: 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG',
+    privateKey: '70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67318f'
 
     // address: 'TA98LCZuzins3mUPfDyNRirpQ4YoeRNBan',
     // privateKey: '6248eefef096ec2eebdff7179a59cc36b5c632720e40fb7e9770dc11024543be'
