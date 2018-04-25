@@ -1,4 +1,4 @@
-[中文](../cn/smart_contract cn.md) | English
+[中文](../cn/smart_contract.md) | English
 
 <h1 align="center">Deploy & invoke smart contract</h1>
 <h4 align="center">Version V0.7.0 </h4>
