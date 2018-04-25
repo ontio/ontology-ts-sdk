@@ -1,4 +1,4 @@
-[English](../en/smart_contract cn.md) | 中文
+[English](../en/smart_contract.md) | 中文
 
 <h1 align="center">智能合约的部署和调用</h1>
 <p align="center" class="version">Version 0.7.0 </p>
