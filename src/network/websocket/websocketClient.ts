@@ -29,6 +29,18 @@ export default class WebsocketClientApi {
         return JSON.stringify(param)
     }
 
+    sendSubscribe(subscribeEvent: boolean = false, subscribeJsonBlock: boolean = false, subscribeRawBlock: boolean = false, subscribeBlockTxHashes: boolean = false) {
+        let param = {
+            "Action": "subscribe",
+            "Version": "1.0.0",
+            "SubscribeEvent": subscribeEvent, //optional
+            "SubscribeJsonBlock": subscribeJsonBlock, //optional
+            "SubscribeRawBlock": subscribeRawBlock, //optional
+            "SubscribeBlockTxHashs": subscribeBlockTxHashes //optional
+        }
+        return JSON.stringify(param)
+    }
+
     sendRawTransaction(hexData : string, preExec : boolean = false) {
         let param = {
             "Action" : "sendrawtransaction",

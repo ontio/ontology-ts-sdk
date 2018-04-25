@@ -17,7 +17,6 @@
  */
 
 import * as CryptoJS from 'crypto-js'
-import * as Ecurve from 'ecurve'
 import * as BigInteger from 'bigi'
 var Scrypt = require('js-scrypt')
 var Bs58check = require('bs58check')

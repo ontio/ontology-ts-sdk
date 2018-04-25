@@ -17,6 +17,7 @@
  */
 
 import * as cryptoJS from 'crypto-js'
+import { RestClient } from './index';
 
 
 /* 
@@ -74,4 +75,84 @@ export function hashChildren(left : string, right : string) {
     data += right
     let hex = cryptoJS.enc.Hex.parse(data);
     return cryptoJS.SHA256(hex).toString(); 
+}
+
+export function getProofNodes(leafIndex : number, treeSize : number, proof : Array<string>) {
+    let lastNode = treeSize - 1
+    let pos = 0
+    let pathLen = proof.length
+    
+    let nodes = new Array<any>()
+    while (lastNode > 0) {
+        if (pos > pathLen) {
+            throw new Error('Proof too short');
+        }
+        let node = {
+            TargetHash: proof[pos],
+            Direction: ''
+        }
+        if (leafIndex % 2 === 1) {
+            node.Direction = 'Left'
+            pos += 1
+        } else if (leafIndex < lastNode) {
+            node.Direction = 'Right'
+            pos += 1
+        }
+        nodes.push(node)
+        leafIndex = Math.floor(leafIndex / 2)
+        lastNode = Math.floor(lastNode / 2)
+    }
+    return nodes
+}
+
+export async function constructClaimProof(txHash : string, contractAddr : string) {
+    let restClient = new RestClient()
+    const res = await restClient.getMerkleProof(txHash)
+    console.log(res.Result)
+    const merkleProof = res.Result
+    const proof = merkleProof.TargetHashes
+    let leafIndex = merkleProof.BlockHeight
+    let treeSize = merkleProof.CurBlockHeight
+    let pos = 0
+    let pathLen = proof.length
+    let claimProof = {
+        "Type": "MerkleProof",
+        "TxnHash": txHash,
+        "ContractAddr": contractAddr,
+        "BlockHeight": merkleProof.BlockHeight,
+        "MerkleRoot": merkleProof.CurBlockRoot,
+        "Nodes": new Array<any>()
+    }
+    let nodes = new Array<any>()
+    nodes = getProofNodes(leafIndex, treeSize, proof)
+    claimProof.Nodes = nodes
+    return claimProof
+}
+
+
+
+
+// "TxnHash": "c89e76ee58ae6ad99cfab829d3bf5bd7e5b9af3e5b38713c9d76ef2dcba2c8e0",
+// "MerkleRoot": "bfc2ac895685fbb01e22c61462f15f2a6e3544835731a43ae0cba82255a9f904",
+//     "Nodes": [{
+//         "Direction": "Right",
+//         "TargetHash": "2fa49b6440104c2de900699d31506845d244cc0c8c36a2fffb019ee7c0c6e2f6"
+//     }, {
+//         "Direction": "Left",
+//         "TargetHash": "fc4990f9758a310e054d166da842dab1ecd15ad9f8f0122ec71946f20ae964a4"
+//     }]
+export function verifyClaimProof(txHash : string ,merkleRoot : string, nodes : Array<any>) {
+    let p = txHash
+    for(let n of nodes) {
+        if(n.Direction === 'Right') {
+            p = hashChildren(p, n.TargetHash)
+        } else {
+            p = hashChildren(n.TargetHash, p)
+        }
+    }
+    if(p === merkleRoot) {
+        return true
+    } else {
+        return false
+    }
 }

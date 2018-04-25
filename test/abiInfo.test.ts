@@ -52,7 +52,7 @@ describe('test AbiInfo', () => {
     })
 
     test('test make invokecode tx', () => {
-        tx = makeInvokeTransaction(  f, a.getHash() )
+        tx = makeInvokeTransaction( f.name,f.parameters, a.getHash() )
         console.log(tx)
         
         serialized = tx.serialize()
