@@ -212,28 +212,28 @@ const testRegisterOntid = () => {
 
 const testAddAttribute = () => {
 
-    // var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
-    //     context = 'claim:staff_authentication8',
-    //     issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
-    //     let path = str2hexstr(claimId)
-    //     let type = str2hexstr('JSON')
-    //     let data = {
-    //         Type : 'JSON',
-    //         Value : {
-    //             Context: context,
-    //             Issuer: issuer
-    //         }
-    //     }
-    //     let value = JSON.stringify(data)
-    //     console.log('value: '+value)
-    //     value = str2hexstr(value)
+    var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
+        context = 'claim:staff_authentication8',
+        issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
+        let path = str2hexstr(claimId)
+        let type = str2hexstr('JSON')
+        let data = {
+            Type : 'JSON',
+            Value : {
+                Context: context,
+                Issuer: issuer
+            }
+        }
+        let value = JSON.stringify(data)
+        console.log('value: '+value)
+        value = str2hexstr(value)
         // let value = str2hexstr(issuer)
     
-    let path = str2hexstr('Claim:twitter')
-    let type = str2hexstr('String')
-    let value = str2hexstr('wang17@twitter')
+    // let path = str2hexstr('Claim:twitter')
+    // let type = str2hexstr('String')
+    // let value = str2hexstr('wang17@twitter')
 
-
+    
     let tx = buildAddAttributeTx(path, value, type, ontid, privateKey )
     console.log('path: '+ path)
     console.log('value: ' + value)
@@ -345,9 +345,9 @@ const testInvokeWasmContract = () => {
 
 // testRegisterOntid()
 
-testAddAttribute()
+// testAddAttribute()
 
-// testDDOTx()
+testDDOTx()
 
 // testVerifyOntidClaim()
 

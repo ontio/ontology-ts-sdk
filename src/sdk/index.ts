@@ -36,16 +36,16 @@ import * as core from '../core'
 import { buildTxParam, buildRpcParam, parseEventNotify, makeTransferTransaction, buildRestfulParam, sendRawTxRestfulUrl} from '../transaction/transactionBuilder'
 import { buildAddAttributeTx, buildRegisterOntidTx, buildGetDDOTx} from '../smartcontract/ontidContract'
 import { ERROR_CODE } from '../error';
-import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT, TEST_ONT_URL } from '../consts';
+import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT, HTTP_WS_PORT, TEST_ONT_URL } from '../consts';
 import { encrypt } from '../scrypt';
 import TxSender from '../transaction/txSender'
 import axios from 'axios'
 import {BigNumber} from 'bignumber.js'
 import {DDO} from '../transaction/ddo';
 export class SDK {
-    static SERVER_NODE : string
-    static REST_PORT   : string
-    static SOCKET_PORT : string
+    static SERVER_NODE : string = TEST_NODE
+    static REST_PORT: string = HTTP_REST_PORT
+    static SOCKET_PORT : string = HTTP_WS_PORT
 
     static setServerNode(node : string) {
         if(node) {
@@ -393,7 +393,7 @@ export class SDK {
                     return
                 }
                 console.log('res: '+ JSON.stringify(res))
-                if(res.Action === 'InvokeTransaction' && res.Error === 0) {
+                if(res.Action === 'Notify' && res.Error === 0) {
                     const txHash = res.Result[0].TxHash
                     let hash = ab2hexstring(txHash)
                     console.log('hash: '+ hash)
