@@ -36,6 +36,9 @@ export function encrypt(privateKey: string, keyphrase: string, scryptParams = DE
     // let signatureScript = core.createSignatureScript(publickeyEncode);
     //console.log( "signatureScript: ", signatureScript );
 
+    //algorithm and curve
+    publickeyEncode = '1202' + publickeyEncode
+
     let u160 = core.getSingleSigUInt160(publickeyEncode);
     //console.log( "programHash: ", programHash );
 
@@ -93,6 +96,9 @@ export function decrypt(encryptedKey: string, keyphrase: string, scryptParams = 
     //console.log( "privateKey: ", privateKey );
 
     let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+
+    //algorithm and curve
+    publickeyEncode = '1202' + publickeyEncode
 
     let u160 = core.getSingleSigUInt160(publickeyEncode)
 
