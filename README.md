@@ -8,8 +8,8 @@ The project is a comprehensive TypeScript library for the Ontology blockchain. C
 
 ## Getting started
 
-* 进入 [中文版](http://opendoc.ont.io/tssdk/cn).
-* Enter [English Version](http://opendoc.ont.io/tssdk/en).
+* 进入 [中文版](https://ontio.github.io/documentation/ontology_ts_sdk_zh.html).
+* Enter [English Version](https://ontio.github.io/documentation/ontology_ts_sdk_en.html).
 
 ## Installation
 
