@@ -34,6 +34,7 @@ export enum KeyType {
 }
 
 export class PublicKey {
+	id: number;
 	algorithm: number
 	curve: number
 	pk: string
