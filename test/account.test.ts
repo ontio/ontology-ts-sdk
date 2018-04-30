@@ -20,27 +20,27 @@ import {Account} from '../src/account'
 import * as core from '../src/core'
 import * as utils from '../src/utils'
 import {ERROR_CODE} from '../src/error'
-import { addressToU160 } from '../src/core';
+import { PrivateKey } from '../src/crypto';
 describe('test account', ()=>{
   
-    var privateKey:string,
+    var privateKey:PrivateKey,
         accountDataStr:string,
         account:Account,
-        encryptedPrivateKey : string
+        encryptedPrivateKey : PrivateKey
 
     beforeAll(()=>{
-        privateKey = utils.ab2hexstring(core.generatePrivateKey());    
+        privateKey = PrivateKey.random();    
     })
 
     test('test create', ()=>{
         account = new Account()
         account.create(privateKey, '123456', 'mickey')
-        encryptedPrivateKey = account.key
+        encryptedPrivateKey = account.encryptedKey
         accountDataStr = account.toJson()
         expect(accountDataStr).toBeDefined()
         console.log('address: '+account.address)
         console.log('privateKey: '+privateKey)
-        console.log('addressU160: '+addressToU160(account.address))
+        console.log('addressU160: '+core.addressToU160(account.address))
     })
     test('test import account with correct password', () => {
         let a

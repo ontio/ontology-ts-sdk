@@ -21,10 +21,9 @@ import AbiFunction from "../smartcontract/abi/abiFunction";
 import {Parameter,  ParameterType } from '../smartcontract/abi/parameter'
 import InvokeCode from './payload/invokeCode'
 import DeployCode from './payload/deployCode'
-import {Transaction, TxType, Sig, PubKey, Fee} from './transaction'
+import {Transaction, TxType, Sig, Fee} from './transaction'
 import {Transfers, Contract, State} from '../smartcontract/token'
 import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
-import {createSignatureScript, getHash, getPublicKey } from '../core'
 import * as core from '../core'
 import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes, hex2VarBytes, num2VarInt} from '../utils'
 import json from '../smartcontract/data/idContract.abi'
@@ -35,7 +34,7 @@ import { VmCode, VmType } from './vmcode';
 import * as cryptoJS from 'crypto-js'
 import opcode from './opcode';
 import {BigNumber} from 'bignumber.js'
-import {SignatureSchema} from '../crypto'
+import {SignatureSchema, PrivateKey, KeyType, CurveLabel, KeyParameters} from '../crypto';
 
 const WebSocket = require('ws');
 
@@ -52,7 +51,7 @@ export const Default_params = {
 
 
 const ONT_CONTRACT = "ff00000000000000000000000000000000000001"
-export const makeTransferTransaction = (tokenType:string, from : string, to : string, value : string,  privateKey : string)=> {
+export const makeTransferTransaction = (tokenType:string, from : string, to : string, value : string,  privateKey : PrivateKey)=> {
     let state = new State()
     state.from = from
     state.to = to
@@ -90,22 +89,27 @@ export const makeTransferTransaction = (tokenType:string, from : string, to : st
     return tx
 }
 
-export const signTransaction = (tx : Transaction, privateKey : string, schema : SignatureSchema=1) => {
-    let publicKey = core.getPublicKey(privateKey, true).toString('hex')
-    let type = 0x12
-    let pk = new PubKey(type, publicKey)
-    
-    let hash = tx.getHash()
+/**
+ * Signs the transaction object.
+ * 
+ * If the signature schema is not provided, default schema for Private key type is used.
+ * 
+ * @param tx Transaction to sign
+ * @param privateKey Private key to sign with
+ * @param schema Signature Schema to use
+ */
+export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureSchema) => {
+    const publicKey = privateKey.getPublicKey();
 
-    let signed = core.signatureData(hash, privateKey)
+    if (schema === undefined) {
+        schema = privateKey.algorithm.defaultSchema;
+    }
+
+    const signature = privateKey.sign(tx.getHash(), schema);
     let sig = new Sig()
-    let s = num2hexstring(schema)
-    // signed = '01' + signed //SHA256withECDSA
-    signed = s + signed
     sig.M = 1   
-    sig.pubKeys = [pk]
-    sig.sigData = [signed]
-
+    sig.pubKeys = [publicKey]
+    sig.sigData = [signature.serializeHex()]
     tx.sigs = [sig]
 }
 

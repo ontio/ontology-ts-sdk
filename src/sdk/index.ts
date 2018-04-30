@@ -29,15 +29,14 @@
 import {Wallet} from '../wallet'
 import {Identity} from '../identity'
 import {Account} from '../account'
-import {Claim, Metadata, Signature} from '../claim'
-import * as scrypt from '../scrypt'
+import {Claim, Metadata} from '../claim'
+import { PrivateKey, PgpSignature } from '../crypto';
 import {sendBackResult2Native, EventEmitter, str2hexstr, ab2hexstring} from '../utils'
 import * as core from '../core'
 import { buildTxParam, buildRpcParam, parseEventNotify, makeTransferTransaction, buildRestfulParam, sendRawTxRestfulUrl} from '../transaction/transactionBuilder'
 import { buildAddAttributeTx, buildRegisterOntidTx, buildGetDDOTx} from '../smartcontract/ontidContract'
 import { ERROR_CODE } from '../error';
 import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT, HTTP_WS_PORT, TEST_ONT_URL } from '../consts';
-import { encrypt } from '../scrypt';
 import TxSender from '../transaction/txSender'
 import axios from 'axios'
 import {BigNumber} from 'bignumber.js'
@@ -83,8 +82,9 @@ export class SDK {
         let wallet = new Wallet()
         wallet.create(name)
         let identity = new Identity()
-        let privateKey = core.generatePrivateKeyStr()
-        identity.create(privateKey, password,name)
+        const privateKey = PrivateKey.random();
+        
+        identity.create(privateKey, password, name)
 
         wallet.defaultOntid = identity.ontid
         wallet.addIdentity(identity)
@@ -131,7 +131,7 @@ export class SDK {
         return obj
     }
 
-    static importIdentityWithWallet(walletDataStr : string, label : string, encryptedPrivateKey : string, 
+    static importIdentityWithWallet(walletDataStr : string, label : string, encryptedPrivateKey : PrivateKey, 
         password : string, callback ?: string) {
         let identity = new Identity()
         let wallet = Wallet.parseJson(walletDataStr)
@@ -175,7 +175,7 @@ export class SDK {
     }
 
     //send http post to check
-    static importIdentity(label : string, encryptedPrivateKey : string, password : string, callback ?: string) {
+    static importIdentity(label : string, encryptedPrivateKey : PrivateKey, password : string, callback ?: string) {
         let identity = new Identity()
         let error = {}
         try {
@@ -222,7 +222,7 @@ export class SDK {
 
     static createIdentity(label : string, password : string, callback?: string) {
         let identity = new Identity()
-        let privateKey = core.generatePrivateKeyStr()
+        const privateKey = PrivateKey.random();
         identity.create(privateKey, password, label)        
         let result = identity.toJson()
         let obj = {
@@ -258,7 +258,7 @@ export class SDK {
 
     static createAccount(label: string, password: string, callback?: string) {
         let account = new Account()
-        let privateKey = core.generatePrivateKeyStr()        
+        let privateKey = PrivateKey.random();
         account.create(privateKey, password, label)
         let result = account.toJson()
         let obj = {
@@ -270,7 +270,7 @@ export class SDK {
         return obj
     }
 
-    static importAccountWithWallet(walletDataStr:string, label : string, encryptedPrivateKey:string, password:string, callback ?: string) {
+    static importAccountWithWallet(walletDataStr:string, label : string, encryptedPrivateKey: PrivateKey, password:string, callback ?: string) {
         let wallet = Wallet.parseJson(walletDataStr)
         let account = new Account()
         try {
@@ -294,10 +294,10 @@ export class SDK {
     }
 
     static signSelfClaim(context: string, claimData : string, ontid : string,
-         encryptedPrivateKey : string, password : string, callback ?:string)  {
-        let privateKey = ''
+         encryptedPrivateKey : PrivateKey, password : string, callback ?:string)  {
+        let privateKey: PrivateKey;
         try {
-            privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+            privateKey = encryptedPrivateKey.decrypt(password);
         } catch(err) {
             let result = this.getDecryptError(err)
 
@@ -330,10 +330,10 @@ export class SDK {
     }
 
 
-    static decryptEncryptedPrivateKey( encryptedPrivateKey : string, password : string, callback?: string) {
-        let privateKey = ''
+    static decryptEncryptedPrivateKey( encryptedPrivateKey : PrivateKey, password : string, callback?: string) {
+        let privateKey: PrivateKey;
         try {
-            privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+            privateKey = encryptedPrivateKey.decrypt(password);
         } catch(err) {
             let result = this.getDecryptError(err)
 
@@ -356,11 +356,11 @@ export class SDK {
 
     
 
-    static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey : string,
+    static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey: PrivateKey,
          password : string, callback ?: string ) {
-            let privateKey = ''
+            let privateKey: PrivateKey;
             try {
-                privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+                privateKey = encryptedPrivateKey.decrypt(password);
             } catch (err) {
                 let result = this.getDecryptError(err)
                 callback && sendBackResult2Native(JSON.stringify(result), callback)
@@ -409,21 +409,19 @@ export class SDK {
             txSender.sendTxWithSocket(param, socketCallback)
     }
 
-    static signData(content : string, encryptedPrivateKey : string, password : string, callback? : string) {
-        let privateKey = ''
+    static signData(content : string, encryptedPrivateKey : PrivateKey, password : string, callback? : string): PgpSignature | object {
+        let privateKey: PrivateKey;
         try {
-            privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+            privateKey = encryptedPrivateKey.decrypt(password);
         } catch (err) {
             let result = this.getDecryptError(err)
 
             callback && sendBackResult2Native(JSON.stringify(result), callback)
             return result
         }
-        let value = core.signatureData(content, privateKey)
-
-        let result = new Signature()
-        result.Value = value
-
+        const signature = privateKey.sign(content);
+        const result = signature.serializePgp();
+        
         callback && sendBackResult2Native(JSON.stringify(result), callback)
         return result
     }
@@ -462,7 +460,7 @@ export class SDK {
     }
 
     //pls check balance before transfer
-    static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, callback : string) {
+    static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : PrivateKey, password : string, callback : string) {
         try {
             if (from.length !== 40) {
                 from = core.addressToU160(from)
@@ -480,9 +478,9 @@ export class SDK {
             return result
          }
         
-        let privateKey = ''
+        let privateKey: PrivateKey;
         try {
-            privateKey = scrypt.decrypt(encryptedPrivateKey, password)
+            privateKey = encryptedPrivateKey.decrypt(password);
         } catch (err) {
             let result = this.getDecryptError(err)
             if (callback) {

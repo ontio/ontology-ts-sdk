@@ -24,9 +24,7 @@ import json from '../src/smartcontract/data/idContract.abi'
 import {Transaction} from '../src/transaction/transaction'
 
 import { makeInvokeTransaction} from '../src/transaction/transactionBuilder'
-import { Account } from '../src/account';
-import { generatePrivateKeyStr, signatureData, getPublicKey } from '../src/core'
-import {ab2hexstring, str2hexstr} from '../src/utils'
+import {str2hexstr} from '../src/utils'
 
 describe('test AbiInfo', () => {
 

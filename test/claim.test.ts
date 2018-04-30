@@ -17,7 +17,8 @@
  */
 
 import {Claim , Metadata } from '../src/claim'
-import {generatePrivateKeyStr, signatureData, verifySignature, getPublicKey} from '../src/core'
+import { PrivateKey, Signature } from '../src/crypto';
+import { str2hexstr } from '../src/utils';
 
 describe('test claim', () => {
 
@@ -32,13 +33,13 @@ describe('test claim', () => {
     metaData.Subject = "did:ont:4XirzuHiNnTrwfjCMtBEJ6";
     metaData.Expires = "2018-01-01";
     metaData.Revocation = "RevocationList";
-    metaData.Crl = "http://192.168.1.1/rev.crl";
+    //metaData.Crl = "http://192.168.1.1/rev.crl";
 
     var claim : Claim,
-        privateKey : string
+        privateKey : PrivateKey
 
     beforeAll(() => {
-        privateKey = generatePrivateKeyStr()
+        privateKey = PrivateKey.random()
     })
 
     test('test sign claim', () => {
@@ -56,20 +57,23 @@ describe('test claim', () => {
             Content: Content,
             Metadata: Metadata
         }
-        let signed = signatureData(JSON.stringify(obj), privateKey)
-        let signatureValue = claim.Signature.Value
-        expect(signed).toEqual(signatureValue)
+        let signed = privateKey.sign(str2hexstr(JSON.stringify(obj)))
+        let signatureValue = claim.Signature
+        expect(signed.serializePgp()).toEqual(signatureValue)
     })
 
     test('verify a signature', () => {
-        let publicKey = getPublicKey(privateKey, true)
+        let publicKey = privateKey.getPublicKey()
         let data = Object.assign({}, {
             Context : claim.Context,
             Id : claim.Id,
             Content : claim.Content,
             Metadata : claim.Metadata
         })
-        let result = verifySignature(JSON.stringify(data), claim.Signature.Value, publicKey)
+        const result = publicKey.verify(
+            str2hexstr(JSON.stringify(data)), 
+            Signature.deserializePgp(claim.Signature)
+        );
         expect(result).toBeTruthy()
     })
 })

@@ -16,15 +16,10 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as core from './core'
 import { Identity } from './identity'
 import { Account } from './account'
-import { DEFAULT_SCRYPT, DEFAULT_ALGORITHM } from './consts'
-import { ab2hexstring, hexstring2ab } from './utils'
-import { access } from 'fs';
-import { format } from 'url';
-import * as scrypt from './scrypt'
-import { DEFAULT_ENCODING } from 'crypto';
+import { DEFAULT_SCRYPT } from './consts'
+import { PrivateKey } from './crypto';
 
 export class Wallet {
     name: string;
@@ -67,7 +62,7 @@ export class Wallet {
         }
         wallet.create(name)
         let identity = new Identity()
-        let privateKey = core.generatePrivateKeyStr()
+        const privateKey = PrivateKey.random();
         identity.create(privateKey, password, name)
 
         wallet.defaultOntid = identity.ontid
@@ -78,7 +73,7 @@ export class Wallet {
 
     addAccount(account: Account) : void {
         for (let ac of this.accounts) {
-            if(ac.key === account.key) {
+            if(ac.encryptedKey.key === account.encryptedKey.key) {
                 return;
             }
         }
@@ -105,8 +100,18 @@ export class Wallet {
         this.defaultOntid = ontid
     }
 
-
+    
     toJson() : string {
+        return JSON.stringify(this.toJsonObj());
+    }
+
+    /**
+     * Serializes to JSON object.
+     * 
+     * Returned object will not be stringified.
+     * 
+     */
+    toJsonObj() : any {
         let obj = {
             name: this.name,
             defaultOntid: this.defaultOntid,
@@ -114,25 +119,35 @@ export class Wallet {
             createTime: this.createTime,
             version: this.version,
             scrypt: this.scrypt,
-            identities: this.identities,
-            accounts : this.accounts,
+            identities: this.identities.map(i => i.toJsonObj()),
+            accounts : this.accounts.map(a => a.toJsonObj()),
             extra: null
         }
 
-        return JSON.stringify(obj)
+        return obj;
     }
 
     static parseJson(json : string) : Wallet {
+        return Wallet.parseJsonObj(JSON.parse(json));
+    }
+
+    /**
+     * Deserializes JSON object.
+     * 
+     * Object should be real object, not stringified.
+     * 
+     * @param obj JSON object
+     */
+    static parseJsonObj(obj : any) : Wallet {
         let wallet = new Wallet()
-        let obj = JSON.parse(json)
         wallet.name = obj.name
         wallet.defaultOntid = obj.defaultOntid
         wallet.defaultAccountAddress = obj.defaultAccountAddress
         wallet.createTime = obj.createTime
         wallet.version = obj.version
         wallet.scrypt = obj.scrypt
-        wallet.identities = obj.identities
-        wallet.accounts = obj.accounts
+        wallet.identities = (obj.identities as any[]).map(i => Identity.parseJsonObj(i))
+        wallet.accounts = (obj.accounts as any[]).map(a => Account.parseJsonObj(a))
         wallet.extra = obj.extra 
         return wallet
     }

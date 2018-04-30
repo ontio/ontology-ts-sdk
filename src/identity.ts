@@ -17,20 +17,35 @@
  */
 
 import * as core from './core'
-import * as scrypt from './scrypt'
-import { ab2hexstring, hexstring2ab } from './utils'
-import {DEFAULT_ALGORITHM, Algorithm} from './consts'
+import { PrivateKey, JsonKey } from './crypto';
+import { ab2hexstring } from './utils'
 import {ERROR_CODE} from './error'
 import { buildRestfulParam } from './transaction/transactionBuilder';
-import { checkPrivateKey } from './core';
 
 export class ControlData {
-    algorithm: string;
-    parameters: {
-        // curve: string;
-    };
     id: string;
-    key: string;
+    encryptedKey: PrivateKey;
+
+    constructor(id?: string, encryptedKey?: PrivateKey) {
+        if (id !== undefined) {
+            this.id = id;
+        }
+
+        if (encryptedKey !== undefined) {
+            this.encryptedKey = encryptedKey;
+        }
+    }
+
+    toJson(): object {
+        return {
+            id: this.id,
+            ...this.encryptedKey.serializeJson()
+        }
+    }
+
+    static fromJson(json: any): ControlData {
+        return new ControlData(json.id, PrivateKey.deserializeJson(json as JsonKey));
+    }
 }
 
 export class Identity {
@@ -44,62 +59,45 @@ export class Identity {
     constructor() {
     }
 
-    create( privateKey: string, keyphrase: string, label: string, algorithmObj ?: Algorithm ) {
+    create( privateKey: PrivateKey, keyphrase: string, label: string ) {
         
         this.ontid = "";
         this.label = label;
         this.lock = false;
 
-        // control
-        let control = (<ControlData> {})
-
-        //algorithm
-        if (algorithmObj) {
-            control.algorithm = algorithmObj.algorithm
-            control.parameters = algorithmObj.parameters
-        } else {
-            control.algorithm = DEFAULT_ALGORITHM.algorithm
-            control.parameters = DEFAULT_ALGORITHM.parameters
-        }
+        const encryptedPrivateKey = privateKey.encrypt(keyphrase);
 
         //start from 1
-        control.id = "1";
-        control.key = scrypt.encrypt( privateKey, keyphrase );
-
+        const control = new ControlData('1', encryptedPrivateKey);
         this.controls.push( control );
 
         // ontid
-        this.ontid = core.generateOntid(privateKey)
+        this.ontid = core.generateOntid(privateKey.key)
 
         //TODO register ontid
         //调用方处理register和监听结果
         return this
     }
     
-    static importIdentity(label : string ,encryptedPrivateKey : string, password : string) {
+    static importIdentity(label : string ,encryptedPrivateKey : PrivateKey, password : string): Identity {
         //create identity
         let identity = new Identity()
-        let privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+        const privateKey = encryptedPrivateKey.decrypt(password);
         if(!label) {
             label = ab2hexstring (core.generateRandomArray(4))
         }
 
        // identity.create(privateKey, password, label) // will take more time
-        identity.ontid = core.generateOntid(privateKey)
+        identity.ontid = core.generateOntid(privateKey.key)
         identity.label = label;
         identity.lock = false;
 
         // control
         let control = (<ControlData>{})
 
-        //algorithm
-
-        control.algorithm = DEFAULT_ALGORITHM.algorithm
-        control.parameters = DEFAULT_ALGORITHM.parameters
-
         //start from 1
         control.id = "1";
-        control.key = encryptedPrivateKey;
+        control.encryptedKey = encryptedPrivateKey;
 
         identity.controls.push(control);
 
@@ -129,7 +127,7 @@ export class Identity {
 
     addControl(control : ControlData) {
         for(let c of this.controls) {
-            if(c.key == control.key) {
+            if(c.encryptedKey.key === control.encryptedKey.key) {
                 return;
             }
         }
@@ -139,23 +137,43 @@ export class Identity {
 
 
     toJson(): string {
+        return JSON.stringify(this.toJsonObj());
+    }
+
+    /**
+     * Serializes to JSON object.
+     * 
+     * Returned object will not be stringified.
+     * 
+     */
+    toJsonObj(): any {
         let obj = {
             ontid: this.ontid,
             label: this.label,
             lock: this.lock,
-            controls: this.controls,
+            controls: this.controls.map(c => c.toJson()),
             extra: this.extra,
         }
-        return JSON.stringify(obj)
+        return obj;
     }
 
     static parseJson(json: string): Identity {
-        let obj = JSON.parse(json)
+        return Identity.parseJsonObj(JSON.parse(json));
+    }
+
+    /**
+     * Deserializes JSON object.
+     * 
+     * Object should be real object, not stringified.
+     * 
+     * @param obj JSON object
+     */
+    static parseJsonObj(obj: any): Identity {
         let id = new Identity()
         id.ontid = obj.ontid
         id.label = obj.label
         id.lock = obj.lock
-        id.controls = obj.controls
+        id.controls = (obj.controls as any[]).map(c => ControlData.fromJson(c))
         id.extra = obj.extra
         return id;
     }

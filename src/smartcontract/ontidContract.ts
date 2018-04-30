@@ -9,13 +9,13 @@ import axios from 'axios'
 import * as core from '../core'
 import {ab2hexstring, str2hexstr} from '../utils'
 import {Transaction} from '../transaction/transaction'
- 
+import { PrivateKey, PublicKey } from '../crypto'; 
 import abiJson from '../smartcontract/data/idContract.abi'
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson))
 
 
-export function buildRegisterOntidTx(ontid: string, privateKey: string) {
-    let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+export function buildRegisterOntidTx(ontid: string, privateKey: PrivateKey) {
+    const publicKey = privateKey.getPublicKey();
     if (ontid.substr(0, 3) == 'did') {
         ontid = str2hexstr(ontid)
     }
@@ -29,10 +29,8 @@ export function buildRegisterOntidTx(ontid: string, privateKey: string) {
 
     let name2 = f.parameters[1].getName(),
         type2 = ParameterType.ByteArray
-    //algorithm&curve
-    publicKey = '1202' + publicKey
 
-    let p2 = new Parameter(name2, type2, publicKey)
+    let p2 = new Parameter(name2, type2, publicKey.serializeHex())
 
     f.setParamsValue(p1, p2)
     let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.hash)
@@ -42,10 +40,9 @@ export function buildRegisterOntidTx(ontid: string, privateKey: string) {
 }
 
 //all parameters shuld be hex string
-export function buildAddAttributeTx(path: string, value: string, type: string, ontid: string, privateKey: string) {
-    let publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
-    //algorithm&curve
-    publicKey = '1202' + publicKey
+export function buildAddAttributeTx(path: string, value: string, type: string, ontid: string, privateKey: PrivateKey) {
+    const publicKey = privateKey.getPublicKey();
+    
     let f = abiInfo.getFunction('AddAttribute')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -54,7 +51,7 @@ export function buildAddAttributeTx(path: string, value: string, type: string, o
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, path)
     let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, type)
     let p4 = new Parameter(f.parameters[3].getName(), ParameterType.ByteArray, value)
-    let p5 = new Parameter(f.parameters[4].getName(), ParameterType.ByteArray, publicKey)
+    let p5 = new Parameter(f.parameters[4].getName(), ParameterType.ByteArray, publicKey.serializeHex())
 
     f.setParamsValue(p1, p2, p3, p4, p5)
     let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash())
@@ -77,16 +74,14 @@ export function buildGetDDOTx(ontid: string) {
     return tx
 }
 
-export function buildAddPKTx(ontid : string, newPk : string, sender : string, privateKey : string) {
+export function buildAddPKTx(ontid : string, newPk : PublicKey, sender : PublicKey, privateKey : PrivateKey) {
     let f = abiInfo.getFunction('AddKey')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
     }
     let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
-    newPk = '1202' + newPk
-    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, newPk)
-    sender = '1202' + sender
-    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender)
+    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, newPk.serializeHex())
+    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender.serializeHex())
 
     f.setParamsValue(p1, p2, p3)
     let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash())
@@ -94,7 +89,7 @@ export function buildAddPKTx(ontid : string, newPk : string, sender : string, pr
     return tx
 }
 
-export function buildGetPublicKeysTx(ontid : string, privateKey : string) {
+export function buildGetPublicKeysTx(ontid : string, privateKey : PrivateKey) {
     let f = abiInfo.getFunction('GetPublicKeys')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -106,16 +101,14 @@ export function buildGetPublicKeysTx(ontid : string, privateKey : string) {
     return tx
 }
 
-export function buildRemovePkTx(ontid : string, pk2Remove : string, sender : string, privateKey : string) {
+export function buildRemovePkTx(ontid : string, pk2Remove : PublicKey, sender : PublicKey, privateKey : PrivateKey) {
     let f = abiInfo.getFunction('RemoveKey')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
     }
     let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
-    pk2Remove = '1202' + pk2Remove
-    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk2Remove)
-    sender = '1202' + sender
-    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender)
+    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk2Remove.serializeHex())
+    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender.serializeHex())
 
     f.setParamsValue(p1, p2, p3)
     let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash())
@@ -123,15 +116,14 @@ export function buildRemovePkTx(ontid : string, pk2Remove : string, sender : str
     return tx
 }
 
-export function buildAddRecoveryTx(ontid : string, recovery : string, publicKey : string, privateKey : string) {
+export function buildAddRecoveryTx(ontid : string, recovery : string, publicKey : PublicKey, privateKey : PrivateKey) {
     let f = abiInfo.getFunction('AddRecovery')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
     }
     let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, recovery)
-    publicKey = '1202' + publicKey
-    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey)
+    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex())
 
     f.setParamsValue(p1, p2, p3)
     let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash())
@@ -139,7 +131,7 @@ export function buildAddRecoveryTx(ontid : string, recovery : string, publicKey 
     return tx
 }
 
-export function buildChangeRecoveryTx(ontid : string, newrecovery : string, oldrecovery : string, privateKey : string) {
+export function buildChangeRecoveryTx(ontid : string, newrecovery : string, oldrecovery : string, privateKey : PrivateKey) {
     let f = abiInfo.getFunction('ChangeRecovery')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -167,14 +159,14 @@ export function buildGetPublicKeyStatusTx(ontid: string, pkId: string) {
     return tx
 }
 
-export function buildGetPublicKeyIdTx(ontid: string, pk: string) {
+export function buildGetPublicKeyIdTx(ontid: string, pk: PublicKey) {
     let f = abiInfo.getFunction('GetPublicKeyId')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
     }
-    pk = '1202' + pk
+    
     let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
-    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk)
+    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk.serializeHex())
 
     f.setParamsValue(p1, p2)
     let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash())

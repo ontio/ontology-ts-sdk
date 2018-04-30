@@ -25,7 +25,7 @@ import DeployCode from './payload/deployCode';
 import Fixed64 from '../common/fixed64'
 import Uint160 from '../common/uint160';
 import Uint256 from '../common/uint256';
-import { KeyType } from '../crypto'
+import { PublicKey } from '../crypto';
 import * as core from '../core'
 import * as cryptoJS from 'crypto-js'
 
@@ -66,34 +66,8 @@ export class Fee {
     payer : Uint160
 }
 
-
-export class PubKey {
-    type : KeyType
-    publicKey : string
-
-    constructor(type: number, publicKey: string) {
-        this.type = type
-        this.publicKey = publicKey
-    }
-
-    serialize() {
-        let result = ''
-        result += '12' //ecdsa
-        result += '02' //p256
-        result += this.publicKey
-        const length = num2hexstring(result.length/2)
-        return length + result
-    }
-    static deserialize(sr : StringReader) {
-        let type = parseInt(sr.read(1), 16)
-        let label = sr.read(1)
-        let publicKey = sr.readNextBytes()
-        return new PubKey(type, publicKey)
-    }
-}
-
 export class Sig {
-    pubKeys : Array<PubKey>
+    pubKeys : Array<PublicKey>
     //M uint8
     M       : number
     //sigData hexstrings array
@@ -103,7 +77,9 @@ export class Sig {
         let result = ''
         result += num2hexstring(this.pubKeys.length)
         for (let i=0; i< this.pubKeys.length; i++) {
-            result += this.pubKeys[i].serialize()
+            const serialized = this.pubKeys[i].serializeHex();
+            result += num2hexstring(serialized.length/2);
+            result += serialized;
         }
         result += num2hexstring(this.M)
 
@@ -119,7 +95,8 @@ export class Sig {
         sig.pubKeys = []
         let pubKeyLength = sr.readNextLen()
         for(let i=0; i < pubKeyLength; i++) {
-            let pk = PubKey.deserialize(sr)
+            const serializedLength = sr.readNextLen();
+            let pk = PublicKey.deserializeHex(sr, serializedLength);
             sig.pubKeys.push(pk)
         }
         sig.M = sr.readNextLen()

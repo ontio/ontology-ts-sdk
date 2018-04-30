@@ -17,13 +17,11 @@
  */
 
 import * as CryptoJS from 'crypto-js'
-var ec = require('elliptic').ec
-import { signatureData, getPublicKey } from './core'
-import * as Utils from './utils'
 import { buildGetPublicKeyIdTx } from './smartcontract/ontidContract';
-import { ab2hexstring } from './utils';
+import { ab2hexstring, str2hexstr } from './utils';
 import { buildRestfulParam } from './transaction/transactionBuilder';
 import RestClient from './network/rest/restClient'
+import { PgpSignature, PrivateKey } from './crypto';
 
 export enum RevocationType {
     Contract = 'Contract',
@@ -40,25 +38,12 @@ export class Metadata {
     constructor(){}
 }
 
-export class Signature {
-    //issuer's ontid + # + pkId
-    PublicKeyId : string
-    Format : string
-    Algorithm : string
-    Value : string
-
-    constructor() {
-        this.Format = "pgp";
-        this.Algorithm = "ECDSAwithSHA256";
-     }
-}
-
 export class Claim {
     Context : string
     Id : string
     Content : {}
     Metadata : Metadata
-    Signature : Signature
+    Signature : PgpSignature
 
     constructor(context:string, content: {}, metadata:Metadata) {
         this.Context = context
@@ -72,7 +57,7 @@ export class Claim {
         this.Id = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(JSON.stringify(body))).toString()
     }
 
-    sign( privateKey: string ) {
+    sign( privateKey: PrivateKey ) {
         let claimBody = {
             Context: this.Context,
             Id: this.Id,
@@ -80,11 +65,8 @@ export class Claim {
             Metadata: this.Metadata
         }
         let unsignedData = JSON.stringify(claimBody) 
-        let signatureValue = signatureData(unsignedData, privateKey)
-
-        let sig = new Signature();
-        sig.Value = signatureValue;
-        this.Signature = sig
+        const signature = privateKey.sign(str2hexstr(unsignedData));
+        this.Signature = signature.serializePgp();
 
         //TODO: get pkId and set into Signature
         // const issuer = this.Metadata.Issuer
@@ -98,7 +80,7 @@ export class Claim {
         // })
 
 
-        return sig
+        return this.Signature;
 
     }
 }

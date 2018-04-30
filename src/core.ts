@@ -20,7 +20,7 @@ import * as cryptoJS from 'crypto-js'
 import * as base58 from 'bs58'
 import * as ecurve from 'ecurve'
 import * as bigInteger from 'bigi'
-import { ab2hexstring, hexstring2ab, StringReader, hexstr2str, num2hexstring } from './utils'
+import { ab2hexstring, hexstring2ab, StringReader, hexstr2str, num2hexstring, str2hexstr } from './utils'
 import { ADDR_VERSION, TEST_ONT_URL, REST_API } from './consts'
 import * as scrypt from './scrypt'
 import {ERROR_CODE} from './error'
@@ -31,9 +31,21 @@ import { DDO } from './transaction/ddo'
 import { buildGetDDOTx, buildGetPublicKeyStatusTx } from './smartcontract/ontidContract'
 import { verifyLeafHashInclusion } from './merkle'
 import RestClient from './network/rest/restClient'
-import { PublicKeyStatus, PK_STATUS } from './crypto';
+import { 
+    PublicKeyStatus, 
+    PK_STATUS, 
+    PrivateKey, 
+    KeyType, 
+    CurveLabel, 
+    SignatureSchema, 
+    PublicKey,
+    Signature,
+    KeyParameters
+} from './crypto';
+import { u160ToAddress } from './helpers';
+export * from './helpers';
 
-var ec = require('elliptic').ec
+
 var wif = require('wif')
 var secureRandom = require('secure-random')
 
@@ -41,14 +53,23 @@ export function generateRandomArray(len: number): ArrayBuffer {
     return secureRandom(len);
 }
 
+/**
+ * @deprecated Replaced by PrivateKey.random()
+ */
 export function generatePrivateKey(): ArrayBuffer {
     return generateRandomArray(32);
 }
 
+/**
+ * @deprecated Replaced by PrivateKey.random()
+ */
 export function generatePrivateKeyStr() : string {
     return ab2hexstring(generatePrivateKey())
 }
 
+/**
+ * @deprecated Replaced by PrivateKey.getPublicKey()
+ */
 export function getPublicKey(privateKey: string, encode: boolean): any {
     var ecparams = ecurve.getCurveByName('secp256r1');
     var curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
@@ -56,6 +77,9 @@ export function getPublicKey(privateKey: string, encode: boolean): any {
     return curvePt.getEncoded(encode);
 };
 
+/**
+ * @deprecated Not used.
+ */
 export function getPublicKeyPoint(privateKey: string) {
     var ecparams = ecurve.getCurveByName('secp256r1')
     var curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
@@ -67,6 +91,9 @@ export function getPublicKeyPoint(privateKey: string) {
     }
 }
 
+/**
+ * @deprecated Not used and not very useful method. Replaced by PublicKey.deserializeHex()
+ */
 export function deserializePublickKey(serializedPk : string) {
     const curveType = parseInt(serializedPk.substr(0, 2), 16)
     const data = serializedPk.substring(2)
@@ -93,6 +120,9 @@ export function deserializePublickKey(serializedPk : string) {
     }
 }
 
+/**
+ * @deprecated Not used.
+ */
 export function createSignatureScript(publicKeyEncoded: string): string {
     return "21" + publicKeyEncoded + "ac";
 }
@@ -113,71 +143,21 @@ export function getHash(SignatureScript: string): string {
     return ripemd160(sha256(SignatureScript))
 }
 
-export function getMultiSigUInt160() {
-//TODO
-}
-
-export function getSingleSigUInt160(publicKeyEncoded: string): string {
-    var PkHexString = cryptoJS.enc.Hex.parse(publicKeyEncoded);
-    var PkSha256 = cryptoJS.SHA256(PkHexString).toString();
-    var PkRipemd160 = cryptoJS.RIPEMD160(cryptoJS.enc.Hex.parse(PkSha256)).toString();
-
-    //for normal account
-    return "01" + PkRipemd160.substr(2);
-}
-
-export function u160ToAddress(programhash: string): string {
-    var data = ADDR_VERSION + programhash;
-
-    var ProgramHexString = cryptoJS.enc.Hex.parse(data);
-    var ProgramSha256 = cryptoJS.SHA256(ProgramHexString).toString();
-    var ProgramSha256_2 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(ProgramSha256)).toString();
-    var ProgramSha256Buffer = hexstring2ab(ProgramSha256_2);
-
-    var datas = data + ProgramSha256_2.slice(0, 8);
-
-    return base58.encode(hexstring2ab(datas));
-};
-
-export function addressToU160(addressEncoded : string) {
-    let decoded = base58.decode(addressEncoded)
-    let programHash = ab2hexstring(decoded).substr(2,40)
-    let add58 = u160ToAddress(programHash)
-    if(add58 !== addressEncoded) {
-        throw new Error('[addressToU160] decode encodeed varify failed')
-    }
-    return programHash
-}
-
+/**
+ * @deprecated Replaced by PrivateKey.sign()
+ */
 export function signatureData(data: string, privateKey: string): string {
-    let msg = cryptoJS.enc.Hex.parse(data);
-    let msgHash = cryptoJS.SHA256(msg);
-
-    let elliptic = new ec('p256')
-    const sig = elliptic.sign(msgHash.toString(), privateKey, null)
-    const signatureValue = Buffer.concat([
-        sig.r.toArrayLike(Buffer, 'be', 32),
-        sig.s.toArrayLike(Buffer, 'be', 32)
-    ])
-
-    return signatureValue.toString('hex');
+    const pk = new PrivateKey(privateKey);
+    return pk.sign(data).value;
 }
 
 
-/* 
-@data original value of signature
-@signature 
-@publicKey the public key of the signer. is array-like or buffer
-*/
+/**
+ * @deprecated Replaced by PublicKey.verify()
+ */
 export function verifySignature(data: string, signature: string, publicKey: any) {
-    let msg = cryptoJS.enc.Hex.parse(data)
-    let msgHash = cryptoJS.SHA256(msg)
-
-    let elliptic = new ec('p256')
-    let r = signature.substr(0, 64)
-    let s = signature.substr(64, 64)
-    const result = elliptic.verify(msgHash.toString(), { r, s }, publicKey, null)
-    return result
+    const pk = new PublicKey(publicKey);
+    return pk.verify(data, new Signature(pk.algorithm.defaultSchema, signature));
 }
 
 export function getContractHash(avmCode : string, vmType : VmType = VmType.NEOVM) {
@@ -201,15 +181,15 @@ export function generateOntid(nonce : string) {
     return ontid
 }
 
-export function getOntidFromPrivateKey(encryptedPrivateKey : string, password : string) {
-    let privateKey = scrypt.decrypt(encryptedPrivateKey, password); 
-    return generateOntid(privateKey)
+export function getOntidFromPrivateKey(encryptedPrivateKey : PrivateKey, password : string) {
+    const privateKey = encryptedPrivateKey.decrypt(password);
+    return generateOntid(privateKey.key);
 }
 
-export function checkPrivateKey(encryptedPrivateKey : string, password : string) {
-    let privateKey
+export function checkPrivateKey(encryptedPrivateKey : PrivateKey, password : string) {
+    let privateKey: PrivateKey;
     try {
-       privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+        privateKey = encryptedPrivateKey.decrypt(password);
     } catch{
         return false
     }
@@ -234,10 +214,13 @@ export function verifyOntidClaim(claim : any) {
             const ddo = DDO.deserialize(res.data.Result[0])
             console.log('ddo: ' + JSON.stringify(ddo))
             if(ddo.publicKeys.length > 0) {
-                const pk = ddo.publicKeys[0].pk
-                const signature = claim.Signature.Value
+                const pk = ddo.publicKeys[0]
+                const signature = claim.Signature
                 claim.delete('Signature')
-                return verifySignature(JSON.stringify(claim), signature, hexstring2ab(pk))
+                return pk.verify(
+                    str2hexstr(JSON.stringify(claim)),
+                    Signature.deserializePgp(signature)
+                );
             } else {
                 return false
             }
@@ -317,7 +300,7 @@ export async function verifyOntidClaimAsync(claim : any, url ?: string) {
     }
 
     //verify signature
-    const pk = pkStatus.pk.pk
+    const pk = pkStatus.pk;
     //the order of claim's attributes matters.
     let result = verifyClaimSignature(claim, pk)
     if(!result) {
@@ -356,28 +339,27 @@ export function verifyExpiration(dateString : string) {
     }
 }
 
-export async function getPkStatus(ontid : string, pkId : string) {
+export async function getPkStatus(ontid: string, pkId: string): Promise<PublicKeyStatus | undefined> {
     let tx = buildGetPublicKeyStatusTx(ontid, pkId)
     let restClient = new RestClient()
     let res = await restClient.sendRawTransaction(tx.serialize(), true)
-    let pkStatus
+    
     if(res.Result[0] && res.Result[0].length > 0) {
-        pkStatus = PublicKeyStatus.deserialize(res.Result[0])
+        return PublicKeyStatus.deserialize(res.Result[0]);
     }
-    return pkStatus
 }
 
-export function verifyClaimSignature(claim : any, pk : string) {
+export function verifyClaimSignature(claim : any, pk : PublicKey) {
     let signatureOriginal = Object.assign({}, {
         Context: claim.Context,
         Id: claim.Id,
         Content: claim.Content,
         Metadata: claim.Metadata,
     })
-    //remove algorithm&curve
-    pk = pk.substr(0, 4) === '1202' ? pk.substr(4) : pk
-    let result = verifySignature(JSON.stringify(signatureOriginal), claim.Signature.Value, hexstring2ab(pk))
-    return result
+    return pk.verify(
+        str2hexstr(JSON.stringify(signatureOriginal)), 
+        Signature.deserializePgp(claim.Signature)
+    );
 }
 
 export async function verifyMerkleProof(claim : any ) {
