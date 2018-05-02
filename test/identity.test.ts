@@ -17,32 +17,32 @@
  */
 
 import { Identity } from '../src/identity'
-import * as core from '../src/core'
 import * as utils from '../src/utils'
 import {ERROR_CODE} from '../src/error'
+import { PrivateKey } from '../src/crypto';
 
 describe('test identity', () => {
 
-    var privateKey: string,
+    var privateKey: PrivateKey,
         identityDataStr: string,
         identity: Identity,
-        encryptedPrivateKey
+        encryptedPrivateKey: PrivateKey
 
     beforeAll(() => {
-        privateKey = utils.ab2hexstring(core.generatePrivateKey());
+        privateKey = PrivateKey.random();
     })
 
     test('test create', () => {
         identity = new Identity()
         identity.create(privateKey, '123456', 'mickey')
-        encryptedPrivateKey = identity.controls[0].key
+        encryptedPrivateKey = identity.controls[0].encryptedKey
         identityDataStr = identity.toJson()
         expect(identityDataStr).toBeDefined()
     })
 
     test('test import with correct password', () => {
-        console.log('encryptedkey: ' + encryptedPrivateKey)
-        let a 
+        console.log('encryptedkey: ' + encryptedPrivateKey.key)
+        let a: Identity 
         try {
          a = Identity.importIdentity('mickey', encryptedPrivateKey, '123456')
         } catch(err) {

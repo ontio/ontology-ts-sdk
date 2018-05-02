@@ -19,6 +19,26 @@
 import {StringReader, hexstr2str} from '../utils'
 import {PublicKey} from '../crypto'
 
+/**
+ * Public key representation with recorded id from blockchain.
+ * 
+ */
+export class PublicKeyWithId extends PublicKey {
+    /**
+     * Id of the public key.
+     * 
+     * Only numeric part is recorded. Full PublicKeyId will be constucted as follows:
+     * <ONTID>#keys-<id>
+     */
+    id: number;
+
+    constructor (key: PublicKey, id: number) {
+        super(key.key, key.algorithm, key.parameters);   
+
+        this.id = id;
+    }
+}
+
 export class DDOAttribute {
     path : string
     type : string
@@ -26,7 +46,7 @@ export class DDOAttribute {
     constructor() {}
 }
 export class DDO {
-    publicKeys : Array<PublicKey> = []
+    publicKeys : Array<PublicKeyWithId> = []
     attributes : Array<DDOAttribute> = []
     recovery : string
 
@@ -47,16 +67,10 @@ export class DDO {
                 
                 //length of public key - 4 bytes
                 let pkLen = parseInt(ss.read(4), 16)
-                let pubKey = new PublicKey()
-                const rawPk = ss.read(pkLen)
-                const type = parseInt(rawPk.substr(0, 2), 16)
-                const curve = parseInt(rawPk.substr(2, 2), 16)
-                const pk = rawPk.substr(4)
-                pubKey.id = pkId;
-                pubKey.algorithm = type
-                pubKey.curve = curve
-                pubKey.pk = pk
-                ddo.publicKeys.push(pubKey)
+                const rawPk = ss.read(pkLen);
+                const pubKey = PublicKeyWithId.deserializeHex(new StringReader(rawPk), pkLen);
+                const pubKeyWithId = new PublicKeyWithId(pubKey, pkId);
+                ddo.publicKeys.push(pubKeyWithId);
             }
         }
         

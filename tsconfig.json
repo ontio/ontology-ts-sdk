@@ -55,6 +55,7 @@
   },
   "include":[
     "./src/**/*",
+    "./src/global.d.ts",
     "node_modules/@types"
   ],
   "exclude":[

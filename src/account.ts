@@ -17,11 +17,9 @@
  */
 
 import * as core from './core'
-import * as scrypt from './scrypt'
-import { ab2hexstring, hexstring2ab } from './utils'
-import {DEFAULT_ALGORITHM, Algorithm} from './consts'
-import {ERROR_CODE} from './error'
-import { addressToU160 } from './core';
+import { ab2hexstring } from './utils'
+import { PrivateKey } from './crypto';
+
 export class Contract {
     script : string
     parameters : Array<string>
@@ -32,16 +30,14 @@ export class Account {
     address: string;
     label: string;
     lock: boolean;
-    algorithm: string;
-    parameters: {};
-    key: string;
+    encryptedKey: PrivateKey;
     // contract: Contract
     extra: null;
 
     constructor() {
     }
 
-    create( privateKey: string, password: string, label: string, algorithmObj ?: Algorithm ): Account {
+    create( privateKey: PrivateKey, password: string, label: string ): Account {
         
         // let contract = {
         //     script : '',
@@ -53,21 +49,11 @@ export class Account {
         this.label = label;
         this.lock = false;
 
-        if(algorithmObj) {
-            this.algorithm = algorithmObj.algorithm
-            this.parameters = algorithmObj.parameters
-        } else {
-            this.algorithm = DEFAULT_ALGORITHM.algorithm
-            this.parameters = DEFAULT_ALGORITHM.parameters
-        }
+        this.encryptedKey = privateKey.encrypt(password); 
         
-        this.key = scrypt.encrypt( privateKey, password );
-
-        let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
-        //signature type & curve
-        let publicKey = '1202' + publickeyEncode
+        const publicKey = privateKey.getPublicKey();
         
-        let programHash = core.getSingleSigUInt160(publicKey);
+        let programHash = core.getSingleSigUInt160(publicKey.serializeHex());
 
         this.address = core.u160ToAddress(programHash);
 
@@ -76,9 +62,9 @@ export class Account {
 
 
 
-    static importAccount(label : string ,encryptedPrivateKey : string, password : string ) : Account {
+    static importAccount(label : string ,encryptedPrivateKey : PrivateKey, password : string ) : Account {
         let account = new Account()
-        let  privateKey = scrypt.decrypt(encryptedPrivateKey, password);
+        const privateKey = encryptedPrivateKey.decrypt(password);
         // let contract = {
         //     script: '',
         //     parameters: [],
@@ -91,23 +77,15 @@ export class Account {
         account.label = label;
         account.lock = false;
 
-
-        account.algorithm = DEFAULT_ALGORITHM.algorithm
-        account.parameters = DEFAULT_ALGORITHM.parameters
-
-        account.key = encryptedPrivateKey
+        account.encryptedKey = encryptedPrivateKey;
 
         // let publicKeyEncoded = ab2hexstring(core.getPublicKey(privateKey, true));
         // contract.script = core.createSignatureScript(publicKeyEncoded);
         // account.contract = contract
 
+        const publicKey = privateKey.getPublicKey();
 
-        let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
-
-        //signature type & curve
-        let publicKey = '1202' + publickeyEncode
-
-        let programHash = core.getSingleSigUInt160(publicKey);
+        let programHash = core.getSingleSigUInt160(publicKey.serializeHex());
 
         let address = core.u160ToAddress(programHash);
 
@@ -117,28 +95,50 @@ export class Account {
     }
 
     toJson() : string {
+        return JSON.stringify(this.toJsonObj());
+    }
+
+    /**
+     * Serializes to JSON object.
+     * 
+     * Returned object will not be stringified.
+     * 
+     */
+    toJsonObj() : any {
         let obj = {
             address: this.address,
             label: this.label,
             lock: this.lock,
-            algorithm: this.algorithm,
-            parameters: this.parameters,
-            key: this.key,
+            algorithm: this.encryptedKey.algorithm.label,
+            parameters: this.encryptedKey.parameters.serializeJson(),
+            key: this.encryptedKey.key,
             // contract: this.contract,
             extra: this.extra
         }
-        return JSON.stringify(obj)
+        return obj;
     }
 
     static parseJson( json : string ) : Account {
-        let obj = JSON.parse(json)
+        return Account.parseJsonObj(JSON.parse(json));
+    }
+
+    /**
+     * Deserializes JSON object.
+     * 
+     * Object should be real object, not stringified.
+     * 
+     * @param obj JSON object
+     */
+    static parseJsonObj( obj : any ) : Account {
         let account = new Account()
         account.address = obj.address
         account.label = obj.label
         account.lock = obj.lock
-        account.algorithm = obj.algorithm
-        account.parameters = obj.parameters
-        account.key = obj.key
+        account.encryptedKey = PrivateKey.deserializeJson({
+            algorithm: obj.algorithm,
+            parameters: obj.parameters,
+            key: obj.key
+        });
         // account.contract = obj.contract
         account.extra = obj.extra
         return account;

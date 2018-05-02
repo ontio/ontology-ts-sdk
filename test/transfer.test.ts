@@ -27,7 +27,7 @@ import {State} from '../src/smartcontract/token'
 import * as scrypt from '../src/scrypt'
 import {TEST_NODE, HTTP_REST_PORT, REST_API, ONT_NETWORK, TEST_ONT_URL} from '../src/consts'
 import {BigNumber} from 'bignumber.js'
-import { addressToU160 } from "../src/core";
+import { PrivateKey, KeyType, KeyParameters, CurveLabel } from "../src/crypto";
 
 var txSender = new TxSender(TEST_ONT_URL.SOCKET_URL)
 
@@ -40,13 +40,12 @@ var accountFrom = {
     //local
     hexAddress: '013c7fd22a239be26196629ec9f4185c18ddc9f7',
     address: 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG',
-    privateKey: '70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67318f'
-
+    privateKey: new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67318f')
     // address: 'TA98LCZuzins3mUPfDyNRirpQ4YoeRNBan',
     // privateKey: '6248eefef096ec2eebdff7179a59cc36b5c632720e40fb7e9770dc11024543be'
 }
 
-var accPrivateKey = 'b0d87bf265d8d0fc2b09ee0be50e8df6e3f7103b523abc45ec064f65e1249419'
+var accPrivateKey = new PrivateKey('b0d87bf265d8d0fc2b09ee0be50e8df6e3f7103b523abc45ec064f65e1249419')
 var accAddress = 'TA5KvS6o9puusWQeiyWDezDWgi5NvKQotf'
 var accHexAddress = '012845c2ed3b508d135066dba00f850a82b192fd'
 
@@ -59,7 +58,7 @@ const  testTransferTx = () => {
     var value = '300'
 
 
-    var tx = makeTransferTransaction('ONT', accountFrom.hexAddress, addressToU160('TA5uka5Y2PtuWvVRAdpEhddxCtPTpff847'), value, 
+    var tx = makeTransferTransaction('ONT', accountFrom.hexAddress, core.addressToU160('TA5uka5Y2PtuWvVRAdpEhddxCtPTpff847'), value, 
     accountFrom.privateKey)
     // var tx = makeTransferTransaction('ONT', accHexAddress, accountToHexAddress, value, accPrivateKey)
     
@@ -119,10 +118,10 @@ testTransferTx()
 // console.log('state deserialized: ' + JSON.stringify(State.deserialize(new StringReader(stateSerialized))))
 
 
-var p = '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3'
+var p = new PrivateKey('9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3');
 // var p = core.generatePrivateKeyStr()
 var password = '123456'
-var key = scrypt.encrypt(p, password)
+var key = scrypt.encrypt(p.key, p.getPublicKey().key, password)
 console.log(key)
 
 // var key = '6PYWwoCjeMgk9n91KDVEvFx3YtxGajtSVjsuVF4fdapiqdfApaT8tXFbau'

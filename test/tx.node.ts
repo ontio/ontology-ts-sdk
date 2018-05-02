@@ -34,7 +34,7 @@ import { TEST_ONT_URL} from '../src/consts'
 import { getHash, generateOntid } from '../src/core';
 import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
-import { PublicKeyStatus } from '../src/crypto';
+import { PublicKeyStatus, PrivateKey, KeyType, CurveLabel, KeyParameters, PublicKey } from '../src/crypto';
 import WebsocketClientApi from '../src/network/websocket/websocketClient';
 import { VmType } from '../src/transaction/vmcode';
 import { RestClient, WebSocketClientApi } from '../src/index';
@@ -53,9 +53,9 @@ const Default_params = {
 }
 const WebSocket = require('ws');
 
-var privateKey: string
-var publicKey: string
-var pk2: string
+var privateKey: PrivateKey
+var publicKey: PublicKey
+var pk2: PublicKey
 var ontid: string
 var oldrecovery : string
 var newrecovery : string
@@ -69,8 +69,8 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 // console.log('privatekey: ' + privateKey)
 // console.log('publick key: ' + publicKey)
 
-privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95'
-publicKey = ab2hexstring(core.getPublicKey(privateKey, true))
+privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
+publicKey = privateKey.getPublicKey()
 pkId = ''
 // let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
 
@@ -84,7 +84,7 @@ pkId = ''
 // ontid = '6469643a6f6e743a626f626162636465636465666768c'
 // ontid = generateOntid(privateKey)
 ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJW'
-pk2 = '035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c'
+pk2 = new PublicKey('035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c');
 
 // recovery = ab2hexstring(core.generateRandomArray(20))
 
@@ -101,7 +101,7 @@ oldrecovery = '8143c0070b7bea4895dbe9078abdf655047b5950'
 // identity.create(privateKey, '123456', 'mickey')
 // ontid = str2hexstr(identity.ontid)
 
-ontid = core.generateOntid(privateKey)
+ontid = core.generateOntid(privateKey.key)
 console.log('ontid: ' + ontid)
 
 const sendTx = (param, callback = null) => {
@@ -239,7 +239,7 @@ const testAddAttribute = () => {
     console.log('value: ' + value)
     console.log('ontid: ' + ontid)
     console.log('type: '+ type)
-    console.log('privateKey: ' + privateKey)
+    console.log('privateKey: ' + privateKey.key)
     console.log('publick: '+publicKey)
     
     let param = buildTxParam(tx)

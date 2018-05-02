@@ -22,27 +22,30 @@ var Scrypt = require('js-scrypt')
 var Bs58check = require('bs58check')
 
 import { ab2hexstring, hexXor } from './utils'
-import * as core from './core'
+import { getSingleSigUInt160, u160ToAddress } from './helpers'
 import { DEFAULT_SCRYPT, OEP_HEADER, OEP_FLAG } from './consts'
 import {ERROR_CODE} from './error'
 
-export function encrypt(privateKey: string, keyphrase: string, scryptParams = DEFAULT_SCRYPT): string {
+export interface ScryptParams {
+    cost: number;
+    blockSize: number;
+    parallel: number;
+    size: number;
+};
+
+export function encrypt(privateKey: string, publicKey: string, keyphrase: string, scryptParams: ScryptParams = DEFAULT_SCRYPT): string {
     // let privateKey = core.getPrivateKeyFromWIF(wifKey);
     //console.log( "privateKey: ", privateKey );
 
-    let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
-    //console.log( "publickeyEncode: ", publickeyEncode );
+    //console.log( "publickeyEncode: ", publicKey );
 
     // let signatureScript = core.createSignatureScript(publickeyEncode);
     //console.log( "signatureScript: ", signatureScript );
 
-    //algorithm and curve
-    publickeyEncode = '1202' + publickeyEncode
-
-    let u160 = core.getSingleSigUInt160(publickeyEncode);
+    let u160 = getSingleSigUInt160(publicKey);
     //console.log( "programHash: ", programHash );
 
-    let address = core.u160ToAddress(u160);
+    let address = u160ToAddress(u160);
     //console.log( "address: ", address );
 
     let addressSha256 = CryptoJS.SHA256(address).toString();
@@ -68,7 +71,7 @@ export function encrypt(privateKey: string, keyphrase: string, scryptParams = DE
 }
 
 //why not return privateKey
-export function decrypt(encryptedKey: string, keyphrase: string, scryptParams = DEFAULT_SCRYPT): string {
+export function decrypt(encryptedKey: string, keyphrase: string, scryptParams: ScryptParams = DEFAULT_SCRYPT): string {
     let assembled = ab2hexstring(Bs58check.decode(encryptedKey));
     //console.log( "assembled: ", assembled );
 
@@ -94,21 +97,35 @@ export function decrypt(encryptedKey: string, keyphrase: string, scryptParams = 
     // PrivateKey
     let privateKey = hexXor(decrypted.toString(), derived1);
     //console.log( "privateKey: ", privateKey );
+    return privateKey;
+}
 
-    let publickeyEncode = core.getPublicKey(privateKey, true).toString('hex');
+/**
+ * Checks if the password supplied to decrypt was correct.
+ * 
+ * This method was taken out from decrypt, because it needs to create public key from private key
+ * and it needs to be supplied from outside.
+ * 
+ * @param encryptedKey Original encrypted key
+ * @param decryptedKey Decrypted key with decrypt
+ * @param publicKey Public key from decrypted key
+ */
+export function checkDecrypted(encryptedKey: string, decryptedKey: string, publicKey: string): void {
+    const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
+    // console.log( "assembled: ", assembled );
 
-    //algorithm and curve
-    publickeyEncode = '1202' + publickeyEncode
-
-    let u160 = core.getSingleSigUInt160(publickeyEncode)
+    const addressHash = assembled.substr(6, 8);
+    // console.log( "addressHash: ", addressHash );
 
     // Address
-    let address = core.u160ToAddress(u160);
+    const u160 = getSingleSigUInt160(publicKey);
+    const address = u160ToAddress(u160);
+    //console.log('address', address)
 
     // AddressHash
-    let addressSha256 = CryptoJS.SHA256(address).toString();
-    let addressSha256_2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
-    let addressHashNew = addressSha256_2.slice(0, 8);
+    const addressSha256 = CryptoJS.SHA256(address).toString();
+    const addressSha256_2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
+    const addressHashNew = addressSha256_2.slice(0, 8);
 
     if (addressHashNew != addressHash) {
         console.log("keyphrase error.");
@@ -118,6 +135,4 @@ export function decrypt(encryptedKey: string, keyphrase: string, scryptParams = 
     // WIF
     // let wifKey = core.getWIFFromPrivateKey(privateKey);
     //console.log( "wifKey: ", wifKey );
-
-    return privateKey;
 }

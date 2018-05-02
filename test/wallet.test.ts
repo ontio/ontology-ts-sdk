@@ -22,6 +22,7 @@ import * as core from '../src/core'
 import * as utils from '../src/utils'
 import * as scrypt from '../src/scrypt'
 import { Identity } from '../src/identity';
+import { PrivateKey } from '../src/crypto';
 
 describe('test wallet', ()=>{
     var wallet:Wallet,
@@ -29,7 +30,7 @@ describe('test wallet', ()=>{
     beforeAll(()=>{
         console.log(Wallet)
         wallet = new Wallet()
-        let privateKey = core.generatePrivateKeyStr()
+        let privateKey = PrivateKey.random()
         wallet.create('mickey')
         walletDataStr = wallet.toJson()
     })
@@ -39,7 +40,7 @@ describe('test wallet', ()=>{
     })
 
     it('test add identity', () => {
-        let privateKey = core.generatePrivateKeyStr()
+        let privateKey = PrivateKey.random()
 
         let identity = new Identity()
         identity.create(privateKey, '123456', 'mickey')
@@ -48,7 +49,7 @@ describe('test wallet', ()=>{
     })
 
     it('test add account', () => {
-        let privateKey = core.generatePrivateKeyStr()
+        let privateKey = PrivateKey.random()
         let ac = new Account()
         ac.create(privateKey, '123456', 'mickey')
         wallet.addAccount(ac)

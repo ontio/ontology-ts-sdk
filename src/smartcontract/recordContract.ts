@@ -8,10 +8,11 @@ import { Transaction } from '../transaction/transaction'
 import abiJson from '../smartcontract/data/recordContract'
 import { str2hexstr } from '../utils';
 import { sendRawTxRestfulUrl, signTransaction, makeInvokeTransaction } from '../transaction/transactionBuilder';
+import { PrivateKey } from '../crypto';
 
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson))
 
-export function buildCommitRecordTx(claimId : string, issuer : string, privateKey : string) {
+export function buildCommitRecordTx(claimId : string, issuer : string, privateKey : PrivateKey) {
     let f = abiInfo.getFunction('Commit')
 
     let name1 = f.parameters[0].getName(),
@@ -32,7 +33,7 @@ export function buildCommitRecordTx(claimId : string, issuer : string, privateKe
     return tx
 }
 
-export function buildRevokeRecordTx(claimId : string, revokerOntid : string, privateKey : string) {
+export function buildRevokeRecordTx(claimId : string, revokerOntid : string, privateKey : PrivateKey) {
     let f = abiInfo.getFunction('Revoke')
 
     let name1 = f.parameters[0].getName(),

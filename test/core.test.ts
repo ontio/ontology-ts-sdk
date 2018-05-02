@@ -19,10 +19,8 @@
  
 import * as core from '../src/core'
 import * as utils from '../src/utils'
-import * as scrypt from '../src/scrypt'
-import { ab2hexstring } from '../src/utils';
 import { verifySignature, getMerkleProof, verifyExpiration, getPkStatus, verifyClaimSignature, getOntidFromPrivateKey, generateOntid, getPublicKey, sha256 } from '../src/core';
-import { PK_STATUS } from '../src/crypto';
+import { PK_STATUS, PrivateKey, KeyType, CurveLabel, KeyParameters } from '../src/crypto';
 import {Claim, Metadata } from '../src/claim'
 
 describe('test core', ()=>{
@@ -52,19 +50,19 @@ describe('test core', ()=>{
     })
 
     test('encrypt private key', () => {
-        let privateKey = 'b02304dcb35bc9a055147f07b2a3291db4ac52f664ec38b436470c98db4200d9'
-        let encrypt = scrypt.encrypt(privateKey, '123456')
-        console.log('encrypt: '+ encrypt)
+        const privateKey = new PrivateKey('b02304dcb35bc9a055147f07b2a3291db4ac52f664ec38b436470c98db4200d9');
+        const encrypt = privateKey.encrypt('123456')
+        console.log('encrypt: '+ encrypt.key)
     })
 
     test('sign and verify', () => {
-        let privateKey = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95'
-        let data = 'hello world'
-        let signed = core.signatureData(data, privateKey)
-        console.log('signed: ' + signed)
+        const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
+        const data = utils.str2hexstr('hello world')
+        const signed = privateKey.sign(data)
+        console.log('signed: ' + signed.value)
 
-        let pk = core.getPublicKey(privateKey, true)
-        let verifyResult = core.verifySignature(data, signed, pk)
+        const pk = privateKey.getPublicKey()
+        const verifyResult = pk.verify(data, signed)
         console.log('verifyResult: ' + verifyResult)
         expect(verifyResult).toBeTruthy()
     })
@@ -106,9 +104,9 @@ describe('test core', ()=>{
 
 
     test('verify claim signature', () => {
-        let privateKey = core.generatePrivateKeyStr()
-        let pk = ab2hexstring(getPublicKey(privateKey,true))
-        let ontid = generateOntid(privateKey)
+        let privateKey = PrivateKey.random()
+        let pk = privateKey.getPublicKey()
+        let ontid = generateOntid(privateKey.key)
         const context = 'claim:standard0001'
         const meta = new Metadata()
         meta.CreateTime = (new Date()).toISOString()

@@ -17,5 +17,7 @@ lib/
 # IDE specific
 /.vscode
 
+yarn.lock
+
 /.DS_Store
 src/.DS_Store

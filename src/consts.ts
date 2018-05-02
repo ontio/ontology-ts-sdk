@@ -34,11 +34,6 @@ export const OEP_FLAG = 'e0'
 // Ont://nativeMethod?param1=xxx&param2=yyy
 export const WEBVIEW_SCHEME = 'Ont'
 
-export class Algorithm {
-  algorithm: string
-  parameters: {}
-}
-
 export const DEFAULT_ALGORITHM = {
   algorithm : "ECDSA",
   parameters : {
