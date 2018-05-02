@@ -40,6 +40,11 @@ export class DDO {
         if(pkTotalLen > 0) {
             const pkNum = parseInt(ss.read(4), 16)
             for (let i = 0; i < pkNum; i++) {
+
+                let pkIdLen = parseInt(ss.read(4), 16);
+                const rawPkId = ss.read(pkIdLen);
+                const pkId = parseInt(rawPkId, 16);
+                
                 //length of public key - 4 bytes
                 let pkLen = parseInt(ss.read(4), 16)
                 let pubKey = new PublicKey()
@@ -47,6 +52,7 @@ export class DDO {
                 const type = parseInt(rawPk.substr(0, 2), 16)
                 const curve = parseInt(rawPk.substr(2, 2), 16)
                 const pk = rawPk.substr(4)
+                pubKey.id = pkId;
                 pubKey.algorithm = type
                 pubKey.curve = curve
                 pubKey.pk = pk
