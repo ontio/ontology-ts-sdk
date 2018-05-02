@@ -21,11 +21,12 @@ import * as secureRandom from 'secure-random';
 import { hexstring2ab, ab2hexstring } from '../utils';
 import { decrypt, encrypt, ScryptParams, checkDecrypted } from '../scrypt';
 import { DEFAULT_ALGORITHM } from '../consts';
-import { Key, JsonKey, KeyParameters, JsonKeyParameters } from './Key';
+import { Key, JsonKey, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
 import { SignatureSchema } from './SignatureSchema';
 import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
+import { CurveLabel } from './index';
 
 export class PrivateKey extends Key {
     /**
@@ -52,14 +53,23 @@ export class PrivateKey extends Key {
     }
 
     /**
-     * Generates random Private key with default parameters.
+     * Generates random Private key using supplied Key type and parameters.
+     * 
+     * If no Key type or parameters is supplied, default SDK key type with default parameters will be used.
+     * 
+     * @param keyType The key type
+     * @param parameters The parameters for the key type
      */
-    static random(): PrivateKey {
-        return PrivateKey.deserializeJson({
-            algorithm: DEFAULT_ALGORITHM.algorithm,
-            parameters: DEFAULT_ALGORITHM.parameters as JsonKeyParameters,
-            key: ab2hexstring(secureRandom(32))
-        });
+    static random(keyType?: KeyType, parameters?: KeyParameters): PrivateKey {
+        if (keyType === undefined) {
+            keyType = KeyType.fromLabel(DEFAULT_ALGORITHM.algorithm);
+        }
+
+        if (parameters === undefined) {
+            parameters = KeyParameters.deserializeJson(DEFAULT_ALGORITHM.parameters);
+        }
+
+        return new PrivateKey(ab2hexstring(secureRandom(32)), keyType, parameters);
     }
 
     /**
