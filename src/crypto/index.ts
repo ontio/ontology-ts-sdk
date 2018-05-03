@@ -18,7 +18,7 @@
 
 export { KeyType } from './KeyType';
 export { CurveLabel } from './CurveLabel';
-export { SignatureSchema } from './SignatureSchema';
+export { SignatureScheme } from './SignatureScheme';
 export { KeyParameters, JsonKeyParameters, JsonKey } from './Key';
 export { PrivateKey } from './PrivateKey';
 export { PublicKey, PK_STATUS, PublicKeyStatus } from './PublicKey';

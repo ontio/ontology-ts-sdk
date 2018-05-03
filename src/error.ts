@@ -36,5 +36,8 @@ export enum ERROR_CODE {
 
     UNKNOWN_ONTID       = 51000,   //不存在的ONT ID,
     NETWORK_ERROR       = 52000,   //网络错误,
-    Decrypto_ERROR      = 53000    //解密错误
+    Decrypto_ERROR      = 53000,    //解密错误,
+
+    PreExec_ERROR = 54000,   //预执行错误
+
 }
