@@ -23,7 +23,7 @@ import { decrypt, encrypt, ScryptParams, checkDecrypted } from '../scrypt';
 import { DEFAULT_ALGORITHM } from '../consts';
 import { Key, JsonKey, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
-import { SignatureSchema } from './SignatureSchema';
+import { SignatureScheme } from './SignatureScheme';
 import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
 import { CurveLabel } from './index';
@@ -37,7 +37,7 @@ export class PrivateKey extends Key {
      * @param msg Hex encoded input data
      * @param schema Signing schema to use
      */
-    sign(msg: string, schema?: SignatureSchema): Signature {
+    sign(msg: string, schema?: SignatureScheme): Signature {
         if (schema === undefined) {
             schema = this.algorithm.defaultSchema;
         }
@@ -96,7 +96,7 @@ export class PrivateKey extends Key {
     decrypt(keyphrase: string, params?: ScryptParams): PrivateKey {
         const decrypted = decrypt(this.key, keyphrase, params);
         const decryptedKey = new PrivateKey(decrypted, this.algorithm, this.parameters);
-        checkDecrypted(this.key, decrypted, decryptedKey.getPublicKey().key);
+        checkDecrypted(this.key, decryptedKey.getPublicKey().key);
 
         return decryptedKey;
     }
@@ -140,21 +140,21 @@ export class PrivateKey extends Key {
      * @param hash Message hash
      * @param schema Signature schema to use
      */
-    computeSignature(hash: string, schema: SignatureSchema): string {
+    computeSignature(hash: string, schema: SignatureScheme): string {
         switch(schema) {
-            case SignatureSchema.ECDSAwithSHA224:
-            case SignatureSchema.ECDSAwithSHA256:
-            case SignatureSchema.ECDSAwithSHA384:
-            case SignatureSchema.ECDSAwithSHA512:
-            case SignatureSchema.ECDSAwithSHA3_224:
-            case SignatureSchema.ECDSAwithSHA3_256:
-            case SignatureSchema.ECDSAwithSHA3_384:
-            case SignatureSchema.ECDSAwithSHA3_512:
-            case SignatureSchema.ECDSAwithRIPEMD160:
+            case SignatureScheme.ECDSAwithSHA224:
+            case SignatureScheme.ECDSAwithSHA256:
+            case SignatureScheme.ECDSAwithSHA384:
+            case SignatureScheme.ECDSAwithSHA512:
+            case SignatureScheme.ECDSAwithSHA3_224:
+            case SignatureScheme.ECDSAwithSHA3_256:
+            case SignatureScheme.ECDSAwithSHA3_384:
+            case SignatureScheme.ECDSAwithSHA3_512:
+            case SignatureScheme.ECDSAwithRIPEMD160:
                 return this.computeEcDSASignature(hash);
-            case SignatureSchema.EDDSAwithSHA512:
+            case SignatureScheme.EDDSAwithSHA512:
                 return this.computeEdDSASignature(hash);
-            case SignatureSchema.SM2withSM3:
+            case SignatureScheme.SM2withSM3:
             default:
                 throw new Error('Unsupported signature schema.');
         }

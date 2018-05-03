@@ -37,12 +37,12 @@ import {
     PrivateKey, 
     KeyType, 
     CurveLabel, 
-    SignatureSchema, 
+    SignatureScheme, 
     PublicKey,
     Signature,
     KeyParameters
 } from './crypto';
-import { u160ToAddress } from './helpers';
+import { u160ToAddress, getSingleSigUInt160 } from './helpers';
 export * from './helpers';
 
 
@@ -176,25 +176,9 @@ export function getWIFFromPrivateKey(privateKey: string): string {
 
 
 export function generateOntid(nonce : string) {
-    let programHash = getHash(nonce);
+    let programHash = getSingleSigUInt160(nonce);
     let ontid = "did:ont:" + u160ToAddress(programHash);
     return ontid
-}
-
-export function getOntidFromPrivateKey(encryptedPrivateKey : PrivateKey, password : string) {
-    const privateKey = encryptedPrivateKey.decrypt(password);
-    return generateOntid(privateKey.key);
-}
-
-export function checkPrivateKey(encryptedPrivateKey : PrivateKey, password : string) {
-    let privateKey: PrivateKey;
-    try {
-        privateKey = encryptedPrivateKey.decrypt(password);
-    } catch{
-        return false
-    }
-    
-    return true
 }
 
 /* 

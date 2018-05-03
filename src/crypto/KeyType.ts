@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SignatureSchema } from "./SignatureSchema";
+import { SignatureScheme } from "./SignatureScheme";
 
 /**
  * Type of key.
@@ -24,15 +24,15 @@ import { SignatureSchema } from "./SignatureSchema";
 export class KeyType {
     static values: KeyType[] = [];
 
-    static ECDSA = new KeyType('ECDSA', 0x12, SignatureSchema.ECDSAwithSHA256);
-	static SM2 = new KeyType('SM2', 0x13, SignatureSchema.SM2withSM3);
-    static EDDSA = new KeyType('EDDSA', 0x14, SignatureSchema.EDDSAwithSHA512);
+    static ECDSA = new KeyType('ECDSA', 0x12, SignatureScheme.ECDSAwithSHA256);
+	static SM2 = new KeyType('SM2', 0x13, SignatureScheme.SM2withSM3);
+    static EDDSA = new KeyType('EDDSA', 0x14, SignatureScheme.EDDSAwithSHA512);
     
     label: string;
     hex: number;
-    defaultSchema: SignatureSchema;
+    defaultSchema: SignatureScheme;
 
-    constructor(label: string, hex: number, defaultSchema: SignatureSchema) {
+    constructor(label: string, hex: number, defaultSchema: SignatureScheme) {
         this.label = label;
         this.hex = hex;
         this.defaultSchema = defaultSchema;

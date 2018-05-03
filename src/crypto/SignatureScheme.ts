@@ -19,20 +19,20 @@
 /**
  * Schema used during signing and verification of signature.
  */
-export class SignatureSchema {
-    static values: SignatureSchema[] = [];
+export class SignatureScheme {
+    static values: SignatureScheme[] = [];
 
-    static ECDSAwithSHA224 = new SignatureSchema('ECDSAwithSHA224', 0);
-	static ECDSAwithSHA256 = new SignatureSchema('ECDSAwithSHA256', 1);
-	static ECDSAwithSHA384 = new SignatureSchema('ECDSAwithSHA384', 2);
-	static ECDSAwithSHA512 = new SignatureSchema('ECDSAwithSHA512', 3);
-	static ECDSAwithSHA3_224 = new SignatureSchema('ECDSAwithSHA3-224', 4);
-	static ECDSAwithSHA3_256 = new SignatureSchema('ECDSAwithSHA3-256', 5);
-	static ECDSAwithSHA3_384 = new SignatureSchema('ECDSAwithSHA3-384', 6);
-	static ECDSAwithSHA3_512 = new SignatureSchema('ECDSAwithSHA3-512', 7);
-	static ECDSAwithRIPEMD160 = new SignatureSchema('ECDSAwithRIPEMD160', 8);
-	static SM2withSM3 = new SignatureSchema('SM2withSM3', 9);
-	static EDDSAwithSHA512 = new SignatureSchema('EDDSAwithSHA512', 10);
+    static ECDSAwithSHA224 = new SignatureScheme('ECDSAwithSHA224', 0);
+	static ECDSAwithSHA256 = new SignatureScheme('ECDSAwithSHA256', 1);
+	static ECDSAwithSHA384 = new SignatureScheme('ECDSAwithSHA384', 2);
+	static ECDSAwithSHA512 = new SignatureScheme('ECDSAwithSHA512', 3);
+	static ECDSAwithSHA3_224 = new SignatureScheme('ECDSAwithSHA3-224', 4);
+	static ECDSAwithSHA3_256 = new SignatureScheme('ECDSAwithSHA3-256', 5);
+	static ECDSAwithSHA3_384 = new SignatureScheme('ECDSAwithSHA3-384', 6);
+	static ECDSAwithSHA3_512 = new SignatureScheme('ECDSAwithSHA3-512', 7);
+	static ECDSAwithRIPEMD160 = new SignatureScheme('ECDSAwithRIPEMD160', 8);
+	static SM2withSM3 = new SignatureScheme('SM2withSM3', 9);
+	static EDDSAwithSHA512 = new SignatureScheme('EDDSAwithSHA512', 10);
 
     label: string;
     hex: number;
@@ -41,7 +41,7 @@ export class SignatureSchema {
         this.label = label;
         this.hex = hex;
         
-        SignatureSchema.values.push(this);
+        SignatureScheme.values.push(this);
     }
 
     /**
@@ -49,8 +49,8 @@ export class SignatureSchema {
      * 
      * @param hex Byte hex value
      */
-    static fromHex(hex: number): SignatureSchema {
-        const item = SignatureSchema.values.find(v => v.hex === hex);
+    static fromHex(hex: number): SignatureScheme {
+        const item = SignatureScheme.values.find(v => v.hex === hex);
         if (item === undefined) {
             throw new Error('Enum value not found');
         }
@@ -63,8 +63,8 @@ export class SignatureSchema {
      * 
      * @param label Label
      */
-    static fromLabel(label: string): SignatureSchema {
-        const item = SignatureSchema.values.find(v => v.label === label);
+    static fromLabel(label: string): SignatureScheme {
+        const item = SignatureScheme.values.find(v => v.label === label);
         if (item === undefined) {
             throw new Error('Enum value not found');
         }

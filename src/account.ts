@@ -19,39 +19,46 @@
 import * as core from './core'
 import { ab2hexstring } from './utils'
 import { PrivateKey } from './crypto';
-
-export class Contract {
-    script : string
-    parameters : Array<string>
-    deployed : boolean
-}
+import { SignatureScheme } from './crypto'
 
 export class Account {
     address: string;
     label: string;
     lock: boolean;
     encryptedKey: PrivateKey;
-    // contract: Contract
     extra: null;
+
+    //to compatible with cli wallet
+    "enc-alg": string = "aes-256-ctr";
+    hash : string = 'sha256';
+    passwordHash : string;
+    publicKey : string;
+    signatureScheme : string;
+    isDefault : boolean;
 
     constructor() {
     }
 
-    create( privateKey: PrivateKey, password: string, label: string ): Account {
+    create( privateKey: PrivateKey, password: string, label: string, signatureScheme ?: SignatureScheme  ): Account {
         
-        // let contract = {
-        //     script : '',
-        //     parameters : [],
-        //     deployed : false
-        // }
-
         this.address = "";
         this.label = label;
         this.lock = false;
+        this.passwordHash = core.sha256(password)
+        this.isDefault = false;
+
+        if(signatureScheme) {
+            this.signatureScheme = signatureScheme.label
+        } else {
+            this.signatureScheme = privateKey.algorithm.defaultSchema.label
+        }
 
         this.encryptedKey = privateKey.encrypt(password); 
         
+        
         const publicKey = privateKey.getPublicKey();
+        
+        this.publicKey = publicKey.serializeHex();
         
         let programHash = core.getSingleSigUInt160(publicKey.serializeHex());
 
@@ -76,14 +83,14 @@ export class Account {
         account.address = "";
         account.label = label;
         account.lock = false;
+        account.isDefault = false;
+        account.passwordHash = core.sha256(password)
 
         account.encryptedKey = encryptedPrivateKey;
 
-        // let publicKeyEncoded = ab2hexstring(core.getPublicKey(privateKey, true));
-        // contract.script = core.createSignatureScript(publicKeyEncoded);
-        // account.contract = contract
-
         const publicKey = privateKey.getPublicKey();
+        account.publicKey = publicKey.key;
+        account.signatureScheme = privateKey.algorithm.defaultSchema.label;
 
         let programHash = core.getSingleSigUInt160(publicKey.serializeHex());
 
@@ -112,7 +119,12 @@ export class Account {
             algorithm: this.encryptedKey.algorithm.label,
             parameters: this.encryptedKey.parameters.serializeJson(),
             key: this.encryptedKey.key,
-            // contract: this.contract,
+            "enc-alg": this['enc-alg'],
+            hash: this.hash,
+            passwordHash: this.passwordHash,
+            signatureScheme : this.signatureScheme,
+            isDefault : this.isDefault,
+            publicKey : this.publicKey,
             extra: this.extra
         }
         return obj;
@@ -134,6 +146,11 @@ export class Account {
         account.address = obj.address
         account.label = obj.label
         account.lock = obj.lock
+        account.isDefault = obj.isDefault
+        account.passwordHash = obj.passwordHash
+        account.publicKey = obj.publicKey
+        account.signatureScheme = obj.SignatureScheme
+
         account.encryptedKey = PrivateKey.deserializeJson({
             algorithm: obj.algorithm,
             parameters: obj.parameters,

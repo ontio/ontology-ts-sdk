@@ -34,7 +34,7 @@ import { VmCode, VmType } from './vmcode';
 import * as cryptoJS from 'crypto-js'
 import opcode from './opcode';
 import {BigNumber} from 'bignumber.js'
-import {SignatureSchema, PrivateKey, KeyType, CurveLabel, KeyParameters} from '../crypto';
+import {SignatureScheme, PrivateKey, KeyType, CurveLabel, KeyParameters} from '../crypto';
 
 const WebSocket = require('ws');
 
@@ -98,7 +98,7 @@ export const makeTransferTransaction = (tokenType:string, from : string, to : st
  * @param privateKey Private key to sign with
  * @param schema Signature Schema to use
  */
-export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureSchema) => {
+export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
     const publicKey = privateKey.getPublicKey();
 
     if (schema === undefined) {

@@ -22,7 +22,7 @@ import { Key, KeyParameters } from './Key';
 import { Signature } from './Signature';
 import { KeyType } from './KeyType';
 import { CurveLabel } from './CurveLabel';
-import { SignatureSchema } from './SignatureSchema';
+import { SignatureScheme } from './SignatureScheme';
 
 export class PublicKey extends Key {
     /**
@@ -73,21 +73,21 @@ export class PublicKey extends Key {
         return result;
     }
 
-    verifySignature(hash: string, signature: string, schema: SignatureSchema): boolean {
+    verifySignature(hash: string, signature: string, schema: SignatureScheme): boolean {
         switch(schema) {
-            case SignatureSchema.ECDSAwithSHA224:
-            case SignatureSchema.ECDSAwithSHA256:
-            case SignatureSchema.ECDSAwithSHA384:
-            case SignatureSchema.ECDSAwithSHA512:
-            case SignatureSchema.ECDSAwithSHA3_224:
-            case SignatureSchema.ECDSAwithSHA3_256:
-            case SignatureSchema.ECDSAwithSHA3_384:
-            case SignatureSchema.ECDSAwithSHA3_512:
-            case SignatureSchema.ECDSAwithRIPEMD160:
+            case SignatureScheme.ECDSAwithSHA224:
+            case SignatureScheme.ECDSAwithSHA256:
+            case SignatureScheme.ECDSAwithSHA384:
+            case SignatureScheme.ECDSAwithSHA512:
+            case SignatureScheme.ECDSAwithSHA3_224:
+            case SignatureScheme.ECDSAwithSHA3_256:
+            case SignatureScheme.ECDSAwithSHA3_384:
+            case SignatureScheme.ECDSAwithSHA3_512:
+            case SignatureScheme.ECDSAwithRIPEMD160:
                 return this.verifiyEcDSASignature(hash, signature);
-            case SignatureSchema.EDDSAwithSHA512:
+            case SignatureScheme.EDDSAwithSHA512:
                 return this.verifiyEdDSASignature(hash, signature);
-            case SignatureSchema.SM2withSM3:
+            case SignatureScheme.SM2withSM3:
             default:
                 throw new Error('Unsupported signature schema.');
         }

@@ -23,7 +23,7 @@ import { hexstr2str, hexstring2ab, StringReader } from '../utils';
 import { DEFAULT_ALGORITHM } from '../consts';
 import { KeyType } from './KeyType';
 import { CurveLabel } from './CurveLabel';
-import { SignatureSchema } from './SignatureSchema';
+import { SignatureScheme } from './SignatureScheme';
 
 /**
  * Specific parameters for the key type.
@@ -99,28 +99,28 @@ export class Key {
      * @param msg Hex encoded input data
      * @param schema Signing schema to use
      */
-    computeHash(msg: string, schema: SignatureSchema): string {
+    computeHash(msg: string, schema: SignatureScheme): string {
         switch(schema) {
-            case SignatureSchema.ECDSAwithSHA224:
+            case SignatureScheme.ECDSAwithSHA224:
                 return cryptoJS.SHA224(cryptoJS.enc.Hex.parse(msg)).toString();
-            case SignatureSchema.ECDSAwithSHA256:
+            case SignatureScheme.ECDSAwithSHA256:
                 return cryptoJS.SHA256(cryptoJS.enc.Hex.parse(msg)).toString();
-            case SignatureSchema.ECDSAwithSHA384:
+            case SignatureScheme.ECDSAwithSHA384:
                 return cryptoJS.SHA384(cryptoJS.enc.Hex.parse(msg)).toString();
-            case SignatureSchema.ECDSAwithSHA512:
-            case SignatureSchema.EDDSAwithSHA512:
+            case SignatureScheme.ECDSAwithSHA512:
+            case SignatureScheme.EDDSAwithSHA512:
                 return cryptoJS.SHA512(cryptoJS.enc.Hex.parse(msg)).toString();
-            case SignatureSchema.ECDSAwithSHA3_224:
+            case SignatureScheme.ECDSAwithSHA3_224:
                 return sha3_224(hexstring2ab(msg));
-            case SignatureSchema.ECDSAwithSHA3_256:
+            case SignatureScheme.ECDSAwithSHA3_256:
                 return sha3_256(hexstring2ab(msg));
-            case SignatureSchema.ECDSAwithSHA3_384:
+            case SignatureScheme.ECDSAwithSHA3_384:
                 return sha3_384(hexstring2ab(msg));
-            case SignatureSchema.ECDSAwithSHA3_512:
+            case SignatureScheme.ECDSAwithSHA3_512:
                 return sha3_512(hexstring2ab(msg));
-            case SignatureSchema.ECDSAwithRIPEMD160:
+            case SignatureScheme.ECDSAwithRIPEMD160:
                 return cryptoJS.RIPEMD160(cryptoJS.enc.Hex.parse(msg)).toString();
-            case SignatureSchema.SM2withSM3:
+            case SignatureScheme.SM2withSM3:
             default:
                 throw new Error('Unsupported hash algorithm.');
         }
@@ -131,21 +131,21 @@ export class Key {
      * 
      * @param schema Signing schema to use
      */
-    isSchemaSupported(schema: SignatureSchema): boolean {
+    isSchemaSupported(schema: SignatureScheme): boolean {
         switch(schema) {
-            case SignatureSchema.ECDSAwithSHA224:
-            case SignatureSchema.ECDSAwithSHA256:
-            case SignatureSchema.ECDSAwithSHA384:
-            case SignatureSchema.ECDSAwithSHA512:
-            case SignatureSchema.ECDSAwithSHA3_224:
-            case SignatureSchema.ECDSAwithSHA3_256:
-            case SignatureSchema.ECDSAwithSHA3_384:
-            case SignatureSchema.ECDSAwithSHA3_512:
-            case SignatureSchema.ECDSAwithRIPEMD160:
+            case SignatureScheme.ECDSAwithSHA224:
+            case SignatureScheme.ECDSAwithSHA256:
+            case SignatureScheme.ECDSAwithSHA384:
+            case SignatureScheme.ECDSAwithSHA512:
+            case SignatureScheme.ECDSAwithSHA3_224:
+            case SignatureScheme.ECDSAwithSHA3_256:
+            case SignatureScheme.ECDSAwithSHA3_384:
+            case SignatureScheme.ECDSAwithSHA3_512:
+            case SignatureScheme.ECDSAwithRIPEMD160:
                 return this.algorithm === KeyType.ECDSA;
-            case SignatureSchema.EDDSAwithSHA512:
+            case SignatureScheme.EDDSAwithSHA512:
                 return this.algorithm === KeyType.EDDSA;
-            case SignatureSchema.SM2withSM3:
+            case SignatureScheme.SM2withSM3:
                 return this.algorithm === KeyType.SM2;
             default:
                 throw new Error('Unsupported signature schema.');

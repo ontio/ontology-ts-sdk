@@ -1,3 +1,4 @@
+import { PublicKey } from './../src/crypto/PublicKey';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -15,26 +16,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+import * as CryptoJS from 'crypto-js'
 import * as scrypt from '../src/scrypt'
 import * as core from '../src/core'
 import { ERROR_CODE } from '../src/error';
 import { ab2hexstring } from '../src/utils';
 import { PrivateKey, KeyType, KeyParameters, CurveLabel } from '../src/crypto';
+import { Account } from '../src/account';
 
 describe('test scrypt', () => {
     it('test encrypt and decrypt', () => {
         let privateKey = PrivateKey.random();
-        let encrypt = scrypt.encrypt(privateKey.key, privateKey.getPublicKey().key, '123456')
+        // let privateKey = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07')
+        let publicKey = privateKey.getPublicKey().serializeHex()
+        
+        let encrypt = scrypt.encrypt(privateKey.key, publicKey, '123456')
         expect(encrypt).toBeDefined()
-
+        
         let result = scrypt.decrypt(encrypt, '123456')
-        scrypt.checkDecrypted(encrypt, result, new PrivateKey(result).getPublicKey().key);
+        scrypt.checkDecrypted(encrypt, new PrivateKey(result).getPublicKey().serializeHex());
         expect(result).toEqual(privateKey.key)
 
         try {
-            result = scrypt.decrypt(encrypt, '1234567')
-            scrypt.checkDecrypted(encrypt, result, new PrivateKey(result).getPublicKey().key);
+            result = scrypt.decrypt(encrypt,'1234567')
+            scrypt.checkDecrypted(encrypt,  new PrivateKey(result).getPublicKey().key);
         } catch(err) {
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)
         }

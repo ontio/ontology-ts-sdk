@@ -41,6 +41,9 @@ import TxSender from '../transaction/txSender'
 import axios from 'axios'
 import {BigNumber} from 'bignumber.js'
 import {DDO} from '../transaction/ddo';
+import RestClient from '../network/rest/restClient';
+
+
 export class SDK {
     static SERVER_NODE : string = TEST_NODE
     static REST_PORT: string = HTTP_REST_PORT
@@ -93,6 +96,7 @@ export class SDK {
         // account.create(privateKey, password, name)
         // wallet.addAccount(account)
 
+        //
         let walletDataStr = wallet.toJson()
         let obj = {
             error: 0,
@@ -102,42 +106,40 @@ export class SDK {
          
         let tx = buildRegisterOntidTx(identity.ontid, privateKey)
         let param = buildTxParam(tx)
-        const socketCallback = function(err: any, res:any, socket:any) {
-            if(err) {
-                obj.result = ''
-                obj.error = ERROR_CODE.NETWORK_ERROR
+        //add preExec
+        let restClient = new RestClient()
+        return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+            //preExec success, send real request
+            if (res.Result == '01') {
+                restClient.sendRawTransaction(tx.serialize(), false)
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                return
-            }
-            if(res && res.Error === 0) {
-                callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                socket.close()
+                return obj
             } else {
                 let errResult = {
-                    error: res.Error,
+                    error: ERROR_CODE.PreExec_ERROR,
                     result: '',
                     desc: res.Result
                 }
-                if (callback) {
-                    sendBackResult2Native(JSON.stringify(errResult), callback)
-                }
-                socket.close()
+                callback && sendBackResult2Native(JSON.stringify(errResult), callback)
+                return errResult
             }
-        } 
-        let socket = `ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`
-        var txSender = new TxSender(socket)
-        txSender.sendTxWithSocket(param, socketCallback)
-        // callback && sendBackResult2Native(JSON.stringify(obj), callback)
-        return obj
+        }).catch((err: any) => {
+            let obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        })
     }
 
-    static importIdentityWithWallet(walletDataStr : string, label : string, encryptedPrivateKey : PrivateKey, 
+    static importIdentityWithWallet(walletDataStr : string, label : string, encryptedPrivateKey : string, 
         password : string, callback ?: string) {
         let identity = new Identity()
         let wallet = Wallet.parseJson(walletDataStr)
         try {
             //TODO check ontid
-            identity = Identity.importIdentity(label, encryptedPrivateKey, password)
+            let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
+            identity = Identity.importIdentity(label,encryptedPrivateKeyObj, password)
         } catch (err) {
             let obj  = this.getDecryptError(err)
 
@@ -175,11 +177,12 @@ export class SDK {
     }
 
     //send http post to check
-    static importIdentity(label : string, encryptedPrivateKey : PrivateKey, password : string, callback ?: string) {
+    static importIdentity(label : string, encryptedPrivateKey : string, password : string, callback ?: string) {
         let identity = new Identity()
         let error = {}
         try {
-            identity = Identity.importIdentity(label, encryptedPrivateKey, password)
+            let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
+            identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password)
             let wallet = new Wallet()
             wallet.create(identity.label)
             wallet.defaultOntid = identity.ontid
@@ -270,11 +273,12 @@ export class SDK {
         return obj
     }
 
-    static importAccountWithWallet(walletDataStr:string, label : string, encryptedPrivateKey: PrivateKey, password:string, callback ?: string) {
+    static importAccountWithWallet(walletDataStr:string, label : string, encryptedPrivateKey: string, password:string, callback ?: string) {
         let wallet = Wallet.parseJson(walletDataStr)
         let account = new Account()
+        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
         try {
-            account = Account.importAccount(label, encryptedPrivateKey, password)
+            account = Account.importAccount(label, encryptedPrivateKeyObj, password)
         } catch(err) {
             let result = this.getDecryptError(err)
             if (callback) {
@@ -294,10 +298,11 @@ export class SDK {
     }
 
     static signSelfClaim(context: string, claimData : string, ontid : string,
-         encryptedPrivateKey : PrivateKey, password : string, callback ?:string)  {
+         encryptedPrivateKey : string, password : string, callback ?:string)  {
         let privateKey: PrivateKey;
+        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
         try {
-            privateKey = encryptedPrivateKey.decrypt(password);
+            privateKey = encryptedPrivateKeyObj.decrypt(password);
         } catch(err) {
             let result = this.getDecryptError(err)
 
@@ -330,10 +335,11 @@ export class SDK {
     }
 
 
-    static decryptEncryptedPrivateKey( encryptedPrivateKey : PrivateKey, password : string, callback?: string) {
+    static decryptEncryptedPrivateKey( encryptedPrivateKey : string, password : string, callback?: string) {
         let privateKey: PrivateKey;
+        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
         try {
-            privateKey = encryptedPrivateKey.decrypt(password);
+            privateKey = encryptedPrivateKeyObj.decrypt(password);
         } catch(err) {
             let result = this.getDecryptError(err)
 
@@ -356,11 +362,12 @@ export class SDK {
 
     
 
-    static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey: PrivateKey,
+    static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey: string,
          password : string, callback ?: string ) {
             let privateKey: PrivateKey;
+            let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)        
             try {
-                privateKey = encryptedPrivateKey.decrypt(password);
+                privateKey = encryptedPrivateKeyObj.decrypt(password);
             } catch (err) {
                 let result = this.getDecryptError(err)
                 callback && sendBackResult2Native(JSON.stringify(result), callback)
@@ -378,41 +385,39 @@ export class SDK {
             const value = str2hexstr(JSON.stringify(valueObj))
             let tx = buildAddAttributeTx(path, value,type, subject, privateKey)
             
-            // let txId = core.getHash(tx.serialize())
-            let param = buildTxParam(tx)
-            //通过socket能获得推送的结果
-            let socket = `ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`
-            var txSender = new TxSender(socket)
-            const socketCallback = function(err : any, res : any, socket : any) {
-                if (err) {
+            let restClient = new RestClient()
+            return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+                if (res.Result == '01') {
+                    restClient.sendRawTransaction(tx.serialize(), false)
+                    const hash = core.sha256(core.sha256(tx.serializeUnsignedData()))
                     let obj = {
-                        error: ERROR_CODE.NETWORK_ERROR,
+                        error: ERROR_CODE.SUCCESS,
+                        result: hash
+                    }
+                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                    return obj
+                } else {
+                    let obj = {
+                        error: ERROR_CODE.PreExec_ERROR,
                         result: ''
                     }
                     callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                    return
+                    return obj
                 }
-                console.log('res: '+ JSON.stringify(res))
-                if(res.Action === 'Notify' && res.Error === 0) {
-                    const txHash = res.Result[0].TxHash
-                    let hash = ab2hexstring(txHash)
-                    console.log('hash: '+ hash)
-                    let obj = {
-                        error : ERROR_CODE.SUCCESS,
-                        result : hash
-                    }
-                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                    socket.close()
+            }).catch((err: any) => {
+                let obj = {
+                    error: ERROR_CODE.NETWORK_ERROR,
+                    result: ''
                 }
-            }
-
-            txSender.sendTxWithSocket(param, socketCallback)
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+            })
     }
 
-    static signData(content : string, encryptedPrivateKey : PrivateKey, password : string, callback? : string): PgpSignature | object {
+    static signData(content : string, encryptedPrivateKey : string, password : string, callback? : string): PgpSignature | object {
         let privateKey: PrivateKey;
+        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)        
         try {
-            privateKey = encryptedPrivateKey.decrypt(password);
+            privateKey = encryptedPrivateKeyObj.decrypt(password);
         } catch (err) {
             let result = this.getDecryptError(err)
 
@@ -460,7 +465,7 @@ export class SDK {
     }
 
     //pls check balance before transfer
-    static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : PrivateKey, password : string, callback : string) {
+    static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, callback : string) {
         try {
             if (from.length !== 40) {
                 from = core.addressToU160(from)
@@ -479,8 +484,9 @@ export class SDK {
          }
         
         let privateKey: PrivateKey;
+        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)        
         try {
-            privateKey = encryptedPrivateKey.decrypt(password);
+            privateKey = encryptedPrivateKeyObj.decrypt(password);
         } catch (err) {
             let result = this.getDecryptError(err)
             if (callback) {
