@@ -191,6 +191,20 @@ export class StringReader {
 	}
 
 	/**
+	 * Reads string terminated by NULL.
+	 */
+	readNullTerminated(): string {
+		const index = this.str.indexOf('00', this.pos);
+		if (index === -1) {
+			throw new Error('No ending NULL found');
+		}
+
+		const out = this.str.substring(this.pos, index);
+		this.pos = index + 2;
+		return out;
+	}
+
+	/**
 	 * First, read one byte as the length of bytes to read. Then read the following bytes.
 	 * @return {string}
 	 */

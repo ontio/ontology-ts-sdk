@@ -17,12 +17,14 @@
  */
 
 import * as elliptic from 'elliptic';
-import { StringReader, num2hexstring } from '../utils';
+import { sm2 } from 'sm.js';
+import { StringReader, num2hexstring, hexstr2str, hexstring2ab } from '../utils';
 import { Key, KeyParameters } from './Key';
 import { Signature } from './Signature';
 import { KeyType } from './KeyType';
 import { CurveLabel } from './CurveLabel';
 import { SignatureScheme } from './SignatureScheme';
+import { DEFAULT_SM2_ID } from '../consts';
 
 export class PublicKey extends Key {
     /**
@@ -84,10 +86,11 @@ export class PublicKey extends Key {
             case SignatureScheme.ECDSAwithSHA3_384:
             case SignatureScheme.ECDSAwithSHA3_512:
             case SignatureScheme.ECDSAwithRIPEMD160:
-                return this.verifiyEcDSASignature(hash, signature);
+                return this.verifyEcDSASignature(hash, signature);
             case SignatureScheme.EDDSAwithSHA512:
-                return this.verifiyEdDSASignature(hash, signature);
+                return this.verifyEdDSASignature(hash, signature);
             case SignatureScheme.SM2withSM3:
+                return this.verifySM2Signature(hash, signature);
             default:
                 throw new Error('Unsupported signature schema.');
         }
@@ -99,7 +102,7 @@ export class PublicKey extends Key {
      * @param hash Message hash
      * @param signature Hex encoded signature
      */
-    verifiyEcDSASignature(hash: string, signature: string): boolean {
+    verifyEcDSASignature(hash: string, signature: string): boolean {
         const r = signature.substr(0, 64);
         const s = signature.substr(64, 64);
 
@@ -113,12 +116,35 @@ export class PublicKey extends Key {
      * @param hash Message hash
      * @param signature Hex encoded signature
      */
-    verifiyEdDSASignature(hash: string, signature: string): boolean {
+    verifyEdDSASignature(hash: string, signature: string): boolean {
         const r = signature.substr(0, 64);
         const s = signature.substr(64, 64);
 
         const eddsa = new elliptic.eddsa(this.parameters.curve.preset);
         return eddsa.verify(hash, { r, s }, this.key, 'hex');
+    }
+
+    /**
+     * Verifies SM2 signature of message hash.
+     * 
+     * Only default SM2 ID is supported.
+     * 
+     * @param hash Message hash
+     * @param signature Hex encoded signature
+     */
+    verifySM2Signature(hash: string, signature: string): boolean {
+        const reader = new StringReader(signature);
+
+        const id = hexstr2str(reader.readNullTerminated());
+        if (id !== DEFAULT_SM2_ID && id !== '') {
+            throw new Error('Unsupported SM2 id used.');
+        }
+
+        const r = reader.read(32);
+        const s = reader.read(32);
+
+        const keyPair = sm2.SM2KeyPair(this.key);
+        return keyPair.verify(hexstring2ab(hash), r, s);
     }
 };
 

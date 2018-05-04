@@ -41,6 +41,8 @@ export const DEFAULT_ALGORITHM = {
   }
 }
 
+export const DEFAULT_SM2_ID = '1234567812345678';
+
 export const ALGORITHM_TYPE = {
 
 }

@@ -23,3 +23,4 @@
 declare module 'elliptic';
 declare module 'bn.js';
 declare module 'secure-random';
+declare module 'sm.js';
