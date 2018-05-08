@@ -343,11 +343,11 @@ const testInvokeWasmContract = () => {
 
 //uncomment one line to test one tx each time.
 
-// testRegisterOntid()
+testRegisterOntid()
 
 // testAddAttribute()
 
-testDDOTx()
+// testDDOTx()
 
 // testVerifyOntidClaim()
 

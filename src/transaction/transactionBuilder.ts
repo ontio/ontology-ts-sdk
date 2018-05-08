@@ -262,12 +262,28 @@ export const buildWasmContractParam = (params : Array<Parameter>) => {
     return str2hexstr(JSON.stringify(result))
 }
 
+export const buildNativeContractParam = (params : Array<Parameter>) => {
+    let result = ''
+    for( let p of params) {
+        const type = p.getType()
+        switch (type) {
+            case ParameterType.ByteArray:
+                result += hex2VarBytes(p.value);
+            break;
+            default:
+                break;
+        }
+    }
+
+    return result
+}
+
 export const makeInvokeCode = (funcName : string,  params : Array<Parameter>, codeHash : string, vmType : VmType = VmType.NEOVM) => {
     let invokeCode = new InvokeCode()
     let vmCode = new VmCode()
-    const functionName = str2hexstr(funcName)
+    const funcNameHex = str2hexstr(funcName)
     if(vmType === VmType.NEOVM) {
-        let args = buildSmartContractParam(functionName, params)
+        let args = buildSmartContractParam(funcNameHex, params)
         let contract = new Contract()
         contract.address = codeHash
         contract.args = args
@@ -286,6 +302,15 @@ export const makeInvokeCode = (funcName : string,  params : Array<Parameter>, co
         contract.args = args
         let code = contract.serialize()
 
+        vmCode.code = code
+        vmCode.vmType = vmType
+    } else if(vmType === VmType.NativeVM) {
+        let args = buildNativeContractParam(params)
+        let contract = new Contract()
+        contract.address = codeHash
+        contract.args = args
+        contract.method = funcName
+        let code = contract.serialize()
         vmCode.code = code
         vmCode.vmType = vmType
     }

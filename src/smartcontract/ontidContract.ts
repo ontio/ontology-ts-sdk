@@ -1,3 +1,4 @@
+import { VmType } from './../transaction/vmcode';
 
 import AbiInfo from '../smartcontract/abi/abiInfo'
 import AbiFunction from "../smartcontract/abi/abiFunction";
@@ -20,7 +21,7 @@ export function buildRegisterOntidTx(ontid: string, privateKey: PrivateKey) {
         ontid = str2hexstr(ontid)
     }
     console.log("Register ", ontid)
-    let f = abiInfo.getFunction('RegIdWithPublicKey')
+    let f = abiInfo.getFunction('regIDWithPublicKey')
 
     let name1 = f.parameters[0].getName(),
         type1 = ParameterType.ByteArray
@@ -33,7 +34,7 @@ export function buildRegisterOntidTx(ontid: string, privateKey: PrivateKey) {
     let p2 = new Parameter(name2, type2, publicKey.serializeHex())
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.hash)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.hash, VmType.NativeVM)
     signTransaction(tx, privateKey)
 
     return tx

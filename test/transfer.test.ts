@@ -61,7 +61,7 @@ const  testTransferTx = () => {
     var tx = makeTransferTransaction('ONT', accountFrom.hexAddress, core.addressToU160('TA5uka5Y2PtuWvVRAdpEhddxCtPTpff847'), value, 
     accountFrom.privateKey)
     // var tx = makeTransferTransaction('ONT', accHexAddress, accountToHexAddress, value, accPrivateKey)
-    
+    console.log(tx.serialize())
     var param = buildRestfulParam(tx)
     // // console.log('param : ' + JSON.stringify(param))
 

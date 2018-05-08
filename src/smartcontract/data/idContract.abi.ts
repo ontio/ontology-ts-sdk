@@ -1,5 +1,5 @@
 export default {
-    "hash": "80b0cc71bda8653599c5666cae084bff587e2de1",
+    "hash": "ff00000000000000000000000000000000000003",
         "entrypoint": "Main",
             "functions":
     [
@@ -19,7 +19,7 @@ export default {
             "returntype": "Any"
         },
         {
-            "name": "RegIdWithPublicKey",
+            "name": "regIDWithPublicKey",
             "parameters":
                 [
                     {
