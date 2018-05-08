@@ -18,9 +18,10 @@
 
 import * as elliptic from 'elliptic';
 import * as secureRandom from 'secure-random';
-import { hexstring2ab, ab2hexstring } from '../utils';
+import { sm2 } from 'sm.js';
+import { hexstring2ab, ab2hexstring, str2ab, str2hexstr } from '../utils';
 import { decrypt, encrypt, ScryptParams, checkDecrypted } from '../scrypt';
-import { DEFAULT_ALGORITHM } from '../consts';
+import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID } from '../consts';
 import { Key, JsonKey, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
 import { SignatureScheme } from './SignatureScheme';
@@ -82,6 +83,7 @@ export class PrivateKey extends Key {
             case KeyType.EDDSA:
                 return this.getEdDSAPublicKey();
             case KeyType.SM2:
+                return this.getSM2PublicKey();
             default:
                 throw new Error('Unsupported signature schema.');
         }
@@ -135,6 +137,16 @@ export class PrivateKey extends Key {
     }
 
     /**
+     * Derives Public key out of Private key using SM2 algorithm.
+     */
+    getSM2PublicKey(): PublicKey {
+        const keyPair = sm2.SM2KeyPair(null, this.key);
+        const pk = keyPair.pubToString('compress');
+
+        return new PublicKey(pk, this.algorithm, this.parameters);
+    }
+
+    /**
      * Computes signature of message hash using specified signature schema.
      * 
      * @param hash Message hash
@@ -155,6 +167,7 @@ export class PrivateKey extends Key {
             case SignatureScheme.EDDSAwithSHA512:
                 return this.computeEdDSASignature(hash);
             case SignatureScheme.SM2withSM3:
+                return this.computeSM2Signature(hash);
             default:
                 throw new Error('Unsupported signature schema.');
         }
@@ -186,6 +199,22 @@ export class PrivateKey extends Key {
             signed.R.toArrayLike(Buffer, 'be', 32),
             signed.S.toArrayLike(Buffer, 'be', 32)
         ]).toString('hex');
+    }
+
+    /**
+     * Computes SM2 signature of message hash.
+     * 
+     * Only default SM2 ID is supported.
+     * 
+     * @param hash Message hash
+     */
+    computeSM2Signature(hash: string): string {
+        const keyPair = sm2.SM2KeyPair(null, this.key);
+        const signed = keyPair.sign(hexstring2ab(hash));
+
+        const id = DEFAULT_SM2_ID;
+
+        return str2hexstr(id + '\0') + signed.r + signed.s;
     }
 
     /**
