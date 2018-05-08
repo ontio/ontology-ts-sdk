@@ -281,3 +281,10 @@ export const axiosPost = (url:string, params:any) => {
 		return err
 	})
 }
+
+/**
+ * Gets current time in unix timestamp format.
+ */
+export function now(): number {
+	return Math.floor(Date.now() / 1000);
+}

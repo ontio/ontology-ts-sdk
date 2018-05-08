@@ -37,8 +37,9 @@ export class PrivateKey extends Key {
      * 
      * @param msg Hex encoded input data
      * @param schema Signing schema to use
+     * @param publicKeyId Id of public key
      */
-    sign(msg: string, schema?: SignatureScheme): Signature {
+    sign(msg: string, schema?: SignatureScheme, publicKeyId?: string): Signature {
         if (schema === undefined) {
             schema = this.algorithm.defaultSchema;
         }
@@ -50,7 +51,7 @@ export class PrivateKey extends Key {
         const hash = this.computeHash(msg, schema);
         const signed = this.computeSignature(hash, schema);
         
-        return new Signature(schema, signed);
+        return new Signature(schema, signed, publicKeyId);
     }
 
     /**
