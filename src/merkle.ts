@@ -17,7 +17,7 @@
  */
 
 import * as cryptoJS from 'crypto-js'
-import { RestClient } from './index';
+import RestClient from './network/rest/restClient';
 
 
 /* 

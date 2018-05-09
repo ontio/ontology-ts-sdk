@@ -29,9 +29,9 @@
 import {Wallet} from '../wallet'
 import {Identity} from '../identity'
 import {Account} from '../account'
-import {Claim, Metadata} from '../claim'
+import {Claim} from '../claim/claim'
 import { PrivateKey, PgpSignature } from '../crypto';
-import {sendBackResult2Native, EventEmitter, str2hexstr, ab2hexstring} from '../utils'
+import {sendBackResult2Native, EventEmitter, str2hexstr, ab2hexstring, now} from '../utils'
 import * as core from '../core'
 import { buildTxParam, buildRpcParam, parseEventNotify, makeTransferTransaction, buildRestfulParam, sendRawTxRestfulUrl} from '../transaction/transactionBuilder'
 import { buildAddAttributeTx, buildRegisterOntidTx, buildGetDDOTx} from '../smartcontract/ontidContract'
@@ -301,6 +301,7 @@ export class SDK {
          encryptedPrivateKey : string, password : string, callback ?:string)  {
         let privateKey: PrivateKey;
         let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
+        let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
         try {
             privateKey = encryptedPrivateKeyObj.decrypt(password);
         } catch(err) {
@@ -313,16 +314,16 @@ export class SDK {
         }
         
             let claimDataObj = JSON.parse(claimData)
-            let metadata = new Metadata()
-            let date = (new Date()).toISOString()
-            if(date.indexOf('.') > -1) {
-                date = date.substring(0, date.indexOf('.')) + 'Z'
-            }
-            metadata.CreateTime = date
-            metadata.Issuer = ontid
-            metadata.Subject = ontid
-            let claim = new Claim(context, claimDataObj, metadata)
-            claim.sign(privateKey)
+            const metadata = {
+                issuer: ontid,
+                subject: ontid,
+                issuedAt: now()
+            };
+           
+            // todo: pass real public key id
+            const publicKeyId = ontid + '#keys-1';
+            const claim = new Claim(metadata, undefined, undefined)
+            claim.sign(restUrl, publicKeyId, privateKey);
             let obj = {
                 error : 0,
                 result : claim,

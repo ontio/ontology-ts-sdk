@@ -6,6 +6,7 @@
   "types": "./lib/types/index.d.ts",
   "scripts": {
     "test": "./node_modules/.bin/jest",
+    "build:commonJS": "tsc --module CommonJS --outDir ./lib",
     "build:dev": "./node_modules/.bin/webpack --display-error-details --config webpack.config.js --progress --color",
     "build:prod": "./node_modules/.bin/webpack --env.prod --config webpack.config.js --progress --color"
   },
@@ -41,12 +42,15 @@
     "webpack": "^3.10.0"
   },
   "dependencies": {
+    "@types/base64-url": "^2.2.0",
+    "@types/uuid": "^3.4.3",
     "axios": "^0.17.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.3",
     "babel-polyfill": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "base-x": "^3.0.3",
+    "base64-url": "^2.2.0",
     "bigi": "^1.4.2",
     "bignumber.js": "^6.0.0",
     "bs58": "^4.0.1",
@@ -60,6 +64,7 @@
     "js-sha3": "^0.7.0",
     "secure-random": "^1.1.1",
     "sm.js": "^0.1.6",
+    "uuid": "^3.2.1",
     "wif": "^2.0.6",
     "ws": "^4.1.0"
   }

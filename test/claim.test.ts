@@ -16,64 +16,108 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Claim , Metadata } from '../src/claim'
-import { PrivateKey, Signature } from '../src/crypto';
-import { str2hexstr } from '../src/utils';
+import { Claim, RevocationType } from '../src/claim/Claim'
+import { PrivateKey, Signature, KeyType } from '../src/crypto';
 
 describe('test claim', () => {
+    const restUrl = 'http://polaris1.ont.io:20334';
+    const publicKeyId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-1';
+    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
 
-    var claimData = {
-        name : 'zhangsan',
-        age : 25
-    }
-    var context = 'claim:standard0001'
-    var metaData = new Metadata()
-    metaData.CreateTime = "2017-01-01T22:01:20Z";
-    metaData.Issuer = "did:ont:8uQhQMGzWxR8vw5P3UWH1j";
-    metaData.Subject = "did:ont:4XirzuHiNnTrwfjCMtBEJ6";
-    metaData.Expires = "2018-01-01";
-    metaData.Revocation = "RevocationList";
-    //metaData.Crl = "http://192.168.1.1/rev.crl";
+    test('test serialization', () => {
+        const claim = new Claim({
+            messageId: '1',
+            issuer: 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w',
+            subject: 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w',
+            issuedAt: 1525800823
+        }, undefined, false);
+        claim.version = '0.7.0';
+        claim.context = 'https://example.com/template/v1';
+        claim.content = {
+            Name: 'Bob Dylan',
+            Age: '22'
+        };
+        claim.revocation = {
+            type: RevocationType.AttestContract,
+            addr: '8055b362904715fd84536e754868f4c8d27ca3f6'
+        };
 
-    var claim : Claim,
-        privateKey : PrivateKey
+        expect(claim.serialize()).toEqual('eyJ0eXAiOiJKV1QifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9udDpUR3B' +
+            'vS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x' +
+            '3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR0cHM' +
+            '6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIifSw' +
+            'iY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2ZTc' +
+            '1NDg2OGY0YzhkMjdjYTNmNiJ9fQ');
+    });
 
-    beforeAll(() => {
-        privateKey = PrivateKey.random()
-    })
+    test('test deserialization', async () => {
+        const serialized = 'eyJ0eXAiOiJKV1QifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9udDpUR3B' +
+            'vS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x' +
+            '3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR0cHM' +
+            '6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIifSw' +
+            'iY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2ZTc' +
+            '1NDg2OGY0YzhkMjdjYTNmNiJ9fQ';
 
-    test('test sign claim', () => {
-        claim = new Claim(context, claimData, metaData)
-        let signed = claim.sign(privateKey)
-        expect(signed).toBeDefined()
-    })
+        const msg = Claim.deserialize(serialized);
 
-    test('make a signature', ()=>{
-        const {Id, Metadata, Context, Content} = claim
-        //!!! the order of attributes matters
-        let obj = {
-            Context: Context,
-            Id: Id,
-            Content: Content,
-            Metadata: Metadata
-        }
-        let signed = privateKey.sign(str2hexstr(JSON.stringify(obj)))
-        let signatureValue = claim.Signature
-        expect(signed.serializePgp()).toEqual(signatureValue)
-    })
+        expect(msg.metadata.messageId).toEqual('1');
+        expect(msg.metadata.issuer).toEqual('did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w');
+        expect(msg.metadata.subject).toEqual('did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w');
+        expect(msg.metadata.issuedAt).toEqual(1525800823);
+        expect(msg.signature).toBeUndefined();
+        expect(msg.version).toEqual('0.7.0');
+        expect(msg.context).toEqual('https://example.com/template/v1');
+        expect(msg.content.Name).toEqual('Bob Dylan');
+        expect(msg.content.Age).toEqual('22');
+        expect(msg.revocation.type).toEqual(RevocationType.AttestContract);
+        expect(msg.revocation.addr).toEqual('8055b362904715fd84536e754868f4c8d27ca3f6');
+        expect(msg.revocation.url).toBeUndefined();
+    });
 
-    test('verify a signature', () => {
-        let publicKey = privateKey.getPublicKey()
-        let data = Object.assign({}, {
-            Context : claim.Context,
-            Id : claim.Id,
-            Content : claim.Content,
-            Metadata : claim.Metadata
-        })
-        const result = publicKey.verify(
-            str2hexstr(JSON.stringify(data)), 
-            Signature.deserializePgp(claim.Signature)
-        );
-        expect(result).toBeTruthy()
-    })
-})
+    test('test signature', async () => {
+        const claim = new Claim({
+            messageId: '1',
+            issuer: 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w',
+            subject: 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w',
+            issuedAt: 1525800823
+        }, undefined, false);
+        claim.version = '0.7.0';
+        claim.context = 'https://example.com/template/v1';
+        claim.content = {
+            Name: 'Bob Dylan',
+            Age: '22'
+        };
+        claim.revocation = {
+            type: RevocationType.AttestContract,
+            addr: '8055b362904715fd84536e754868f4c8d27ca3f6'
+        };
+
+        await claim.sign(restUrl, publicKeyId, privateKey);
+
+        expect(claim.serialize()).toEqual('eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
+            'wb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9ud' +
+            'DpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMW' +
+            'ltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR' +
+            '0cHM6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIi' +
+            'fSwiY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2Z' +
+            'Tc1NDg2OGY0YzhkMjdjYTNmNiJ9fQ.E8dJT8yOonnfb-N9PZt6pgyqGwSCHKW5xu3kF1yZpU6ahPxvhHtAM0oJhnu' +
+            'IoyMINvOvjzcxiVZ1-69UAozy6w');
+    });
+
+    test('test verify', async () => {
+        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
+            'wb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9ud' +
+            'DpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMW' +
+            'ltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR' +
+            '0cHM6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIi' +
+            'fSwiY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2Z' +
+            'Tc1NDg2OGY0YzhkMjdjYTNmNiJ9fQ.E8dJT8yOonnfb-N9PZt6pgyqGwSCHKW5xu3kF1yZpU6ahPxvhHtAM0oJhnu' +
+            'IoyMINvOvjzcxiVZ1-69UAozy6w';
+
+        const msg = Claim.deserialize(serialized);
+
+        const result = await msg.verify(restUrl);
+
+        expect(result).toBeTruthy();
+    });
+});

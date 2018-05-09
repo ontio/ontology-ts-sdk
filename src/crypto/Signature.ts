@@ -16,6 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as b64 from 'base64-url';
 import { SignatureScheme } from "./SignatureScheme";
 import { num2hexstring } from "../utils";
 
@@ -26,9 +27,16 @@ export class Signature {
     algorithm: SignatureScheme;
     value: string;
 
-    constructor(algorithm: SignatureScheme, value: string) {
+    /**
+     * Public key Id used for create this signature.
+     * 
+     */
+    publicKeyId?: string;
+
+    constructor(algorithm: SignatureScheme, value: string, publicKeyId?: string) {
         this.algorithm = algorithm;
         this.value = value;
+        this.publicKeyId = publicKeyId;
     }
 
     /**
@@ -53,6 +61,23 @@ export class Signature {
             Value: encoded,
             Algorithm: this.algorithm.label
         };
+    }
+
+    /**
+     * Serializes signature to base64url format.
+     */
+    serializeJWT(): string {
+        return b64.encode(this.value, 'hex');
+    }
+
+    static deserializeJWT(encoded: string, algorithm: SignatureScheme, publicKeyId: string): Signature {
+        const decoded = b64.decode(encoded, 'hex');
+
+        return new Signature(
+            algorithm,
+            decoded,
+            publicKeyId
+        );
     }
 
     static deserializePgp(pgpSignature: PgpSignature): Signature {
