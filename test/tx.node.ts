@@ -35,9 +35,9 @@ import { getHash, generateOntid } from '../src/core';
 import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
 import { PublicKeyStatus, PrivateKey, KeyType, CurveLabel, KeyParameters, PublicKey } from '../src/crypto';
-import WebsocketClientApi from '../src/network/websocket/websocketClient';
+import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { VmType } from '../src/transaction/vmcode';
-import { RestClient, WebSocketClientApi } from '../src/index';
+import { RestClient } from '../src/index';
 
 
 const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92'

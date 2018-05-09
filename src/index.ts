@@ -29,7 +29,7 @@ import * as Token from './smartcontract/token'
 import * as OntidContract from './smartcontract/ontidContract'
 import RestClient from './network/rest/restClient'
 import RpcClient from './network/rpc/rpcClient'
-import WebSocketClientApi from './network/websocket/websocketClient'
+import { WebsocketClient } from './network/websocket/websocketClient'
 
 import * as scrypt from './scrypt'
 import * as core from './core'
@@ -57,7 +57,7 @@ class ONT {
   OntidContract : any
   RestClient : any
   RpcClient : any
-  WebSocketClientApi : any
+  WebsocketClient : any
 
   constructor() {
     this.Account = Account,
@@ -79,7 +79,7 @@ class ONT {
     this.OntidContract = OntidContract
     this.RestClient = RestClient
     this.RpcClient = RpcClient
-    this.WebSocketClientApi = WebSocketClientApi
+    this.WebsocketClient = WebsocketClient
   }
   
 
@@ -121,6 +121,6 @@ export {
   OntidContract,
   RestClient,
   RpcClient,
-  WebSocketClientApi
+  WebsocketClient
 }
   
