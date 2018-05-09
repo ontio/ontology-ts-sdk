@@ -1,3 +1,4 @@
+import { signTransaction } from './../transaction/transactionBuilder';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -33,8 +34,8 @@ import {Claim, Metadata} from '../claim'
 import { PrivateKey, PgpSignature } from '../crypto';
 import {sendBackResult2Native, EventEmitter, str2hexstr, ab2hexstring} from '../utils'
 import * as core from '../core'
-import { buildTxParam, buildRpcParam, parseEventNotify, makeTransferTransaction, buildRestfulParam, sendRawTxRestfulUrl} from '../transaction/transactionBuilder'
-import { buildAddAttributeTx, buildRegisterOntidTx, buildGetDDOTx} from '../smartcontract/ontidContract'
+import { buildTxParam, buildRpcParam, parseEventNotify, makeTransferTransaction, buildRestfulParam, sendRawTxRestfulUrl, signTransaction} from '../transaction/transactionBuilder'
+import { buildAddAttributeTx, buildRegisterOntidTx, buildGetDDOTx} from '../smartcontract/ontidContractTxBuilder'
 import { ERROR_CODE } from '../error';
 import { ONT_NETWORK, TEST_NODE, REST_API, HTTP_REST_PORT, HTTP_WS_PORT, TEST_ONT_URL } from '../consts';
 import TxSender from '../transaction/txSender'
@@ -103,8 +104,9 @@ export class SDK {
             result: walletDataStr,
             desc: ''
         }
-         
-        let tx = buildRegisterOntidTx(identity.ontid, privateKey)
+        let publicKey = privateKey.getPublicKey()
+        let tx = buildRegisterOntidTx(identity.ontid, publicKey)
+        signTransaction(tx, privateKey)
         let param = buildTxParam(tx)
         //add preExec
         let restClient = new RestClient()
@@ -234,7 +236,9 @@ export class SDK {
             desc: ''
         }
         //register ontid
-        let tx = buildRegisterOntidTx(identity.ontid, privateKey)
+        let publicKey = privateKey.getPublicKey()
+        let tx = buildRegisterOntidTx(identity.ontid, publicKey)
+        signTransaction(tx, privateKey)
         let param = buildRestfulParam(tx)
         let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
 
@@ -383,8 +387,9 @@ export class SDK {
             }
             let type = str2hexstr('JSON')
             const value = str2hexstr(JSON.stringify(valueObj))
-            let tx = buildAddAttributeTx(path, value,type, subject, privateKey)
-            
+            let publicKey = privateKey.getPublicKey()
+            let tx = buildAddAttributeTx(path, value,type, subject, publicKey)
+            signTransaction(tx, privateKey)
             let restClient = new RestClient()
             return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
                 if (res.Result == '01') {

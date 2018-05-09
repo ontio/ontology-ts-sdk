@@ -34,7 +34,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "RegIdWithAttributes",
+            "name": "regIDWithAttributes",
             "parameters":
                 [
                     {
@@ -53,7 +53,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "AddKey",
+            "name": "addKey",
             "parameters":
                 [
                     {
@@ -72,7 +72,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "RemoveKey",
+            "name": "removeKey",
             "parameters":
                 [
                     {
@@ -91,7 +91,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "AddRecovery",
+            "name": "addRecovery",
             "parameters":
                 [
                     {
@@ -110,7 +110,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "ChangeRecovery",
+            "name": "changeRecovery",
             "parameters":
                 [
                     {
@@ -129,7 +129,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "AddAttribute",
+            "name": "addAttribute",
             "parameters":
                 [
                     {

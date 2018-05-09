@@ -1,3 +1,4 @@
+import { signTransaction } from './../src/transaction/transactionBuilder';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -18,7 +19,7 @@
 
 import { makeInvokeTransaction , parseEventNotify, 
     buildRpcParam, buildTxParam, buildRestfulParam, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder'
-import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddPKTx, buildGetPublicKeysTx, buildRemovePkTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetPublicKeyIdTx, buildGetPublicKeyStatusTx} from '../src/smartcontract/ontidContract'
+import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddControlKeyTx, buildGetPublicKeysTx, buildRemoveControlKeyTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetPublicKeyIdTx, buildGetPublicKeyStatusTx} from '../src/smartcontract/ontidContractTxBuilder'
 import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/invokeCode'
 import { Identity } from '../src/identity'
@@ -129,8 +130,8 @@ const sendTx = (param, callback = null) => {
             }
         }
         if(res.Action === 'Notify'){
-            let result = parseEventNotify(res)
-            console.log('paresed event notify: '+JSON.stringify(result))
+            // let result = parseEventNotify(res)
+            console.log(' event notify: '+JSON.stringify(res))
             socket.close()
         }
         // socket.close()
@@ -194,7 +195,9 @@ const parseDDO = (result) => {
 
 
 const testRegisterOntid = () => {
-    let tx = buildRegisterOntidTx(str2hexstr(ontid), privateKey)
+    let publicKey = privateKey.getPublicKey()
+    let tx = buildRegisterOntidTx(str2hexstr(ontid), publicKey)
+    signTransaction(tx, privateKey)
     let serialized = tx.serialize()
     console.log('tx serialized: '+serialized)
 
@@ -255,6 +258,15 @@ const testAddAttribute = () => {
     // })
 }
 
+const testRemoveAttribute = () => {
+    var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
+    var key = str2hexstr(claimId)
+    let tx = buildRemoveAttributeTx(ontid, key, publicKey)
+    signTransaction(tx, privateKey)
+    let param = buildTxParam(tx)
+    sendTx(param)
+}
+
 const testGetPublicKeyId = () => {
     let tx = buildGetPublicKeyIdTx(ontid, publicKey)
     let param = buildRestfulParam(tx)
@@ -286,14 +298,16 @@ const testGetPublicKeyStatus = () => {
 }
 
 const testAddPK = () => {
-    let tx = buildAddPKTx(ontid, pk2, publicKey, privateKey)
+    let tx = buildAddControlKeyTx(ontid, pk2, publicKey)
+    signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     console.log('add pk param: ' + param)
     sendTx(param)
 }
 
 const testGetPublicKeys = () => {
-    let tx = buildGetPublicKeysTx(ontid, privateKey)
+    let tx = buildGetPublicKeysTx(ontid, publicKey)
+    signTransaction(tx, privateKey)
     // let param = buildTxParam(tx)
     // sendTx(param)
     let param = buildRestfulParam(tx)
@@ -304,20 +318,23 @@ const testGetPublicKeys = () => {
 }
 
 const testRemovePK = () => {
-    let tx = buildRemovePkTx(ontid, pk2, publicKey, privateKey)
+    let tx = buildRemoveControlKeyTx(ontid, pk2, publicKey)
+    signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     console.log('remove pk param: ' + param)
     sendTx(param)
 }
 
 const testAddRecovery = () => {
-    let tx = buildAddRecoveryTx(ontid, oldrecovery, publicKey, privateKey)
+    let tx = buildAddRecoveryTx(ontid, oldrecovery, publicKey)
+    signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     sendTx(param)
 }
 
 const testChangeRecovery = () => {
-    let tx = buildChangeRecoveryTx(ontid, newrecovery, oldrecovery, privateKey)
+    let tx = buildChangeRecoveryTx(ontid, newrecovery, oldrecovery)
+    signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     console.log('change recovery param: ' + param)
     sendTx(param)
@@ -343,7 +360,7 @@ const testInvokeWasmContract = () => {
 
 //uncomment one line to test one tx each time.
 
-testRegisterOntid()
+// testRegisterOntid()
 
 // testAddAttribute()
 
@@ -357,7 +374,7 @@ testRegisterOntid()
 
 // testCheckOntid()
 
-// testAddPK()
+testAddPK()
 
 // testRemovePK()
 

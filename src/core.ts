@@ -28,7 +28,7 @@ import { VmType } from './transaction/vmcode';
 import { buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
 import axios from 'axios'
 import { DDO } from './transaction/ddo'
-import { buildGetDDOTx, buildGetPublicKeyStatusTx } from './smartcontract/ontidContract'
+import { buildGetDDOTx, buildGetPublicKeyStatusTx } from './smartcontract/ontidContractTxBuilder'
 import { verifyLeafHashInclusion } from './merkle'
 import RestClient from './network/rest/restClient'
 import { 

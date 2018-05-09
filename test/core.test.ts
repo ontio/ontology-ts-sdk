@@ -19,7 +19,7 @@
  
 import * as core from '../src/core'
 import * as utils from '../src/utils'
-import { verifySignature, getMerkleProof, verifyExpiration, getPkStatus, verifyClaimSignature, getOntidFromPrivateKey, generateOntid, getPublicKey, sha256 } from '../src/core';
+import { verifySignature, getMerkleProof, verifyExpiration, getPkStatus, verifyClaimSignature, generateOntid, getPublicKey, sha256 } from '../src/core';
 import { PK_STATUS, PrivateKey, KeyType, CurveLabel, KeyParameters } from '../src/crypto';
 import {Claim, Metadata } from '../src/claim'
 
