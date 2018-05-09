@@ -93,13 +93,13 @@ describe('test restClient', () => {
         expect(res.Result).toBeTruthy()
     })
     
-    test('test smartCodeEvent by hash', async () => {
+    test.skip('test smartCodeEvent by hash', async () => {
         let res = await rest.getSmartCodeEvent(txHash)
         console.log(res)
         expect(res.Result).toBeTruthy()
     })
 
-    test('test smartCodeEvent by height', async () => {
+    test.skip('test smartCodeEvent by height', async () => {
         let res = await rest.getSmartCodeEvent(height)
         console.log(res)
         expect(res.Result).toBeTruthy()
@@ -112,7 +112,7 @@ describe('test restClient', () => {
         expect(res.Result).toBeTruthy()
     })
 
-    test('test getStorage', async () => {
+    test.skip('test getStorage', async () => {
         let key = '2a6469643a6f6e743a5443375a6b556a62694e36794b61415433687735567a714c713138587538635a4a5702'
         let res = await rest.getStorage(codeHash, key)
         console.log(res)
