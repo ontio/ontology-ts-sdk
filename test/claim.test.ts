@@ -116,8 +116,25 @@ describe('test claim', () => {
 
         const msg = Claim.deserialize(serialized);
 
-        const result = await msg.verify(restUrl);
+        const result = await msg.verify(restUrl, false);
 
         expect(result).toBeTruthy();
+    });
+
+    test('test verify with missing attest', async () => {
+        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
+            'wb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9ud' +
+            'DpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMW' +
+            'ltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR' +
+            '0cHM6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIi' +
+            'fSwiY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2Z' +
+            'Tc1NDg2OGY0YzhkMjdjYTNmNiJ9fQ.E8dJT8yOonnfb-N9PZt6pgyqGwSCHKW5xu3kF1yZpU6ahPxvhHtAM0oJhnu' +
+            'IoyMINvOvjzcxiVZ1-69UAozy6w';
+
+        const msg = Claim.deserialize(serialized);
+
+        const result = await msg.verify(restUrl, true);
+
+        expect(result).toBeFalsy();
     });
 });

@@ -19,7 +19,7 @@
  
 import * as core from '../src/core'
 import * as utils from '../src/utils'
-import { verifySignature, getMerkleProof, verifyExpiration, getPkStatus, verifyClaimSignature, getOntidFromPrivateKey, generateOntid, getPublicKey, sha256 } from '../src/core';
+import { verifySignature, getMerkleProof, verifyExpiration, getPkStatus, verifyClaimSignature, generateOntid, getPublicKey, sha256 } from '../src/core';
 import { PK_STATUS, PrivateKey, KeyType, CurveLabel, KeyParameters } from '../src/crypto';
 import {Claim, Metadata } from '../src/claim'
 
@@ -101,28 +101,6 @@ describe('test core', ()=>{
     //     let result = await getPkStatus(issuerOntid, issuerPkId)
     //     expect(result.status).toEqual(PK_STATUS.IN_USE)
     // })
-
-
-    test('verify claim signature', () => {
-        let privateKey = PrivateKey.random()
-        let pk = privateKey.getPublicKey()
-        let ontid = generateOntid(privateKey.key)
-        const context = 'claim:standard0001'
-        const meta = new Metadata()
-        meta.CreateTime = (new Date()).toISOString()
-        meta.Issuer = ontid
-        meta.Subject = ontid
-        const content = {
-            "name" : "mickey",
-            "age"  : 26
-        }
-        let claim = new Claim(context, content, meta)
-        claim.sign(privateKey)
-        console.log(claim)
-        console.log(pk)
-        let result = verifyClaimSignature(claim, pk)
-        expect(result).toBeTruthy()
-    })
 
     // test('verify getMerkleProof', async () => {
     //     let txHash = '82c17d7430140a1f3863b8f6f03db07bbdfbdb7da22ffdb2358a1d2e185f8bf3'
