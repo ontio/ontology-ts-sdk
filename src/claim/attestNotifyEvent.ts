@@ -16,12 +16,12 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { hexstr2str } from "../../utils";
+import { hexstr2str } from "../utils";
 
 /**
- * Represents Notify event.
+ * Represents Notify event of attest creation of revocation.
  */
-export class NotifyEvent {
+export class AttestNotifyEvent {
     Action: string;
     Error: number;
     Result: Result[];
@@ -33,8 +33,8 @@ export class NotifyEvent {
      * 
      * @param e encoded event
      */
-    static deserialize(e: any): NotifyEvent {
-        const event = new NotifyEvent();
+    static deserialize(e: any): AttestNotifyEvent {
+        const event = new AttestNotifyEvent();
 
         event.Action = e.Action;
         event.Error = e.Error;

@@ -23,7 +23,7 @@ import { hexstr2str, ab2hexstring } from '../utils';
 import { ClaimProof } from "./ClaimProof";
 import { buildCommitRecordTx, buildRevokeRecordTx, buildGetRecordStatusTx } from '../smartcontract/recordContract';
 import { WebsocketClient } from '../network/websocket/websocketClient';
-import { NotifyEvent } from '../network/websocket/notifyEvent';
+import { AttestNotifyEvent } from './attestNotifyEvent';
 import RestClient from '../network/rest/restClient';
 
 /**
@@ -141,7 +141,7 @@ export class Claim extends Message {
         const tx = buildCommitRecordTx(claimId, attesterId, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
 
-        const event = NotifyEvent.deserialize(response);
+        const event = AttestNotifyEvent.deserialize(response);
         return event.Result[0].States[0] === 'Push';
     }
 
@@ -162,7 +162,7 @@ export class Claim extends Message {
         const tx = buildRevokeRecordTx(claimId, attesterId, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
         
-        const event = NotifyEvent.deserialize(response);
+        const event = AttestNotifyEvent.deserialize(response);
 
         return event.Result[0].States[0] === 'Push';
     }
