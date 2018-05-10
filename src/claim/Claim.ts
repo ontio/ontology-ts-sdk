@@ -18,8 +18,13 @@
 
 import * as b64 from 'base64-url';
 import { Message, Metadata } from "../message";
-import { Signature, SignatureScheme } from "../crypto";
+import { Signature, SignatureScheme, PrivateKey } from "../crypto";
+import { hexstr2str, ab2hexstring } from '../utils';
 import { ClaimProof } from "./ClaimProof";
+import { buildCommitRecordTx, buildRevokeRecordTx, buildGetRecordStatusTx } from '../smartcontract/recordContract';
+import { WebsocketClient } from '../network/websocket/websocketClient';
+import { NotifyEvent } from '../network/websocket/notifyEvent';
+import RestClient from '../network/rest/restClient';
 
 /**
  * Type of revocation.
@@ -52,7 +57,7 @@ export interface Revocation {
 /**
  * Verifiable claim.
  * 
- * TODO: override verify to add claim proof verification and revocation verification.
+ * TODO: override verify to add claim proof verification.
  */
 export class Claim extends Message {
     version: string;
@@ -63,9 +68,24 @@ export class Claim extends Message {
     useProof: boolean;
     proof?: ClaimProof;
 
-    constructor(metadata: Metadata, signature: Signature | undefined, useProof?: boolean) {
+    constructor(metadata: Metadata, signature?: Signature | undefined, useProof?: boolean) {
         super(metadata, signature);
         this.useProof = useProof === true;
+    }
+
+    /**
+     * Overrides default message verification with added attest verification.
+     * @param url Restful endpoint of Ontology node
+     * @param checkAttest Should be the attest tested
+     */
+    async verify(url: string, checkAttest = true): Promise<boolean> {
+        const result = await super.verify(url);
+
+        if (result && checkAttest) {
+            return this.getStatus(url);
+        } else {
+            return result;
+        }
     }
 
     protected payloadToJSON(): any {
@@ -102,6 +122,70 @@ export class Claim extends Message {
         } else {
             return super.serialize();
         }
+    }
+
+    /**
+     * Attests the claim onto blockchain.
+     * 
+     * @param url Websocket endpoint of Ontology node
+     * @param privateKey Private key to sign the transaction
+     */
+    async attest(url: string, privateKey: PrivateKey): Promise<boolean> {
+        const attesterId = this.metadata.issuer;
+        const claimId = this.metadata.messageId;
+        if (claimId === undefined) {
+            throw new Error('Claim id not specified.');
+        }
+
+        const client = new WebsocketClient(url);
+        const tx = buildCommitRecordTx(claimId, attesterId, privateKey);
+        const response = await client.sendRawTransaction(tx.serialize(), false, true);
+
+        const event = NotifyEvent.deserialize(response);
+        return event.Result[0].States[0] === 'Push';
+    }
+
+    /**
+     * Revokes claim attest from blockchain.
+     * 
+     * @param privateKey Private key to sign the transaction
+     * @param url Websocket endpoint of Ontology node
+     */
+    async revoke(url: string, privateKey: PrivateKey): Promise<boolean> {
+        const attesterId = this.metadata.issuer;
+        const claimId = this.metadata.messageId;
+        if (claimId === undefined) {
+            throw new Error('Claim id not specified.');
+        }
+
+        const client = new WebsocketClient(url);
+        const tx = buildRevokeRecordTx(claimId, attesterId, privateKey);
+        const response = await client.sendRawTransaction(tx.serialize(), false, true);
+        
+        const event = NotifyEvent.deserialize(response);
+
+        return event.Result[0].States[0] === 'Push';
+    }
+
+    /**
+     * Gets status of the claim attest.
+     * 
+     * @param url Restful endpoint of Ontology node
+     */
+    async getStatus(url: string): Promise<boolean> {
+        const attesterId = this.metadata.issuer;
+        const claimId = this.metadata.messageId;
+        if (claimId === undefined) {
+            throw new Error('Claim id not specified.');
+        }
+
+        const client = new RestClient(url);
+        const tx = buildGetRecordStatusTx(claimId);
+        
+        const response = await client.sendRawTransaction(tx.serialize(), true);
+        const result = GetStatusResponse.deserialize(response);
+
+        return result.status === Status.ATTESTED && result.attesterId === attesterId;
     }
 
     /**
@@ -142,3 +226,39 @@ export class Claim extends Message {
         return b64.encode(stringified, 'utf-8');
     }
 }
+
+/**
+ * Helper class for deserializing GetStatus response.
+ */
+class GetStatusResponse {
+    status: Status;
+    attesterId: string;
+    time: string;
+
+    static deserialize(r: any): GetStatusResponse {
+        const response = new GetStatusResponse();
+
+        if (r.Result === '') {
+            response.status = Status.NOTFOUND;
+            return response;
+        }
+
+        const decoded = hexstr2str(r.Result);
+        const data = decoded.split('#');
+
+        if (data.length != 3) {
+            throw new Error('Failed to decode response.');
+        }
+
+        response.status = data[0] as Status;
+        response.attesterId = data[1];
+        response.time = data[2];
+        return response;
+    }
+}
+
+enum Status {
+    REVOKED = '0',
+    ATTESTED = '1',
+    NOTFOUND = '-1'
+};

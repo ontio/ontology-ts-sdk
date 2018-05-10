@@ -45,7 +45,7 @@ export function sendRawTransaction(hexData : string, preExec : boolean = false) 
     if(preExec) {
         param = Object.assign(param, { "PreExec" : "1" })
     }
-    console.log('hexData: '+hexData)
+    
     return JSON.stringify(param)
 }
 
