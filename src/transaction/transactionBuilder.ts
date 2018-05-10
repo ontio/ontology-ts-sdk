@@ -417,6 +417,10 @@ const enum EventType {
     Register = 'Register',
     PublicKey = 'PublicKey'
 }
+
+/**
+ * @deprecated Use NotifyEvent.deserialize() instead.
+ */
 export function parseEventNotify(res : any)  {
     //parse state
     for(let r of res.Result) {
