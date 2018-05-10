@@ -19,6 +19,7 @@
     "transform": {
       "\\.(ts|tsx)$": "./node_modules/ts-jest/preprocessor.js"
     },
+    "testEnvironment": "node",
     "testRegex": "/test/.*\\.(ts|tsx|js)$"
   },
   "author": "ontologyNetwork",

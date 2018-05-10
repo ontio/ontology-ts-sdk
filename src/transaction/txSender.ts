@@ -20,6 +20,9 @@ import {ONT_NETWORK, MAIN_ONT_URL, TEST_ONT_URL} from '../consts'
 
 const WebSocket = require('html5-websocket')
 
+/**
+ * @deprecated Use WebsocketClient instead.
+ */
 export default class TxSender {
     SOCKET_URL : string
 

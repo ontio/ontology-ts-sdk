@@ -18,7 +18,6 @@
 
 import {TEST_ONT_URL} from '../../consts'
 import axios from 'axios'
-import { url } from 'inspector';
 import UrlConsts from './urlConsts'
 
 export default class RestClient {

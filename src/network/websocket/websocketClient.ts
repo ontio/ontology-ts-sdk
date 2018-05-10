@@ -16,201 +16,122 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const WebSocket = require('html5-websocket')
-import {TEST_ONT_URL} from '../../consts'
+import { TEST_ONT_URL } from '../../consts'
+import { WebsocketSender } from './websocketSender';
+import * as Builder from './websocketBuilder';
 
-export default class WebsocketClientApi {
-
-    sendHeartBeat() {
-        let param = {
-            "Action" : "heartbeat",
-            "Version" : "V1.0.0"
-        }
-        return JSON.stringify(param)
+/**
+ * Websocket client.
+ * 
+ * TODO: correlate request and response with id, so socket can be reused.
+ */
+export class WebsocketClient {
+    url: string;
+    debug: boolean;
+    
+    constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false) {
+        this.url = url;
+        this.debug = debug;
     }
 
-    sendSubscribe(subscribeEvent: boolean = false, subscribeJsonBlock: boolean = false, subscribeRawBlock: boolean = false, subscribeBlockTxHashes: boolean = false) {
-        let param = {
-            "Action": "subscribe",
-            "Version": "1.0.0",
-            "SubscribeEvent": subscribeEvent, //optional
-            "SubscribeJsonBlock": subscribeJsonBlock, //optional
-            "SubscribeRawBlock": subscribeRawBlock, //optional
-            "SubscribeBlockTxHashs": subscribeBlockTxHashes //optional
-        }
-        return JSON.stringify(param)
+    async sendHeartBeat(): Promise<any> {
+        const raw = Builder.sendHeartBeat();
+        return this.send(raw);
     }
 
-    sendRawTransaction(hexData : string, preExec : boolean = false) {
-        let param = {
-            "Action" : "sendrawtransaction",
-            "Version" : "1.0.0",
-            "Data" : hexData
-        }
-        if(preExec) {
-            param = Object.assign(param, { "PreExec" : "1" })
-        }
-        console.log('hexData: '+hexData)
-        return JSON.stringify(param)
+    async sendSubscribe(subscribeEvent = false, subscribeJsonBlock = false, subscribeRawBlock = false, subscribeBlockTxHashes = false): Promise<any> {
+        const raw = Builder.sendSubscribe(subscribeEvent, subscribeJsonBlock, subscribeRawBlock, subscribeBlockTxHashes);
+        return this.send(raw);
     }
 
-    getRawTransaction(txHash : string){
-        let param = {
-            "Action": "gettransaction",
-            "Version": "1.0.0",
-            "Hash": txHash,
-            "Raw" : "1"
-        }
-        return JSON.stringify(param)
+    async sendRawTransaction(hexData: string, preExec = false, waitNotify = false) {
+        const raw = Builder.sendRawTransaction(hexData, preExec);
+        return this.send(raw, waitNotify);
     }
 
-    getRawTransactionJson(txHash : string) {
-        let param = {
-            "Action": "gettransaction",
-            "Version": "1.0.0",
-            "Hash": txHash,
-            "Raw": "0"
-        }
-        return JSON.stringify(param)
+    async getRawTransaction(txHash: string): Promise<any> {
+        const raw = Builder.getRawTransaction(txHash);
+        return this.send(raw);
     }
 
-    getGenerateBlockTime() {
-        let param = {
-            "Action": "getgenerateblocktime",
-            "Version": "1.0.0"
-        }
-        return JSON.stringify(param)
+    async getRawTransactionJson(txHash: string): Promise<any> {
+        const raw = Builder.getRawTransactionJson(txHash);
+        return this.send(raw);
     }
 
-    getNodeCount() {
-        let param = {
-            "Action": "getconnectioncount",
-            "Version": "1.0.0"
-        }
-        return JSON.stringify(param)
+    async getGenerateBlockTime(): Promise<any> {
+        const raw = Builder.getGenerateBlockTime();
+        return this.send(raw);
     }
 
-    getBlockHeight() {
-        let param = {
-            "Action": "getblockheight",
-            "Version": "1.0.0"
-        }
-        return JSON.stringify(param)
+    async getNodeCount(): Promise<any> {
+        const raw = Builder.getNodeCount();
+        return this.send(raw);
     }
 
-    getBlock(value : number | string) {
-        let param = {}
-        if(typeof value === 'number') {
-            param = {
-                "Action": "getblockbyheight",
-                "Version": "1.0.0",
-                "Height": value,
-                "Raw": "1"
-            }
-        } else if(typeof value === 'string') {
-            param = {
-                "Action": "getblockbyhash",
-                "Version": "1.0.0",
-                "Hash": value,
-                "Raw": "1"
-            }
-        }
-        return JSON.stringify(param)
+    async getBlockHeight(): Promise<any> {
+        const raw = Builder.getBlockHeight();
+        return this.send(raw);
     }
 
-    getBlockJson(value : number | string) {
-        let param = {}
-        if (typeof value === 'number') {
-            param = {
-                "Action": "getblockbyheight",
-                "Version": "1.0.0",
-                "Height": value
-            }
-        } else if (typeof value === 'string') {
-            param = {
-                "Action": "getblockbyhash",
-                "Version": "1.0.0",
-                "Hash": value
-            }
-        }
-        return JSON.stringify(param)
+    async getBlock(value: number | string): Promise<any> {
+        const raw = Builder.getBlock(value);
+        return this.send(raw);
     }
 
-    getBalance(address : string) {
-        let param = {
-            "Action": "getbalance",
-            "Version": "1.0.0",
-            "Addr": address
-        }
-        return JSON.stringify(param)
+    async getBlockJson(value: number | string): Promise<any> {
+        const raw = Builder.getBlockJson(value);
+        return this.send(raw);
     }
 
-    getContract(hash : string) {
-        let param = {
-            "Action": "getcontract",
-            "Version": "1.0.0",
-            "Hash": hash,
-            "Raw": "1"
-        }
-        return JSON.stringify(param)
+    async getBalance(address: string): Promise<any> {
+        const raw = Builder.getBalance(address);
+        return this.send(raw);
     }
 
-    getContractJson(hash : string) {
-        let param = {
-            "Action": "getcontract",
-            "Version": "1.0.0",
-            "Hash": hash,
-            "Raw": "0"
-        }
-        return JSON.stringify(param)
+    async getContract(hash: string): Promise<any> {
+        const raw = Builder.getContract(hash);
+        return this.send(raw);
     }
 
-    getSmartCodeEvent(value : number | string) {
-        let param = {}
-        if (typeof value === 'number') {
-            param = {
-                "Action": "getsmartcodeeventbyheight",
-                "Version": "1.0.0",
-                "Height": value
-            }
-        } else if (typeof value === 'string') {
-            param = {
-                "Action": "getsmartcodeeventbyhash",
-                "Version": "1.0.0",
-                "Hash": value
-            }
-        }
-        return JSON.stringify(param)
+    async getContractJson(hash: string): Promise<any> {
+        const raw = Builder.getContractJson(hash);
+        return this.send(raw);
     }
 
-    getBlockHeightByTxHash(hash: string) {
-        let param = {
-            "Action": "getblockheightbytxhash",
-            "Version": "1.0.0",
-            "Hash": hash,
-        }
-        return JSON.stringify(param)
+    async getSmartCodeEvent(value: number | string): Promise<any> {
+        const raw = Builder.getSmartCodeEvent(value);
+        return this.send(raw);
     }
 
-    getStorage(codeHash : string, key : string) {
-        let param = {
-            "Action": "getstorage",
-            "Version": "1.0.0",
-            "Hash": codeHash,
-            "Key" : key
-        }
-        return JSON.stringify(param)
+    async getBlockHeightByTxHash(hash: string): Promise<any> {
+        const raw = Builder.getBlockHeightByTxHash(hash);
+        return this.send(raw);
     }
 
-    getMerkleProof(hash : string) {
-        let param = {
-            "Action": "getmerkleproof",
-            "Version": "1.0.0",
-            "Hash": hash
-        }
-        return JSON.stringify(param)
+    async getStorage(codeHash: string, key: string): Promise<any> {
+        const raw = Builder.getStorage(codeHash, key);
+        return this.send(raw);
     }
 
+    async getMerkleProof(hash: string): Promise<any> {
+        const raw = Builder.getMerkleProof(hash);
+        return this.send(raw);
+    }
 
-
+    private async send(raw: string, waitNotify = false): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            const sender = new WebsocketSender(this.url, this.debug);
+            sender.send(raw, (err, res, socket) => {
+                if (err !== null) {
+                    reject(err);
+                } else if (socket !== null) {
+                    if (!waitNotify || res.Action === 'Notify') {
+                        socket.close();
+                        resolve(res);
+                    }
+                }
+            });
+        });
+    }
 }

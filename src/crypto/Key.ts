@@ -20,7 +20,7 @@ import * as cryptoJS from 'crypto-js';
 import * as elliptic from 'elliptic';
 import { sha3_224, sha3_256, sha3_384, sha3_512} from 'js-sha3';
 import { sm3 } from 'sm.js';
-import { hexstr2str, hexstring2ab, StringReader } from '../utils';
+import { hexstr2str, hexstring2ab, StringReader, ab2hexstring } from '../utils';
 import { DEFAULT_ALGORITHM } from '../consts';
 import { KeyType } from './KeyType';
 import { CurveLabel } from './CurveLabel';
@@ -122,7 +122,7 @@ export class Key {
             case SignatureScheme.ECDSAwithRIPEMD160:
                 return cryptoJS.RIPEMD160(cryptoJS.enc.Hex.parse(msg)).toString();
             case SignatureScheme.SM2withSM3:
-                return (new sm3()).sum(hexstring2ab(msg), 'hex');
+                return ab2hexstring((new sm3()).sum(hexstring2ab(msg), 'nohex'));
             default:
                 throw new Error('Unsupported hash algorithm.');
         }

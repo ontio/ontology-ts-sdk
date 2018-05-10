@@ -16,10 +16,9 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PrivateKey, KeyType, KeyParameters, CurveLabel, SignatureSchema, PublicKey, Signature } from '../src/crypto';
+import { PrivateKey, KeyType, KeyParameters, CurveLabel, SignatureScheme, PublicKey, Signature } from '../src/crypto';
 import { str2ab, ab2hexstring, str2hexstr, ab2str } from '../src/utils';
 import { sm2 } from 'sm.js';
-import { SM3Digest } from '../src/crypto/sm/SM3Digest';
 
 describe('SM2 and SM3 cryptographics functions tests', () => {
     test('test SM3 hash', () => {
@@ -28,7 +27,7 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         const msg = 'test';
         const encoded = str2hexstr(msg);
        
-        const hash = key.computeHash(encoded, SignatureSchema.SM2withSM3);
+        const hash = key.computeHash(encoded, SignatureScheme.SM2withSM3);
 
         expect(hash).toEqual('55e12e91650d2fec56ec74e1d3e4ddbfce2ef3a65890c2a19ecf88a307e76a23');
     });
@@ -40,7 +39,7 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         const pk = '24cb29b451a688e73bb34841a6667a6c814ea4746139cc92abd5e0';
         const privateKey = new PrivateKey(pk, KeyType.SM2, new KeyParameters(CurveLabel.SM2P256V1));
         
-        const signature = privateKey.sign(encoded, SignatureSchema.SM2withSM3);
+        const signature = privateKey.sign(encoded, SignatureScheme.SM2withSM3);
         console.log('signature', signature);
         
         const publicKey = privateKey.getPublicKey();
@@ -54,7 +53,7 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         const encoded = str2hexstr(msg);
 
         const signature = new Signature(
-            SignatureSchema.SM2withSM3,
+            SignatureScheme.SM2withSM3,
             '3132333435363738313233343536373800739a23d629d9e6c5a17aa03323dfce98b68753ab4715d0d80ef27a6f9d80a6dc80eb7b959d3afc64f41d92edd0df37bfaefcc8e52b9aeb0b2037159f8c1ab9bd'
         );
         
