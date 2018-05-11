@@ -19,7 +19,7 @@
 import {Transaction, TxType} from '../src/transaction/transaction'
 import DeployCode from '../src/transaction/payload/deployCode'
 
-import {getHash, getContractHash} from '../src/core'
+import {getContractHash} from '../src/core'
 import {ab2hexstring, ab2str,str2hexstr , reverseHex, num2hexstring} from '../src/utils'
 import {Default_params, parseEventNotify, makeInvokeTransaction, makeDeployCodeTransaction, buildTxParam, buildRestfulParam, buildRpcParam} from '../src/transaction/transactionBuilder'
 

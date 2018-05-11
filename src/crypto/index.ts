@@ -23,3 +23,4 @@ export { KeyParameters, JsonKeyParameters, JsonKey } from './Key';
 export { PrivateKey } from './PrivateKey';
 export { PublicKey, PK_STATUS, PublicKeyStatus } from './PublicKey';
 export { Signature, PgpSignature } from './Signature';
+export { Address } from './address'

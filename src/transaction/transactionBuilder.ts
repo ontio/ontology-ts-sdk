@@ -35,6 +35,8 @@ import * as cryptoJS from 'crypto-js'
 import opcode from './opcode';
 import {BigNumber} from 'bignumber.js'
 import {SignatureScheme, PrivateKey, KeyType, CurveLabel, KeyParameters} from '../crypto';
+import { PublicKey } from '../crypto/PublicKey';
+import { Address } from '../crypto/address';
 
 const WebSocket = require('ws');
 
@@ -51,7 +53,7 @@ export const Default_params = {
 
 
 const ONT_CONTRACT = "ff00000000000000000000000000000000000001"
-export const makeTransferTransaction = (tokenType:string, from : string, to : string, value : string,  privateKey : PrivateKey)=> {
+export const makeTransferTransaction = (tokenType:string, from : Address, to : Address, value : string,  privateKey : PrivateKey)=> {
     let state = new State()
     state.from = from
     state.to = to
@@ -71,7 +73,6 @@ export const makeTransferTransaction = (tokenType:string, from : string, to : st
     let tx = new Transaction()
     tx.version = 0x00
     tx.type = TxType.Invoke
-    tx.nonce = ab2hexstring(core.generateRandomArray(4))
     
     //inovke
     let code = ''
@@ -111,6 +112,30 @@ export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?
     sig.pubKeys = [publicKey]
     sig.sigData = [signature.serializeHex()]
     tx.sigs = [sig]
+}
+
+/**
+ * 
+ * @param tx 
+ * @param pris 
+ * @param schema 
+ */
+export const signTx = (tx: Transaction, pris: PrivateKey[][], schema?: SignatureScheme) => {
+    let sigs = new Array<Sig>(pris.length)
+    for(let i = 0; i< pris.length; i++) {
+        sigs[i] = new Sig()
+        sigs[i].M = 0;
+        sigs[i].pubKeys = new Array<PublicKey>(pris[i].length)
+        sigs[i].sigData = new Array<string>(pris[i].length)
+        for (let j = 0; j < pris[i].length; j++) {
+            sigs[i].M++
+            const signature = pris[i][j].sign(tx.getHash(), schema)
+            const publicKey = pris[i][j].getPublicKey()
+            sigs[i].pubKeys[j] = publicKey
+            sigs[i].sigData[j] = signature.serializeHex()
+        }
+    }
+    tx.sigs = sigs
 }
 
 export const pushBool = (param : boolean) => {
@@ -298,7 +323,6 @@ export const makeInvokeTransaction = (funcName : string, parameters : Array<Para
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
-    tx.nonce = ab2hexstring(core.generateRandomArray(4))
     tx.fee = fees
 
     // let scriptHash = abiInfo.getHash()
@@ -342,7 +366,6 @@ email : string='', desp:string='', needStorage : boolean=true) {
     tx.payload = dc
 
     tx.type = TxType.Deploy
-    tx.nonce = ab2hexstring(core.generateRandomArray(4))
 
     //program
     // signTransaction(tx, privateKey)

@@ -20,7 +20,7 @@ import * as b64 from 'base64-url';
 import { Message, Metadata } from "../message";
 import { Signature, SignatureScheme, PrivateKey } from "../crypto";
 import { hexstr2str, ab2hexstring } from '../utils';
-import { ClaimProof } from "./ClaimProof";
+import { ClaimProof } from "./claimProof";
 import { buildCommitRecordTx, buildRevokeRecordTx, buildGetRecordStatusTx } from '../smartcontract/recordContract';
 import { WebsocketClient } from '../network/websocket/websocketClient';
 import { AttestNotifyEvent } from './attestNotifyEvent';
@@ -105,7 +105,7 @@ export class Claim extends Message {
     }
 
     static deserialize(jwt: string): Claim {
-        return super.deserializeInternal(jwt, (m, s) => new Claim(m, s));
+        return super.deserializeInternal(jwt, (m:any, s:any) => new Claim(m, s));
     }
 
     /**

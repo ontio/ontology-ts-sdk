@@ -1,3 +1,5 @@
+import { Address } from "../../crypto/address";
+
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -131,11 +133,11 @@ export function getBlockJson(value : number | string) {
     return JSON.stringify(param)
 }
 
-export function getBalance(address : string) {
+export function getBalance(address : Address) {
     let param = {
         "Action": "getbalance",
         "Version": "1.0.0",
-        "Addr": address
+        "Addr": address.toBase58()
     }
     return JSON.stringify(param)
 }

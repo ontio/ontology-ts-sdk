@@ -31,7 +31,7 @@ import { ab2hexstring, str2hexstr, StringReader } from '../src/utils'
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
 import { DDO } from '../src/transaction/ddo'
 import { TEST_ONT_URL} from '../src/consts'
-import { getHash, generateOntid } from '../src/core';
+import { generateOntid } from '../src/core';
 import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
 import { PublicKeyStatus, PrivateKey, KeyType, CurveLabel, KeyParameters, PublicKey } from '../src/crypto';

@@ -19,6 +19,7 @@
 import {TEST_ONT_URL} from '../../consts'
 import axios from 'axios'
 import UrlConsts from './urlConsts'
+import { Address } from '../../crypto/address';
 
 export default class RestClient {
     url : string
@@ -54,7 +55,9 @@ export default class RestClient {
         if(userId) {
             param.set('userid', userId)
         }
-        param.set('preExec', '1')
+        if(preExec) {
+            param.set('preExec', '1')
+        }
         let url = this.url + UrlConsts.Url_send_transaction
         url += this.concatParams(param)
         let body = {
@@ -173,8 +176,8 @@ export default class RestClient {
         })
     }
 
-    getBalance(address : string) {
-        let url = this.url + UrlConsts.Url_get_account_balance + address
+    getBalance(address : Address) {
+        let url = this.url + UrlConsts.Url_get_account_balance + address.toBase58()
         return axios.get(url).then(res => {
             return res.data
         })

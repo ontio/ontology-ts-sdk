@@ -1,20 +1,20 @@
 /*
- * Copyright (C) 2018 The ontology Authors
- * This file is part of The ontology library.
- *
- * The ontology is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The ontology is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2018 The ontology Authors
+* This file is part of The ontology library.
+*
+* The ontology is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* The ontology is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /* 
 ********************************* Notice ********************************************
@@ -42,6 +42,9 @@ import axios from 'axios'
 import {BigNumber} from 'bignumber.js'
 import {DDO} from '../transaction/ddo';
 import RestClient from '../network/rest/restClient';
+import { makeClaimOngTx, makeTransferTx } from '../smartcontract/ontAssetTxBuilder';
+import { signTransaction } from './../transaction/transactionBuilder';
+import { Address } from '../crypto/address';
 
 
 export class SDK {
@@ -495,8 +498,9 @@ export class SDK {
             }
             return result
         }
-
-        let tx = makeTransferTransaction('ONT',from, to, value, privateKey)
+        
+        let tx = makeTransferTx(token,new Address(from), new Address(to), value)
+        signTransaction(tx, privateKey)
         var param = buildRestfulParam(tx)
         let request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`
         return axios.post(request, param).then( (res:any) => {
@@ -519,6 +523,65 @@ export class SDK {
                 return obj                
             }
         }).catch( (err:any) => {
+            let obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            }
+            callback && sendBackResult2Native(JSON.stringify(obj), callback)
+        })
+    }
+
+    static claimOng(address: string, value: string, encryptedPrivateKey: string, password: string, callback: string) {
+        try {
+            if (address.length !== 40) {
+                address = core.addressToU160(address)
+            }
+            
+        } catch (err) {
+            let result = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: '',
+                desc: 'Illegal adderss'
+            }
+            callback && sendBackResult2Native(JSON.stringify(result), callback)
+            return result
+        }
+
+        let privateKey: PrivateKey;
+        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
+        try {
+            privateKey = encryptedPrivateKeyObj.decrypt(password);
+        } catch (err) {
+            let result = this.getDecryptError(err)
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback)
+            }
+            return result
+        }
+        let addressObj = new Address(address)
+        let tx = makeClaimOngTx(addressObj, addressObj, value)
+        signTransaction(tx, privateKey)
+        let restClient = new RestClient()
+        return restClient.sendRawTransaction(tx.serialize()).then( res=> {
+            console.log('transfer response: ' + JSON.stringify(res))
+            if (res.Error === 0) {
+                let obj = {
+                    error: 0,
+                    result: '',
+                    desc: 'Claim ong successed.'
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                return obj
+            } else {
+                let obj = {
+                    error: res.Error,
+                    result: '',
+                    desc: 'Claim ong failed.'
+                }
+                callback && sendBackResult2Native(JSON.stringify(obj), callback)
+                return obj
+            }
+        }).catch((err: any) => {
             let obj = {
                 error: ERROR_CODE.NETWORK_ERROR,
                 result: ''

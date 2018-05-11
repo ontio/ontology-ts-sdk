@@ -1,6 +1,7 @@
 import { WebsocketClient } from '../src/network/websocket/websocketClient'
 import { buildGetDDOTx } from '../src/smartcontract/ontidContract';
 import { TEST_ONT_URL } from '../src/consts';
+import { Address } from '../src/crypto'
 
 describe('test websocket', () => {
     const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, false);
@@ -121,7 +122,7 @@ describe('test websocket', () => {
     });
 
     test('test getBalance', async () => {
-        const address = 'TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE';
+        const address = new Address('TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE')
         const result = await client.getBalance(address);
 
         expect(result.Action).toBe('getbalance');
