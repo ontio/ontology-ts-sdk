@@ -19,6 +19,7 @@
 import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes, hex2VarBytes, hexstr2str } from "../utils";
 import Uint160 from "../common/uint160";
 import {BigNumber} from 'bignumber.js'
+import { Address } from "../crypto/address";
 
 export class Transfers {
     //byte 
@@ -89,8 +90,8 @@ export class State {
     //byte
     version : string
     //20 bytes address
-    from  : string 
-    to    : string
+    from  : Address 
+    to    : Address
     value : string
 
     constructor() {
@@ -100,15 +101,8 @@ export class State {
     serialize() {
         let result = ''
         result += this.version
-        if(!this.from || this.from.length !== 40) {
-            throw new Error('[State.serialize], Invalid from address '+this.from)
-        }
-        result += this.from
-
-        if (!this.to || this.to.length !== 40) {
-            throw new Error('[State.serialize], Invalid to address ' + this.to)
-        }
-        result += this.to
+        result += this.from.toHexString()
+        result += this.to.toHexString()
         // let numHex = str2hexstr(this.value)
         // result += hex2VarBytes(numHex)       
         let bn = new BigNumber(this.value).toString(16)
@@ -125,8 +119,8 @@ export class State {
         let value = (new BigNumber(sr.readNextBytes(), 16)).toString()
 
         s.version = version
-        s.from = from
-        s.to   = to
+        s.from = new Address(from)
+        s.to   = new Address(to)
         s.value = value
         return s
     }
@@ -180,5 +174,46 @@ export class Contract {
         c.method = hexstr2str(method)
         c.args = args
         return c
+    }
+}
+
+export class TransferFrom {
+    version : string = '00'
+
+    sender : Address
+
+    from : Address
+
+    to : Address
+    
+    value : string
+
+    constructor(sender: Address, from: Address, to: Address, value : string) {
+        this.sender = sender;
+        this.from = from;
+        this.to = to;
+        this.value = value;
+    }
+
+    serialize() : string {
+        let result = ''
+        result += this.version
+        result += this.sender.toHexString()
+        result += this.from.toHexString()
+        result += this.to.toHexString()
+        let bn = new BigNumber(this.value).toString(16)
+        bn = bn.length % 2 === 0 ? bn : '0' + bn
+        result += hex2VarBytes(bn)
+        return result
+    }
+
+    static deserialize(sr : StringReader) : TransferFrom {
+        const version = sr.read(1)
+        const sender = new Address(sr.read(20))
+        const from = new Address(sr.read(20))
+        const to = new Address(sr.read(20))
+        const value = (new BigNumber(sr.readNextBytes(), 16)).toString()
+        let tf = new TransferFrom(sender, from ,to, value)
+        return tf
     }
 }

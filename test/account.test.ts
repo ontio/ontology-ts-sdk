@@ -38,9 +38,9 @@ describe('test account', ()=>{
         encryptedPrivateKey = account.encryptedKey
         accountDataStr = account.toJson()
         expect(accountDataStr).toBeDefined()
-        console.log('address: '+account.address)
+        console.log('address: '+account.address.toBase58)
         console.log('privateKey: '+privateKey)
-        console.log('addressU160: '+core.addressToU160(account.address))
+        console.log('addressU160: '+ account.address.toHexString())
     })
     test('test import account with correct password', () => {
         let a

@@ -139,7 +139,7 @@ export function ripemd160(data : string) {
     return ripemd160
 }
 
-export function getHash(SignatureScript: string): string {
+export function hash160(SignatureScript: string): string {
     return ripemd160(sha256(SignatureScript))
 }
 
@@ -161,7 +161,7 @@ export function verifySignature(data: string, signature: string, publicKey: any)
 }
 
 export function getContractHash(avmCode : string, vmType : VmType = VmType.NEOVM) {
-    let scriptHash = getHash(avmCode)
+    let scriptHash = hash160(avmCode)
     scriptHash = num2hexstring(vmType) + scriptHash.substr(2)
     return scriptHash
 }

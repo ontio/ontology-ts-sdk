@@ -18,11 +18,11 @@
 
 import * as core from './core'
 import { ab2hexstring } from './utils'
-import { PrivateKey } from './crypto';
+import { PrivateKey, Address } from './crypto';
 import { SignatureScheme } from './crypto'
 
 export class Account {
-    address: string;
+    address: Address;
     label: string;
     lock: boolean;
     encryptedKey: PrivateKey;
@@ -40,8 +40,6 @@ export class Account {
     }
 
     create( privateKey: PrivateKey, password: string, label: string, signatureScheme ?: SignatureScheme  ): Account {
-        
-        this.address = "";
         this.label = label;
         this.lock = false;
         this.passwordHash = core.sha256(password)
@@ -55,14 +53,11 @@ export class Account {
 
         this.encryptedKey = privateKey.encrypt(password); 
         
-        
         const publicKey = privateKey.getPublicKey();
         
         this.publicKey = publicKey.serializeHex();
         
-        let programHash = core.getSingleSigUInt160(publicKey.serializeHex());
-
-        this.address = core.u160ToAddress(programHash);
+        this.address = Address.addressFromPubKey(publicKey)
 
         return this;
     }
@@ -80,7 +75,6 @@ export class Account {
         if (!label) {
             label = ab2hexstring(core.generateRandomArray(4))
         }
-        account.address = "";
         account.label = label;
         account.lock = false;
         account.isDefault = false;
@@ -92,11 +86,7 @@ export class Account {
         account.publicKey = publicKey.key;
         account.signatureScheme = privateKey.algorithm.defaultSchema.label;
 
-        let programHash = core.getSingleSigUInt160(publicKey.serializeHex());
-
-        let address = core.u160ToAddress(programHash);
-
-        account.address = address
+        account.address = Address.addressFromPubKey(publicKey)
     
         return account
     }
@@ -113,7 +103,7 @@ export class Account {
      */
     toJsonObj() : any {
         let obj = {
-            address: this.address,
+            address: this.address.toBase58(),
             label: this.label,
             lock: this.lock,
             algorithm: this.encryptedKey.algorithm.label,
@@ -143,7 +133,7 @@ export class Account {
      */
     static parseJsonObj( obj : any ) : Account {
         let account = new Account()
-        account.address = obj.address
+        account.address = new Address(obj.address)
         account.label = obj.label
         account.lock = obj.lock
         account.isDefault = obj.isDefault

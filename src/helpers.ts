@@ -44,7 +44,6 @@ export function u160ToAddress(programhash: string): string {
     var ProgramHexString = cryptoJS.enc.Hex.parse(data);
     var ProgramSha256 = cryptoJS.SHA256(ProgramHexString).toString();
     var ProgramSha256_2 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(ProgramSha256)).toString();
-    var ProgramSha256Buffer = hexstring2ab(ProgramSha256_2);
 
     var datas = data + ProgramSha256_2.slice(0, 8);
 

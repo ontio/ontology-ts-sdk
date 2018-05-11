@@ -28,6 +28,7 @@ import Uint256 from '../common/uint256';
 import { PublicKey } from '../crypto';
 import * as core from '../core'
 import * as cryptoJS from 'crypto-js'
+import { Address } from '../crypto/address';
 
 export enum TxType  {
     BookKeeping     = 0x00,
@@ -63,7 +64,23 @@ export const TxName = {
 
 export class Fee {
     amount : Fixed64
-    payer : Uint160
+    //20 bytes address
+    payer : Address
+
+    serialize() : string {
+        let result = ''
+        result += this.amount.serialize()
+        result += this.payer.toHexString()
+        return result
+    }
+    static deserialize(sr : StringReader) : Fee {
+        let fee = new Fee()
+        const amount = Fixed64.deserialize(sr)
+        const payer = sr.read(20)
+        fee.amount = amount
+        fee.payer = new Address(payer)
+        return fee;
+    }
 }
 
 export class Sig {
@@ -133,6 +150,7 @@ export class Transaction {
 
     constructor () {
         this.networkFee = new Fixed64()
+        this.nonce = ab2hexstring(core.generateRandomArray(4))
     }
 
     serialize () : string {
@@ -158,7 +176,7 @@ export class Transaction {
         result += num2hexstring(this.fee.length)
         for (let i=0 ; i< this.fee.length; i++) {
             result += this.fee[i].amount.serialize()
-            result += this.fee[i].payer.serialize()
+            result += this.fee[i].payer.toHexString()
         }
 
         if(this.networkFee) {
@@ -218,7 +236,7 @@ export class Transaction {
         for(let i=0; i< feeLength; i++) {
             let fee = new Fee()
             fee.amount = Fixed64.deserialize(ss)
-            fee.payer = Uint160.deserialize(ss)
+            fee.payer = new Address(ss.read(20))
             tx.fee.push(fee)
         }
 

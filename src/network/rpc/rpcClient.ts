@@ -19,6 +19,7 @@
 
 import {TEST_ONT_URL} from '../../consts'
 import axios from 'axios'
+import { Address } from '../../crypto/address';
 
 export default class RpcClient {
     url : string
@@ -40,8 +41,8 @@ export default class RpcClient {
         return request
     }
 
-    getBalance(address : string) {
-        let req = this.makeRequest(address)
+    getBalance(address : Address) {
+        let req = this.makeRequest('getbalance', address.toBase58())
         return axios.post(this.url, req).then(res => {
             return res.data
         })

@@ -1,5 +1,6 @@
 import RpcClient from '../src/network/rpc/rpcClient'
 import { buildGetDDOTx } from '../src/smartcontract/ontidContract';
+import { Address } from '../src/crypto/address';
 
 describe('test rpc client', () => {
     var rpcClient = new RpcClient()
@@ -40,6 +41,12 @@ describe('test rpc client', () => {
 
     test('test getBlockJson', async () => {
         let res = await rpcClient.getBlockJson(blockHash)
+        console.log(res)
+        expect(res.desc).toEqual('SUCCESS')
+    })
+
+    test('test getBalance', async () => {
+        let res = await rpcClient.getBalance(new Address('TA5kdiHgtYP2x781hw8JbvNxxUujPiBobY'))
         console.log(res)
         expect(res.desc).toEqual('SUCCESS')
     })

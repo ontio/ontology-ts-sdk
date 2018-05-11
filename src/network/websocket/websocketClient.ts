@@ -19,6 +19,7 @@
 import { TEST_ONT_URL } from '../../consts'
 import { WebsocketSender } from './websocketSender';
 import * as Builder from './websocketBuilder';
+import { Address } from '../../crypto/address';
 
 /**
  * Websocket client.
@@ -84,7 +85,7 @@ export class WebsocketClient {
         return this.send(raw);
     }
 
-    async getBalance(address: string): Promise<any> {
+    async getBalance(address: Address): Promise<any> {
         const raw = Builder.getBalance(address);
         return this.send(raw);
     }

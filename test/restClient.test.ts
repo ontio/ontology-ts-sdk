@@ -1,5 +1,6 @@
 import RestClient from '../src/network/rest/restClient'
 import { buildGetDDOTx } from '../src/smartcontract/ontidContract';
+import { Address } from '../src/crypto/address';
 
 describe('test restClient', () => {
     var rest = new RestClient()
@@ -76,7 +77,7 @@ describe('test restClient', () => {
     })
 
     test('test getBalance', async () => {
-        let res = await rest.getBalance(address)
+        let res = await rest.getBalance(new Address(address))
         console.log(res)
         expect(res.Result).toBeTruthy()
     })

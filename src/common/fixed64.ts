@@ -22,8 +22,11 @@ const Fixed64Len = 8
 export default class Fixed64 {
     //8 bytes
     value : string
-    constructor() {
-        this.value = '0000000000000000'
+    constructor(value?:string) {
+        if(value && value.length !== 16) {
+            throw new Error('Invalid value.')
+        }
+        this.value = value || '0000000000000000'
     }
 
     serialize() {

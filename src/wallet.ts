@@ -175,7 +175,7 @@ export class Wallet {
         let wallet = Wallet.parseJsonObj(obj)
         //restore encrypted private key to add addressHash    
         wallet.accounts.forEach(a => {
-            let addressSha256 = CryptoJS.SHA256(a.address).toString();
+            let addressSha256 = CryptoJS.SHA256(a.address.toHexString()).toString();
             let addressSha256_2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
             let addresshash = addressSha256_2.slice(0, 8);
             let key = addresshash + a.encryptedKey.key
