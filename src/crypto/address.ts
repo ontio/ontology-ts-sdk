@@ -48,6 +48,15 @@ import * as core from '../core'
          }
      }
 
+     /**
+      * Checks if two addresses are equal.
+      * 
+      * @param o Other address
+      */
+     equals(o: Address) {
+         return o !== null && this.toHexString() === o.toHexString();
+     }
+
      static addressFromPubKey(publicKey : PublicKey) : Address {
          let programHash = core.hash160(publicKey.serializeHex());
          programHash = '01' + programHash.substring(2)
