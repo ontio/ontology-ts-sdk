@@ -46,14 +46,15 @@ export class PublicKey extends Key {
     /**
      * Creates PublicKey from Hex representation.
      * 
-     * @param sr String reader
-     * @param length Byte length of the serialized object
+     * @param hex Hex representation of public key
      * 
      */
-    static deserializeHex(sr: StringReader, length: number = 35): PublicKey {
+    static deserializeHex(hex: string): PublicKey {
+        const sr = new StringReader(hex);
+
         const algorithmHex = parseInt(sr.read(1), 16);
 		const curveHex = parseInt(sr.read(1), 16);
-		const pk = sr.read(length - 2);
+		const pk = sr.readRest();
         
         return new PublicKey(
             pk,
@@ -171,7 +172,7 @@ export class PublicKeyStatus {
 	static deserialize(hexstr: string) : PublicKeyStatus {
 		const sr = new StringReader(hexstr);
 		const status = sr.read(1);
-        const publicKey = PublicKey.deserializeHex(sr);
+        const publicKey = PublicKey.deserializeHex(sr.readRest());
 
 		return new PublicKeyStatus(publicKey, status);
 	}
