@@ -184,6 +184,7 @@ export class StringReader {
 	 * @returns {string}
 	 */
 	read(bytes : number) {
+		if (bytes === 0) return '';
 		if (this.isEmpty()) throw new Error('StringReader reached the end.')
 		const out = this.str.substr(this.pos, bytes * 2)
 		this.pos += bytes * 2
@@ -205,12 +206,29 @@ export class StringReader {
 	}
 
 	/**
+	 * Reads string prefixed with exact number of bytes specifying the length.
+	 * 
+	 * @param lenSize Number of bytes storing the length
+	 */
+	readLengthPrefixed(lenSize: number): string {
+		const len = parseInt(this.read(lenSize), 16);
+        return this.read(len);
+	}
+
+	/**
+	 * Reads rest of the string.
+	 */
+	readRest(): string {
+		const len = (this.str.length - this.pos) / 2;
+		return this.read(len);
+	}
+
+	/**
 	 * First, read one byte as the length of bytes to read. Then read the following bytes.
 	 * @return {string}
 	 */
 	readNextBytes() {
 		const bytesToRead = this.readNextLen();
-		if (bytesToRead === 0) return '';
 
 		return this.read(bytesToRead);
 	}

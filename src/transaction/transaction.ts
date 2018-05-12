@@ -113,7 +113,7 @@ export class Sig {
         let pubKeyLength = sr.readNextLen()
         for(let i=0; i < pubKeyLength; i++) {
             const serializedLength = sr.readNextLen();
-            let pk = PublicKey.deserializeHex(sr, serializedLength);
+            let pk = PublicKey.deserializeHex(sr.read(serializedLength));
             sig.pubKeys.push(pk)
         }
         sig.M = sr.readNextLen()

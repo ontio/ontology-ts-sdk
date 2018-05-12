@@ -39,70 +39,130 @@ export class PublicKeyWithId extends PublicKey {
     }
 }
 
+/**
+ * Attribute of ONT ID Description Object.
+ */
 export class DDOAttribute {
-    path : string
-    type : string
-    value : string
-    constructor() {}
+    path: string;
+    type: string;
+    value: string;
+
+    constructor(path: string, type: string, value: string) {
+        this.path = path;
+        this.type = type;
+        this.value = value;
+    }
+
+    /**
+     * Creates Attribute from hex string.
+     * 
+     * @param hex Hex representation
+     */
+    static deserialize(hex: string): DDOAttribute {
+        const reader = new StringReader(hex);
+
+        const path = hexstr2str(reader.readLengthPrefixed(4));
+        const typeValue = reader.readLengthPrefixed(4);
+        const { type, value } = DDOAttribute.deserializeTypeValue(typeValue);
+
+        return new DDOAttribute(path, type, value);
+    }
+
+    /**
+     * Creates Type + Value part from hex string.
+     * 
+     * @param hex Hex representation
+     */
+    private static deserializeTypeValue(hex: string) {
+        const reader = new StringReader(hex);
+
+        return {
+            type: hexstr2str(reader.readLengthPrefixed(1)),
+            value: hexstr2str(reader.readRest())
+        };
+    }
 }
+
+/**
+ * ONT ID Description Object.
+ */
 export class DDO {
-    publicKeys : Array<PublicKeyWithId> = []
-    attributes : Array<DDOAttribute> = []
-    recovery : string
+    publicKeys: PublicKeyWithId[];
+    attributes: DDOAttribute[];
+    recovery: string;
 
-    constructor() {}
+    constructor(publicKeys: PublicKeyWithId[], attributes: DDOAttribute[], recovery: string) {
+        this.publicKeys = publicKeys;
+        this.attributes = attributes;
+        this.recovery = recovery;
+    }
 
-    static deserialize(hexstr: string): DDO {
-        const ss = new StringReader(hexstr)
-        let ddo = new DDO()
-        //total length of public keys - 4 bytes
-        const pkTotalLen = parseInt(ss.read(4),16)
-        if(pkTotalLen > 0) {
-            const pkNum = parseInt(ss.read(4), 16)
-            for (let i = 0; i < pkNum; i++) {
+    /**
+     * Creates DDO object from hex string.
+     * 
+     * @param hex Hex representation
+     */
+    static deserialize(hex: string): DDO {
+        const reader = new StringReader(hex);
+        
+        const publicKeys = reader.readLengthPrefixed(4);
+        const attributes = reader.readLengthPrefixed(4);
+        const recovery = reader.readLengthPrefixed(4);
 
-                let pkIdLen = parseInt(ss.read(4), 16);
-                const rawPkId = ss.read(pkIdLen);
-                const pkId = parseInt(rawPkId, 16);
-                
-                //length of public key - 4 bytes
-                let pkLen = parseInt(ss.read(4), 16)
-                const rawPk = ss.read(pkLen);
-                const pubKey = PublicKeyWithId.deserializeHex(new StringReader(rawPk), pkLen);
-                const pubKeyWithId = new PublicKeyWithId(pubKey, pkId);
-                ddo.publicKeys.push(pubKeyWithId);
-            }
+        return new DDO(
+            this.deserializePublicKeys(publicKeys),
+            this.deserializeAttributes(attributes),
+            recovery
+        );
+    }
+
+    /**
+     * Creates PublicKeys part.
+     * 
+     * @param hex Hex representation
+     */
+    private static deserializePublicKeys(hex: string): PublicKeyWithId[] {
+        if (hex.length === 0) {
+            return [];
         }
         
+        const reader = new StringReader(hex);
 
-        //attribute number - 4bytes
-        const attrTotalLen = parseInt(ss.read(4),16)
-        if(attrTotalLen > 0) {
-            const attrNum = parseInt(ss.read(4), 16)
-            for (let i = 0; i < attrNum; i++) {
-                const totalLen = parseInt(ss.read(4), 16)
+        const num = parseInt(reader.read(4), 16);
+        const publicKeys: PublicKeyWithId[] = new Array(num);
+        
+        for (let i = 0; i < num; i++) {
+            const id = parseInt(reader.readLengthPrefixed(4));
+            
+            const pkHex = reader.readLengthPrefixed(4);
+            const pk = PublicKey.deserializeHex(pkHex);
 
-                let attr = new DDOAttribute()
-                const pathLen = parseInt(ss.read(4), 16)
-                attr.path = hexstr2str(ss.read(pathLen))
-
-                const type_value_len = parseInt(ss.read(4), 16)
-                const typeLen = parseInt(ss.read(1), 16)
-                attr.type = hexstr2str(ss.read(typeLen))
-
-                const valueLen = type_value_len - typeLen - 1
-                attr.value = hexstr2str(ss.read(valueLen))
-                ddo.attributes.push(attr)
-            }
+            publicKeys[i] = new PublicKeyWithId(pk, id);
         }
         
-        //recovery
-        const recoveryTotalLen = parseInt(ss.read(4), 16)
-        if(recoveryTotalLen > 0 ) {
-            const recovery = ss.read(recoveryTotalLen)
-            ddo.recovery = recovery
+        return publicKeys;
+    }
+
+    /**
+     * Creates Attributes part.
+     * 
+     * @param hex Hex representation
+     */
+    private static deserializeAttributes(hex: string): DDOAttribute[] {
+        if (hex.length === 0) {
+            return [];
         }
-        
-        return ddo
+
+        const reader = new StringReader(hex);
+
+        const num = parseInt(reader.read(4), 16);
+        const attributes: DDOAttribute[] = new Array(num);
+
+		for (let i = 0; i < num; i++) {
+            const attrHex = reader.readLengthPrefixed(4);
+            attributes[i] = DDOAttribute.deserialize(attrHex);
+		}
+
+        return attributes;
     }
 }
