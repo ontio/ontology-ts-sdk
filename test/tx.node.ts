@@ -1,4 +1,3 @@
-import { DDOAttribute } from './../src/transaction/ddo';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -30,7 +29,7 @@ import {Parameter, ParameterType } from '../src/smartcontract/abi/parameter'
 import json2 from '../src/smartcontract/data/idContract.abi'
 import { ab2hexstring, str2hexstr, StringReader, hexstr2str } from '../src/utils'
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
-import { DDO, DDOAttribute } from '../src/transaction/ddo'
+import { DDO, DDOAttribute, PublicKeyWithId } from '../src/transaction/ddo'
 import { TEST_ONT_URL} from '../src/consts'
 import { generateOntid } from '../src/core';
 import TxSender from '../src/transaction/txSender'
@@ -41,7 +40,6 @@ import { VmType } from '../src/transaction/vmcode';
 import { RestClient } from '../src/index';
 import { Account } from './../src/account';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
-import { PublicKeyWithId } from '../src/crypto/PublicKey';
 
 const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92'
 
@@ -191,8 +189,8 @@ const testDDOTx = () => {
     console.log(url)
     axios.post(url, param).then((res) => {
         console.log(res.data)
-        if(res.data.Result && res.data.Result.length > 0) {
-            const ddo = DDO.deserialize(res.data.Result[0])
+        if(res.data.Result) {
+            const ddo = DDO.deserialize(res.data.Result)
             console.log('ddo: '+JSON.stringify(ddo))
         }
     }).catch(err => {

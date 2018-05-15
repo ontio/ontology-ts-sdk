@@ -88,16 +88,14 @@ export class DDO {
     static deserialize(hexstr: string): DDO {
         const ss = new StringReader(hexstr)
         let ddo = new DDO()
-        //total length of public keys - 4 bytes
-        
-        
-        //recovery
-        const recoveryTotalLen = parseInt(ss.read(4), 16)
-        if(recoveryTotalLen > 0 ) {
-            const recovery = ss.read(recoveryTotalLen)
-            ddo.recovery = recovery
-        }
-        
+        const pkLen = ss.readNextLen()
+        ddo.publicKeys = PublicKeyWithId.deserialize(ss.read(pkLen))
+
+        const attrLen = ss.readNextLen()
+        ddo.attributes = DDOAttribute.deserialize(ss.read(attrLen))
+
+        const recoveryLen = ss.readNextLen()
+        ddo.recovery = ss.read(recoveryLen)
         return ddo
     }
 }
