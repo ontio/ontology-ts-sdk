@@ -22,11 +22,12 @@ import { Wallet } from './wallet'
 import { Claim } from './claim'
 import { Transaction } from './transaction/transaction'
 import * as TransactionBuilder from './transaction/transactionBuilder'
+import * as OntAssetTxBuilder from './smartcontract/ontAssetTxBuilder'
 import {Parameter, ParameterType} from './smartcontract/abi/parameter'
 import AbiFunction from './smartcontract/abi/abiFunction'
 import AbiInfo from './smartcontract/abi/abiInfo'
 import * as Token from './smartcontract/token'
-import * as OntidContract from './smartcontract/ontidContract'
+import * as OntidContract from './smartcontract/ontidContractTxBuilder'
 import RestClient from './network/rest/restClient'
 import RpcClient from './network/rpc/rpcClient'
 import { WebsocketClient } from './network/websocket/websocketClient'
@@ -43,6 +44,7 @@ class ONT {
   Claim : any
   Transaction : any
   TransactionBuilder : any
+  OntAssetTxBuilder : any
   Parameter : any
   ParameterType : any
   AbiFunction : any
@@ -65,6 +67,7 @@ class ONT {
     this.Claim = Claim,
     this.Transaction = Transaction,
     this.TransactionBuilder = TransactionBuilder,
+    this.OntAssetTxBuilder = OntAssetTxBuilder,
     this.Parameter = Parameter
     this.ParameterType = ParameterType
     this.AbiFunction = AbiFunction
@@ -111,6 +114,7 @@ export {
   AbiFunction,
   AbiInfo,
   TransactionBuilder,
+  OntAssetTxBuilder,
   core,
   utils,
   scrypt,

@@ -140,17 +140,21 @@ export class Transaction {
 
     txAttributes : Array<TransactionAttribute> = []
 
-    fee : Array<Fee> = []
+    gasPrice : Fixed64
 
-    networkFee : Fixed64
+    gasLimit : Fixed64
+
+    payer : Address
 
     sigs : Array<Sig> = []
 
     hash : Uint256
 
     constructor () {
-        this.networkFee = new Fixed64()
         this.nonce = ab2hexstring(core.generateRandomArray(4))
+        this.gasPrice = new Fixed64()
+        this.gasLimit = new Fixed64()
+        // this.payer = new Address('0000000000000000000000000000000000000000')
     }
 
     serialize () : string {
@@ -166,6 +170,9 @@ export class Transaction {
         result += num2hexstring(this.type)
         //nonce 4bytes
         result += this.nonce
+        result += this.gasPrice.serialize()
+        result += this.gasLimit.serialize()
+        result += this.payer.toHexString()
         result += this.payload.serialize()
 
         //serialize transaction attributes
@@ -173,15 +180,15 @@ export class Transaction {
         for (let i = 0; i < this.txAttributes.length; i++) {
             result += this.txAttributes[i].serialize()
         }
-        result += num2hexstring(this.fee.length)
-        for (let i=0 ; i< this.fee.length; i++) {
-            result += this.fee[i].amount.serialize()
-            result += this.fee[i].payer.toHexString()
-        }
+        // result += num2hexstring(this.fee.length)
+        // for (let i=0 ; i< this.fee.length; i++) {
+        //     result += this.fee[i].amount.serialize()
+        //     result += this.fee[i].payer.toHexString()
+        // }
 
-        if(this.networkFee) {
-            result += this.networkFee.serialize()
-        }
+        // if(this.networkFee) {
+        //     result += this.networkFee.serialize()
+        // }
 
         return result
     }
@@ -208,6 +215,9 @@ export class Transaction {
         tx.version = parseInt(ss.read(1), 16)
         tx.type = parseInt(ss.read(1), 16)
         tx.nonce = ss.read(4)
+        tx.gasPrice = Fixed64.deserialize(ss)
+        tx.gasLimit = Fixed64.deserialize(ss)
+        tx.payer = new Address(ss.read(20))
         let payload
         switch (tx.type) {
             case TxType.Invoke :
@@ -231,17 +241,6 @@ export class Transaction {
             txAttribute.deserialize(ss)
             tx.txAttributes.push(txAttribute)
         }
-
-        const feeLength = ss.readNextLen()
-        for(let i=0; i< feeLength; i++) {
-            let fee = new Fee()
-            fee.amount = Fixed64.deserialize(ss)
-            fee.payer = new Address(ss.read(20))
-            tx.fee.push(fee)
-        }
-
-        const networkFee = Fixed64.deserialize(ss)
-        tx.networkFee = networkFee
 
         const sigLength = ss.readNextLen()
         for (let i = 0; i < sigLength; i++) {

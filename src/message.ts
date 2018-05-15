@@ -18,7 +18,7 @@
 
 import * as b64 from 'base64-url';
 import { Signature, SignatureScheme, PrivateKey, PublicKey, PublicKeyStatus, PK_STATUS } from "./crypto";
-import { buildGetPublicKeyStatusTx } from './smartcontract/ontidContract';
+import { buildGetPublicKeyStatusTx } from './smartcontract/ontidContractTxBuilder';
 import RestClient from './network/rest/restClient';
 import { num2hexstring, now } from './utils';
 import * as uuid from 'uuid';

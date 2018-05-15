@@ -16,34 +16,67 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {StringReader, hexstr2str} from '../utils'
+import {StringReader, hexstr2str, str2VarBytes} from '../utils'
 import {PublicKey} from '../crypto'
 
 /**
  * Public key representation with recorded id from blockchain.
  * 
  */
-export class PublicKeyWithId extends PublicKey {
+export class PublicKeyWithId {
     /**
      * Id of the public key.
      * 
      * Only numeric part is recorded. Full PublicKeyId will be constucted as follows:
      * <ONTID>#keys-<id>
      */
-    id: number;
+    id: number
+    pk: PublicKey
 
-    constructor (key: PublicKey, id: number) {
-        super(key.key, key.algorithm, key.parameters);   
-
-        this.id = id;
+    static deserialize(hexstr: string): Array<PublicKeyWithId> {
+        const sr = new StringReader(hexstr)
+        let result = new Array<PublicKeyWithId>()
+        while (!sr.isEmpty()) {
+            const index = sr.readUint32()
+            const data = sr.readNextBytes()
+            let p = new PublicKeyWithId()
+            p.id = index
+            p.pk = PublicKey.deserializeHex(new StringReader(data))
+            result.push(p)
+        }
+        return result
     }
 }
 
 export class DDOAttribute {
-    path : string
+    key : string
     type : string
     value : string
     constructor() {}
+
+    serialize() : string {
+        let result = ''
+        result += str2VarBytes(this.key)
+        result += str2VarBytes(this.type)
+        result += str2VarBytes(this.value)
+        return result
+    }
+
+    static deserialize(hexstr : string) {
+        const sr = new StringReader(hexstr)
+        let result = new Array<DDOAttribute>()
+        while (!sr.isEmpty()) {
+            const key = hexstr2str(sr.readNextBytes())
+            const type = hexstr2str(sr.readNextBytes())
+            const value = hexstr2str(sr.readNextBytes())
+            let d = new DDOAttribute()
+            d.key = key
+            d.type = type
+            d.value = value
+            result.push(d)
+        }
+        return result
+    }
 }
 export class DDO {
     publicKeys : Array<PublicKeyWithId> = []
@@ -56,45 +89,7 @@ export class DDO {
         const ss = new StringReader(hexstr)
         let ddo = new DDO()
         //total length of public keys - 4 bytes
-        const pkTotalLen = parseInt(ss.read(4),16)
-        if(pkTotalLen > 0) {
-            const pkNum = parseInt(ss.read(4), 16)
-            for (let i = 0; i < pkNum; i++) {
-
-                let pkIdLen = parseInt(ss.read(4), 16);
-                const rawPkId = ss.read(pkIdLen);
-                const pkId = parseInt(rawPkId, 16);
-                
-                //length of public key - 4 bytes
-                let pkLen = parseInt(ss.read(4), 16)
-                const rawPk = ss.read(pkLen);
-                const pubKey = PublicKeyWithId.deserializeHex(new StringReader(rawPk), pkLen);
-                const pubKeyWithId = new PublicKeyWithId(pubKey, pkId);
-                ddo.publicKeys.push(pubKeyWithId);
-            }
-        }
         
-
-        //attribute number - 4bytes
-        const attrTotalLen = parseInt(ss.read(4),16)
-        if(attrTotalLen > 0) {
-            const attrNum = parseInt(ss.read(4), 16)
-            for (let i = 0; i < attrNum; i++) {
-                const totalLen = parseInt(ss.read(4), 16)
-
-                let attr = new DDOAttribute()
-                const pathLen = parseInt(ss.read(4), 16)
-                attr.path = hexstr2str(ss.read(pathLen))
-
-                const type_value_len = parseInt(ss.read(4), 16)
-                const typeLen = parseInt(ss.read(1), 16)
-                attr.type = hexstr2str(ss.read(typeLen))
-
-                const valueLen = type_value_len - typeLen - 1
-                attr.value = hexstr2str(ss.read(valueLen))
-                ddo.attributes.push(attr)
-            }
-        }
         
         //recovery
         const recoveryTotalLen = parseInt(ss.read(4), 16)

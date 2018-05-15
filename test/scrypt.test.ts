@@ -20,7 +20,7 @@ import * as CryptoJS from 'crypto-js'
 import * as scrypt from '../src/scrypt'
 import * as core from '../src/core'
 import { ERROR_CODE } from '../src/error';
-import { ab2hexstring } from '../src/utils';
+import { ab2hexstring, str2hexstr } from '../src/utils';
 import { PrivateKey, KeyType, KeyParameters, CurveLabel } from '../src/crypto';
 import { Account } from '../src/account';
 

@@ -34,7 +34,7 @@ import { addressToU160, u160ToAddress } from '../src/helpers';
 import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient'
 import { getSingleSigUInt160 } from '../src/core';
-import { Address } from '../src/crypto/address';
+import { Address } from '../src/crypto';
 var txSender = new TxSender(TEST_ONT_URL.SOCKET_URL)
 
 var restClient = new RestClient()
@@ -145,8 +145,7 @@ const testTransferFromMany = () => {
 
 const testTransferToMany = () => {
     let tx = makeTransferToMany('ONT', address1, [address2, address3], ['100', '200'])
-    let pris = [ [pri1], [pri2] ]
-    signTx(tx, pris)
+    signTransaction(tx, pri1)
     let param = buildTxParam(tx)
     var callback = function (err, res, socket) {
         console.log('res : ' + JSON.stringify(res))

@@ -28,7 +28,7 @@ import { VmType } from './transaction/vmcode';
 import { buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
 import axios from 'axios'
 import { DDO } from './transaction/ddo'
-import { buildGetDDOTx, buildGetPublicKeyStatusTx } from './smartcontract/ontidContract'
+import { buildGetDDOTx, buildGetPublicKeyStatusTx } from './smartcontract/ontidContractTxBuilder'
 import { verifyLeafHashInclusion } from './merkle'
 import RestClient from './network/rest/restClient'
 import { 
@@ -126,6 +126,7 @@ export function deserializePublickKey(serializedPk : string) {
 export function createSignatureScript(publicKeyEncoded: string): string {
     return "21" + publicKeyEncoded + "ac";
 }
+
 
 export function sha256(data : string) {
     var hex = cryptoJS.enc.Hex.parse(data);

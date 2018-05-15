@@ -46,12 +46,12 @@ export function encrypt(privateKey: string, publicKey: string, keyphrase: string
     // console.log( "programHash: ", programHash );
 
     let address = u160ToAddress(u160);
-    console.log( "address: ", address );
+    // console.log( "address: ", address );
 
     let addressSha256 = CryptoJS.SHA256(address).toString();
     let addressSha256_2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
     let addresshash = addressSha256_2.slice(0, 8);
-    console.log( "addresshash: ", addresshash );
+    // console.log( "addresshash: ", addresshash );
 
     // Scrypt
     let derived = Scrypt.hashSync(Buffer.from(keyphrase.normalize('NFC'), 'utf8'), Buffer.from(addresshash, 'hex'), scryptParams).toString('hex');
@@ -59,9 +59,9 @@ export function encrypt(privateKey: string, publicKey: string, keyphrase: string
     let derived2 = derived.slice(64);
     let iv = CryptoJS.enc.Hex.parse(derived1)
 
-    console.log('decrypt derived: ' + derived)
-    console.log('decrypt iv: ' + iv)
-    console.log('decrypt derived2: ' + derived2)
+    // console.log('decrypt derived: ' + derived)
+    // console.log('decrypt iv: ' + iv)
+    // console.log('decrypt derived2: ' + derived2)
 
     // AES Encrypt
     // let xor = hexXor(privateKey, derived1);
@@ -133,12 +133,12 @@ export function checkDecrypted(encryptedKey: string, publicKey: string): void {
     const addressHash = assembled.substr(0, 8);
     // console.log( "addressHash: ", addressHash );
 
-    console.log('publicKey', publicKey)
+    // console.log('publicKey', publicKey)
 
     // Address
     const u160 = getSingleSigUInt160(publicKey);
     const address = u160ToAddress(u160);
-    console.log('address 2', address)
+    // console.log('address 2', address)
 
     // AddressHash
     const addressSha256 = CryptoJS.SHA256(address).toString();

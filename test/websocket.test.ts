@@ -1,5 +1,5 @@
 import { WebsocketClient } from '../src/network/websocket/websocketClient'
-import { buildGetDDOTx } from '../src/smartcontract/ontidContract';
+import { buildGetDDOTx } from '../src/smartcontract/ontidContractTxBuilder';
 import { TEST_ONT_URL } from '../src/consts';
 import { Address } from '../src/crypto'
 

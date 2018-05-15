@@ -1,3 +1,4 @@
+import { ParameterType } from './../smartcontract/abi/parameter';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -287,12 +288,30 @@ export const buildWasmContractParam = (params : Array<Parameter>) => {
     return str2hexstr(JSON.stringify(result))
 }
 
+export const buildNativeContractParam = (params : Array<Parameter>) => {
+    let result = ''
+    for( let p of params) {
+        const type = p.getType()
+        switch (type) {
+            case ParameterType.ByteArray:
+                result += hex2VarBytes(p.value);
+            break;
+            case ParameterType.Int:
+                result += p.value;
+            default:
+                break;
+        }
+    }
+
+    return result
+}
+
 export const makeInvokeCode = (funcName : string,  params : Array<Parameter>, codeHash : string, vmType : VmType = VmType.NEOVM) => {
     let invokeCode = new InvokeCode()
     let vmCode = new VmCode()
-    const functionName = str2hexstr(funcName)
+    const funcNameHex = str2hexstr(funcName)
     if(vmType === VmType.NEOVM) {
-        let args = buildSmartContractParam(functionName, params)
+        let args = buildSmartContractParam(funcNameHex, params)
         let contract = new Contract()
         contract.address = codeHash
         contract.args = args
@@ -313,17 +332,25 @@ export const makeInvokeCode = (funcName : string,  params : Array<Parameter>, co
 
         vmCode.code = code
         vmCode.vmType = vmType
+    } else if(vmType === VmType.NativeVM) {
+        let args = buildNativeContractParam(params)
+        let contract = new Contract()
+        contract.address = codeHash
+        contract.args = args
+        contract.method = funcName
+        let code = contract.serialize()
+        vmCode.code = code
+        vmCode.vmType = vmType
     }
     
     invokeCode.code = vmCode
     return invokeCode
 }
 
-export const makeInvokeTransaction = (funcName : string, parameters : Array<Parameter>, scriptHash : string, vmType : VmType = VmType.NEOVM, fees : Array<Fee> = []) => {
+export const makeInvokeTransaction = (funcName : string, parameters : Array<Parameter>, scriptHash : string, vmType : VmType = VmType.NEOVM) => {
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
-    tx.fee = fees
 
     // let scriptHash = abiInfo.getHash()
     if(scriptHash.substr(0,2) === '0x'){
