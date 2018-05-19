@@ -83,7 +83,7 @@ export class SDK {
         }
     }
 
-    static createWallet(name : string, password : string, callback?: string) {
+    static createWallet(name : string, password : string, payer:string, callback?: string) {
         let wallet = new Wallet()
         wallet.create(name)
         let identity = new Identity()
@@ -99,14 +99,16 @@ export class SDK {
         // wallet.addAccount(account)
 
         //
-        let walletDataStr = wallet.toJsonObj()
+        let walletDataStr = wallet.toJson()
         let obj = {
             error: 0,
             result: walletDataStr,
-            desc: ''
+            desc: '',
+            tx : ''
         }
         let publicKey = privateKey.getPublicKey()
         let tx = buildRegisterOntidTx(identity.ontid, publicKey,'0')
+        tx.payer = new Address(payer)
         signTransaction(tx, privateKey)
         //add preExec
         let restClient = new RestClient()
@@ -114,13 +116,13 @@ export class SDK {
             //preExec success, send real request
             if (res.Result == '01') {
                 // restClient.sendRawTransaction(tx.serialize(), false)
+                obj.tx = tx.serialize()
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 return obj
             } else {
                 let errResult = {
                     error: ERROR_CODE.PreExec_ERROR,
                     result: '',
-                    tx : tx.serialize(),
                     desc: res.Result
                 }
                 callback && sendBackResult2Native(JSON.stringify(errResult), callback)
@@ -150,7 +152,7 @@ export class SDK {
             return obj
         }
         wallet.addIdentity(identity)
-        let walletStr = wallet.toJsonObj()
+        let walletStr = wallet.toJson()
         let obj = {
             error : ERROR_CODE.SUCCESS,
             result : walletStr,
@@ -190,7 +192,7 @@ export class SDK {
             wallet.create(identity.label)
             wallet.defaultOntid = identity.ontid
             wallet.addIdentity(identity)
-            let walletStr = wallet.toJsonObj()
+            let walletStr = wallet.toJson()
             let obj = {
                 error: ERROR_CODE.SUCCESS,
                 result: walletStr,
@@ -226,11 +228,11 @@ export class SDK {
         }
     }
 
-    static createIdentity(label : string, password : string, callback?: string) {
+    static createIdentity(label : string, password : string, payer:string, callback?: string) {
         let identity = new Identity()
         const privateKey = PrivateKey.random();
         identity.create(privateKey, password, label)        
-        let result = identity.toJsonObj()
+        let result = identity.toJson()
         let obj = {
             error: ERROR_CODE.SUCCESS,
             result: result,
@@ -240,6 +242,7 @@ export class SDK {
         //register ontid
         let publicKey = privateKey.getPublicKey()
         let tx = buildRegisterOntidTx(identity.ontid, publicKey,'0')
+        tx.payer = new Address(payer)
         signTransaction(tx, privateKey)
         let restClient = new RestClient()
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
@@ -271,7 +274,7 @@ export class SDK {
         let account = new Account()
         let privateKey = PrivateKey.random();
         account.create(privateKey, password, label)
-        let result = account.toJsonObj()
+        let result = account.toJson()
         let obj = {
             error : ERROR_CODE.SUCCESS,
             result : result,
@@ -295,7 +298,7 @@ export class SDK {
             return result
         }
         wallet.addAccount(account)
-        let walletStr = wallet.toJsonObj()
+        let walletStr = wallet.toJson()
         let obj = {
             error: ERROR_CODE.SUCCESS,
             result: walletStr,
@@ -374,7 +377,7 @@ export class SDK {
          password : string, callback ?: string ) {
             let privateKey: PrivateKey;
             let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)   
-            let checksum = core.getChecksumFromOntid(issuer)     
+            let checksum = core.getChecksumFromOntid(subject)     
             try {
                 privateKey = encryptedPrivateKeyObj.decrypt(password,checksum);
             } catch (err) {
@@ -397,7 +400,7 @@ export class SDK {
             attr.type = 'JSON'
             attr.value = value
             let publicKey = privateKey.getPublicKey()
-            let tx = buildAddAttributeTx(path,[attr], publicKey, '0')
+            let tx = buildAddAttributeTx(subject,[attr], publicKey, '0')
             signTransaction(tx, privateKey)
             let restClient = new RestClient()
             return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
@@ -479,7 +482,7 @@ export class SDK {
     }
 
     //pls check balance before transfer
-    static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, callback : string) {
+    static transferAssets(token: string , from : string, to : string, value : string, encryptedPrivateKey : string, password : string, gas:string,callback : string) {
         try {
             if (from.length !== 40) {
                 from = core.addressToU160(from)
@@ -499,7 +502,7 @@ export class SDK {
         
         let privateKey: PrivateKey;
         let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey) 
-        let checksum = core.getChecksumFromAddress(from)       
+        let checksum = core.getChecksumFromAddress(new Address(from))       
         try {
             privateKey = encryptedPrivateKeyObj.decrypt(password,checksum);
         } catch (err) {
@@ -543,7 +546,7 @@ export class SDK {
         })
     }
 
-    static claimOng(address: string, value: string, encryptedPrivateKey: string, password: string, callback: string) {
+    static claimOng(address: string, value: string, encryptedPrivateKey: string, password: string, gas : string, callback: string) {
         try {
             if (address.length !== 40) {
                 address = core.addressToU160(address)
@@ -561,7 +564,7 @@ export class SDK {
 
         let privateKey: PrivateKey;
         let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
-        let checksum = core.getChecksumFromAddress(address)
+        let checksum = core.getChecksumFromAddress(new Address(address))
         try {
             privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
         } catch (err) {
@@ -638,7 +641,7 @@ export class SDK {
 
     static exportAccountToQrcode(accountDataStr: string, callback : string) {
         let obj = Account.parseJson(accountDataStr)
-        let checksum = core.getChecksumFromAddress(obj.address.toBase58())
+        let checksum = core.getChecksumFromAddress(obj.address)
         let result = {
             type: "I",
             label: obj.label,
@@ -661,7 +664,7 @@ export class SDK {
 
     static exportAccountToKeystring(accountDataStr: string, callback: string) {
         let obj = Account.parseJson(accountDataStr)
-        let checksum = core.getChecksumFromAddress(obj.address.toBase58())
+        let checksum = core.getChecksumFromAddress(obj.address)
         let key = obj.encryptedKey.key
         let result = checksum + key
         callback && sendBackResult2Native(JSON.stringify(result), callback)

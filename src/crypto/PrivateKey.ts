@@ -28,6 +28,7 @@ import { SignatureScheme } from './SignatureScheme';
 import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
 import { CurveLabel } from './index';
+import { Address } from './address';
 
 export class PrivateKey extends Key {
     /**
@@ -97,10 +98,10 @@ export class PrivateKey extends Key {
      * @param checksum 4 bytes checksum or address in base58 format
      * @param params Optional Scrypt params
      */
-    decrypt(keyphrase: string,checksum: string, params?: ScryptParams): PrivateKey {
+    decrypt(keyphrase: string,checksum: string | Address, params?: ScryptParams): PrivateKey {
         const decrypted = decrypt(this.key, keyphrase, checksum, params);
         const decryptedKey = new PrivateKey(decrypted, this.algorithm, this.parameters);
-        checkDecrypted(this.key, decryptedKey.getPublicKey().key);
+        checkDecrypted(checksum, decryptedKey.getPublicKey().serializeHex());
 
         return decryptedKey;
     }
@@ -112,7 +113,7 @@ export class PrivateKey extends Key {
      * @param params Optional Scrypt params
      */
     encrypt(keyphrase: string, params?: ScryptParams): PrivateKey {
-        const encrypted = encrypt(this.key, this.getPublicKey().key, keyphrase, params);
+        const encrypted = encrypt(this.key, this.getPublicKey().serializeHex(), keyphrase, params);
         return new PrivateKey(encrypted, this.algorithm, this.parameters);
     }
 

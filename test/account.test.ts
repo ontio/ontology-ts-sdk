@@ -45,7 +45,8 @@ describe('test account', ()=>{
     test('test import account with correct password', () => {
         let a
         try {
-           a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address.toBase58())
+           a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address)
+
         } catch(err) {}
 
         expect(a.label).toBe('mickey')
@@ -56,7 +57,7 @@ describe('test account', ()=>{
 
     test('test import  with incorrect password', () => {
         try {
-            let a = Account.importAccount('mickey',encryptedPrivateKey, '1234567',account.address.toBase58())
+            let a = Account.importAccount('mickey',encryptedPrivateKey, '1234567',account.address)
         } catch(err) {
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)
         }

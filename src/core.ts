@@ -1,3 +1,4 @@
+import { Address } from './crypto/address';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -156,13 +157,8 @@ export function signatureData(data: string, privateKey: string): string {
  * compute the checksum from address for decrypt
  * @param address in base58 format
  */
-export function getChecksumFromAddress(address : string) {
-    if(address.length === 40) {
-        address = u160ToAddress(address)
-    }
-    if(address.length !== 34) {
-        throw ERROR_CODE.INVALID_PARAMS
-    }
+export function getChecksumFromAddress(addr : Address) {
+    let address = addr.toBase58()
     let addressSha256 = cryptoJS.SHA256(address).toString();
     let addressSha256_2 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(addressSha256)).toString();
     let addressHash = addressSha256_2.slice(0, 8);
@@ -171,7 +167,7 @@ export function getChecksumFromAddress(address : string) {
 
 export function getChecksumFromOntid(did : string) {
     let address = did.substr(8)
-    return getChecksumFromAddress(address)
+    return getChecksumFromAddress(new Address(address))
 }
 
 /**
