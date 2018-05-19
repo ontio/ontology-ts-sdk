@@ -163,24 +163,11 @@ export class Wallet {
     */
     toWalletFile() : any {
         let obj = this.toJsonObj()
-        //remove addressHash of encryptedKey to compatible with cli wallet
-        obj.accounts.forEach( (a:any) => {
-            let encryptedKey = new Buffer(a.key, 'base64').toString('hex')
-            a.key = new Buffer(encryptedKey.substring(8), 'hex').toString('base64')
-        })
         return obj
     }
 
     static fromWalletFile(obj : any) : Wallet {
         let wallet = Wallet.parseJsonObj(obj)
-        //restore encrypted private key to add addressHash    
-        wallet.accounts.forEach(a => {
-            let addressSha256 = CryptoJS.SHA256(a.address.toHexString()).toString();
-            let addressSha256_2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
-            let addresshash = addressSha256_2.slice(0, 8);
-            let key = addresshash + a.encryptedKey.key
-            a.encryptedKey.key = new Buffer(key, 'hex').toString('base64')
-        })
         return wallet
     }
 }

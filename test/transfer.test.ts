@@ -65,12 +65,13 @@ const  testTransferTx = () => {
         address2 = 'TA5kdiHgtYP2x781hw8JbvNxxUujPiBobY'
     address1 = addressToU160(address1)
     address2 = addressToU160(address2)
-    let tx = makeTransferTx('ONT', new Address(address1), new Address(address2), '20')
-    signTransaction(tx, pri1)
+    let tx = makeTransferTx('ONT', new Address(accountFrom.address), new Address('TA4WVfUB1ipHL8s3PRSYgeV1HhAU3KcKTq'), '10', '0')
+    signTransaction(tx, accountFrom.privateKey)
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress, '01716379e393d1a540615e022ede47b97e0577c6', value, 
     // accountFrom.privateKey)
     // var tx = makeTransferTransaction('ONT', accHexAddress, accountToHexAddress, value, accPrivateKey)
     let param = buildTxParam(tx)
+    console.log(tx.serialize())
     var callback = function (err, res, socket) {
         console.log('res : ' + JSON.stringify(res))
     }
@@ -113,7 +114,7 @@ const testClaimOng = () => {
     // let from = hexAddress
     // let to = from
     // let to = accountFrom.hexAddress
-    let tx = makeClaimOngTx(new Address(hexAddress), new Address(hexAddress), '1')
+    let tx = makeClaimOngTx(new Address(hexAddress), new Address(hexAddress), '1','0')
     signTransaction(tx, pri)
 
     console.log(tx.serialize())
@@ -133,7 +134,7 @@ var pri3 = new PrivateKey('a53213c27eb1de0796b9d0b44c96e7e30228f1466d8657c47b471
     
 const testTransferFromMany = () => {
     
-    let tx = makeTransferFromManyTx('ONT', [address1, address2], address3, ['100', '200'])
+    let tx = makeTransferFromManyTx('ONT', [address1, address2], address3, ['100', '200'],'0')
     let pris = [ [pri1], [pri2]]
     signTx(tx, pris)
     let param = buildTxParam(tx)
@@ -144,7 +145,7 @@ const testTransferFromMany = () => {
 }
 
 const testTransferToMany = () => {
-    let tx = makeTransferToMany('ONT', address1, [address2, address3], ['100', '200'])
+    let tx = makeTransferToMany('ONT', address1, [address2, address3], ['100', '200'],'0')
     signTransaction(tx, pri1)
     let param = buildTxParam(tx)
     var callback = function (err, res, socket) {
@@ -153,12 +154,12 @@ const testTransferToMany = () => {
     txSender.sendTxWithSocket(param, callback)
 }
 
-// testTransferTx() 
+testTransferTx() 
 let add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6')
-// testGetBalance(address3.toBase58(), '')
+// testGetBalance(accountFrom.address, '')
 
 // testClaimOng()
 
 // testTransferFromMany()
 
-testTransferToMany()
+// testTransferToMany()

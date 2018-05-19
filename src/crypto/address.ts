@@ -55,7 +55,11 @@ import * as cryptoJS from 'crypto-js'
          programHash = '01' + programHash.substring(2)
          return new Address(programHash)
      }
-
+/**
+ * (m,n) threshold address
+ * @param m is the threshold
+ * @param publicKeys total value n
+ */
      static addressFromMultiPubKeys(m : number, publicKeys : Array<PublicKey>) :Address {
          const n = publicKeys.length
          if(m <= 0 || m > n || n > 24 ) {
@@ -70,9 +74,7 @@ import * as cryptoJS from 'crypto-js'
             result += hex2VarBytes(s)
          }
          let programHash = core.hash160(result)
-        //  var sha256 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(result)).toString();
-        //  var ripemd160 = cryptoJS.RIPEMD160(cryptoJS.enc.Hex.parse(sha256)).toString()
-
+        
          programHash = '02' + programHash.substr(2)
          return new Address(programHash)
      }

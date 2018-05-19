@@ -26,7 +26,8 @@ describe('test identity', () => {
     var privateKey: PrivateKey,
         identityDataStr: string,
         identity: Identity,
-        encryptedPrivateKey: PrivateKey
+        encryptedPrivateKey: PrivateKey,
+        checksum:string
 
     beforeAll(() => {
         privateKey = PrivateKey.random();
@@ -35,6 +36,8 @@ describe('test identity', () => {
     test('test create', () => {
         identity = new Identity()
         identity.create(privateKey, '123456', 'mickey')
+        let ontid = identity.ontid
+        checksum = ontid.substr(ontid.indexOf('did')+8)
         encryptedPrivateKey = identity.controls[0].encryptedKey
         identityDataStr = identity.toJson()
         expect(identityDataStr).toBeDefined()
@@ -44,7 +47,7 @@ describe('test identity', () => {
         console.log('encryptedkey: ' + encryptedPrivateKey.key)
         let a: Identity 
         try {
-         a = Identity.importIdentity('mickey', encryptedPrivateKey, '123456')
+         a = Identity.importIdentity('mickey', encryptedPrivateKey, '123456',checksum)
         } catch(err) {
             console.log(err)
         }
@@ -53,7 +56,7 @@ describe('test identity', () => {
 
     test('test import with incorrect password', () => {
         try {
-            let a = Identity.importIdentity('', encryptedPrivateKey, '123457')
+            let a = Identity.importIdentity('', encryptedPrivateKey, '123457', checksum)
         } catch (err) {
             console.log(err)
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)

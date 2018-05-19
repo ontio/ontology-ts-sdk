@@ -20,19 +20,20 @@ import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes, hex2
 import Uint160 from "../common/uint160";
 import {BigNumber} from 'bignumber.js'
 import { Address } from "../crypto/address";
+import Fixed64 from "../common/fixed64";
 
 export class Transfers {
     //byte 
-    version : string
+    // version : string
     states : Array<State> = []
 
     constructor() {
-        this.version = '00'        
+        // this.version = '00'        
     }
 
     serialize() {
         let result = ''
-        result += this.version
+        // result += this.version
         result += num2hexstring(this.states.length)
         for (let i = 0; i < this.states.length; i++) {
             result += this.states[i].serialize()
@@ -42,8 +43,8 @@ export class Transfers {
 
     static deserialize(sr : StringReader) {
         let t = new Transfers()
-        const version = sr.read(1)
-        t.version = version
+        // const version = sr.read(1)
+        // t.version = version
         let states = []
         const stateLen = sr.readNextLen()
         for (let i = 0; i < stateLen; i++) {
@@ -88,40 +89,38 @@ export class TokenTransfer {
 
 export class State {
     //byte
-    version : string
+    // version : string
     //20 bytes address
     from  : Address 
     to    : Address
-    value : string
+    value : Fixed64
 
     constructor() {
-        this.version = '00'
+        // this.version = '00'
     }
 
     serialize() {
         let result = ''
-        result += this.version
+        // result += this.version
         result += this.from.toHexString()
         result += this.to.toHexString()
-        // let numHex = str2hexstr(this.value)
-        // result += hex2VarBytes(numHex)       
-        let bn = new BigNumber(this.value).toString(16)
-        bn = bn.length % 2 === 0 ? bn : '0'+bn
-        result += hex2VarBytes(bn)
+        result += this.value.serialize()
+        console.log('fixed64: '+ this.value.serialize())
         return result
     }
 
     static deserialize(sr : StringReader) {
         let s = new State()
-        let version = sr.read(1)
+        // let version = sr.read(1)
         let from = sr.read(20)
         let to   = sr.read(20)
-        let value = (new BigNumber(sr.readNextBytes(), 16)).toString()
+        // let value = (new BigNumber(sr.readNextBytes(), 16)).toString()
+        let value = sr.read(8)
 
-        s.version = version
+        // s.version = version
         s.from = new Address(from)
         s.to   = new Address(to)
-        s.value = value
+        s.value = new Fixed64(value)
         return s
     }
 }
@@ -178,7 +177,7 @@ export class Contract {
 }
 
 export class TransferFrom {
-    version : string = '00'
+    // version : string = '00'
 
     sender : Address
 
@@ -197,7 +196,7 @@ export class TransferFrom {
 
     serialize() : string {
         let result = ''
-        result += this.version
+        // result += this.version
         result += this.sender.toHexString()
         result += this.from.toHexString()
         result += this.to.toHexString()
@@ -208,7 +207,7 @@ export class TransferFrom {
     }
 
     static deserialize(sr : StringReader) : TransferFrom {
-        const version = sr.read(1)
+        // const version = sr.read(1)
         const sender = new Address(sr.read(20))
         const from = new Address(sr.read(20))
         const to = new Address(sr.read(20))

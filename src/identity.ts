@@ -80,10 +80,10 @@ export class Identity {
         return this
     }
     
-    static importIdentity(label : string , encryptedPrivateKey : PrivateKey, password : string): Identity {
+    static importIdentity(label : string ,encryptedPrivateKey : PrivateKey, password : string, checksum : string): Identity {
         //create identity
         let identity = new Identity()
-        const privateKey = encryptedPrivateKey.decrypt(password);
+        const privateKey = encryptedPrivateKey.decrypt(password, checksum);
         if(!label) {
             label = ab2hexstring (core.generateRandomArray(4))
         }

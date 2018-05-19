@@ -17,7 +17,7 @@
  */
 
 import * as uuid from 'uuid';
-import { Claim, RevocationType } from '../src/claim/Claim';
+import { Claim, RevocationType } from '../src/claim/claim';
 import { PrivateKey, Signature, KeyType } from '../src/crypto';
 import { now } from '../src/utils';
 

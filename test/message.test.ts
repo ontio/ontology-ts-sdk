@@ -43,7 +43,7 @@ describe('test message', ()=> {
         const keyId = extractKeyId(publicKeyId);
 
         expect(ontId).toBe('did:ont:TRAtosUZHNSiLhzBdHacyxMX4Bg3cjWy3r');
-        expect(keyId).toBe('01');
+        expect(keyId).toBe(1);
     });
 
     test('test extractOntId and extractKeyId wrong', () => {

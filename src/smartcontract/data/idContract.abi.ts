@@ -129,7 +129,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "addAttribute",
+            "name": "addAttributes",
             "parameters":
                 [
                     {
@@ -137,15 +137,7 @@ export default {
                         "type": "ByteArray"
                     },
                     {
-                        "name": "path",
-                        "type": "ByteArray"
-                    },
-                    {
-                        "name": "type",
-                        "type": "ByteArray"
-                    },
-                    {
-                        "name": "value",
+                        "name": "attributes",
                         "type": "ByteArray"
                     },
                     {

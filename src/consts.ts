@@ -48,8 +48,10 @@ export const ALGORITHM_TYPE = {
 }
 
 // export const TEST_NODE = 'polaris1.ont.io' //0.7
-// export const TEST_NODE = '192.168.50.74' //0.7
-export const TEST_NODE = '127.0.0.1'
+export const TEST_NODE = '139.219.129.55' //0.8
+// export const TEST_NODE = '192.168.50.73'
+// export const TEST_NODE = '127.0.0.1'
+
 
 // export const TEST_NODE = '54.222.182.88'
 export const MAIN_NODE = '54.222.182.88'
@@ -97,3 +99,5 @@ export const TOKEN_TYPE = {
   ONT : 'ONT',
   ONG : 'ONG'
 }
+
+export const DEFAULT_GAS_LIMIT = 30000;

@@ -174,12 +174,13 @@ const callback = function (res, socket) {
 }
 
 const testDDOTx = () => {
+    console.log('account4 recovery: '+ account4.address.toHexString())
     let tx = buildGetDDOTx(ontid)
-    tx.payer = account.address
+    // tx.payer = account.address
 
     // let param = buildTxParam(tx, true)
 
-    // console.log('param: '+param)
+    console.log('ontid1: '+ontid)
     
     // txSender.sendTxWithSocket(param, callback)
 
@@ -215,7 +216,7 @@ const parseDDO = (result) => {
 
 const testRegisterOntid = () => {
     let publicKey = privateKey.getPublicKey()
-    let tx = buildRegisterOntidTx(str2hexstr(ontid), publicKey)
+    let tx = buildRegisterOntidTx(str2hexstr(ontid), publicKey, '0')
     tx.payer = account.address
     signTransaction(tx, privateKey)
     let serialized = tx.serialize()
@@ -239,7 +240,7 @@ const testRegIdWithAttributes = () => {
     attr.key = 'hello'
     attr.type = 'string',
     attr.value = 'world'
-    let tx = buildRegIdWithAttributes(ontid, [attr], pub2)
+    let tx = buildRegIdWithAttributes(ontid, [attr], pub2,'0')
     tx.payer = account2.address
     signTransaction(tx, pri2)
     let param = buildTxParam(tx)
@@ -251,8 +252,9 @@ const testAddAttribute = () => {
     var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
         context = 'claim:staff_authentication8',
         issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
-        let key = str2hexstr(claimId)
-        let type = str2hexstr('JSON')
+        // let key = str2hexstr(claimId)
+
+        let type = 'JSON'
         let data = {
             Type : 'JSON',
             Value : {
@@ -261,24 +263,21 @@ const testAddAttribute = () => {
             }
         }
         let value = JSON.stringify(data)
-        console.log('value: '+value)
-        value = str2hexstr(value)
+        // console.log('value: '+value)
+        // value = str2hexstr(value)
 
     
     // let key = str2hexstr('Claim:twitter')
     // let type = str2hexstr('String')
     // let value = str2hexstr('wang17@twitter')
 
-
-    let tx = buildAddAttributeTx(ontid, key, type, value, publicKey )
+    let attr = new DDOAttribute()
+    attr.key = claimId
+    attr.type = type
+    attr.value = value
+    let tx = buildAddAttributeTx(ontid, [attr], publicKey,'0')
     tx.payer = account.address
     signTransaction(tx, privateKey)
-    console.log('addAttr key: '+ key)
-    console.log('value: ' + value)
-    console.log('ontid: ' + ontid)
-    console.log('type: '+ type)
-    console.log('privateKey: ' + privateKey.key)
-    console.log('publick: '+publicKey)
     
     let param = buildTxParam(tx)
     console.log('param: '+JSON.stringify(param))
@@ -299,10 +298,10 @@ const testRemoveAttribute = () => {
     // let key = str2hexstr('Claim:twitter')
     
     console.log('removeAttr key: ' + key)    
-    let tx = buildRemoveAttributeTx(ontid, key, publicKey)
+    let tx = buildRemoveAttributeTx(ontid, key, publicKey,'0')
     tx.payer = account.address
     signTransaction(tx, privateKey)
-    let param = buildTxParam(tx,true)
+    let param = buildTxParam(tx)
     sendTx(param)
 }
 
@@ -316,7 +315,7 @@ const testGetAttribut = () => {
     })
 }
 
-const testGetPublicKeyId = () => {
+/* const testGetPublicKeyId = () => {
     let tx = buildGetPublicKeyIdTx(ontid, publicKey)
     let param = buildRestfulParam(tx)
     console.log(param)
@@ -327,10 +326,10 @@ const testGetPublicKeyId = () => {
     }).catch(err => {
         console.log(err)
     })
-}
+} */
 
 const testGetPublicKeyState = () => {
-    let tx = buildGetPublicKeyStateTx(ontid, 1)
+    let tx = buildGetPublicKeyStateTx(ontid, 3)
     tx.payer = account.address
     let param = buildRestfulParam(tx)
     console.log('tx serialized: '+ tx.serialize())
@@ -344,7 +343,7 @@ const testGetPublicKeyState = () => {
 }
 
 const testAddPK = () => {
-    let tx = buildAddControlKeyTx(ontid, pk2, publicKey)
+    let tx = buildAddControlKeyTx(ontid, pk2, publicKey,'0')
     tx.payer = account.address
     signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
@@ -368,7 +367,7 @@ const testGetPublicKeys = () => {
 }
 
 const testRemovePK = () => {
-    let tx = buildRemoveControlKeyTx(ontid, pk2, publicKey)
+    let tx = buildRemoveControlKeyTx(ontid, pk2, publicKey,'0')
     tx.payer = account.address    
     signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
@@ -377,31 +376,32 @@ const testRemovePK = () => {
 }
 
 const testAddRecovery = () => {
-    let tx = buildAddRecoveryTx(ontid, account4.address.toHexString(), publicKey)
+    let tx = buildAddRecoveryTx(ontid, account5.address, publicKey,'0')
     tx.payer = account.address    
     signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     sendTx(param)
 }
 
+const testChangeRecovery = () => {
+    let tx = buildChangeRecoveryTx(ontid, account3.address, account5.address,'0')
+    tx.payer = account5.address
+    signTransaction(tx, pri5)
+    let param = buildTxParam(tx)
+    console.log('change recovery param: ' + param)
+    sendTx(param)
+}
+
 const testAddmnRecovery = () => {
-    let tx = buildAddRecoveryTx(ontid, recoveryAddress.toHexString(), publicKey)
+    let tx = buildAddRecoveryTx(ontid, recoveryAddress, publicKey,'0')
     tx.payer = account.address
     signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     sendTx(param)
 }
 
-const testChangeRecovery = () => {
-    let tx = buildChangeRecoveryTx(ontid, account5.address.toHexString(), account3.address.toHexString())
-    tx.payer = account3.address
-    signTransaction(tx, pri3)
-    let param = buildTxParam(tx)
-    console.log('change recovery param: ' + param)
-    sendTx(param)
-}
 const testChangemnRecovery = () => {
-    let tx = buildChangeRecoveryTx(ontid, account4.address.toHexString(), recoveryAddress.toHexString())
+    let tx = buildChangeRecoveryTx(ontid, account4.address, recoveryAddress,'0')
     tx.payer = recoveryAddress
     console.log('recoveryAddres: ' + recoveryAddress.toHexString())
     signTx(tx, [ [pri3,pri4] ])
@@ -414,7 +414,7 @@ const testInvokeWasmContract = () => {
     const codeHash = '9007be541a1aef3d566aa219a74ef16e71644715'
     const params = [new Parameter('p1', ParameterType.Int, 20), new Parameter('p2', ParameterType.Int, 30)]
     const funcName = 'add'
-    let tx = makeInvokeTransaction(funcName, params, codeHash, VmType.WASMVM)
+    let tx = makeInvokeTransaction(funcName, params, codeHash, VmType.WASMVM,'0')
     // let txParam = tx.serialize()
     // console.log('wasm param:' + txParam)
     // let restClient = new RestClient()
@@ -453,8 +453,6 @@ testDDOTx()
 // testAddPK()
 
 // testRemovePK()
-
-// testGetPublicKeys()
 
 // testAddRecovery()
 

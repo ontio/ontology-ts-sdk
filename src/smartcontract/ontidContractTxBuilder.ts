@@ -27,14 +27,14 @@ import axios from 'axios'
 import * as core from '../core'
 import {ab2hexstring, str2hexstr, num2hexstring} from '../utils'
 import {Transaction} from '../transaction/transaction'
-import { PrivateKey, PublicKey } from '../crypto'; 
+import { PrivateKey, PublicKey, Address } from '../crypto'; 
 import abiJson from '../smartcontract/data/idContract.abi'
 import { VmType } from './../transaction/vmcode';
 import { DDOAttribute } from '../transaction/ddo';
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson))
 
 
-export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey) {
+export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey, gas : string) {
     if (ontid.substr(0, 3) == 'did') {
         ontid = str2hexstr(ontid)
     }
@@ -51,7 +51,7 @@ export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey) {
     let p2 = new Parameter(name2, type2, publicKey.serializeHex())
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.hash, VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.hash, VmType.NativeVM, gas, Address.addressFromPubKey(publicKey))
     return tx
 }
 
@@ -61,7 +61,7 @@ export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey) {
  * @param attributes user's serialized attributes
  * @param publicKey user's public key
  */
-export function buildRegIdWithAttributes(ontid : string, attributes : Array<DDOAttribute>, publicKey : PublicKey) {
+export function buildRegIdWithAttributes(ontid : string, attributes : Array<DDOAttribute>, publicKey : PublicKey, gas : string) {
     let f = abiInfo.getFunction('regIDWithAttributes')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -75,7 +75,7 @@ export function buildRegIdWithAttributes(ontid : string, attributes : Array<DDOA
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, publicKey.serializeHex())
     let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, attrs)
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, gas, Address.addressFromPubKey(publicKey))
 
     return tx    
 }
@@ -88,19 +88,21 @@ export function buildRegIdWithAttributes(ontid : string, attributes : Array<DDOA
  * @param value value of the attribute, hex string
  * @param publicKey user's public key
  */
-export function buildAddAttributeTx(ontid: string, key: string, type: string, value: string, publicKey: PublicKey) {    
-    let f = abiInfo.getFunction('addAttribute')
+export function buildAddAttributeTx(ontid: string, attributes:Array<DDOAttribute>, publicKey: PublicKey, gas : string) {    
+    let f = abiInfo.getFunction('addAttributes')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
     }
+    let attrs = ''
+    for (let a of attributes) {
+        attrs += a.serialize()
+    }
     let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
-    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, key)
-    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, type)
-    let p4 = new Parameter(f.parameters[3].getName(), ParameterType.ByteArray, value)
-    let p5 = new Parameter(f.parameters[4].getName(), ParameterType.ByteArray, publicKey.serializeHex())
+    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, attrs)
+    let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex())
 
-    f.setParamsValue(p1, p2, p3, p4, p5)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    f.setParamsValue(p1, p2, p3)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, gas, Address.addressFromPubKey(publicKey))
     return tx
 }
 
@@ -109,7 +111,7 @@ export function buildAddAttributeTx(ontid: string, key: string, type: string, va
  * @param key key of attribute to be remove
  * @param publicKey user's publicKey
  */
-export function buildRemoveAttributeTx(ontid : string, key : string, publicKey : PublicKey) {
+export function buildRemoveAttributeTx(ontid : string, key : string, publicKey : PublicKey, gas: string) {
     let f = abiInfo.getFunction('removeAttribute')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -118,7 +120,7 @@ export function buildRemoveAttributeTx(ontid : string, key : string, publicKey :
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, key)
     let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex())
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, gas, Address.addressFromPubKey(publicKey))
     return tx
 }
 
@@ -133,7 +135,7 @@ export function buildGetAttributesTx(ontid: string) {
     }
     let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
     f.setParamsValue(p1)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, '0')
     return tx
 }
 
@@ -146,7 +148,7 @@ export function buildGetDDOTx(ontid: string) {
 
     let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
     f.setParamsValue(p1)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, '0')
     return tx
 }
 
@@ -155,7 +157,7 @@ export function buildGetDDOTx(ontid: string) {
  * @param newPk new public key to be added
  * @param publicKey user's public key
  */
-export function buildAddControlKeyTx(ontid : string, newPk : PublicKey,  publicKey : PublicKey) {
+export function buildAddControlKeyTx(ontid : string, newPk : PublicKey,  publicKey : PublicKey, gas: string) {
     let f = abiInfo.getFunction('addKey')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -165,7 +167,7 @@ export function buildAddControlKeyTx(ontid : string, newPk : PublicKey,  publicK
     let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex())
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, gas, Address.addressFromPubKey(publicKey))
     return tx
 }
 
@@ -175,7 +177,7 @@ export function buildAddControlKeyTx(ontid : string, newPk : PublicKey,  publicK
  * @param pk2Remove public key to be removed
  * @param sender user's public key 
  */
-export function buildRemoveControlKeyTx(ontid : string, pk2Remove : PublicKey, sender : PublicKey) {
+export function buildRemoveControlKeyTx(ontid : string, pk2Remove : PublicKey, sender : PublicKey, gas : string) {
     let f = abiInfo.getFunction('removeKey')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -185,7 +187,7 @@ export function buildRemoveControlKeyTx(ontid : string, pk2Remove : PublicKey, s
     let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender.serializeHex())
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, gas, Address.addressFromPubKey(sender))
     return tx
 }
 
@@ -196,7 +198,7 @@ export function buildGetPublicKeysTx(ontid: string) {
     }
     let p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid)
     f.setParamsValue(p1)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, '0')
     return tx
 }
 
@@ -206,7 +208,7 @@ export function buildGetPublicKeysTx(ontid: string) {
  * @param recovery recovery address, must have not be set
  * @param publicKey user's public key, must be user's existing public key
  */
-export function buildAddRecoveryTx(ontid : string, recovery : string, publicKey : PublicKey) {
+export function buildAddRecoveryTx(ontid : string, recovery : Address, publicKey : PublicKey, gas : string) {
     let f = abiInfo.getFunction('addRecovery')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -216,7 +218,7 @@ export function buildAddRecoveryTx(ontid : string, recovery : string, publicKey 
     let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex())
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, gas)
     return tx
 }
 
@@ -227,7 +229,7 @@ export function buildAddRecoveryTx(ontid : string, recovery : string, publicKey 
  * @param oldrecovery original recoevery address
  * This contract call must be initiated by the original recovery address.
  */
-export function buildChangeRecoveryTx(ontid : string, newrecovery : string, oldrecovery : string) {
+export function buildChangeRecoveryTx(ontid : string, newrecovery : Address, oldrecovery : Address, gas : string) {
     let f = abiInfo.getFunction('changeRecovery')
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid)
@@ -237,7 +239,7 @@ export function buildChangeRecoveryTx(ontid : string, newrecovery : string, oldr
     let p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, oldrecovery)
 
     f.setParamsValue(p1, p2, p3)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, gas, oldrecovery)
     return tx
 }
 
@@ -255,10 +257,14 @@ export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.Int, index)
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, '0')
     return tx
 }
 
+
+/**
+ * This method is Deprecated.
+ */ 
 export function buildGetPublicKeyIdTx(ontid: string, pk: PublicKey) {
     let f = abiInfo.getFunction('GetPublicKeyId')
     if (ontid.substr(0, 3) === 'did') {
@@ -269,6 +275,6 @@ export function buildGetPublicKeyIdTx(ontid: string, pk: PublicKey) {
     let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk.serializeHex())
 
     f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM)
+    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM,'0')
     return tx
 }

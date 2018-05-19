@@ -81,7 +81,7 @@ export class DDOAttribute {
 export class DDO {
     publicKeys : Array<PublicKeyWithId> = []
     attributes : Array<DDOAttribute> = []
-    recovery : string
+    recovery : string = ''
 
     constructor() {}
 
@@ -89,13 +89,19 @@ export class DDO {
         const ss = new StringReader(hexstr)
         let ddo = new DDO()
         const pkLen = ss.readNextLen()
-        ddo.publicKeys = PublicKeyWithId.deserialize(ss.read(pkLen))
+        if(pkLen > 0) {
+            ddo.publicKeys = PublicKeyWithId.deserialize(ss.read(pkLen))
+        }
 
         const attrLen = ss.readNextLen()
-        ddo.attributes = DDOAttribute.deserialize(ss.read(attrLen))
+        if(attrLen > 0) {
+            ddo.attributes = DDOAttribute.deserialize(ss.read(attrLen))
+        }
 
         const recoveryLen = ss.readNextLen()
-        ddo.recovery = ss.read(recoveryLen)
+        if(recoveryLen > 0) {
+            ddo.recovery = ss.read(recoveryLen)
+        }
         return ddo
     }
 }

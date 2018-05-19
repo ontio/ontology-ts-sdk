@@ -29,6 +29,7 @@ import { PublicKey } from '../crypto';
 import * as core from '../core'
 import * as cryptoJS from 'crypto-js'
 import { Address } from '../crypto/address';
+import {DEFAULT_GAS_LIMIT} from '../consts'
 
 export enum TxType  {
     BookKeeping     = 0x00,
@@ -153,8 +154,9 @@ export class Transaction {
     constructor () {
         this.nonce = ab2hexstring(core.generateRandomArray(4))
         this.gasPrice = new Fixed64()
-        this.gasLimit = new Fixed64()
-        // this.payer = new Address('0000000000000000000000000000000000000000')
+        let limit = num2hexstring(DEFAULT_GAS_LIMIT, 8, true)
+        this.gasLimit = new Fixed64(limit)
+        this.payer = new Address('0000000000000000000000000000000000000000')
     }
 
     serialize () : string {

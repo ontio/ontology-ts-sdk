@@ -23,26 +23,26 @@ import { ERROR_CODE } from '../src/error';
 import { ab2hexstring, str2hexstr } from '../src/utils';
 import { PrivateKey, KeyType, KeyParameters, CurveLabel } from '../src/crypto';
 import { Account } from '../src/account';
+import { u160ToAddress } from '../src/core';
 
 describe('test scrypt', () => {
     it('test encrypt and decrypt', () => {
-        let privateKey = PrivateKey.random();
-        // let privateKey = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07')
+        // let privateKey = PrivateKey.random();
+        let privateKey = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07')
         let publicKey = privateKey.getPublicKey().serializeHex()
+        let addressHex = core.getSingleSigUInt160(publicKey)
+        let address = core.u160ToAddress(addressHex)
+        console.log('add: '+address)
         
         let encrypt = scrypt.encrypt(privateKey.key, publicKey, '123456')
         expect(encrypt).toBeDefined()
         
-        let result = scrypt.decrypt(encrypt, '123456')
-        scrypt.checkDecrypted(encrypt, new PrivateKey(result).getPublicKey().serializeHex());
-        expect(result).toEqual(privateKey.key)
-
-        try {
-            result = scrypt.decrypt(encrypt,'1234567')
-            scrypt.checkDecrypted(encrypt,  new PrivateKey(result).getPublicKey().key);
-        } catch(err) {
-            expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)
-        }
+        console.log('encrypt : '+ encrypt)
+        
+        let decrypt = scrypt.decrypt(encrypt, '123456', 'TA6nRD9DqGkE8xRJaB37bW2KQEz59ovKRH')
+        expect(decrypt).toEqual(privateKey.key)
+        
+        
 
         // const key = '6PYReg3c35DGiwKvfTCKSFHEUv9imMoLNXu5RWsYi3Y9C8EQzTDKfWvLzv';
         // let pass = 'passwordtest'
