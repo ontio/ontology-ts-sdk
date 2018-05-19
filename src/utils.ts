@@ -231,6 +231,10 @@ export class StringReader {
 	readUint16() {
 		return parseInt(reverseHex(this.read(2)),16)
 	}
+
+	readUint32() {
+		return parseInt(reverseHex(this.read(4)),16)
+	}
 }
 
 export class EventEmitter {

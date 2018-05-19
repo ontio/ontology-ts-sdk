@@ -29,7 +29,7 @@ import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexst
 import json from '../smartcontract/data/idContract.abi'
 import {ERROR_CODE} from '../error'
 import { reverse } from 'dns';
-import {TOKEN_TYPE, HTTP_REST_PORT, TEST_NODE, REST_API} from '../consts'
+import {TOKEN_TYPE, HTTP_REST_PORT, TEST_NODE, REST_API, DEFAULT_GAS_LIMIT} from '../consts'
 import { VmCode, VmType } from './vmcode';
 import * as cryptoJS from 'crypto-js'
 import opcode from './opcode';
@@ -37,6 +37,7 @@ import {BigNumber} from 'bignumber.js'
 import {SignatureScheme, PrivateKey, KeyType, CurveLabel, KeyParameters} from '../crypto';
 import { PublicKey } from '../crypto/PublicKey';
 import { Address } from '../crypto/address';
+import Fixed64 from '../common/fixed64';
 
 const WebSocket = require('ws');
 
@@ -61,7 +62,7 @@ export const makeTransferTransaction = (tokenType:string, from : Address, to : A
     //multi 10^8 to keep precision
     let valueToSend = new BigNumber(Number(value)).toString()
 
-    state.value = valueToSend
+    state.value = new Fixed64(valueToSend)
     let transfer = new Transfers()
     transfer.states = [state]
 
@@ -287,12 +288,30 @@ export const buildWasmContractParam = (params : Array<Parameter>) => {
     return str2hexstr(JSON.stringify(result))
 }
 
+export const buildNativeContractParam = (params : Array<Parameter>) => {
+    let result = ''
+    for( let p of params) {
+        const type = p.getType()
+        switch (type) {
+            case ParameterType.ByteArray:
+                result += hex2VarBytes(p.value);
+            break;
+            case ParameterType.Int:
+                result += p.value;
+            default:
+                break;
+        }
+    }
+
+    return result
+}
+
 export const makeInvokeCode = (funcName : string,  params : Array<Parameter>, codeHash : string, vmType : VmType = VmType.NEOVM) => {
     let invokeCode = new InvokeCode()
     let vmCode = new VmCode()
-    const functionName = str2hexstr(funcName)
+    const funcNameHex = str2hexstr(funcName)
     if(vmType === VmType.NEOVM) {
-        let args = buildSmartContractParam(functionName, params)
+        let args = buildSmartContractParam(funcNameHex, params)
         let contract = new Contract()
         contract.address = codeHash
         contract.args = args
@@ -313,17 +332,26 @@ export const makeInvokeCode = (funcName : string,  params : Array<Parameter>, co
 
         vmCode.code = code
         vmCode.vmType = vmType
+    } else if(vmType === VmType.NativeVM) {
+        let args = buildNativeContractParam(params)
+        let contract = new Contract()
+        contract.address = codeHash
+        contract.args = args
+        contract.method = funcName
+        let code = contract.serialize()
+        vmCode.code = code
+        vmCode.vmType = vmType
     }
     
     invokeCode.code = vmCode
     return invokeCode
 }
 
-export const makeInvokeTransaction = (funcName : string, parameters : Array<Parameter>, scriptHash : string, vmType : VmType = VmType.NEOVM, fees : Array<Fee> = []) => {
+export const makeInvokeTransaction = (funcName : string, parameters : Array<Parameter>, scriptHash : string, vmType : VmType = VmType.NEOVM,
+    gas: string, payer ?: Address) => {
     let tx = new Transaction()
     tx.type = TxType.Invoke
     tx.version = 0x00
-    tx.fee = fees
 
     // let scriptHash = abiInfo.getHash()
     if(scriptHash.substr(0,2) === '0x'){
@@ -336,11 +364,16 @@ export const makeInvokeTransaction = (funcName : string, parameters : Array<Para
 
     tx.payload = payload
 
-    //sig
-    // if(privateKey) {
-    //     signTransaction(tx, privateKey)
-    // }
-
+    //gas
+    if(DEFAULT_GAS_LIMIT === Number(0)) {
+        tx.gasPrice = new Fixed64()
+    } else {
+        let price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString()
+        tx.gasPrice = new Fixed64(price)
+    }
+    if(payer) {
+        tx.payer = payer
+    }
     return tx
 }
 

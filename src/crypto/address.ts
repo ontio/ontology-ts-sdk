@@ -19,6 +19,8 @@ import { ERROR_CODE } from "../error";
 import { u160ToAddress, addressToU160 } from "../core";
 import { PublicKey } from "./PublicKey";
 import * as core from '../core'
+import { num2hexstring, hex2VarBytes } from "../utils";
+import * as cryptoJS from 'crypto-js'
 
 
  export class Address {
@@ -53,20 +55,28 @@ import * as core from '../core'
          programHash = '01' + programHash.substring(2)
          return new Address(programHash)
      }
-
+/**
+ * (m,n) threshold address
+ * @param m is the threshold
+ * @param publicKeys total value n
+ */
      static addressFromMultiPubKeys(m : number, publicKeys : Array<PublicKey>) :Address {
-         if(m <= 0 || m > publicKeys.length || publicKeys.length > 24 ) {
+         const n = publicKeys.length
+         if(m <= 0 || m > n || n > 24 ) {
              throw ERROR_CODE.INVALID_PARAMS
          }
          const pkHexStrs = publicKeys.map( p => p.serializeHex())
          pkHexStrs.sort()
          let result = ''
+         result += num2hexstring(n)
+         result += num2hexstring(m)
          for(let s of pkHexStrs) {
-            result += s
+            result += hex2VarBytes(s)
          }
          let programHash = core.hash160(result)
+        
          programHash = '02' + programHash.substr(2)
          return new Address(programHash)
      }
-
+     
  }

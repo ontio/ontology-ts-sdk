@@ -18,7 +18,7 @@
 
 import { makeInvokeTransaction , parseEventNotify, 
     buildRpcParam, buildTxParam, buildRestfulParam, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder'
-import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddPKTx, buildGetPublicKeysTx, buildRemovePkTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetPublicKeyIdTx, buildGetPublicKeyStatusTx} from '../src/smartcontract/ontidContract'
+import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddControlKeyTx, buildGetPublicKeysTx, buildRemoveControlKeyTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetPublicKeyIdTx, buildGetPublicKeyStateTx, buildRemoveAttributeTx, buildRegIdWithAttributes, buildGetAttributesTx, buildRecoveryAddress} from '../src/smartcontract/ontidContractTxBuilder'
 import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/invokeCode'
 import { Identity } from '../src/identity'
@@ -27,18 +27,19 @@ import AbiInfo from '../src/smartcontract/abi/abiInfo'
 import AbiFunction from '../src/smartcontract/abi/abiFunction'
 import {Parameter, ParameterType } from '../src/smartcontract/abi/parameter'
 import json2 from '../src/smartcontract/data/idContract.abi'
-import { ab2hexstring, str2hexstr, StringReader } from '../src/utils'
+import { ab2hexstring, str2hexstr, StringReader, hexstr2str } from '../src/utils'
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
-import { DDO } from '../src/transaction/ddo'
+import { DDO, DDOAttribute, PublicKeyWithId } from '../src/transaction/ddo'
 import { TEST_ONT_URL} from '../src/consts'
 import { generateOntid } from '../src/core';
 import TxSender from '../src/transaction/txSender'
 import axios from 'axios'
-import { PublicKeyStatus, PrivateKey, KeyType, CurveLabel, KeyParameters, PublicKey } from '../src/crypto';
+import { PublicKeyStatus, PrivateKey, KeyType, CurveLabel, KeyParameters, PublicKey,Address } from '../src/crypto';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { VmType } from '../src/transaction/vmcode';
 import { RestClient } from '../src/index';
-
+import { Account } from './../src/account';
+import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
 
 const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92'
 
@@ -70,8 +71,15 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2))
 // console.log('publick key: ' + publicKey)
 
 privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
+var account = new Account()
+account.create(privateKey, '123456','')
 publicKey = privateKey.getPublicKey()
 pkId = ''
+
+var pri2 = new PrivateKey('cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406')
+var account2 = new Account()
+account2.create(pri2, '123456', '')
+var pub2 = pri2.getPublicKey() 
 // let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
 
 // var pkPoint = core.getPublicKeyPoint(privateKey)
@@ -88,8 +96,19 @@ pk2 = new PublicKey('035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0
 
 // recovery = ab2hexstring(core.generateRandomArray(20))
 
-newrecovery = '8143c0070b7bea4895dbe9078abdf655047b5949'
-oldrecovery = '8143c0070b7bea4895dbe9078abdf655047b5950'
+var pri3 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+var account3 = new Account()
+account3.create(pri3, '123456','')
+
+var pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
+var account4 = new Account()
+account4.create(pri4, '123456', '')
+
+var pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
+var account5 = new Account()
+account5.create(pri5, '123456', '')
+
+var recoveryAddress = Address.addressFromMultiPubKeys(2, [pri3.getPublicKey(), pri4.getPublicKey()])
 
 
 // var invoke = new InvokeCode();
@@ -101,7 +120,7 @@ oldrecovery = '8143c0070b7bea4895dbe9078abdf655047b5950'
 // identity.create(privateKey, '123456', 'mickey')
 // ontid = str2hexstr(identity.ontid)
 
-ontid = core.generateOntid(privateKey.key)
+ontid = core.generateOntid(publicKey.serializeHex())
 console.log('ontid: ' + ontid)
 
 const sendTx = (param, callback = null) => {
@@ -129,8 +148,8 @@ const sendTx = (param, callback = null) => {
             }
         }
         if(res.Action === 'Notify'){
-            let result = parseEventNotify(res)
-            console.log('paresed event notify: '+JSON.stringify(result))
+            // let result = parseEventNotify(res)
+            console.log(' event notify: '+JSON.stringify(res))
             socket.close()
         }
         // socket.close()
@@ -155,11 +174,13 @@ const callback = function (res, socket) {
 }
 
 const testDDOTx = () => {
+    console.log('account4 recovery: '+ account4.address.toHexString())
     let tx = buildGetDDOTx(ontid)
+    // tx.payer = account.address
 
     // let param = buildTxParam(tx, true)
 
-    // console.log('param: '+param)
+    console.log('ontid1: '+ontid)
     
     // txSender.sendTxWithSocket(param, callback)
 
@@ -169,8 +190,8 @@ const testDDOTx = () => {
     console.log(url)
     axios.post(url, param).then((res) => {
         console.log(res.data)
-        if(res.data.Result && res.data.Result.length > 0) {
-            const ddo = DDO.deserialize(res.data.Result[0])
+        if(res.data.Result) {
+            const ddo = DDO.deserialize(res.data.Result)
             console.log('ddo: '+JSON.stringify(ddo))
         }
     }).catch(err => {
@@ -194,7 +215,10 @@ const parseDDO = (result) => {
 
 
 const testRegisterOntid = () => {
-    let tx = buildRegisterOntidTx(str2hexstr(ontid), privateKey)
+    let publicKey = privateKey.getPublicKey()
+    let tx = buildRegisterOntidTx(str2hexstr(ontid), publicKey, '0')
+    tx.payer = account.address
+    signTransaction(tx, privateKey)
     let serialized = tx.serialize()
     console.log('tx serialized: '+serialized)
 
@@ -210,13 +234,27 @@ const testRegisterOntid = () => {
     // })
 }
 
+const testRegIdWithAttributes = () => {
+    let ontid = core.generateOntid(pub2.serializeHex())
+    let attr = new DDOAttribute()
+    attr.key = 'hello'
+    attr.type = 'string',
+    attr.value = 'world'
+    let tx = buildRegIdWithAttributes(ontid, [attr], pub2,'0')
+    tx.payer = account2.address
+    signTransaction(tx, pri2)
+    let param = buildTxParam(tx)
+    sendTx(param)
+}
+
 const testAddAttribute = () => {
 
     var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
         context = 'claim:staff_authentication8',
         issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa'
-        let path = str2hexstr(claimId)
-        let type = str2hexstr('JSON')
+        // let key = str2hexstr(claimId)
+
+        let type = 'JSON'
         let data = {
             Type : 'JSON',
             Value : {
@@ -225,22 +263,21 @@ const testAddAttribute = () => {
             }
         }
         let value = JSON.stringify(data)
-        console.log('value: '+value)
-        value = str2hexstr(value)
-        // let value = str2hexstr(issuer)
+        // console.log('value: '+value)
+        // value = str2hexstr(value)
+
     
-    // let path = str2hexstr('Claim:twitter')
+    // let key = str2hexstr('Claim:twitter')
     // let type = str2hexstr('String')
     // let value = str2hexstr('wang17@twitter')
 
-    
-    let tx = buildAddAttributeTx(path, value, type, ontid, privateKey )
-    console.log('path: '+ path)
-    console.log('value: ' + value)
-    console.log('ontid: ' + ontid)
-    console.log('type: '+ type)
-    console.log('privateKey: ' + privateKey.key)
-    console.log('publick: '+publicKey)
+    let attr = new DDOAttribute()
+    attr.key = claimId
+    attr.type = type
+    attr.value = value
+    let tx = buildAddAttributeTx(ontid, [attr], publicKey,'0')
+    tx.payer = account.address
+    signTransaction(tx, privateKey)
     
     let param = buildTxParam(tx)
     console.log('param: '+JSON.stringify(param))
@@ -255,7 +292,30 @@ const testAddAttribute = () => {
     // })
 }
 
-const testGetPublicKeyId = () => {
+const testRemoveAttribute = () => {
+    var claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a'
+    var key = str2hexstr(claimId)
+    // let key = str2hexstr('Claim:twitter')
+    
+    console.log('removeAttr key: ' + key)    
+    let tx = buildRemoveAttributeTx(ontid, key, publicKey,'0')
+    tx.payer = account.address
+    signTransaction(tx, privateKey)
+    let param = buildTxParam(tx)
+    sendTx(param)
+}
+
+const testGetAttribut = () => {
+    let tx = buildGetAttributesTx("did:ont:TA7j42nDdZSyUBdYhWoxnnE5nUdLyiPoK3")
+    tx.payer = account.address
+    let restClient = new RestClient()
+    restClient.sendRawTransaction(tx.serialize(), true).then(res=> {
+        console.log(DDOAttribute.deserialize(res.Result))
+        
+    })
+}
+
+/* const testGetPublicKeyId = () => {
     let tx = buildGetPublicKeyIdTx(ontid, publicKey)
     let param = buildRestfulParam(tx)
     console.log(param)
@@ -266,58 +326,85 @@ const testGetPublicKeyId = () => {
     }).catch(err => {
         console.log(err)
     })
-}
+} */
 
-const testGetPublicKeyStatus = () => {
-    let tx = buildGetPublicKeyStatusTx(ontid, '02')
+const testGetPublicKeyState = () => {
+    let tx = buildGetPublicKeyStateTx(ontid, 3)
+    tx.payer = account.address
     let param = buildRestfulParam(tx)
+    console.log('tx serialized: '+ tx.serialize())
     let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
     axios.post(url, param).then((res) => {
-        console.log(res.data)
-        let result = res.data.Result[0]
-        let ps
-        if(result && result.length > 0) {
-             ps = PublicKeyStatus.deserialize(result)
-        }
-        console.log('ps :' + JSON.stringify(ps))
+        let result = res.data.Result
+        console.log(hexstr2str(result))
     }).catch(err => {
         console.log(err)
     })
 }
 
 const testAddPK = () => {
-    let tx = buildAddPKTx(ontid, pk2, publicKey, privateKey)
+    let tx = buildAddControlKeyTx(ontid, pk2, publicKey,'0')
+    tx.payer = account.address
+    signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     console.log('add pk param: ' + param)
     sendTx(param)
 }
 
 const testGetPublicKeys = () => {
-    let tx = buildGetPublicKeysTx(ontid, privateKey)
+    let tx = buildGetPublicKeysTx(ontid)
+    tx.payer = account.address    
+    signTransaction(tx, privateKey)
     // let param = buildTxParam(tx)
     // sendTx(param)
     let param = buildRestfulParam(tx)
     let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
     axios.post(url, param).then(res => {
         console.log(res.data)
+        let r = PublicKeyWithId.deserialize(res.data.Result)
+        console.log(r)
     })
 }
 
 const testRemovePK = () => {
-    let tx = buildRemovePkTx(ontid, pk2, publicKey, privateKey)
+    let tx = buildRemoveControlKeyTx(ontid, pk2, publicKey,'0')
+    tx.payer = account.address    
+    signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     console.log('remove pk param: ' + param)
     sendTx(param)
 }
 
 const testAddRecovery = () => {
-    let tx = buildAddRecoveryTx(ontid, oldrecovery, publicKey, privateKey)
+    let tx = buildAddRecoveryTx(ontid, account5.address, publicKey,'0')
+    tx.payer = account.address    
+    signTransaction(tx, privateKey)
     let param = buildTxParam(tx)
     sendTx(param)
 }
 
 const testChangeRecovery = () => {
-    let tx = buildChangeRecoveryTx(ontid, newrecovery, oldrecovery, privateKey)
+    let tx = buildChangeRecoveryTx(ontid, account3.address, account5.address,'0')
+    tx.payer = account5.address
+    signTransaction(tx, pri5)
+    let param = buildTxParam(tx)
+    console.log('change recovery param: ' + param)
+    sendTx(param)
+}
+
+const testAddmnRecovery = () => {
+    let tx = buildAddRecoveryTx(ontid, recoveryAddress, publicKey,'0')
+    tx.payer = account.address
+    signTransaction(tx, privateKey)
+    let param = buildTxParam(tx)
+    sendTx(param)
+}
+
+const testChangemnRecovery = () => {
+    let tx = buildChangeRecoveryTx(ontid, account4.address, recoveryAddress,'0')
+    tx.payer = recoveryAddress
+    console.log('recoveryAddres: ' + recoveryAddress.toHexString())
+    signTx(tx, [ [pri3,pri4] ])
     let param = buildTxParam(tx)
     console.log('change recovery param: ' + param)
     sendTx(param)
@@ -327,7 +414,7 @@ const testInvokeWasmContract = () => {
     const codeHash = '9007be541a1aef3d566aa219a74ef16e71644715'
     const params = [new Parameter('p1', ParameterType.Int, 20), new Parameter('p2', ParameterType.Int, 30)]
     const funcName = 'add'
-    let tx = makeInvokeTransaction(funcName, params, codeHash, VmType.WASMVM)
+    let tx = makeInvokeTransaction(funcName, params, codeHash, VmType.WASMVM,'0')
     // let txParam = tx.serialize()
     // console.log('wasm param:' + txParam)
     // let restClient = new RestClient()
@@ -345,7 +432,13 @@ const testInvokeWasmContract = () => {
 
 // testRegisterOntid()
 
+// testRegIdWithAttributes()
+
 // testAddAttribute()
+
+// testRemoveAttribute()
+
+// testGetAttribut()
 
 testDDOTx()
 
@@ -365,9 +458,13 @@ testDDOTx()
 
 // testChangeRecovery()
 
+// testAddmnRecovery()
+
+// testChangemnRecovery()
+
 // testGetPublicKeyId()
 
-// testGetPublicKeyStatus()
+// testGetPublicKeyState()
 
 // let txHash = '82c17d7430140a1f3863b8f6f03db07bbdfbdb7da22ffdb2358a1d2e185f8bf3'
 // core.getMerkleProof(txHash).then( res => {

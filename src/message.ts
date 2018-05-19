@@ -18,7 +18,7 @@
 
 import * as b64 from 'base64-url';
 import { Signature, SignatureScheme, PrivateKey, PublicKey, PublicKeyStatus, PK_STATUS } from "./crypto";
-import { buildGetPublicKeyStatusTx } from './smartcontract/ontidContract';
+import { buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
 import RestClient from './network/rest/restClient';
 import { num2hexstring, now } from './utils';
 import * as uuid from 'uuid';
@@ -329,7 +329,7 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
     const keyId = extractKeyId(publicKeyId);
 
     const client = new RestClient(url);
-    const tx = buildGetPublicKeyStatusTx(ontId, keyId);
+    const tx = buildGetPublicKeyStateTx(ontId, keyId);
     const response = await client.sendRawTransaction(tx.serialize(), true);
     
     if (response.Result) {
@@ -365,14 +365,15 @@ export function extractOntId(publicKeyId: string): string {
  * 
  * @param publicKeyId The ID of a signature public key
  */
-export function extractKeyId(publicKeyId: string): string {
+export function extractKeyId(publicKeyId: string): number {
     const index = publicKeyId.indexOf('#keys-');
 
     if (index === -1) {
         throw new Error('Is not a publicKeId.');
     }
 
-    return num2hexstring(
-        Number(publicKeyId.substr(index + '#keys-'.length))
-    );
+    // return num2hexstring(
+    //     Number(publicKeyId.substr(index + '#keys-'.length))
+    // );
+    return Number(publicKeyId.substr(index + '#keys-'.length))
 }

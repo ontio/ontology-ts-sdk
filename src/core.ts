@@ -28,7 +28,7 @@ import { VmType } from './transaction/vmcode';
 import { buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
 import axios from 'axios'
 import { DDO } from './transaction/ddo'
-import { buildGetDDOTx, buildGetPublicKeyStatusTx } from './smartcontract/ontidContract'
+import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder'
 import { verifyLeafHashInclusion } from './merkle'
 import RestClient from './network/rest/restClient'
 import { 
@@ -127,6 +127,7 @@ export function createSignatureScript(publicKeyEncoded: string): string {
     return "21" + publicKeyEncoded + "ac";
 }
 
+
 export function sha256(data : string) {
     var hex = cryptoJS.enc.Hex.parse(data);
     var sha256 = cryptoJS.SHA256(hex).toString();
@@ -151,6 +152,27 @@ export function signatureData(data: string, privateKey: string): string {
     return pk.sign(data).value;
 }
 
+/**
+ * compute the checksum from address for decrypt
+ * @param address in base58 format
+ */
+export function getChecksumFromAddress(address : string) {
+    if(address.length === 40) {
+        address = u160ToAddress(address)
+    }
+    if(address.length !== 34) {
+        throw ERROR_CODE.INVALID_PARAMS
+    }
+    let addressSha256 = cryptoJS.SHA256(address).toString();
+    let addressSha256_2 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(addressSha256)).toString();
+    let addressHash = addressSha256_2.slice(0, 8);
+    return addressHash
+}
+
+export function getChecksumFromOntid(did : string) {
+    let address = did.substr(8)
+    return getChecksumFromAddress(address)
+}
 
 /**
  * @deprecated Replaced by PublicKey.verify()
@@ -198,10 +220,10 @@ export function verifyOntidClaim(claim : any) {
             const ddo = DDO.deserialize(res.data.Result[0])
             console.log('ddo: ' + JSON.stringify(ddo))
             if(ddo.publicKeys.length > 0) {
-                const pk = ddo.publicKeys[0]
+                const pkWithId = ddo.publicKeys[0]
                 const signature = claim.Signature
                 claim.delete('Signature')
-                return pk.verify(
+                return pkWithId.pk.verify(
                     str2hexstr(JSON.stringify(claim)),
                     Signature.deserializePgp(signature)
                 );
@@ -323,8 +345,8 @@ export function verifyExpiration(dateString : string) {
     }
 }
 
-export async function getPkStatus(ontid: string, pkId: string): Promise<PublicKeyStatus | undefined> {
-    let tx = buildGetPublicKeyStatusTx(ontid, pkId)
+export async function getPkStatus(ontid: string, pkId: number): Promise<PublicKeyStatus | undefined> {
+    let tx = buildGetPublicKeyStateTx(ontid, pkId)
     let restClient = new RestClient()
     let res = await restClient.sendRawTransaction(tx.serialize(), true)
     

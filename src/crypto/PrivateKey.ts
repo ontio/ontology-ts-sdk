@@ -94,10 +94,11 @@ export class PrivateKey extends Key {
      * Decrypts encrypted private key with supplied password.
      * 
      * @param keyphrase Password to decrypt with
+     * @param checksum 4 bytes checksum or address in base58 format
      * @param params Optional Scrypt params
      */
-    decrypt(keyphrase: string, params?: ScryptParams): PrivateKey {
-        const decrypted = decrypt(this.key, keyphrase, params);
+    decrypt(keyphrase: string,checksum: string, params?: ScryptParams): PrivateKey {
+        const decrypted = decrypt(this.key, keyphrase, checksum, params);
         const decryptedKey = new PrivateKey(decrypted, this.algorithm, this.parameters);
         checkDecrypted(this.key, decryptedKey.getPublicKey().key);
 

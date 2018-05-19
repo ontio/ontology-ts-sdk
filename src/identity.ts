@@ -72,17 +72,18 @@ export class Identity {
         this.controls.push( control );
 
         // ontid
-        this.ontid = core.generateOntid(privateKey.key)
+        let publicKey = privateKey.getPublicKey()
+        this.ontid = core.generateOntid(publicKey.serializeHex())
 
         //TODO register ontid
         //调用方处理register和监听结果
         return this
     }
     
-    static importIdentity(label : string ,encryptedPrivateKey : PrivateKey, password : string): Identity {
+    static importIdentity(label : string ,encryptedPrivateKey : PrivateKey, password : string, checksum : string): Identity {
         //create identity
         let identity = new Identity()
-        const privateKey = encryptedPrivateKey.decrypt(password);
+        const privateKey = encryptedPrivateKey.decrypt(password, checksum);
         if(!label) {
             label = ab2hexstring (core.generateRandomArray(4))
         }

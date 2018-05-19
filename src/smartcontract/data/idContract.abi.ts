@@ -1,5 +1,5 @@
 export default {
-    "hash": "80b0cc71bda8653599c5666cae084bff587e2de1",
+    "hash": "ff00000000000000000000000000000000000003",
         "entrypoint": "Main",
             "functions":
     [
@@ -19,7 +19,7 @@ export default {
             "returntype": "Any"
         },
         {
-            "name": "RegIdWithPublicKey",
+            "name": "regIDWithPublicKey",
             "parameters":
                 [
                     {
@@ -34,7 +34,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "RegIdWithAttributes",
+            "name": "regIDWithAttributes",
             "parameters":
                 [
                     {
@@ -53,7 +53,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "AddKey",
+            "name": "addKey",
             "parameters":
                 [
                     {
@@ -72,7 +72,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "RemoveKey",
+            "name": "removeKey",
             "parameters":
                 [
                     {
@@ -91,7 +91,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "AddRecovery",
+            "name": "addRecovery",
             "parameters":
                 [
                     {
@@ -110,7 +110,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "ChangeRecovery",
+            "name": "changeRecovery",
             "parameters":
                 [
                     {
@@ -129,7 +129,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "AddAttribute",
+            "name": "addAttributes",
             "parameters":
                 [
                     {
@@ -137,15 +137,7 @@ export default {
                         "type": "ByteArray"
                     },
                     {
-                        "name": "path",
-                        "type": "ByteArray"
-                    },
-                    {
-                        "name": "type",
-                        "type": "ByteArray"
-                    },
-                    {
-                        "name": "value",
+                        "name": "attributes",
                         "type": "ByteArray"
                     },
                     {
@@ -156,7 +148,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "RemoveAttribute",
+            "name": "removeAttribute",
             "parameters":
                 [
                     {
@@ -175,7 +167,7 @@ export default {
             "returntype": "Boolean"
         },
         {
-            "name": "GetPublicKeys",
+            "name": "getPublicKeys",
             "parameters":
                 [
                     {
@@ -186,7 +178,7 @@ export default {
             "returntype": "ByteArray"
         },
         {
-            "name": "GetAttributes",
+            "name": "getAttributes",
             "parameters":
                 [
                     {
@@ -212,7 +204,7 @@ export default {
             "returntype": "ByteArray"
         },
         {
-            "name": "GetPublicKeyStatus",
+            "name": "getKeyState",
             "parameters":
                 [
                     {
@@ -221,7 +213,7 @@ export default {
                     },
                     {
                         "name": "pkId",
-                        "type": "ByteArray"
+                        "type": "Int"
                     }
                 ],
             "returntype": "ByteArray"
@@ -238,15 +230,11 @@ export default {
             "returntype": "ByteArray"
         },
         {
-            "name": "GetDDO",
+            "name": "getDDO",
             "parameters":
                 [
                     {
                         "name": "id",
-                        "type": "ByteArray"
-                    },
-                    {
-                        "name": "nonce",
                         "type": "ByteArray"
                     }
                 ],

@@ -19,9 +19,9 @@ import { Fee } from './../transaction/transaction';
 import { VmCode, VmType } from './../transaction/vmcode';
 import { Transaction, TxType } from "../transaction/transaction";
 import { State, Transfers, Contract, TransferFrom } from "./token";
-import { ab2hexstring } from "../utils";
+import { ab2hexstring, num2hexstring } from "../utils";
 import InvokeCode from '../transaction/payload/invokeCode';
-import { TOKEN_TYPE } from '../consts';
+import { TOKEN_TYPE, DEFAULT_GAS_LIMIT } from '../consts';
 import { PrivateKey, Address } from '../crypto';
 import { BigNumber } from 'bignumber.js'
 import Fixed64 from '../common/fixed64';
@@ -42,18 +42,15 @@ export function getTokenContract(tokenType : string) {
 }
 
 export function verifyAmount(amount : string) {
-    if (typeof amount !== 'string' ) {
-        throw new Error('Amount should be type string.')
-    }
-    if (isNaN(parseInt(amount))) {
-        throw new Error('Amount can not be transfered to integer.')
+    let value = new BigNumber(amount)
+    if ( !value.isInteger() || value <= new BigNumber(0)) {
+        throw new Error('Amount is invalid.')
     }
 }
 
- function makeInvokeCodeTransacton(contract : Contract, vmType : VmType, fees : Array<Fee> = []) : Transaction {
+ function makeInvokeCodeTransacton(contract : Contract, vmType : VmType, gas : string) : Transaction {
      let tx = new Transaction()
      tx.type = TxType.Invoke
-     tx.fee = fees
 
      let code = ''
      code += contract.serialize()
@@ -63,6 +60,13 @@ export function verifyAmount(amount : string) {
      let invokeCode = new InvokeCode()
      invokeCode.code = vmcode
      tx.payload = invokeCode
+     //gas
+     if (DEFAULT_GAS_LIMIT === Number(0)) {
+         tx.gasPrice = new Fixed64()
+     } else {
+         let price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString()
+         tx.gasPrice = new Fixed64(price)
+     }
      return tx
 }
 
@@ -71,18 +75,24 @@ export function verifyAmount(amount : string) {
  * @param from sender's address
  * @param to receiver's address
  * @param amount  
+ * @param gas the total value of gas, used to calculate gas price
  */
-export function makeTransferTx(tokenType: string, from: Address, to: Address, amount: string) : Transaction {
+export function makeTransferTx(tokenType: string, from: Address, to: Address, amount: string, gas : string) : Transaction {
     verifyAmount(amount)
 
     let state = new State()
     state.from = from
     state.to = to
 
-    //multi 10^8 to keep precision
-    let valueToSend = new BigNumber(Number(amount)).toString()
+    let valueToSend : string 
+    if(tokenType === 'ONT') {
+        valueToSend = new BigNumber(amount).toString()
+    } else {
+        //multi 10^9 to keep precision for ong transfer
+        valueToSend = new BigNumber(amount).multipliedBy(1e9).toString()
+    }
 
-    state.value = valueToSend
+    state.value = new Fixed64(amount)
     let transfer = new Transfers()
     transfer.states = [state]
 
@@ -91,7 +101,8 @@ export function makeTransferTx(tokenType: string, from: Address, to: Address, am
     contract.method = 'transfer'
     contract.args = transfer.serialize()
 
-    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM)
+    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas)
+    tx.payer = from
     return tx
 }
 
@@ -103,7 +114,7 @@ export function makeTransferTx(tokenType: string, from: Address, to: Address, am
  * @param to receiver's address
  * @param amounts
  */
-export function makeTransferFromManyTx(tokenType : string, from : Array<Address>, to : Address, amounts : Array<string>) : Transaction {
+export function makeTransferFromManyTx(tokenType : string, from : Array<Address>, to : Address, amounts : Array<string>, gas : string) : Transaction {
     let states = new Array<State>(from.length)
 
     if(from.length !== amounts.length) {
@@ -114,7 +125,7 @@ export function makeTransferFromManyTx(tokenType : string, from : Array<Address>
         s.from = from[i]
         s.to = to  
         verifyAmount(amounts[i])
-        s.value = amounts[i]
+        s.value = new Fixed64(amounts[i])
         states[i] = s
     }
     let transfers = new Transfers()
@@ -124,7 +135,8 @@ export function makeTransferFromManyTx(tokenType : string, from : Array<Address>
     contract.method = 'transfer'
     contract.args = transfers.serialize()
 
-    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM)
+    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas)
+    tx.payer = from[0]
     return tx
 }
 
@@ -135,7 +147,7 @@ export function makeTransferFromManyTx(tokenType : string, from : Array<Address>
  * @param to
  * @param amounts
  */
-export function makeTransferToMany(tokenType : string, from : Address, to : Array<Address>, amounts : Array<string>) : Transaction {
+export function makeTransferToMany(tokenType : string, from : Address, to : Array<Address>, amounts : Array<string>, gas : string) : Transaction {
     let states = new Array<State>(to.length)
     if (to.length !== amounts.length) {
         throw new Error('Params error.')
@@ -145,7 +157,7 @@ export function makeTransferToMany(tokenType : string, from : Address, to : Arra
         s.from = from
         s.to = to[i]
         verifyAmount(amounts[i])      
-        s.value = amounts[i]
+        s.value = new Fixed64(amounts[i])
         states[i] = s
     }
     let transfers = new Transfers()
@@ -155,7 +167,8 @@ export function makeTransferToMany(tokenType : string, from : Address, to : Arra
     contract.method = 'transfer'
     contract.args = transfers.serialize()
 
-    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM)
+    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas)
+    tx.payer = from
     return tx
 }
 
@@ -165,7 +178,7 @@ export function makeTransferToMany(tokenType : string, from : Address, to : Arra
  * @param to receiver's address
  * @param amount
  */
-export function makeClaimOngTx(from : Address, to : Address, amount : string) : Transaction {
+export function makeClaimOngTx(from : Address, to : Address, amount : string, gas : string) : Transaction {
     verifyAmount(amount)
     let tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, new BigNumber(Number(amount)).toString())
     let contract = new Contract()
@@ -176,6 +189,7 @@ export function makeClaimOngTx(from : Address, to : Address, amount : string) : 
     let fee = new Fee()
     fee.amount = new Fixed64()
     fee.payer = from
-    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, [fee])
+    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas)
+    tx.payer = from
     return tx
 }
