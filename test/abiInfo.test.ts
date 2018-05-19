@@ -60,7 +60,6 @@ describe('test AbiInfo', () => {
     })
 
     test('test deserialize', () => {
-
         let t = Transaction.deserialize(serialized)
         console.log('deserialized: '+ t.toString())
         expect(t.txAttributes.length).toEqual(0)

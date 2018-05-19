@@ -64,7 +64,7 @@ export class Account {
 
 
 
-    static importAccount(label : string ,encryptedPrivateKey : PrivateKey, password : string, checksum : string ) : Account {
+    static importAccount(label : string ,encryptedPrivateKey : PrivateKey, password : string, checksum : string|Address ) : Account {
         let account = new Account()
         const privateKey = encryptedPrivateKey.decrypt(password, checksum);
         // let contract = {

@@ -24,7 +24,8 @@ import * as core from './core'
 import { ab2hexstring, hexXor } from './utils'
 import { getSingleSigUInt160, u160ToAddress } from './helpers'
 import { DEFAULT_SCRYPT, OEP_HEADER, OEP_FLAG } from './consts'
-import {ERROR_CODE} from './error'
+import { ERROR_CODE } from './error'
+import { Address } from './crypto'
 
 export interface ScryptParams {
     cost: number;
@@ -83,18 +84,16 @@ export function encrypt(privateKey: string, publicKey: string, keyphrase: string
 *@param keyphrase user's password to encrypt private key
 *@param checksum 4 bytes or address in base58 format
 */
-export function decrypt(encryptedKey: string, keyphrase: string, checksum:string, scryptParams: ScryptParams = DEFAULT_SCRYPT): string {
+export function decrypt(encryptedKey: string, keyphrase: string, checksum:string | Address, scryptParams: ScryptParams = DEFAULT_SCRYPT): string {
     // let assembled = ab2hexstring(Bs58check.decode(encryptedKey));
     let encrypted = Buffer.from(encryptedKey, 'base64').toString('hex')
     console.log( "dec assembled: ", encrypted );
  
     let addressHash = ''
-    if(checksum.length === 8) {
+    if(typeof checksum === 'string' &&  checksum.length === 8) {
         addressHash = checksum
-    } else if(checksum.length === 34) {
-        let addressSha256 = CryptoJS.SHA256(checksum).toString();
-        let addressSha256_2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
-        addressHash = addressSha256_2.slice(0, 8);
+    } else if(checksum instanceof Address) {
+        addressHash = core.getChecksumFromAddress(checksum)
     }
     else  {
         throw ERROR_CODE.INVALID_PARAMS
@@ -135,20 +134,28 @@ export function decrypt(encryptedKey: string, keyphrase: string, checksum:string
  * This method was taken out from decrypt, because it needs to create public key from private key
  * and it needs to be supplied from outside.
  * 
- * @param encrypted Original encrypted key
+ * @param checksum 
  * @param publicKey Public key from decrypted key
  */
-export function checkDecrypted(encryptedKey: string, publicKey: string): void {
+export function checkDecrypted(checksum: string | Address, publicKey: string): void {
     // const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
-    let assembled = Buffer.from(encryptedKey, 'base64').toString('hex')
+    // let assembled = Buffer.from(encryptedKey, 'base64').toString('hex')
     
     // console.log( "assembled: ", assembled );
 
-    const addressHash = assembled.substr(0, 8);
+    // const addressHash = assembled.substr(0, 8);
     // console.log( "addressHash: ", addressHash );
 
     // console.log('publicKey', publicKey)
-
+    let addressHash = ''
+    if (typeof checksum === 'string' && checksum.length === 8) {
+        addressHash = checksum
+    } else if (checksum instanceof Address) {
+        addressHash = core.getChecksumFromAddress(checksum)
+    }
+    else {
+        throw ERROR_CODE.INVALID_PARAMS
+    }
     // Address
     const u160 = getSingleSigUInt160(publicKey);
     const address = u160ToAddress(u160);

@@ -17,7 +17,7 @@
  */
 
 import * as core from './core'
-import { PrivateKey, JsonKey } from './crypto';
+import { PrivateKey, JsonKey, Address } from './crypto';
 import { ab2hexstring } from './utils'
 import {ERROR_CODE} from './error'
 import { buildRestfulParam } from './transaction/transactionBuilder';
@@ -80,7 +80,7 @@ export class Identity {
         return this
     }
     
-    static importIdentity(label : string ,encryptedPrivateKey : PrivateKey, password : string, checksum : string): Identity {
+    static importIdentity(label : string ,encryptedPrivateKey : PrivateKey, password : string, checksum : string|Address): Identity {
         //create identity
         let identity = new Identity()
         const privateKey = encryptedPrivateKey.decrypt(password, checksum);
