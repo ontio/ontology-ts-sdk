@@ -17,7 +17,7 @@
 */
 
 import { BigNumber } from 'bignumber.js';
-import {hexstr2str, reverseHex, str2hexstr, StringReader} from '../utils';
+import { hexstr2str, reverseHex, str2hexstr, StringReader } from '../utils';
 
 const Fixed64Size = 8;
 export default class Fixed64 {

@@ -16,46 +16,63 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ONT_NETWORK, MAIN_ONT_URL, TEST_ONT_URL} from '../consts'
+import { MAIN_ONT_URL, ONT_NETWORK, TEST_ONT_URL } from '../consts';
 
-const WebSocket = require('html5-websocket')
+/**
+ * Creates WebSocket.
+ *
+ * In node environment html5-websocket is used. In browser, native WebSocket is used.
+ *
+ * @param url Url to connect to
+ */
+function getWebSocket(url: string): WebSocket {
+    if (typeof WebSocket === 'undefined') {
+        const WS = require('html5-websocket');
+        return new WS(url);
+    } else {
+        return new WebSocket(url);
+    }
+}
 
 /**
  * @deprecated Use WebsocketClient instead.
  */
 export default class TxSender {
-    SOCKET_URL : string
+    SOCKET_URL: string;
 
-    constructor (socketUrl ?: string) {
-        this.SOCKET_URL = socketUrl || TEST_ONT_URL.SOCKET_URL
+    constructor(socketUrl ?: string) {
+        this.SOCKET_URL = socketUrl || TEST_ONT_URL.SOCKET_URL;
     }
 
-    sendTxWithSocket(param : string, callback : (err : any, res:any, socket:any) => any) {
-        if(!param) return;
-        const socket = new WebSocket(this.SOCKET_URL)
+    sendTxWithSocket(param: string, callback: (err: any, res: any, socket: any) => any) {
+        if (!param) {
+            return;
+        }
+
+        const socket = getWebSocket(this.SOCKET_URL);
         socket.onopen = () => {
             // console.log('connected')
-            socket.send(param)
-        }
-        socket.onmessage = (event : any) => {
-            let res
+            socket.send(param);
+        };
+        socket.onmessage = (event: any) => {
+            let res;
             if (typeof event.data === 'string') {
-                res = JSON.parse(event.data)
+                res = JSON.parse(event.data);
             } else {
-                res = event.data
+                res = event.data;
             }
-        
-            //pass socket to let caller decide when to close the it.
-            if(callback) {
-                callback(null, res, socket)
-            }
-        }
-        socket.onerror = (err : any) => {
-            //no server or server is stopped
-            console.log(err)
-            callback(err, null, null)
-            socket.close()
-        }
-    }
 
+            // pass socket to let caller decide when to close the it.
+            if (callback) {
+                callback(null, res, socket);
+            }
+        };
+        socket.onerror = (err: any) => {
+            // no server or server is stopped
+            // tslint:disable-next-line:no-console
+            console.log(err);
+            callback(err, null, null);
+            socket.close();
+        };
+    }
 }

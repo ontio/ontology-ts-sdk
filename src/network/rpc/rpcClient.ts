@@ -17,172 +17,172 @@
  */
 
 import axios from 'axios';
-import {TEST_ONT_URL} from '../../consts';
+import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
 
 export default class RpcClient {
-  url: string;
+    url: string;
 
-  constructor( url ?: string ) {
-    this.url = url || TEST_ONT_URL.RPC_URL;
-  }
-
-  getUrl() {
-    return this.url;
-  }
-
-  makeRequest(method: string, ...params: any[]) {
-    const request = {
-      jsonrpc: '2.0',
-      method,
-      params,
-      id: 1
-    };
-
-    return request;
-  }
-
-  getBalance(address: Address) {
-    const req = this.makeRequest('getbalance', address.toBase58());
-
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
-
-  sendRawTransaction(data: string, preExec: boolean = false) {
-    let req;
-
-    if (preExec) {
-      req = this.makeRequest('sendrawtransaction', data, 1);
-    } else {
-      req = this.makeRequest('sendrawtransaction', data);
+    constructor( url ?: string ) {
+        this.url = url || TEST_ONT_URL.RPC_URL;
     }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getUrl() {
+        return this.url;
+    }
 
-  getRawTransaction(txHash: string) {
-    const req = this.makeRequest('getrawtransaction', txHash);
+    makeRequest(method: string, ...params: any[]) {
+        const request = {
+            jsonrpc: '2.0',
+            method,
+            params,
+            id: 1
+        };
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+        return request;
+    }
 
-  getRawTransactionJson(txHash: string) {
-    const req = this.makeRequest('getrawtransaction', txHash, 1);
+    getBalance(address: Address) {
+        const req = this.makeRequest('getbalance', address.toBase58());
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-  getGenerateBlockTime() {
-    const req = this.makeRequest('getgenerateblocktime');
+    sendRawTransaction(data: string, preExec: boolean = false) {
+        let req;
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+        if (preExec) {
+            req = this.makeRequest('sendrawtransaction', data, 1);
+        } else {
+            req = this.makeRequest('sendrawtransaction', data);
+        }
 
-  getNodeCount() {
-    const req = this.makeRequest('getconnectioncount');
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getRawTransaction(txHash: string) {
+        const req = this.makeRequest('getrawtransaction', txHash);
 
-  getBlockHeight() {
-    const req = this.makeRequest('getblockcount');
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getRawTransactionJson(txHash: string) {
+        const req = this.makeRequest('getrawtransaction', txHash, 1);
 
-  getBlockCount() {
-    const req = this.makeRequest('getblockcount');
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getGenerateBlockTime() {
+        const req = this.makeRequest('getgenerateblocktime');
 
-  // get by block height or block hash
-  getBlockJson(value: string | number) {
-    const req = this.makeRequest('getblock', value, 1);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getNodeCount() {
+        const req = this.makeRequest('getconnectioncount');
 
-  getContract(hash: string) {
-    const req = this.makeRequest('getcontractstate', hash);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getBlockHeight() {
+        const req = this.makeRequest('getblockcount');
 
-  getContractJson(codeHash: string) {
-    const req = this.makeRequest('getcontractstate', codeHash, 1);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getBlockCount() {
+        const req = this.makeRequest('getblockcount');
 
-  // get by block height or block hash
-  getBlock(value: string | number) {
-    const req = this.makeRequest('getblock', value);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    // get by block height or block hash
+    getBlockJson(value: string | number) {
+        const req = this.makeRequest('getblock', value, 1);
 
-  getSmartCodeEvent(value: string | number) {
-    const req = this.makeRequest('getsmartcodeevent', value);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getContract(hash: string) {
+        const req = this.makeRequest('getcontractstate', hash);
 
-  getBlockHeightByTxHash(txHash: string) {
-    const req = this.makeRequest('getblockheightbytxhash', txHash);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getContractJson(codeHash: string) {
+        const req = this.makeRequest('getcontractstate', codeHash, 1);
 
-  getStorage(codeHash: string, key: string) {
-    const req = this.makeRequest('getstorage', codeHash, key);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    // tslint:disable-next-line:no-console
-    console.log(req);
+    // get by block height or block hash
+    getBlock(value: string | number) {
+        const req = this.makeRequest('getblock', value);
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-  getMerkleProof(hash: string) {
-    const req = this.makeRequest('getmerkleproof', hash);
+    getSmartCodeEvent(value: string | number) {
+        const req = this.makeRequest('getsmartcodeevent', value);
 
-    // tslint:disable-next-line:no-console
-    console.log(this.url);
-    // tslint:disable-next-line:no-console
-    console.log(req);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 
-    return axios.post(this.url, req).then((res) => {
-      return res.data;
-    });
-  }
+    getBlockHeightByTxHash(txHash: string) {
+        const req = this.makeRequest('getblockheightbytxhash', txHash);
+
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getStorage(codeHash: string, key: string) {
+        const req = this.makeRequest('getstorage', codeHash, key);
+
+        // tslint:disable-next-line:no-console
+        console.log(req);
+
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getMerkleProof(hash: string) {
+        const req = this.makeRequest('getmerkleproof', hash);
+
+        // tslint:disable-next-line:no-console
+        console.log(this.url);
+        // tslint:disable-next-line:no-console
+        console.log(req);
+
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
 }

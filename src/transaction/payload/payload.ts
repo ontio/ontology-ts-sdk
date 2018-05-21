@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
- 
 export default abstract class Payload {
-    abstract serialize() : string 
-    //static can not use with abstract
-    abstract deserialize(ss : any) : void
+    abstract serialize(): string;
+
+    // static can not use with abstract
+    abstract deserialize(ss: any): void;
 }
