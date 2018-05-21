@@ -16,47 +16,42 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-import AbiFunction from './abiFunction'
-import {Parameter} from './parameter'
+import AbiFunction from './abiFunction';
+import { Parameter } from './parameter';
 
 export default class AbiInfo {
-    hash : string
-    entrypoint : string
-    functions : Array<AbiFunction> = []
+    static parseJson(json: string): AbiInfo {
+        const a = new AbiInfo();
+        const obj = JSON.parse(json);
+        a.hash = obj.hash;
+        a.entrypoint = obj.entrypoint;
+        a.functions = obj.functions;
 
-    constructor() {
-
+        return a;
     }
 
-    getHash() : string {
-        return this.hash
+    hash: string;
+    entrypoint: string;
+    functions: AbiFunction[] = [];
+
+    getHash(): string {
+        return this.hash;
     }
 
-    getEntryPoint() : string {
-        return this.entrypoint
+    getEntryPoint(): string {
+        return this.entrypoint;
     }
 
-    getFunction(name : string) : AbiFunction {
-        let f = (<AbiFunction>{})
-        for(let v of this.functions) {
-            if(v.name === name) {
-                let parameters = v.parameters.map( (p:any) => new Parameter(p.name, p.type, '') )
-                return new AbiFunction(v.name,v.returntype, parameters)
+    getFunction(name: string): AbiFunction {
+        const f = {} as AbiFunction;
+
+        for (const v of this.functions) {
+            if (v.name === name) {
+                const parameters = v.parameters.map((p: any) => new Parameter(p.name, p.type, ''));
+                return new AbiFunction(v.name, v.returntype, parameters);
             }
         }
-        return f
+
+        return f;
     }
-
-    static parseJson(json : string) : AbiInfo {
-        let a = new AbiInfo()
-        let obj = JSON.parse(json)
-        a.hash = obj.hash
-        a.entrypoint = obj.entrypoint
-        a.functions = obj.functions
-        return a
-    }
-
-
 }
