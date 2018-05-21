@@ -39,198 +39,198 @@ export class PrivateKey extends Key {
    * @param keyType The key type
    * @param parameters The parameters for the key type
    */
-  static random(keyType?: KeyType, parameters?: KeyParameters): PrivateKey {
-    if (keyType === undefined) {
-      keyType = KeyType.fromLabel(DEFAULT_ALGORITHM.algorithm);
+    static random(keyType?: KeyType, parameters?: KeyParameters): PrivateKey {
+        if (keyType === undefined) {
+            keyType = KeyType.fromLabel(DEFAULT_ALGORITHM.algorithm);
+        }
+
+        if (parameters === undefined) {
+            parameters = KeyParameters.deserializeJson(DEFAULT_ALGORITHM.parameters);
+        }
+
+        return new PrivateKey(ab2hexstring(secureRandom(32)), keyType, parameters);
     }
 
-    if (parameters === undefined) {
-      parameters = KeyParameters.deserializeJson(DEFAULT_ALGORITHM.parameters);
+    /**
+     * Creates PrivateKey from Json representation.
+     *
+     * @param json Json private key representation
+     *
+     */
+    static deserializeJson(json: JsonKey): PrivateKey {
+        return new PrivateKey(
+        json.key,
+        KeyType.fromLabel(json.algorithm),
+        KeyParameters.deserializeJson(json.parameters)
+        );
     }
 
-    return new PrivateKey(ab2hexstring(secureRandom(32)), keyType, parameters);
-  }
+    /**
+     * Signs the data with supplied private key using signature schema.
+     *
+     * If the signature schema is not provided, the default schema for this key type is used.
+     *
+     * @param msg Hex encoded input data
+     * @param schema Signing schema to use
+     * @param publicKeyId Id of public key
+     */
+    sign(msg: string, schema?: SignatureScheme, publicKeyId?: string): Signature {
+        if (schema === undefined) {
+            schema = this.algorithm.defaultSchema;
+        }
 
-  /**
-   * Creates PrivateKey from Json representation.
-   *
-   * @param json Json private key representation
-   *
-   */
-  static deserializeJson(json: JsonKey): PrivateKey {
-    return new PrivateKey(
-      json.key,
-      KeyType.fromLabel(json.algorithm),
-      KeyParameters.deserializeJson(json.parameters)
-    );
-  }
+        if (!this.isSchemaSupported(schema)) {
+            throw new Error('Signature schema does not match key type.');
+        }
 
-  /**
-   * Signs the data with supplied private key using signature schema.
-   *
-   * If the signature schema is not provided, the default schema for this key type is used.
-   *
-   * @param msg Hex encoded input data
-   * @param schema Signing schema to use
-   * @param publicKeyId Id of public key
-   */
-  sign(msg: string, schema?: SignatureScheme, publicKeyId?: string): Signature {
-    if (schema === undefined) {
-      schema = this.algorithm.defaultSchema;
+        const hash = this.computeHash(msg, schema);
+        const signed = this.computeSignature(hash, schema);
+
+        return new Signature(schema, signed, publicKeyId);
     }
 
-    if (!this.isSchemaSupported(schema)) {
-      throw new Error('Signature schema does not match key type.');
+    /**
+     * Derives Public key out of Private key.
+     */
+    getPublicKey(): PublicKey {
+        switch (this.algorithm) {
+        case KeyType.ECDSA:
+            return this.getEcDSAPublicKey();
+        case KeyType.EDDSA:
+            return this.getEdDSAPublicKey();
+        case KeyType.SM2:
+            return this.getSM2PublicKey();
+        default:
+            throw new Error('Unsupported signature schema.');
+        }
     }
 
-    const hash = this.computeHash(msg, schema);
-    const signed = this.computeSignature(hash, schema);
+    /**
+     * Decrypts encrypted private key with supplied password.
+     *
+     * @param keyphrase Password to decrypt with
+     * @param checksum 4 bytes checksum or address in base58 format
+     * @param params Optional Scrypt params
+     */
+    decrypt(keyphrase: string, checksum: string | Address, params?: ScryptParams): PrivateKey {
+        const decrypted = decrypt(this.key, keyphrase, checksum, params);
+        const decryptedKey = new PrivateKey(decrypted, this.algorithm, this.parameters);
+        checkDecrypted(checksum, decryptedKey.getPublicKey().serializeHex());
 
-    return new Signature(schema, signed, publicKeyId);
-  }
-
-  /**
-   * Derives Public key out of Private key.
-   */
-  getPublicKey(): PublicKey {
-    switch (this.algorithm) {
-    case KeyType.ECDSA:
-      return this.getEcDSAPublicKey();
-    case KeyType.EDDSA:
-      return this.getEdDSAPublicKey();
-    case KeyType.SM2:
-      return this.getSM2PublicKey();
-    default:
-      throw new Error('Unsupported signature schema.');
+        return decryptedKey;
     }
-  }
 
-  /**
-   * Decrypts encrypted private key with supplied password.
-   *
-   * @param keyphrase Password to decrypt with
-   * @param checksum 4 bytes checksum or address in base58 format
-   * @param params Optional Scrypt params
-   */
-  decrypt(keyphrase: string, checksum: string | Address, params?: ScryptParams): PrivateKey {
-    const decrypted = decrypt(this.key, keyphrase, checksum, params);
-    const decryptedKey = new PrivateKey(decrypted, this.algorithm, this.parameters);
-    checkDecrypted(checksum, decryptedKey.getPublicKey().serializeHex());
-
-    return decryptedKey;
-  }
-
-  /**
-   * Encrypts private key with supplied password.
-   *
-   * @param keyphrase Password to encrypt with
-   * @param params Optional Scrypt params
-   */
-  encrypt(keyphrase: string, params?: ScryptParams): PrivateKey {
-    const encrypted = encrypt(this.key, this.getPublicKey().serializeHex(), keyphrase, params);
-    return new PrivateKey(encrypted, this.algorithm, this.parameters);
-  }
-
-  /**
-   * Derives Public key out of Private key using EcDSA algorithm.
-   */
-  getEcDSAPublicKey(): PublicKey {
-    const ec = new elliptic.ec(this.parameters.curve.preset);
-    const keyPair = ec.keyFromPrivate(this.key, 'hex');
-    const pk = keyPair.getPublic(true, 'hex');
-
-    return new PublicKey(pk, this.algorithm, this.parameters);
-  }
-
-  /**
-   * Derives Public key out of Private key using EdDSA algorithm.
-   */
-  getEdDSAPublicKey(): PublicKey {
-    const eddsa = new elliptic.eddsa(this.parameters.curve.preset);
-    const keyPair = eddsa.keyFromSecret(this.key, 'hex');
-    const pk = keyPair.getPublic(true, 'hex');
-
-    return new PublicKey(pk, this.algorithm, this.parameters);
-  }
-
-  /**
-   * Derives Public key out of Private key using SM2 algorithm.
-   */
-  getSM2PublicKey(): PublicKey {
-    const keyPair = sm2.SM2KeyPair(null, this.key);
-    const pk = keyPair.pubToString('compress');
-
-    return new PublicKey(pk, this.algorithm, this.parameters);
-  }
-
-  /**
-   * Computes signature of message hash using specified signature schema.
-   *
-   * @param hash Message hash
-   * @param schema Signature schema to use
-   */
-  computeSignature(hash: string, schema: SignatureScheme): string {
-    switch (schema) {
-    case SignatureScheme.ECDSAwithSHA224:
-    case SignatureScheme.ECDSAwithSHA256:
-    case SignatureScheme.ECDSAwithSHA384:
-    case SignatureScheme.ECDSAwithSHA512:
-    case SignatureScheme.ECDSAwithSHA3_224:
-    case SignatureScheme.ECDSAwithSHA3_256:
-    case SignatureScheme.ECDSAwithSHA3_384:
-    case SignatureScheme.ECDSAwithSHA3_512:
-    case SignatureScheme.ECDSAwithRIPEMD160:
-      return this.computeEcDSASignature(hash);
-    case SignatureScheme.EDDSAwithSHA512:
-      return this.computeEdDSASignature(hash);
-    case SignatureScheme.SM2withSM3:
-      return this.computeSM2Signature(hash);
-    default:
-      throw new Error('Unsupported signature schema.');
+    /**
+     * Encrypts private key with supplied password.
+     *
+     * @param keyphrase Password to encrypt with
+     * @param params Optional Scrypt params
+     */
+    encrypt(keyphrase: string, params?: ScryptParams): PrivateKey {
+        const encrypted = encrypt(this.key, this.getPublicKey().serializeHex(), keyphrase, params);
+        return new PrivateKey(encrypted, this.algorithm, this.parameters);
     }
-  }
 
-  /**
-   * Computes EcDSA signature of message hash. Curve name is derrived from private key.
-   *
-   * @param hash Message hash
-   */
-  computeEcDSASignature(hash: string): string {
-    const ec = new elliptic.ec(this.parameters.curve.preset);
-    const signed = ec.sign(hash, this.key, null);
-    return Buffer.concat([
-      signed.r.toArrayLike(Buffer, 'be', 32),
-      signed.s.toArrayLike(Buffer, 'be', 32)
-    ]).toString('hex');
-  }
+    /**
+     * Derives Public key out of Private key using EcDSA algorithm.
+     */
+    getEcDSAPublicKey(): PublicKey {
+        const ec = new elliptic.ec(this.parameters.curve.preset);
+        const keyPair = ec.keyFromPrivate(this.key, 'hex');
+        const pk = keyPair.getPublic(true, 'hex');
 
-  /**
-   * Computes EdDSA signature of message hash. Curve name is derrived from private key.
-   *
-   * @param hash Message hash
-   */
-  computeEdDSASignature(hash: string): string {
-    const eddsa = new elliptic.eddsa(this.parameters.curve.preset);
-    const signed = eddsa.sign(hash, this.key, null);
-    return Buffer.concat([
-      signed.R.toArrayLike(Buffer, 'be', 32),
-      signed.S.toArrayLike(Buffer, 'be', 32)
-    ]).toString('hex');
-  }
+        return new PublicKey(pk, this.algorithm, this.parameters);
+    }
 
-  /**
-   * Computes SM2 signature of message hash.
-   *
-   * Only default SM2 ID is supported.
-   *
-   * @param hash Message hash
-   */
-  computeSM2Signature(hash: string): string {
-    const keyPair = sm2.SM2KeyPair(null, this.key);
-    const signed = keyPair.sign(hexstring2ab(hash));
+    /**
+     * Derives Public key out of Private key using EdDSA algorithm.
+     */
+    getEdDSAPublicKey(): PublicKey {
+        const eddsa = new elliptic.eddsa(this.parameters.curve.preset);
+        const keyPair = eddsa.keyFromSecret(this.key, 'hex');
+        const pk = keyPair.getPublic(true, 'hex');
 
-    const id = DEFAULT_SM2_ID;
+        return new PublicKey(pk, this.algorithm, this.parameters);
+    }
 
-    return str2hexstr(id + '\0') + signed.r + signed.s;
-  }
+    /**
+     * Derives Public key out of Private key using SM2 algorithm.
+     */
+    getSM2PublicKey(): PublicKey {
+        const keyPair = sm2.SM2KeyPair(null, this.key);
+        const pk = keyPair.pubToString('compress');
+
+        return new PublicKey(pk, this.algorithm, this.parameters);
+    }
+
+    /**
+     * Computes signature of message hash using specified signature schema.
+     *
+     * @param hash Message hash
+     * @param schema Signature schema to use
+     */
+    computeSignature(hash: string, schema: SignatureScheme): string {
+        switch (schema) {
+        case SignatureScheme.ECDSAwithSHA224:
+        case SignatureScheme.ECDSAwithSHA256:
+        case SignatureScheme.ECDSAwithSHA384:
+        case SignatureScheme.ECDSAwithSHA512:
+        case SignatureScheme.ECDSAwithSHA3_224:
+        case SignatureScheme.ECDSAwithSHA3_256:
+        case SignatureScheme.ECDSAwithSHA3_384:
+        case SignatureScheme.ECDSAwithSHA3_512:
+        case SignatureScheme.ECDSAwithRIPEMD160:
+            return this.computeEcDSASignature(hash);
+        case SignatureScheme.EDDSAwithSHA512:
+            return this.computeEdDSASignature(hash);
+        case SignatureScheme.SM2withSM3:
+            return this.computeSM2Signature(hash);
+        default:
+            throw new Error('Unsupported signature schema.');
+        }
+    }
+
+    /**
+     * Computes EcDSA signature of message hash. Curve name is derrived from private key.
+     *
+     * @param hash Message hash
+     */
+    computeEcDSASignature(hash: string): string {
+        const ec = new elliptic.ec(this.parameters.curve.preset);
+        const signed = ec.sign(hash, this.key, null);
+        return Buffer.concat([
+            signed.r.toArrayLike(Buffer, 'be', 32),
+            signed.s.toArrayLike(Buffer, 'be', 32)
+        ]).toString('hex');
+    }
+
+    /**
+     * Computes EdDSA signature of message hash. Curve name is derrived from private key.
+     *
+     * @param hash Message hash
+     */
+    computeEdDSASignature(hash: string): string {
+        const eddsa = new elliptic.eddsa(this.parameters.curve.preset);
+        const signed = eddsa.sign(hash, this.key, null);
+        return Buffer.concat([
+            signed.R.toArrayLike(Buffer, 'be', 32),
+            signed.S.toArrayLike(Buffer, 'be', 32)
+        ]).toString('hex');
+    }
+
+    /**
+     * Computes SM2 signature of message hash.
+     *
+     * Only default SM2 ID is supported.
+     *
+     * @param hash Message hash
+     */
+    computeSM2Signature(hash: string): string {
+        const keyPair = sm2.SM2KeyPair(null, this.key);
+        const signed = keyPair.sign(hexstring2ab(hash));
+
+        const id = DEFAULT_SM2_ID;
+
+        return str2hexstr(id + '\0') + signed.r + signed.s;
+    }
 }

@@ -20,52 +20,52 @@
  * Elliptic curve used.
  */
 export class CurveLabel {
-  static values: CurveLabel[] = [];
+    static values: CurveLabel[] = [];
 
-  static SECP224R1 = new CurveLabel('secp224r1', 1, 'p224');
-  static SECP256R1 = new CurveLabel('secp256r1', 2, 'p256');
-  static SECP384R1 = new CurveLabel('secp384r1', 3, 'p384');
-  static SECP521R1 = new CurveLabel('secp521r1', 4, 'p521');
-  static SM2P256V1 = new CurveLabel('sm2p256v1', 20, 'sm2p256v1');
-  static ED25519 = new CurveLabel('ed25519', 25, 'ed25519');
+    static SECP224R1 = new CurveLabel('secp224r1', 1, 'p224');
+    static SECP256R1 = new CurveLabel('secp256r1', 2, 'p256');
+    static SECP384R1 = new CurveLabel('secp384r1', 3, 'p384');
+    static SECP521R1 = new CurveLabel('secp521r1', 4, 'p521');
+    static SM2P256V1 = new CurveLabel('sm2p256v1', 20, 'sm2p256v1');
+    static ED25519 = new CurveLabel('ed25519', 25, 'ed25519');
 
-  /**
-   * Finds Curvecorresponding to specified hex representation.
-   *
-   * @param hex Byte hex value
-   */
-  static fromHex(hex: number): CurveLabel {
-    const item = CurveLabel.values.find((v) => v.hex === hex);
-    if (item === undefined) {
-      throw new Error('Enum value not found');
+    /**
+     * Finds Curvecorresponding to specified hex representation.
+     *
+     * @param hex Byte hex value
+     */
+    static fromHex(hex: number): CurveLabel {
+        const item = CurveLabel.values.find((v) => v.hex === hex);
+        if (item === undefined) {
+            throw new Error('Enum value not found');
+        }
+
+        return item;
     }
 
-    return item;
-  }
+    /**
+     * Finds Curve corresponding to specified label representation.
+     *
+     * @param label Label
+     */
+    static fromLabel(label: string): CurveLabel {
+        const item = CurveLabel.values.find((v) => v.label === label);
+        if (item === undefined) {
+            throw new Error('Enum value not found');
+        }
 
-  /**
-   * Finds Curve corresponding to specified label representation.
-   *
-   * @param label Label
-   */
-  static fromLabel(label: string): CurveLabel {
-    const item = CurveLabel.values.find((v) => v.label === label);
-    if (item === undefined) {
-      throw new Error('Enum value not found');
+        return item;
     }
 
-    return item;
-  }
+    label: string;
+    hex: number;
+    preset: string;
 
-  label: string;
-  hex: number;
-  preset: string;
+    constructor(label: string, hex: number, preset: string) {
+        this.label = label;
+        this.hex = hex;
+        this.preset = preset;
 
-  constructor(label: string, hex: number, preset: string) {
-    this.label = label;
-    this.hex = hex;
-    this.preset = preset;
-
-    CurveLabel.values.push(this);
-  }
+        CurveLabel.values.push(this);
+    }
 }

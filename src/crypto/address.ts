@@ -23,61 +23,61 @@ import { hex2VarBytes, num2hexstring } from '../utils';
 import { PublicKey } from './PublicKey';
 
 export class Address {
-  static addressFromPubKey(publicKey: PublicKey): Address {
-    let programHash = core.hash160(publicKey.serializeHex());
-    programHash = '01' + programHash.substring(2);
-    return new Address(programHash);
-  }
-
-  /**
-   * (m,n) threshold address
-   * @param m is the threshold
-   * @param publicKeys total value n
-   */
-  static addressFromMultiPubKeys(m: number, publicKeys: PublicKey[]): Address {
-    const n = publicKeys.length;
-
-    if (m <= 0 || m > n || n > 24 ) {
-      throw ERROR_CODE.INVALID_PARAMS;
+    static addressFromPubKey(publicKey: PublicKey): Address {
+        let programHash = core.hash160(publicKey.serializeHex());
+        programHash = '01' + programHash.substring(2);
+        return new Address(programHash);
     }
 
-    const pkHexStrs = publicKeys.map((p) => p.serializeHex());
-    pkHexStrs.sort();
-    let result = '';
-    result += num2hexstring(n);
-    result += num2hexstring(m);
-    for (const s of pkHexStrs) {
-      result += hex2VarBytes(s);
+    /**
+     * (m,n) threshold address
+     * @param m is the threshold
+     * @param publicKeys total value n
+     */
+    static addressFromMultiPubKeys(m: number, publicKeys: PublicKey[]): Address {
+        const n = publicKeys.length;
+
+        if (m <= 0 || m > n || n > 24 ) {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+
+        const pkHexStrs = publicKeys.map((p) => p.serializeHex());
+        pkHexStrs.sort();
+        let result = '';
+        result += num2hexstring(n);
+        result += num2hexstring(m);
+        for (const s of pkHexStrs) {
+            result += hex2VarBytes(s);
+        }
+        let programHash = core.hash160(result);
+
+        programHash = '02' + programHash.substr(2);
+        return new Address(programHash);
     }
-    let programHash = core.hash160(result);
 
-    programHash = '02' + programHash.substr(2);
-    return new Address(programHash);
-  }
+    value: string;
 
-  value: string;
-
-  constructor(value: string) {
-    if (value.length === 40 || value.length === 34) {
-      this.value = value;
-    } else {
-      throw ERROR_CODE.INVALID_PARAMS;
+    constructor(value: string) {
+        if (value.length === 40 || value.length === 34) {
+            this.value = value;
+        } else {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
     }
-  }
 
-  toBase58() {
-    if (this.value.length === 34) {
-      return this.value;
-    } else {
-      return u160ToAddress(this.value);
+    toBase58() {
+        if (this.value.length === 34) {
+            return this.value;
+        } else {
+            return u160ToAddress(this.value);
+        }
     }
-  }
 
-  toHexString() {
-    if (this.value.length === 40) {
-      return this.value;
-    } else {
-      return addressToU160(this.value);
+    toHexString() {
+        if (this.value.length === 40) {
+            return this.value;
+        } else {
+            return addressToU160(this.value);
+        }
     }
-  }
 }

@@ -6,7 +6,7 @@
   "types": "./lib/types/index.d.ts",
   "scripts": {
     "test": "./node_modules/.bin/jest",
-    "lint": "tslint 'src/crypto/*.ts?(x)'",
+    "lint": "tslint 'src/crypto/**/*.ts?(x)'",
     "build:commonJS": "tsc --module CommonJS --outDir ./lib",
     "build:dev": "./node_modules/.bin/webpack --display-error-details --config webpack.config.js --progress --color",
     "build:prod": "./node_modules/.bin/webpack --env.prod --config webpack.config.js --progress --color"
