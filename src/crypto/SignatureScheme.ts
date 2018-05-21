@@ -20,71 +20,75 @@
  * Schema used during signing and verification of signature.
  */
 export class SignatureScheme {
-    static values: SignatureScheme[] = [];
+  static values: SignatureScheme[] = [];
 
-    static ECDSAwithSHA224 = new SignatureScheme('ECDSAwithSHA224', 0, 'ES224');
-	static ECDSAwithSHA256 = new SignatureScheme('ECDSAwithSHA256', 1, 'ES256');
-	static ECDSAwithSHA384 = new SignatureScheme('ECDSAwithSHA384', 2, 'ES384');
-	static ECDSAwithSHA512 = new SignatureScheme('ECDSAwithSHA512', 3, 'ES512');
-	static ECDSAwithSHA3_224 = new SignatureScheme('ECDSAwithSHA3-224', 4, 'ES3-224');
-	static ECDSAwithSHA3_256 = new SignatureScheme('ECDSAwithSHA3-256', 5, 'ES3-256');
-	static ECDSAwithSHA3_384 = new SignatureScheme('ECDSAwithSHA3-384', 6, 'ES3-384');
-	static ECDSAwithSHA3_512 = new SignatureScheme('ECDSAwithSHA3-512', 7, 'ES3-512');
-	static ECDSAwithRIPEMD160 = new SignatureScheme('ECDSAwithRIPEMD160', 8, 'ER160');
-	static SM2withSM3 = new SignatureScheme('SM2withSM3', 9, 'SM');
-	static EDDSAwithSHA512 = new SignatureScheme('EDDSAwithSHA512', 10, 'EDS512');
+  static ECDSAwithSHA224 = new SignatureScheme('ECDSAwithSHA224', 0, 'ES224');
+  static ECDSAwithSHA256 = new SignatureScheme('ECDSAwithSHA256', 1, 'ES256');
+  static ECDSAwithSHA384 = new SignatureScheme('ECDSAwithSHA384', 2, 'ES384');
+  static ECDSAwithSHA512 = new SignatureScheme('ECDSAwithSHA512', 3, 'ES512');
+  // tslint:disable-next-line:variable-name
+  static ECDSAwithSHA3_224 = new SignatureScheme('ECDSAwithSHA3-224', 4, 'ES3-224');
+  // tslint:disable-next-line:variable-name
+  static ECDSAwithSHA3_256 = new SignatureScheme('ECDSAwithSHA3-256', 5, 'ES3-256');
+  // tslint:disable-next-line:variable-name
+  static ECDSAwithSHA3_384 = new SignatureScheme('ECDSAwithSHA3-384', 6, 'ES3-384');
+  // tslint:disable-next-line:variable-name
+  static ECDSAwithSHA3_512 = new SignatureScheme('ECDSAwithSHA3-512', 7, 'ES3-512');
+  static ECDSAwithRIPEMD160 = new SignatureScheme('ECDSAwithRIPEMD160', 8, 'ER160');
+  static SM2withSM3 = new SignatureScheme('SM2withSM3', 9, 'SM');
+  static EDDSAwithSHA512 = new SignatureScheme('EDDSAwithSHA512', 10, 'EDS512');
 
-    label: string;
-    hex: number;
-    labelJWS: string;
-
-    constructor(label: string, hex: number, labelJWS: string) {
-        this.label = label;
-        this.hex = hex;
-        this.labelJWS = labelJWS;
-        
-        SignatureScheme.values.push(this);
+  /**
+   * Finds Signature schema corresponding to specified hex representation.
+   *
+   * @param hex Byte hex value
+   */
+  static fromHex(hex: number): SignatureScheme {
+    const item = SignatureScheme.values.find((v) => v.hex === hex);
+    if (item === undefined) {
+      throw new Error('Enum value not found');
     }
 
-    /**
-     * Finds Signature schema corresponding to specified hex representation.
-     * 
-     * @param hex Byte hex value
-     */
-    static fromHex(hex: number): SignatureScheme {
-        const item = SignatureScheme.values.find(v => v.hex === hex);
-        if (item === undefined) {
-            throw new Error('Enum value not found');
-        }
+    return item;
+  }
 
-        return item;
+  /**
+   * Finds Signature schema corresponding to specified label representation.
+   *
+   * @param label Label
+   */
+  static fromLabel(label: string): SignatureScheme {
+    const item = SignatureScheme.values.find((v) => v.label === label);
+    if (item === undefined) {
+      throw new Error('Enum value not found');
     }
 
-    /**
-     * Finds Signature schema corresponding to specified label representation.
-     * 
-     * @param label Label
-     */
-    static fromLabel(label: string): SignatureScheme {
-        const item = SignatureScheme.values.find(v => v.label === label);
-        if (item === undefined) {
-            throw new Error('Enum value not found');
-        }
+    return item;
+  }
 
-        return item;
+  /**
+   * Finds Signature schema corresponding to specified label representation in JWS.
+   *
+   * @param label Label
+   */
+  static fromLabelJWS(label: string): SignatureScheme {
+    const item = SignatureScheme.values.find((v) => v.labelJWS === label);
+    if (item === undefined) {
+      throw new Error('Enum value not found');
     }
 
-    /**
-     * Finds Signature schema corresponding to specified label representation in JWS.
-     * 
-     * @param label Label
-     */
-    static fromLabelJWS(label: string): SignatureScheme {
-        const item = SignatureScheme.values.find(v => v.labelJWS === label);
-        if (item === undefined) {
-            throw new Error('Enum value not found');
-        }
+    return item;
+  }
 
-        return item;
-    }
-};
+  label: string;
+  hex: number;
+  labelJWS: string;
+
+  constructor(label: string, hex: number, labelJWS: string) {
+    this.label = label;
+    this.hex = hex;
+    this.labelJWS = labelJWS;
+
+    SignatureScheme.values.push(this);
+  }
+}

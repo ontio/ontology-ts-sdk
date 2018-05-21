@@ -6,6 +6,7 @@
   "types": "./lib/types/index.d.ts",
   "scripts": {
     "test": "./node_modules/.bin/jest",
+    "lint": "tslint 'src/crypto/*.ts?(x)'",
     "build:commonJS": "tsc --module CommonJS --outDir ./lib",
     "build:dev": "./node_modules/.bin/webpack --display-error-details --config webpack.config.js --progress --color",
     "build:prod": "./node_modules/.bin/webpack --env.prod --config webpack.config.js --progress --color"
@@ -25,7 +26,6 @@
   "author": "ontologyNetwork",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^8.5.2",
     "@types/axios": "^0.14.0",
     "@types/base-x": "^1.0.29",
     "@types/bignumber.js": "^5.0.0",
@@ -33,13 +33,16 @@
     "@types/crypto-js": "^3.1.38",
     "@types/ecurve": "^1.0.0",
     "@types/jest": "^22.1.2",
+    "@types/node": "^8.5.2",
+    "clean-webpack-plugin": "^0.1.18",
     "jest": "^22.1.4",
     "jest-cli": "^22.1.4",
     "ts-jest": "^22.0.2",
     "ts-loader": "^3.2.0",
+    "tslint": "^5.10.0",
+    "tslint-eslint-rules": "^5.3.1",
     "typescript": "^2.6.2",
     "uglifyjs-webpack-plugin": "^1.2.2",
-    "clean-webpack-plugin": "^0.1.18",
     "webpack": "^3.10.0"
   },
   "dependencies": {
