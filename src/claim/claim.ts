@@ -17,14 +17,14 @@
  */
 
 import * as b64 from 'base64-url';
-import { Message, Metadata } from "../message";
-import { Signature, SignatureScheme, PrivateKey } from "../crypto";
-import { hexstr2str, ab2hexstring } from '../utils';
-import { ClaimProof } from "./claimProof";
-import { buildCommitRecordTx, buildRevokeRecordTx, buildGetRecordStatusTx } from '../smartcontract/recordContract';
-import { WebsocketClient } from '../network/websocket/websocketClient';
-import { AttestNotifyEvent } from './attestNotifyEvent';
+import { PrivateKey, Signature, SignatureScheme } from '../crypto';
+import { Message, Metadata } from '../message';
 import RestClient from '../network/rest/restClient';
+import { WebsocketClient } from '../network/websocket/websocketClient';
+import { buildCommitRecordTx, buildGetRecordStatusTx, buildRevokeRecordTx } from '../smartcontract/recordContract';
+import { ab2hexstring, hexstr2str } from '../utils';
+import { AttestNotifyEvent } from './attestNotifyEvent';
+import { ClaimProof } from './claimProof';
 
 /**
  * Type of revocation.
@@ -32,7 +32,7 @@ import RestClient from '../network/rest/restClient';
 export enum RevocationType {
     AttestContract = 'AttestContract',
     RevocationList = 'RevocationList'
-};
+}
 
 /**
  * Revocation definition.
@@ -52,19 +52,23 @@ export interface Revocation {
      * Address of attest contract if type is AttestContract
      */
     addr?: string;
-};
+}
 
 /**
  * Verifiable claim.
- * 
+ *
  * TODO: override verify to add claim proof verification.
  */
 export class Claim extends Message {
+    static deserialize(jwt: string): Claim {
+        return super.deserializeInternal(jwt, (m: any, s: any) => new Claim(m, s));
+    }
+
     version: string;
     context: string;
     content: any;
     revocation?: Revocation;
-    
+
     useProof: boolean;
     proof?: ClaimProof;
 
@@ -88,36 +92,16 @@ export class Claim extends Message {
         }
     }
 
-    protected payloadToJSON(): any {
-        return {
-            ver: this.version,
-            '@context': this.context,
-            clm: this.content,
-            'clm-rev': this.revocation
-        };
-    }
-
-    protected payloadFromJSON(json: any): void {
-        this.version = json.ver;
-        this.context = json['@context'];
-        this.content = json.clm;
-        this.revocation = json['clm-rev'];
-    }
-
-    static deserialize(jwt: string): Claim {
-        return super.deserializeInternal(jwt, (m:any, s:any) => new Claim(m, s));
-    }
-
     /**
      * Serializes the claim into JWT/JWT-X format.
-     * 
+     *
      * Override default implementation by adding proof if available.
      */
     serialize(): string {
         if (this.useProof) {
             const jwt = super.serialize();
             const proof = this.serializeProof();
-    
+
             return jwt + '.' + proof;
         } else {
             return super.serialize();
@@ -126,7 +110,7 @@ export class Claim extends Message {
 
     /**
      * Attests the claim onto blockchain.
-     * 
+     *
      * @param url Websocket endpoint of Ontology node
      * @param privateKey Private key to sign the transaction
      */
@@ -147,7 +131,7 @@ export class Claim extends Message {
 
     /**
      * Revokes claim attest from blockchain.
-     * 
+     *
      * @param privateKey Private key to sign the transaction
      * @param url Websocket endpoint of Ontology node
      */
@@ -161,7 +145,7 @@ export class Claim extends Message {
         const client = new WebsocketClient(url);
         const tx = buildRevokeRecordTx(claimId, attesterId, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
-        
+
         const event = AttestNotifyEvent.deserialize(response);
 
         return event.Result[0].States[0] === 'Push';
@@ -169,7 +153,7 @@ export class Claim extends Message {
 
     /**
      * Gets status of the claim attest.
-     * 
+     *
      * @param url Restful endpoint of Ontology node
      */
     async getStatus(url: string): Promise<boolean> {
@@ -181,25 +165,38 @@ export class Claim extends Message {
 
         const client = new RestClient(url);
         const tx = buildGetRecordStatusTx(claimId);
-        
+
         const response = await client.sendRawTransaction(tx.serialize(), true);
         const result = GetStatusResponse.deserialize(response);
 
         return result.status === Status.ATTESTED && result.attesterId === attesterId;
     }
 
+    protected payloadToJSON(): any {
+        return {
+            'ver': this.version,
+            '@context': this.context,
+            'clm': this.content,
+            'clm-rev': this.revocation
+        };
+    }
+
+    protected payloadFromJSON(json: any): void {
+        this.version = json.ver;
+        this.context = json['@context'];
+        this.content = json.clm;
+        this.revocation = json['clm-rev'];
+    }
+
     /**
      * Serializes the header into JWT/JWT-X encoded header.
-     * 
+     *
      * Override default implementation by adding proof if available.
-     * 
+     *
      * @param algorithm Signature algorithm used
-     * @param publicKeyId The ID of a signature public key 
+     * @param publicKeyId The ID of a signature public key
      */
-    protected serializeHeader(
-        algorithm: SignatureScheme | undefined, 
-        publicKeyId: string | undefined
-    ): string {
+    protected serializeHeader(algorithm: SignatureScheme | undefined, publicKeyId: string | undefined): string {
         if (this.useProof) {
             if (algorithm === undefined || publicKeyId === undefined) {
                 throw new Error('Signature is needed fow JWT-X.');
@@ -209,10 +206,10 @@ export class Claim extends Message {
                     typ: 'JWT-X',
                     kid: publicKeyId
                 };
-    
+
                 const stringified = JSON.stringify(header);
                 return b64.encode(stringified, 'utf-8');
-            } 
+            }
         } else {
             return super.serializeHeader(algorithm, publicKeyId);
         }
@@ -231,10 +228,6 @@ export class Claim extends Message {
  * Helper class for deserializing GetStatus response.
  */
 class GetStatusResponse {
-    status: Status;
-    attesterId: string;
-    time: string;
-
     static deserialize(r: any): GetStatusResponse {
         const response = new GetStatusResponse();
 
@@ -246,7 +239,7 @@ class GetStatusResponse {
         const decoded = hexstr2str(r.Result);
         const data = decoded.split('#');
 
-        if (data.length != 3) {
+        if (data.length !== 3) {
             throw new Error('Failed to decode response.');
         }
 
@@ -255,10 +248,14 @@ class GetStatusResponse {
         response.time = data[2];
         return response;
     }
+
+    status: Status;
+    attesterId: string;
+    time: string;
 }
 
 enum Status {
     REVOKED = '0',
     ATTESTED = '1',
     NOTFOUND = '-1'
-};
+}

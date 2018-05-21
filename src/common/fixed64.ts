@@ -16,35 +16,39 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 import { BigNumber } from 'bignumber.js';
-import {str2hexstr, hexstr2str ,StringReader, reverseHex} from '../utils'
-const Fixed64Size = 8
+import {hexstr2str, reverseHex, str2hexstr, StringReader} from '../utils';
+
+const Fixed64Size = 8;
 export default class Fixed64 {
-    //8 bytes
-    value : string
-    constructor(value?:string) {
+    static deserialize(sr: StringReader) {
+        const f = new Fixed64();
+        let v = sr.read(8);
+        // f.value = hexstr2str(v)
+        v = reverseHex(v);
+        f.value = new BigNumber(v).toString();
+        return f;
+    }
+
+    // 8 bytes
+    value: string;
+    constructor(value?: string) {
         // if(value && value.length !== 16) {
         //     throw new Error('Invalid value.')
         // }
-        this.value = value || '0000000000000000'
+        this.value = value || '0000000000000000';
     }
 
     serialize() {
         // return str2hexstr(this.value)
-        let hexstring = new BigNumber(this.value).toString(16)
-        let size = Fixed64Size * 2
-        hexstring = hexstring.length % size === 0 ? hexstring : ('0'.repeat(size) + hexstring).substring(hexstring.length)
-        hexstring = reverseHex(hexstring)
-        return hexstring
-    }
+        let hexstring = new BigNumber(this.value).toString(16);
+        const size = Fixed64Size * 2;
 
-    static deserialize(sr:StringReader) {
-        let f = new Fixed64()
-        let v = sr.read(8)
-        // f.value = hexstr2str(v)
-        v = reverseHex(v)
-        f.value = new BigNumber(v).toString()
-        return f
+        hexstring = hexstring.length % size === 0
+            ? hexstring
+            : ('0'.repeat(size) + hexstring).substring(hexstring.length);
+
+        hexstring = reverseHex(hexstring);
+        return hexstring;
     }
 }

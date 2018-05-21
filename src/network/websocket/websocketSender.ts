@@ -20,64 +20,66 @@ import { MAIN_ONT_URL, TEST_ONT_URL } from '../../consts';
 
 /**
  * Creates WebSocket.
- * 
+ *
  * In node environment html5-websocket is used. In browser, native WebSocket is used.
- * 
+ *
  * @param url Url to connect to
  */
 function getWebSocket(url: string): WebSocket {
-    if (typeof WebSocket === 'undefined') {
-        const WS = require('html5-websocket');
-        return new WS(url);
-    } else {
-        return new WebSocket(url);
-    }
+  if (typeof WebSocket === 'undefined') {
+    const WS = require('html5-websocket');
+    return new WS(url);
+  } else {
+    return new WebSocket(url);
+  }
 }
 
 export class WebsocketSender {
-    url: string;
-    debug: boolean;
+  url: string;
+  debug: boolean;
 
-    constructor (url = TEST_ONT_URL.SOCKET_URL, debug = false) {
-        this.url = url;
-        this.debug = debug;
+  constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false) {
+    this.url = url;
+    this.debug = debug;
+  }
+
+  send(param: string, callback: (err: any, res: any, socket: WebSocket | null) => any) {
+    if (!param) {
+      return;
     }
 
-    send(param: string, callback: (err: any, res: any, socket: WebSocket | null) => any) {
-        if(!param) {
-            return;
-        }
+    const socket = getWebSocket(this.url);
 
-        const socket = getWebSocket(this.url);
+    socket.onopen = () => {
+      if (this.debug) {
+        // tslint:disable-next-line:no-console
+        console.log('connected');
+      }
+      socket.send(param);
+    };
 
-        socket.onopen = () => {
-            if (this.debug) {
-                console.log('connected');
-            }
-            socket.send(param);
-        };
+    socket.onmessage = (event) => {
+      let res: any;
+      if (typeof event.data === 'string') {
+        res = JSON.parse(event.data);
+      } else {
+        res = event.data;
+      }
 
-        socket.onmessage = (event) => {
-            let res: any;
-            if (typeof event.data === 'string') {
-                res = JSON.parse(event.data);
-            } else {
-                res = event.data;
-            }
-        
-            //pass socket to let caller decide when to close the it.
-            if(callback) {
-                callback(null, res, socket);
-            }
-        };
+      // pass socket to let caller decide when to close the it.
+      if (callback) {
+        callback(null, res, socket);
+      }
+    };
 
-        socket.onerror = (err: any) => {
-            if (this.debug) {
-                console.log('error', err);
-            }
-            //no server or server is stopped
-            callback(err, null, null);
-            socket.close();
-        };
-    }
+    socket.onerror = (err: any) => {
+      if (this.debug) {
+        // tslint:disable-next-line:no-console
+        console.log('error', err);
+      }
+      // no server or server is stopped
+      callback(err, null, null);
+      socket.close();
+    };
+  }
 }

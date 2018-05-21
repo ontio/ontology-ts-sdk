@@ -17,18 +17,18 @@
  */
 
 export default {
-    Url_send_transaction : "/api/v1/transaction",
-    Url_get_transaction : "/api/v1/transaction/",
-    Url_get_generate_block_time : "/api/v1/node/generateblocktime",
-    Url_get_node_count : "/api/v1/node/connectioncount",
-    Url_get_block_height : "/api/v1/block/height",
-    Url_get_block_by_height : "/api/v1/block/details/height/",
-    Url_get_block_by_hash : "/api/v1/block/details/hash/",
-    Url_get_account_balance : "/api/v1/balance/",
-    Url_get_contract_state : "/api/v1/contract/",
-    Url_get_smartcodeevent_txs_by_height : "/api/v1/smartcode/event/transactions/",
-    Url_get_smartcodeevent_by_txhash : "/api/v1/smartcode/event/txhash/",
-    Url_get_block_height_by_txhash : "/api/v1/block/height/txhash/",
-    Url_get_storage : "/api/v1/storage/",
-    Url_get_merkleproof : "/api/v1/merkleproof/"
-}
+  Url_send_transaction : '/api/v1/transaction',
+  Url_get_transaction : '/api/v1/transaction/',
+  Url_get_generate_block_time : '/api/v1/node/generateblocktime',
+  Url_get_node_count : '/api/v1/node/connectioncount',
+  Url_get_block_height : '/api/v1/block/height',
+  Url_get_block_by_height : '/api/v1/block/details/height/',
+  Url_get_block_by_hash : '/api/v1/block/details/hash/',
+  Url_get_account_balance : '/api/v1/balance/',
+  Url_get_contract_state : '/api/v1/contract/',
+  Url_get_smartcodeevent_txs_by_height : '/api/v1/smartcode/event/transactions/',
+  Url_get_smartcodeevent_by_txhash : '/api/v1/smartcode/event/txhash/',
+  Url_get_block_height_by_txhash : '/api/v1/block/height/txhash/',
+  Url_get_storage : '/api/v1/storage/',
+  Url_get_merkleproof : '/api/v1/merkleproof/'
+};

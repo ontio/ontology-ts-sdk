@@ -19,12 +19,12 @@
 export enum Direction {
     Right = 'Right',
     Left = 'Left'
-};
+}
 
 export interface Node {
     Direction: Direction;
     TargetHash: string;
-};
+}
 
 export class ClaimProof {
     Type: 'MerkleProof';
@@ -33,4 +33,4 @@ export class ClaimProof {
     BlockHeight: number;
     MerkleRoot: string;
     Nodes: Node[];
-};
+}

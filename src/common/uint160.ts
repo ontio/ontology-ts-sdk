@@ -16,40 +16,42 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ab2hexstring, hexstring2ab, num2VarInt, hex2VarBytes, StringReader } from '../utils'
+import { ab2hexstring, hex2VarBytes, hexstring2ab, num2VarInt, StringReader } from '../utils';
 
-const UINT256SIZE = 20
+const UINT256SIZE = 20;
+
 export default class Uint160 {
-    value: Uint8Array
+    static deserialize(sr: StringReader) {
+        const result = new Uint160();
+        const hex = sr.readNextBytes();
+        let v = hexstring2ab(hex);
 
-    //lettle endian
+        // little endian
+        v = v.reverse();
+        const value = new Uint8Array(v);
+        result.value = value;
+        return result;
+    }
+
+    value: Uint8Array;
+
+    // little endian
     compareTo(o: Uint160) {
-        let x = this.value
-        let y = o.value
+        const x = this.value;
+        const y = o.value;
         for (let i = UINT256SIZE - 1; i >= 0; i--) {
             if (x[i] > y[i]) {
-                return 1
+                return 1;
             }
             if (x[i] < y[i]) {
-                return -1
+                return -1;
             }
         }
-        return 0
+        return 0;
     }
 
     serialize() {
-        const hex = ab2hexstring(this.value)
-        return hex2VarBytes(hex)
-    }
-
-    static deserialize(sr: StringReader) {
-        let result = new Uint160()
-        const hex = sr.readNextBytes()
-        let v = hexstring2ab(hex)
-        //little endian
-        v = v.reverse()
-        let value = new Uint8Array(v)
-        result.value = value
-        return result
+        const hex = ab2hexstring(this.value);
+        return hex2VarBytes(hex);
     }
 }
