@@ -27,7 +27,10 @@ export default class RestClient {
     action: string = 'sendrawtransaction';
 
     constructor(url ?: string) {
-        this.url = url || TEST_ONT_URL.REST_URL;
+        this.url = url || TEST_ONT_URL.REST_URL
+        if(this.url[this.url.length-1] === '/') {
+            this.url = this.url.substring(0, this.url.length-1)
+        }
     }
 
     concatParams(params: Map<string, string>) {

@@ -18,7 +18,7 @@
 
 import { makeInvokeTransaction , parseEventNotify, 
     buildRpcParam, buildTxParam, buildRestfulParam, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder'
-import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddControlKeyTx, buildGetPublicKeysTx, buildRemoveControlKeyTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetPublicKeyIdTx, buildGetPublicKeyStateTx, buildRemoveAttributeTx, buildRegIdWithAttributes, buildGetAttributesTx, buildRecoveryAddress} from '../src/smartcontract/ontidContractTxBuilder'
+import {buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx, buildAddControlKeyTx, buildGetPublicKeysTx, buildRemoveControlKeyTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetPublicKeyIdTx, buildGetPublicKeyStateTx, buildRemoveAttributeTx, buildRegIdWithAttributes, buildGetAttributesTx} from '../src/smartcontract/ontidContractTxBuilder'
 import {Transaction} from '../src/transaction/transaction'
 import InvokeCode from '../src/transaction/payload/invokeCode'
 import { Identity } from '../src/identity'
@@ -175,6 +175,7 @@ const callback = function (res, socket) {
 
 const testDDOTx = () => {
     console.log('account4 recovery: '+ account4.address.toHexString())
+    let ontid = 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ'
     let tx = buildGetDDOTx(ontid)
     // tx.payer = account.address
 
@@ -430,7 +431,7 @@ const testInvokeWasmContract = () => {
 
 //uncomment one line to test one tx each time.
 
-// testRegisterOntid()
+testRegisterOntid()
 
 // testRegIdWithAttributes()
 
@@ -440,7 +441,7 @@ const testInvokeWasmContract = () => {
 
 // testGetAttribut()
 
-testDDOTx()
+// testDDOTx()
 
 // testVerifyOntidClaim()
 

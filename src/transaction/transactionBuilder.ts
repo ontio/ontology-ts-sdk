@@ -403,18 +403,18 @@ export const makeInvokeTransaction = (
     return tx;
 };
 
+// tslint:disable-next-line:no-consecutive-blank-lines
+
 export function makeDeployCodeTransaction(
     code: string,
     vmType: VmType = VmType.NEOVM,
-    name: string = '' ,
-    codeVersion: string = '1.0',
-    author: string = '',
-    email: string = '',
-    desp: string = '',
-    needStorage: boolean = true
-) {
+    name: string= '',
+    codeVersion: string= '1.0',
+    author: string= '',
+    email: string= '',
+    desp: string= '', needStorage: boolean= true, gas: string, payer?: Address) {
     const dc = new DeployCode();
-    dc.author = author ;
+    dc.author = author;
     const vmCode = new VmCode();
     vmCode.code = code;
     vmCode.vmType = vmType;
@@ -431,9 +431,16 @@ export function makeDeployCodeTransaction(
     tx.payload = dc;
 
     tx.type = TxType.Deploy;
-
-    // program
-    // signTransaction(tx, privateKey)
+    // gas
+    if (DEFAULT_GAS_LIMIT === Number(0)) {
+        tx.gasPrice = new Fixed64();
+    } else {
+        const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
+        tx.gasPrice = new Fixed64(price);
+    }
+    if (payer) {
+        tx.payer = payer;
+    }
 
     return tx;
 

@@ -87,4 +87,26 @@ describe('test identity', () => {
         })
     })
 
+    test('test_userAgent_devicecode', async () => {
+        let a = new Identity()
+        let encrypt = new PrivateKey('xLdlFLuWMUcHZagEAiFZEiCwm1eQYbSEONIwxxL4qPk=')
+        let pri = encrypt.decrypt('111111', new Address('TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ'))
+        a.create(pri, '123456', 'test')
+        let data = {
+            OwnerOntId : a.ontid
+        }
+        let sig = pri.sign(JSON.stringify(data), '1')
+        let body = {
+            OwnerOntId: 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ',
+            Signature : sig.serializePgp()
+        }
+        console.log(JSON.stringify(body))
+        const userAgent = 'http://192.168.3.107:9099/api/v1/ontpass/devicecode/gain'
+        let res = await axios.post(userAgent, body).then( res => {
+            console.log(res.data)
+            return res.data
+        })
+        console.log(res)
+    })
+
 })

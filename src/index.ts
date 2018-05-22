@@ -37,6 +37,7 @@ import * as core from './core'
 import * as utils from './utils'
 import * as CONST from './consts'
 import { SDK } from './sdk/index'
+import * as Crypto from './crypto'
 
 class ONT {
   Account : any
@@ -60,6 +61,7 @@ class ONT {
   RestClient : any
   RpcClient : any
   WebsocketClient : any
+  Crypto : any
 
   constructor() {
     this.Account = Account,
@@ -83,6 +85,7 @@ class ONT {
     this.RestClient = RestClient
     this.RpcClient = RpcClient
     this.WebsocketClient = WebsocketClient
+    this.Crypto = Crypto
   }
   
 
@@ -125,6 +128,7 @@ export {
   OntidContract,
   RestClient,
   RpcClient,
-  WebsocketClient
+  WebsocketClient,
+  Crypto
 }
   
