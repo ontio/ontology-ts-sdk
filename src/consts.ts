@@ -43,12 +43,9 @@ export const DEFAULT_ALGORITHM = {
 
 export const DEFAULT_SM2_ID = '1234567812345678';
 
-export const ALGORITHM_TYPE = {
 
-}
-
-// export const TEST_NODE = 'polaris1.ont.io' //0.7
-export const TEST_NODE = '139.219.129.55' //0.8
+export const TEST_NODE = 'polaris1.ont.io' //0.8
+// export const TEST_NODE = '139.219.129.55' //0.8
 // export const TEST_NODE = '192.168.50.73'
 // export const TEST_NODE = '127.0.0.1'
 

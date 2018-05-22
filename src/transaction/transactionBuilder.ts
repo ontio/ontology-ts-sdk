@@ -380,7 +380,7 @@ export const makeInvokeTransaction = (funcName : string, parameters : Array<Para
 
 // 
 export function makeDeployCodeTransaction(code : string, vmType: VmType = VmType.NEOVM, name : string='' , codeVersion : string='1.0', author : string='', 
-email : string='', desp:string='', needStorage : boolean=true) {
+email : string='', desp:string='', needStorage : boolean=true, gas: string, payer?: Address) {
     let dc = new DeployCode()
     dc.author = author 
     let vmCode = new VmCode()
@@ -399,6 +399,16 @@ email : string='', desp:string='', needStorage : boolean=true) {
     tx.payload = dc
 
     tx.type = TxType.Deploy
+    //gas
+    if (DEFAULT_GAS_LIMIT === Number(0)) {
+        tx.gasPrice = new Fixed64()
+    } else {
+        let price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString()
+        tx.gasPrice = new Fixed64(price)
+    }
+    if (payer) {
+        tx.payer = payer
+    }
 
     //program
     // signTransaction(tx, privateKey)

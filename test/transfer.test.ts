@@ -65,7 +65,7 @@ const  testTransferTx = () => {
         address2 = 'TA5kdiHgtYP2x781hw8JbvNxxUujPiBobY'
     address1 = addressToU160(address1)
     address2 = addressToU160(address2)
-    let tx = makeTransferTx('ONT', new Address(accountFrom.address), new Address('TA7ZGPNXZUWuJiCDWKFXiWYabwjH9DPkoh'), '10000', '0')
+    let tx = makeTransferTx('ONT', new Address(accountFrom.address), new Address('TA9fnuAZyrsZtCJoRBQUvGiDAG4ufgUf3t'), '10000', '0')
     signTransaction(tx, accountFrom.privateKey)
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress, '01716379e393d1a540615e022ede47b97e0577c6', value, 
     // accountFrom.privateKey)
@@ -160,9 +160,9 @@ const testAccountTransfer = () => {
     
 }
 
-// testTransferTx() 
+testTransferTx() 
 let add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6')
-testGetBalance(accountFrom.address, '')
+// testGetBalance(accountFrom.address, '')
 
 // testClaimOng()
 

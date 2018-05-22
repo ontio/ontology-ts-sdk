@@ -1,3 +1,4 @@
+
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -53,7 +54,13 @@ export class SDK {
 
     static setServerNode(node : string) {
         if(node) {
-            SDK.SERVER_NODE = node
+            let url = ''
+            if(node.indexOf('http') > -1) {
+                url = node.substr('http://'.length)
+            } else {
+                url = node
+            }
+            SDK.SERVER_NODE = url
             return;
         } 
         throw new Error('Can not set ' + node + 'as server node')
@@ -111,10 +118,10 @@ export class SDK {
         tx.payer = new Address(payer)
         signTransaction(tx, privateKey)
         //add preExec
-        let restClient = new RestClient()
+        let restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`)
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             //preExec success, send real request
-            if (res.Result == '01') {
+            if (res.Result.Result == '01') {
                 // restClient.sendRawTransaction(tx.serialize(), false)
                 obj.tx = tx.serialize()
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
@@ -161,10 +168,11 @@ export class SDK {
         //check ontid on chain
         let tx = buildGetDDOTx(identity.ontid)
         let param = buildRestfulParam(tx)
-        let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}/`
+        let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`
         let url = sendRawTxRestfulUrl(restUrl, true)
         return axios.post(url, param).then((res:any) => {
-            if (res.data.Result && res.data.Result.length > 0 && res.data.Result[0] !== '0000000000000000') {
+            let result = res.data.Result
+            if (result.Result) {
                                     
             } else {
                 obj.error = ERROR_CODE.UNKNOWN_ONTID
@@ -201,14 +209,16 @@ export class SDK {
             //check ontid on chain
             let tx = buildGetDDOTx(identity.ontid)
             let param = buildRestfulParam(tx)
-            let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}/`            
+            let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`            
             let url = sendRawTxRestfulUrl(restUrl, true)
             return axios.post(url, param).then((res: any) => {
-                if (res.data.Result && res.data.Result.length > 0 && res.data.Result[0] !== '0000000000000000') {
+                let result = res.data.Result
+                if (result.Result) {
 
                 } else {
                     obj.error = ERROR_CODE.UNKNOWN_ONTID
                     obj.result = ''
+                    obj.desc = res.data.Result
                 }
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
                 return obj
@@ -244,10 +254,10 @@ export class SDK {
         let tx = buildRegisterOntidTx(identity.ontid, publicKey,'0')
         tx.payer = new Address(payer)
         signTransaction(tx, privateKey)
-        let restClient = new RestClient()
+        let restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`)
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             //preExec success, send real request
-            if (res.Result == '01') {
+            if (res.Result.Result == '01') {
                 // restClient.sendRawTransaction(tx.serialize(), false)
                 obj.tx = tx.serialize()
                 callback && sendBackResult2Native(JSON.stringify(obj), callback)
@@ -374,7 +384,7 @@ export class SDK {
     }
 
     static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey: string,
-         password : string, callback ?: string ) {
+         password : string, payer:string, callback ?: string ) {
             let privateKey: PrivateKey;
             let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)   
             let checksum = core.getChecksumFromOntid(subject)     
@@ -401,15 +411,18 @@ export class SDK {
             attr.value = value
             let publicKey = privateKey.getPublicKey()
             let tx = buildAddAttributeTx(subject,[attr], publicKey, '0')
+            tx.payer = new Address(payer)
             signTransaction(tx, privateKey)
-            let restClient = new RestClient()
+            let restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`)
             return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
-                if (res.Result == '01') {
-                    restClient.sendRawTransaction(tx.serialize(), false)
-                    const hash = core.sha256(core.sha256(tx.serializeUnsignedData()))
+                if (res.Result.Result == '01') {
+                    //user agent will do this
+                    // restClient.sendRawTransaction(tx.serialize(), false)
+                    // const hash = core.sha256(core.sha256(tx.serializeUnsignedData()))
                     let obj = {
                         error: ERROR_CODE.SUCCESS,
-                        result: hash
+                        result: '',
+                        tx : tx.serialize()
                     }
                     callback && sendBackResult2Native(JSON.stringify(obj), callback)
                     return obj
@@ -432,9 +445,17 @@ export class SDK {
 
     static signData(content: string, encryptedPrivateKey: string, password: string, checksum: string, callback? : string): PgpSignature | object {
         let privateKey: PrivateKey;
-        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)        
+        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
+        let check : string | Address    
+        if(checksum.length === 8) {
+            check = checksum
+        } else if(checksum.length === 40 || checksum.length === 34) {
+            check = new Address(checksum)
+        } else {
+            throw ERROR_CODE.INVALID_PARAMS
+        }    
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password,checksum);
+            privateKey = encryptedPrivateKeyObj.decrypt(password,check);
         } catch (err) {
             let result = this.getDecryptError(err)
 
@@ -578,7 +599,7 @@ export class SDK {
         let tx = makeClaimOngTx(addressObj, addressObj, value,'0')
         tx.payer = addressObj
         signTransaction(tx, privateKey)
-        let restClient = new RestClient()
+        let restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`)
         return restClient.sendRawTransaction(tx.serialize()).then( res=> {
             console.log('transfer response: ' + JSON.stringify(res))
             if (res.Error === 0) {
@@ -643,7 +664,7 @@ export class SDK {
         let obj = Account.parseJson(accountDataStr)
         let checksum = core.getChecksumFromAddress(obj.address)
         let result = {
-            type: "I",
+            type: "A",
             label: obj.label,
             algorithm: 'ECDSA',
             scrypt: {
