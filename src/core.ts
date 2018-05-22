@@ -36,7 +36,7 @@ import {
     SignatureScheme
 } from './crypto';
 import { ERROR_CODE } from './error';
-import { getSingleSigUInt160, u160ToAddress } from './helpers';
+import { getSingleSigUInt160, hash160, u160ToAddress } from './helpers';
 import { verifyLeafHashInclusion } from './merkle';
 import RestClient from './network/rest/restClient';
 import * as scrypt from './scrypt';
@@ -124,22 +124,6 @@ export function deserializePublickKey(serializedPk: string) {
  */
 export function createSignatureScript(publicKeyEncoded: string): string {
     return '21' + publicKeyEncoded + 'ac';
-}
-
-export function sha256(data: string) {
-    const hex = cryptoJS.enc.Hex.parse(data);
-    const sha = cryptoJS.SHA256(hex).toString();
-    return sha;
-}
-
-export function ripemd160(data: string) {
-    const hex = cryptoJS.enc.Hex.parse(data);
-    const ripemd = cryptoJS.RIPEMD160(hex).toString();
-    return ripemd;
-}
-
-export function hash160(SignatureScript: string): string {
-    return ripemd160(sha256(SignatureScript));
 }
 
 /**

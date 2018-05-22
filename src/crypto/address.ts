@@ -16,15 +16,14 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as cryptoJS from 'crypto-js';
-import * as core from '../core';
 import { ERROR_CODE } from '../error';
-import { addressToU160, u160ToAddress } from '../helpers';
+import { addressToU160, hash160, u160ToAddress } from '../helpers';
 import { hex2VarBytes, num2hexstring } from '../utils';
 import { PublicKey } from './PublicKey';
 
 export class Address {
     static addressFromPubKey(publicKey: PublicKey): Address {
-        let programHash = core.hash160(publicKey.serializeHex());
+        let programHash = hash160(publicKey.serializeHex());
         programHash = '01' + programHash.substring(2);
         return new Address(programHash);
     }
@@ -49,7 +48,7 @@ export class Address {
         for (const s of pkHexStrs) {
             result += hex2VarBytes(s);
         }
-        let programHash = core.hash160(result);
+        let programHash = hash160(result);
 
         programHash = '02' + programHash.substr(2);
         return new Address(programHash);

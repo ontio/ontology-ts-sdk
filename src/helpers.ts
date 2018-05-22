@@ -59,3 +59,19 @@ export function addressToU160(addressEncoded: string) {
     }
     return programHash;
 }
+
+export function sha256(data: string) {
+    const hex = cryptoJS.enc.Hex.parse(data);
+    const sha = cryptoJS.SHA256(hex).toString();
+    return sha;
+}
+
+export function ripemd160(data: string) {
+    const hex = cryptoJS.enc.Hex.parse(data);
+    const ripemd = cryptoJS.RIPEMD160(hex).toString();
+    return ripemd;
+}
+
+export function hash160(SignatureScript: string): string {
+    return ripemd160(sha256(SignatureScript));
+}
