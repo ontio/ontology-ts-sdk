@@ -16,56 +16,18 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as core from './core'
-import { ab2hexstring } from './utils'
-import { PrivateKey, Address } from './crypto';
-import { SignatureScheme } from './crypto'
+import * as core from './core';
+import { Address, PrivateKey, SignatureScheme } from './crypto';
+import { ab2hexstring } from './utils';
 
 export class Account {
-    address: Address;
-    label: string;
-    lock: boolean;
-    encryptedKey: PrivateKey;
-    extra: null;
-
-    //to compatible with cli wallet
-    "enc-alg": string = "aes-256-ctr";
-    hash : string = 'sha256';
-    passwordHash : string;
-    publicKey : string;
-    signatureScheme : string;
-    isDefault : boolean;
-
-    constructor() {
-    }
-
-    create( privateKey: PrivateKey, password: string, label: string, signatureScheme ?: SignatureScheme  ): Account {
-        this.label = label;
-        this.lock = false;
-        this.passwordHash = core.sha256(password)
-        this.isDefault = false;
-
-        if(signatureScheme) {
-            this.signatureScheme = signatureScheme.label
-        } else {
-            this.signatureScheme = privateKey.algorithm.defaultSchema.label
-        }
-
-        this.encryptedKey = privateKey.encrypt(password); 
-        
-        const publicKey = privateKey.getPublicKey();
-        
-        this.publicKey = publicKey.serializeHex();
-        
-        this.address = Address.addressFromPubKey(publicKey)
-
-        return this;
-    }
-
-
-
-    static importAccount(label : string ,encryptedPrivateKey : PrivateKey, password : string, checksum : string|Address ) : Account {
-        let account = new Account()
+    static importAccount(
+        label: string ,
+        encryptedPrivateKey: PrivateKey,
+        password: string,
+        checksum: string | Address
+    ): Account {
+        const account = new Account();
         const privateKey = encryptedPrivateKey.decrypt(password, checksum);
         // let contract = {
         //     script: '',
@@ -73,12 +35,12 @@ export class Account {
         //     deployed: false
         // }
         if (!label) {
-            label = ab2hexstring(core.generateRandomArray(4))
+            label = ab2hexstring(core.generateRandomArray(4));
         }
         account.label = label;
         account.lock = false;
         account.isDefault = false;
-        account.passwordHash = core.sha256(password)
+        account.passwordHash = core.sha256(password);
 
         account.encryptedKey = encryptedPrivateKey;
 
@@ -86,60 +48,31 @@ export class Account {
         account.publicKey = publicKey.key;
         account.signatureScheme = privateKey.algorithm.defaultSchema.label;
 
-        account.address = Address.addressFromPubKey(publicKey)
-    
-        return account
+        account.address = Address.addressFromPubKey(publicKey);
+
+        return account;
     }
 
-    toJson() : string {
-        return JSON.stringify(this.toJsonObj());
-    }
-
-    /**
-     * Serializes to JSON object.
-     * 
-     * Returned object will not be stringified.
-     * 
-     */
-    toJsonObj() : any {
-        let obj = {
-            address: this.address.toBase58(),
-            label: this.label,
-            lock: this.lock,
-            algorithm: this.encryptedKey.algorithm.label,
-            parameters: this.encryptedKey.parameters.serializeJson(),
-            key: this.encryptedKey.key,
-            "enc-alg": this['enc-alg'],
-            hash: this.hash,
-            passwordHash: this.passwordHash,
-            signatureScheme : this.signatureScheme,
-            isDefault : this.isDefault,
-            publicKey : this.publicKey,
-            extra: this.extra
-        }
-        return obj;
-    }
-
-    static parseJson( json : string ) : Account {
+    static parseJson(json: string): Account {
         return Account.parseJsonObj(JSON.parse(json));
     }
 
     /**
      * Deserializes JSON object.
-     * 
+     *
      * Object should be real object, not stringified.
-     * 
+     *
      * @param obj JSON object
      */
-    static parseJsonObj( obj : any ) : Account {
-        let account = new Account()
-        account.address = new Address(obj.address)
-        account.label = obj.label
-        account.lock = obj.lock
-        account.isDefault = obj.isDefault
-        account.passwordHash = obj.passwordHash
-        account.publicKey = obj.publicKey
-        account.signatureScheme = obj.SignatureScheme
+    static parseJsonObj(obj: any): Account {
+        const account = new Account();
+        account.address = new Address(obj.address);
+        account.label = obj.label;
+        account.lock = obj.lock;
+        account.isDefault = obj.isDefault;
+        account.passwordHash = obj.passwordHash;
+        account.publicKey = obj.publicKey;
+        account.signatureScheme = obj.SignatureScheme;
 
         account.encryptedKey = PrivateKey.deserializeJson({
             algorithm: obj.algorithm,
@@ -147,9 +80,70 @@ export class Account {
             key: obj.key
         });
         // account.contract = obj.contract
-        account.extra = obj.extra
+        account.extra = obj.extra;
         return account;
     }
 
-}
+    address: Address;
+    label: string;
+    lock: boolean;
+    encryptedKey: PrivateKey;
+    extra: null;
 
+    // to compatible with cli wallet
+    'enc-alg': string = 'aes-256-ctr';
+    hash: string = 'sha256';
+    passwordHash: string;
+    publicKey: string;
+    signatureScheme: string;
+    isDefault: boolean;
+
+    create(privateKey: PrivateKey, password: string, label: string, signatureScheme?: SignatureScheme ): Account {
+        this.label = label;
+        this.lock = false;
+        this.passwordHash = core.sha256(password);
+        this.isDefault = false;
+
+        if (signatureScheme) {
+            this.signatureScheme = signatureScheme.label;
+        } else {
+            this.signatureScheme = privateKey.algorithm.defaultSchema.label;
+        }
+
+        this.encryptedKey = privateKey.encrypt(password);
+        const publicKey = privateKey.getPublicKey();
+        this.publicKey = publicKey.serializeHex();
+        this.address = Address.addressFromPubKey(publicKey);
+
+        return this;
+    }
+
+    toJson(): string {
+        return JSON.stringify(this.toJsonObj());
+    }
+
+    /**
+     * Serializes to JSON object.
+     *
+     * Returned object will not be stringified.
+     *
+     */
+    toJsonObj(): any {
+        const obj = {
+            'address': this.address.toBase58(),
+            'label': this.label,
+            'lock': this.lock,
+            'algorithm': this.encryptedKey.algorithm.label,
+            'parameters': this.encryptedKey.parameters.serializeJson(),
+            'key': this.encryptedKey.key,
+            'enc-alg': this['enc-alg'],
+            'hash': this.hash,
+            'passwordHash': this.passwordHash,
+            'signatureScheme': this.signatureScheme,
+            'isDefault': this.isDefault,
+            'publicKey': this.publicKey,
+            'extra': this.extra
+        };
+        return obj;
+    }
+}

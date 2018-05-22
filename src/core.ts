@@ -1,4 +1,3 @@
-import { Address } from './crypto/address';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -16,39 +15,37 @@ import { Address } from './crypto/address';
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import * as cryptoJS from 'crypto-js'
-import * as base58 from 'bs58'
-import * as ecurve from 'ecurve'
-import * as bigInteger from 'bigi'
-import { ab2hexstring, hexstring2ab, StringReader, hexstr2str, num2hexstring, str2hexstr } from './utils'
-import { ADDR_VERSION, TEST_ONT_URL, REST_API } from './consts'
-import * as scrypt from './scrypt'
-import {ERROR_CODE} from './error'
-import { VmType } from './transaction/vmcode';
-import { buildRestfulParam, sendRawTxRestfulUrl} from './transaction/transactionBuilder'
-import axios from 'axios'
-import { DDO } from './transaction/ddo'
-import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder'
-import { verifyLeafHashInclusion } from './merkle'
-import RestClient from './network/rest/restClient'
-import { 
-    PublicKeyStatus, 
-    PK_STATUS, 
-    PrivateKey, 
-    KeyType, 
-    CurveLabel, 
-    SignatureScheme, 
+import axios from 'axios';
+import * as bigInteger from 'bigi';
+import * as base58 from 'bs58';
+import * as cryptoJS from 'crypto-js';
+import * as ecurve from 'ecurve';
+import * as secureRandom from 'secure-random';
+import * as wif from 'wif';
+import { ADDR_VERSION, REST_API, TEST_ONT_URL } from './consts';
+import {
+    Address,
+    CurveLabel,
+    KeyParameters,
+    KeyType,
+    PK_STATUS,
+    PrivateKey,
     PublicKey,
+    PublicKeyStatus,
     Signature,
-    KeyParameters
+    SignatureScheme
 } from './crypto';
-import { u160ToAddress, getSingleSigUInt160 } from './helpers';
+import { ERROR_CODE } from './error';
+import { getSingleSigUInt160, u160ToAddress } from './helpers';
+import { verifyLeafHashInclusion } from './merkle';
+import RestClient from './network/rest/restClient';
+import * as scrypt from './scrypt';
+import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
+import { DDO } from './transaction/ddo';
+import { buildRestfulParam, sendRawTxRestfulUrl } from './transaction/transactionBuilder';
+import { VmType } from './transaction/vmcode';
+import { ab2hexstring, hexstr2str, hexstring2ab, num2hexstring, str2hexstr, StringReader } from './utils';
 export * from './helpers';
-
-
-var wif = require('wif')
-var secureRandom = require('secure-random')
 
 export function generateRandomArray(len: number): ArrayBuffer {
     return secureRandom(len);
@@ -64,85 +61,85 @@ export function generatePrivateKey(): ArrayBuffer {
 /**
  * @deprecated Replaced by PrivateKey.random()
  */
-export function generatePrivateKeyStr() : string {
-    return ab2hexstring(generatePrivateKey())
+export function generatePrivateKeyStr(): string {
+    return ab2hexstring(generatePrivateKey());
 }
 
 /**
  * @deprecated Replaced by PrivateKey.getPublicKey()
  */
 export function getPublicKey(privateKey: string, encode: boolean): any {
-    var ecparams = ecurve.getCurveByName('secp256r1');
-    var curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
+    const ecparams = ecurve.getCurveByName('secp256r1');
+    const curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
 
     return curvePt.getEncoded(encode);
-};
+}
 
 /**
  * @deprecated Not used.
  */
 export function getPublicKeyPoint(privateKey: string) {
-    var ecparams = ecurve.getCurveByName('secp256r1')
-    var curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
-    var x = curvePt.affineX.toBuffer(32)
-    var y = curvePt.affineY.toBuffer(32)
+    const ecparams = ecurve.getCurveByName('secp256r1');
+    const curvePt = ecparams.G.multiply(bigInteger.fromBuffer(hexstring2ab(privateKey)));
+    const x = curvePt.affineX.toBuffer(32);
+    const y = curvePt.affineY.toBuffer(32);
+
     return {
         x : ab2hexstring(x),
         y : ab2hexstring(y)
-    }
+    };
 }
 
 /**
  * @deprecated Not used and not very useful method. Replaced by PublicKey.deserializeHex()
  */
-export function deserializePublickKey(serializedPk : string) {
-    const curveType = parseInt(serializedPk.substr(0, 2), 16)
-    const data = serializedPk.substring(2)
-    let curve = '',
-        ECKey = '',
-        type  = ''
+export function deserializePublickKey(serializedPk: string) {
+    const curveType = parseInt(serializedPk.substr(0, 2), 16);
+    const data = serializedPk.substring(2);
+    const curve = '';
+    const ECKey = '';
+    let type  = '';
     switch (curveType) {
-        case 0x12:
-            type = 'ECDSA'
+    case 0x12:
+        type = 'ECDSA';
         break;
-        case 0x13:
-            type = 'SM2'
+    case 0x13:
+        type = 'SM2';
         break;
-        case 0x14:
-            type = 'EDDSA'
+    case 0x14:
+        type = 'EDDSA';
         break;
-        default :
-            throw new Error('Invalid curve type')
+    default :
+        throw new Error('Invalid curve type');
     }
     return {
         curve,
         ECKey,
         type
-    }
+    };
 }
 
 /**
  * @deprecated Not used.
  */
 export function createSignatureScript(publicKeyEncoded: string): string {
-    return "21" + publicKeyEncoded + "ac";
+    return '21' + publicKeyEncoded + 'ac';
 }
 
-
-export function sha256(data : string) {
-    var hex = cryptoJS.enc.Hex.parse(data);
-    var sha256 = cryptoJS.SHA256(hex).toString();
-    return sha256
+export function sha256(data: string) {
+    const hex = cryptoJS.enc.Hex.parse(data);
+    const sha = cryptoJS.SHA256(hex).toString();
+    return sha;
 }
 
-export function ripemd160(data : string) {
-    var hex = cryptoJS.enc.Hex.parse(data)
-    var ripemd160 = cryptoJS.RIPEMD160(hex).toString()
-    return ripemd160
+export function ripemd160(data: string) {
+    const hex = cryptoJS.enc.Hex.parse(data);
+    const ripemd = cryptoJS.RIPEMD160(hex).toString();
+    return ripemd;
 }
 
 export function hash160(SignatureScript: string): string {
-    return ripemd160(sha256(SignatureScript))
+    return ripemd160(sha256(SignatureScript));
 }
 
 /**
@@ -157,17 +154,17 @@ export function signatureData(data: string, privateKey: string): string {
  * compute the checksum from address for decrypt
  * @param address in base58 format
  */
-export function getChecksumFromAddress(addr : Address) {
-    let address = addr.toBase58()
-    let addressSha256 = cryptoJS.SHA256(address).toString();
-    let addressSha256_2 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(addressSha256)).toString();
-    let addressHash = addressSha256_2.slice(0, 8);
-    return addressHash
+export function getChecksumFromAddress(addr: Address) {
+    const address = addr.toBase58();
+    const addressSha256 = cryptoJS.SHA256(address).toString();
+    const addressSha2562 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(addressSha256)).toString();
+    const addressHash = addressSha2562.slice(0, 8);
+    return addressHash;
 }
 
-export function getChecksumFromOntid(did : string) {
-    let address = did.substr(8)
-    return getChecksumFromAddress(new Address(address))
+export function getChecksumFromOntid(did: string) {
+    const address = did.substr(8);
+    return getChecksumFromAddress(new Address(address));
 }
 
 /**
@@ -178,10 +175,10 @@ export function verifySignature(data: string, signature: string, publicKey: any)
     return pk.verify(data, new Signature(pk.algorithm.defaultSchema, signature));
 }
 
-export function getContractHash(avmCode : string, vmType : VmType = VmType.NEOVM) {
-    let scriptHash = hash160(avmCode)
-    scriptHash = num2hexstring(vmType) + scriptHash.substr(2)
-    return scriptHash
+export function getContractHash(avmCode: string, vmType: VmType = VmType.NEOVM) {
+    let scriptHash = hash160(avmCode);
+    scriptHash = num2hexstring(vmType) + scriptHash.substr(2);
+    return scriptHash;
 }
 
 export function getPrivateKeyFromWIF(wifkey: string): string {
@@ -192,74 +189,79 @@ export function getWIFFromPrivateKey(privateKey: string): string {
     return wif.encode(128, Buffer.from(privateKey, 'hex'), true);
 }
 
-
-export function generateOntid(nonce : string) {
-    let programHash = getSingleSigUInt160(nonce);
-    let ontid = "did:ont:" + u160ToAddress(programHash);
-    return ontid
+export function generateOntid(nonce: string) {
+    const programHash = getSingleSigUInt160(nonce);
+    const ontid = 'did:ont:' + u160ToAddress(programHash);
+    return ontid;
 }
 
-/* 
-@claim claim json object
-*/
-export function verifyOntidClaim(claim : any) {
-    if(!claim.Metadata || !claim.Metadata.Issuer) {
-        throw new Error('Invalid claim.')
+/**
+ * @param claim json object
+ */
+export function verifyOntidClaim(claim: any) {
+    if (!claim.Metadata || !claim.Metadata.Issuer) {
+        throw new Error('Invalid claim.');
     }
-    let issuerDid = claim.Metadata.Issuer
-    let tx = buildGetDDOTx(issuerDid)
-    let param = buildRestfulParam(tx)
-    let url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true)
-    return axios.post(url, param).then( (res:any) => {
+    const issuerDid = claim.Metadata.Issuer;
+    const tx = buildGetDDOTx(issuerDid);
+    const param = buildRestfulParam(tx);
+    const url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true);
+    return axios.post(url, param).then( (res: any) => {
         if (res.data.Result && res.data.Result.length > 0) {
-            console.log('ddo hexstr: '+ res.data.Result[0])
-            const ddo = DDO.deserialize(res.data.Result[0])
-            console.log('ddo: ' + JSON.stringify(ddo))
-            if(ddo.publicKeys.length > 0) {
-                const pkWithId = ddo.publicKeys[0]
-                const signature = claim.Signature
-                claim.delete('Signature')
+            // tslint:disable-next-line:no-console
+            console.log('ddo hexstr: ' + res.data.Result[0]);
+            const ddo = DDO.deserialize(res.data.Result[0]);
+            // tslint:disable-next-line:no-console
+            console.log('ddo: ' + JSON.stringify(ddo));
+            if (ddo.publicKeys.length > 0) {
+                const pkWithId = ddo.publicKeys[0];
+                const signature = claim.Signature;
+                claim.delete('Signature');
                 return pkWithId.pk.verify(
                     str2hexstr(JSON.stringify(claim)),
                     Signature.deserializePgp(signature)
                 );
             } else {
-                return false
+                return false;
             }
         }
-    })
+    });
 }
 
-const getDDO = (ontid : string, url ?: string) => {
-    let tx = buildGetDDOTx(ontid)
-    let param = buildRestfulParam(tx)
-    url = url || TEST_ONT_URL.REST_URL
-    let requestUrl = sendRawTxRestfulUrl(url , true)
+const getDDO = (ontid: string, url?: string) => {
+    const tx = buildGetDDOTx(ontid);
+    const param = buildRestfulParam(tx);
+    url = url || TEST_ONT_URL.REST_URL;
+    const requestUrl = sendRawTxRestfulUrl(url , true);
     return axios.post(requestUrl, param).then((res: any) => {
         if (res.data.Result && res.data.Result.length > 0) {
-            console.log('ddo hexstr: ' + res.data.Result[0])
-            const ddo = DDO.deserialize(res.data.Result[0])
-            console.log('ddo: ' + JSON.stringify(ddo))
-            return ddo
+            // tslint:disable-next-line:no-console
+            console.log('ddo hexstr: ' + res.data.Result[0]);
+            const ddo = DDO.deserialize(res.data.Result[0]);
+            // tslint:disable-next-line:no-console
+            console.log('ddo: ' + JSON.stringify(ddo));
+            return ddo;
         }
-    })
-}
+    });
+};
 
-export const getMerkleProof = (txHash : string, url ?: string) => {
-    url = url || TEST_ONT_URL.REST_URL
-    let requestUrl = `${url}${REST_API.getMerkleProof}/${txHash} `
-    console.log(requestUrl)
-    return axios.get(requestUrl).then((res:any)=> {
-        console.log('merkle : ' + JSON.stringify(res.data))
-        return res.data.Result
-    })
-} 
+export const getMerkleProof = (txHash: string, url?: string) => {
+    url = url || TEST_ONT_URL.REST_URL;
+    const requestUrl = `${url}${REST_API.getMerkleProof}/${txHash}`;
+    // tslint:disable-next-line:no-console
+    console.log(requestUrl);
+    return axios.get(requestUrl).then((res: any) => {
+        // tslint:disable-next-line:no-console
+        console.log('merkle : ' + JSON.stringify(res.data));
+        return res.data.Result;
+    });
+};
 
-const getRovocationList = (url : string) => {
-    return axios.get(url).then(res => {
-        return res.data
-    })
-}
+const getRovocationList = (url: string) => {
+    return axios.get(url).then((res) => {
+        return res.data;
+    });
+};
 
 const VerifyOntidClaimResult = {
     CLAIM_NOT_ONCHAIN : 'CLAIM_NOT_ONCHAIN',
@@ -269,118 +271,115 @@ const VerifyOntidClaimResult = {
     EXPIRED_CLAIM     : 'EXPIRED_CLAIM',
     REVOKED_CLAIM     : 'REVOKED_CLAIM',
     VALID_CLAIM       : 'VALID_CLAIM'
-}
+};
 
-/* 
-*@claim : claim json object
-*@url : the node to send tx, eg: http://192.168.3.111:20334
-*/
-
-export async function verifyOntidClaimAsync(claim : any, url ?: string) {
+/**
+ * @param claim claim json object
+ * @param url the node to send tx, eg: http://192.168.3.111:20334
+ */
+export async function verifyOntidClaimAsync(claim: any, url?: string) {
     if (!claim.Metadata || !claim.Metadata.Issuer) {
-        throw new Error('Invalid claim.')
+        throw new Error('Invalid claim.');
     }
 
-    //verify expiration
-    let verifyExpirationResult = verifyExpiration(claim.Metadata.Expires)
+    // verify expiration
+    const verifyExpirationResult = verifyExpiration(claim.Metadata.Expires);
     if (!verifyExpirationResult) {
-        return VerifyOntidClaimResult.EXPIRED_CLAIM
+        return VerifyOntidClaimResult.EXPIRED_CLAIM;
     }
 
-    let issuerDid = claim.Metadata.Issuer
-    let didEnd = issuerDid.indexOf('#')
-    let issuerOntid = issuerDid.substring(0, didEnd)
-    //issuer is : ONTID#PkId
-    let issuerPkId = issuerDid.substr(didEnd + 1)
-    //pkStatus = { publicKey, status : [IN USE, Revoked] }
-    let pkStatus = await getPkStatus(issuerOntid, issuerPkId)
-    if(!pkStatus) {
-        return VerifyOntidClaimResult.NO_ISSUER_PK
+    const issuerDid = claim.Metadata.Issuer;
+    const didEnd = issuerDid.indexOf('#');
+    const issuerOntid = issuerDid.substring(0, didEnd);
+    // issuer is : ONTID#PkId
+    const issuerPkId = issuerDid.substr(didEnd + 1);
+    // pkStatus = { publicKey, status : [IN USE, Revoked] }
+    const pkStatus = await getPkStatus(issuerOntid, issuerPkId);
+    if (!pkStatus) {
+        return VerifyOntidClaimResult.NO_ISSUER_PK;
     }
     if (pkStatus && pkStatus.status === PK_STATUS.REVOKED) {
-        return VerifyOntidClaimResult.PK_IN_REVOKED
+        return VerifyOntidClaimResult.PK_IN_REVOKED;
     }
 
-    //verify signature
+    // verify signature
     const pk = pkStatus.pk;
-    //the order of claim's attributes matters.
-    let result = verifyClaimSignature(claim, pk)
-    if(!result) {
-        return VerifyOntidClaimResult.INVALID_SIGNATURE
+    // the order of claim's attributes matters.
+    const result = verifyClaimSignature(claim, pk);
+    if (!result) {
+        return VerifyOntidClaimResult.INVALID_SIGNATURE;
     }
-    let verifyMerkleResult = await verifyMerkleProof(claim)
-    
+    const verifyMerkleResult = await verifyMerkleProof(claim);
+
     if (!verifyMerkleResult) {
-        return VerifyOntidClaimResult.CLAIM_NOT_ONCHAIN
+        return VerifyOntidClaimResult.CLAIM_NOT_ONCHAIN;
     }
-    
 
-    //verify revoke - optional
-    if(claim.Metadata.Revocation) {
-        let url = claim.Metadata.Crl        
-        if(claim.Metadata.Revocation === 'RevocationList' && claim.Metadata.Crl) {
-            
-        } else if(claim.Metadata.Revocation === 'RevocationUrl') {
-
+    // verify revoke - optional
+    if (claim.Metadata.Revocation) {
+        // const url = claim.Metadata.Crl;
+        if (claim.Metadata.Revocation === 'RevocationList' && claim.Metadata.Crl) {
+            //
+        } else if (claim.Metadata.Revocation === 'RevocationUrl') {
+            //
         }
     }
 
-    return VerifyOntidClaimResult.VALID_CLAIM
+    return VerifyOntidClaimResult.VALID_CLAIM;
 }
 
-export function verifyExpiration(dateString : string) {
-    let expiration = new Date(dateString)
-    if(expiration.toString() === 'Invalid Date') {
-        throw new Error('Invalid date string: ' + dateString)
+export function verifyExpiration(dateString: string) {
+    const expiration = new Date(dateString);
+    if (expiration.toString() === 'Invalid Date') {
+        throw new Error('Invalid date string: ' + dateString);
     }
-    let d = new Date()
-    if(d > expiration) {
-        return false
+    const d = new Date();
+    if (d > expiration) {
+        return false;
     } else {
-        return true
+        return true;
     }
 }
 
 export async function getPkStatus(ontid: string, pkId: number): Promise<PublicKeyStatus | undefined> {
-    let tx = buildGetPublicKeyStateTx(ontid, pkId)
-    let restClient = new RestClient()
-    let res = await restClient.sendRawTransaction(tx.serialize(), true)
-    
-    if(res.Result[0] && res.Result[0].length > 0) {
+    const tx = buildGetPublicKeyStateTx(ontid, pkId);
+    const restClient = new RestClient();
+    const res = await restClient.sendRawTransaction(tx.serialize(), true);
+
+    if (res.Result[0] && res.Result[0].length > 0) {
         return PublicKeyStatus.deserialize(res.Result[0]);
     }
 }
 
-export function verifyClaimSignature(claim : any, pk : PublicKey) {
-    let signatureOriginal = Object.assign({}, {
+export function verifyClaimSignature(claim: any, pk: PublicKey) {
+    const signatureOriginal = Object.assign({}, {
         Context: claim.Context,
         Id: claim.Id,
         Content: claim.Content,
-        Metadata: claim.Metadata,
-    })
+        Metadata: claim.Metadata
+    });
     return pk.verify(
-        str2hexstr(JSON.stringify(signatureOriginal)), 
+        str2hexstr(JSON.stringify(signatureOriginal)),
         Signature.deserializePgp(claim.Signature)
     );
 }
 
-export async function verifyMerkleProof(claim : any ) {
-    const txHash = claim.Proof.TxnHash
-    const blockHeight = claim.Proof.BlockHeight
-    let merkle = await getMerkleProof(txHash)
+export async function verifyMerkleProof(claim: any ) {
+    const txHash = claim.Proof.TxnHash;
+    const blockHeight = claim.Proof.BlockHeight;
+    const merkle = await getMerkleProof(txHash);
 
-    const leafHash = merkle.TransactionsRoot
-    const leafIndex = merkle.BlockHeight
-    const proof = merkle.TargetHashes
-    const rootHash = merkle.CurBlockRoot
-    const treeSize = merkle.CurBlockHeight
+    const leafHash = merkle.TransactionsRoot;
+    const leafIndex = merkle.BlockHeight;
+    const proof = merkle.TargetHashes;
+    const rootHash = merkle.CurBlockRoot;
+    const treeSize = merkle.CurBlockHeight;
 
-    //1. verify blockHeight
-    if(blockHeight !== leafIndex) {
-        return false
+    // 1. verify blockHeight
+    if (blockHeight !== leafIndex) {
+        return false;
     }
-    //2. verify merkle
-    let verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize)
-    return verifyMerkleResult
+    // 2. verify merkle
+    const verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize);
+    return verifyMerkleResult;
 }
-

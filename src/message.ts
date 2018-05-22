@@ -17,14 +17,14 @@
  */
 
 import * as b64 from 'base64-url';
-import { Signature, SignatureScheme, PrivateKey, PublicKey, PublicKeyStatus, PK_STATUS } from "./crypto";
-import { buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
-import RestClient from './network/rest/restClient';
-import { num2hexstring, now } from './utils';
 import * as uuid from 'uuid';
+import { PK_STATUS, PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from './crypto';
+import RestClient from './network/rest/restClient';
+import { buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
+import { now, num2hexstring } from './utils';
 
 /**
- * Factory method type used for creating concrete instances of Message. 
+ * Factory method type used for creating concrete instances of Message.
  */
 export type MessageFactory<T extends Message> = (
     metadata: Metadata,
@@ -37,7 +37,7 @@ export type MessageFactory<T extends Message> = (
 export interface Metadata {
     /**
      * Message id.
-     * 
+     *
      * Will be assigned if not provided.
      */
     messageId?: string;
@@ -61,143 +61,19 @@ export interface Metadata {
      * Expiration time.
      */
     expireAt?: number;
-};
+}
 
 /**
  * Common representation of Message in JWT form.
  */
 export abstract class Message {
-    metadata: Metadata;
-    signature?: Signature;
-
-    constructor(metadata: Metadata, signature: Signature | undefined) {
-        this.metadata = metadata;
-        this.signature = signature;
-
-        if (this.metadata.messageId === undefined) {
-            this.metadata.messageId = uuid();
-        }
-    }
-
-    /**
-     * Signs the message and store the signature inside the request.
-     * 
-     * If the algorithm is not specified, then default algorithm for Private key type is used.
-     * 
-     * @param url Restful endpoint of Ontology node
-     * @param publicKeyId The ID of a signature public key
-     * @param privateKey Private key to sign the request with
-     * @param algorithm Signature algorithm used
-     */
-    async sign(
-        url: string,
-        publicKeyId: string,
-        privateKey: PrivateKey, 
-        algorithm?: SignatureScheme
-    ): Promise<void> {
-        const publicKey = await retrievePublicKey(publicKeyId, url);
-
-        if (algorithm === undefined) {
-            algorithm = privateKey.algorithm.defaultSchema;
-        }
-
-        const msg = this.serializeUnsigned(algorithm, publicKeyId);
-        this.signature = privateKey.sign(msg, algorithm, publicKeyId);
-    }
-
-    /**
-     * Verifies the signature and check ownership of specified ONT ID through smart contract call.
-     * 
-     * @param url Restful endpoint of Ontology node
-     * @returns Boolean if the ownership is confirmed
-     */
-    async verify(url: string): Promise<boolean> {
-        const signature = this.signature;
-
-        if (signature !== undefined && signature.publicKeyId !== undefined) {
-            try {
-                if (!this.verifyKeyOwnership()) {
-                    return false;
-                }
-
-                if (!this.verifyExpiration()) {
-                    return false;
-                }
-
-                const publicKey = await retrievePublicKey(signature.publicKeyId, url);
-                
-                const msg = this.serializeUnsigned(signature.algorithm, signature.publicKeyId);
-                return publicKey.verify(msg, signature);
-            } catch (e) {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Verifies if the expiration date has passed
-     */
-    private verifyExpiration(): boolean {
-        if (this.metadata.expireAt !== undefined) {
-            return now() < this.metadata.expireAt;
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * Verifies if the declared public key id belongs to issuer.
-     */
-    private verifyKeyOwnership(): boolean {
-        const signature = this.signature;
-
-        if (signature !== undefined && signature.publicKeyId !== undefined) {
-            const ontId = extractOntId(signature.publicKeyId);
-
-            return ontId === this.metadata.issuer;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Serializes the message without signature into JWT format.
-     * 
-     * Header might contain algorithm and public key id.
-     * 
-     * @param algorithm Signature algorithm used
-     * @param publicKeyId The ID of a signature public key
-     */
-    serializeUnsigned(algorithm?: SignatureScheme, publicKeyId?: string): string {
-        const headerEncoded = this.serializeHeader(algorithm, publicKeyId);
-        const payloadEncoded = this.serializePayload();
-
-        return headerEncoded + '.' + payloadEncoded;
-    }
-
-    /**
-     * Serializes the message into JWT format.
-     * 
-     */
-    serialize(): string {
-        const signature = this.signature;
-
-        if (signature !== undefined) {
-            const signatureEncoded = signature.serializeJWT();
-            return this.serializeUnsigned(signature.algorithm, signature.publicKeyId) + '.' + signatureEncoded;
-        } else {
-            return this.serializeUnsigned();
-        }
-    }
 
     /**
      * Deserializes the message from JWT format.
-     * 
+     *
      * A concrete instance will be creater through the message factory method. This method
      * is called from concrete class.
-     * 
+     *
      * @param jwt Encoded message
      * @param creator Factory method
      */
@@ -226,25 +102,8 @@ export abstract class Message {
     }
 
     /**
-     * Serializes payload part of JWT message.
-     */
-    private serializePayload(): string {
-        const metadata = {
-            jti: this.metadata.messageId,
-            iss: this.metadata.issuer,
-            sub: this.metadata.subject,
-            iat: this.metadata.issuedAt,
-            exp: this.metadata.expireAt,
-        };
-        const rest = this.payloadToJSON();
-
-        const stringified = JSON.stringify({...metadata, ...rest});
-        return b64.encode(stringified, 'utf-8');
-    }
-
-    /**
      * Deserializes payload part of JWT message.
-     * 
+     *
      * @param encoded JWT encoded payload
      */
     private static deserializePayload(encoded: string) {
@@ -264,13 +123,127 @@ export abstract class Message {
     }
 
     /**
+     * Deserializes the header from JWT encoded header.
+     *
+     * @param encoded JWT encoded header
+     */
+    private static deserializeHeader(encoded: string) {
+        const stringified = b64.decode(encoded);
+        const header = JSON.parse(stringified);
+
+        return {
+            algorithm: header.alg !== undefined ? SignatureScheme.fromLabelJWS(header.alg) : undefined,
+            publicKeyId: header.kid
+        };
+    }
+
+    metadata: Metadata;
+    signature?: Signature;
+
+    constructor(metadata: Metadata, signature: Signature | undefined) {
+        this.metadata = metadata;
+        this.signature = signature;
+
+        if (this.metadata.messageId === undefined) {
+            this.metadata.messageId = uuid();
+        }
+    }
+
+    /**
+     * Signs the message and store the signature inside the request.
+     *
+     * If the algorithm is not specified, then default algorithm for Private key type is used.
+     *
+     * @param url Restful endpoint of Ontology node
+     * @param publicKeyId The ID of a signature public key
+     * @param privateKey Private key to sign the request with
+     * @param algorithm Signature algorithm used
+     */
+    async sign(
+        url: string,
+        publicKeyId: string,
+        privateKey: PrivateKey,
+        algorithm?: SignatureScheme
+    ): Promise<void> {
+        const publicKey = await retrievePublicKey(publicKeyId, url);
+
+        if (algorithm === undefined) {
+            algorithm = privateKey.algorithm.defaultSchema;
+        }
+
+        const msg = this.serializeUnsigned(algorithm, publicKeyId);
+        this.signature = privateKey.sign(msg, algorithm, publicKeyId);
+    }
+
+    /**
+     * Verifies the signature and check ownership of specified ONT ID through smart contract call.
+     *
+     * @param url Restful endpoint of Ontology node
+     * @returns Boolean if the ownership is confirmed
+     */
+    async verify(url: string): Promise<boolean> {
+        const signature = this.signature;
+
+        if (signature !== undefined && signature.publicKeyId !== undefined) {
+            try {
+                if (!this.verifyKeyOwnership()) {
+                    return false;
+                }
+
+                if (!this.verifyExpiration()) {
+                    return false;
+                }
+
+                const publicKey = await retrievePublicKey(signature.publicKeyId, url);
+
+                const msg = this.serializeUnsigned(signature.algorithm, signature.publicKeyId);
+                return publicKey.verify(msg, signature);
+            } catch (e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Serializes the message without signature into JWT format.
+     *
+     * Header might contain algorithm and public key id.
+     *
+     * @param algorithm Signature algorithm used
+     * @param publicKeyId The ID of a signature public key
+     */
+    serializeUnsigned(algorithm?: SignatureScheme, publicKeyId?: string): string {
+        const headerEncoded = this.serializeHeader(algorithm, publicKeyId);
+        const payloadEncoded = this.serializePayload();
+
+        return headerEncoded + '.' + payloadEncoded;
+    }
+
+    /**
+     * Serializes the message into JWT format.
+     *
+     */
+    serialize(): string {
+        const signature = this.signature;
+
+        if (signature !== undefined) {
+            const signatureEncoded = signature.serializeJWT();
+            return this.serializeUnsigned(signature.algorithm, signature.publicKeyId) + '.' + signatureEncoded;
+        } else {
+            return this.serializeUnsigned();
+        }
+    }
+
+    /**
      * Serializes the header into JWT encoded header.
-     * 
+     *
      * @param algorithm Signature algorithm used
      * @param publicKeyId The ID of a signature public key
      */
     protected serializeHeader(
-        algorithm: SignatureScheme | undefined, 
+        algorithm: SignatureScheme | undefined,
         publicKeyId: string | undefined
     ): string {
         let header;
@@ -291,36 +264,64 @@ export abstract class Message {
     }
 
     /**
-     * Deserializes the header from JWT encoded header.
-     * 
-     * @param encoded JWT encoded header
-     */
-    private static deserializeHeader(encoded: string) {
-        const stringified = b64.decode(encoded);
-        const header = JSON.parse(stringified);
-
-        return {
-            algorithm: header.alg !== undefined ? SignatureScheme.fromLabelJWS(header.alg) : undefined,
-            publicKeyId: header.kid
-        };
-    }
-
-    /**
-     * Converts claim data to JSON for serialization. 
+     * Converts claim data to JSON for serialization.
      */
     protected abstract payloadToJSON(): any;
 
     /**
      * Retrieves data from JSON.
-     * 
+     *
      * @param json JSON object with data
      */
     protected abstract payloadFromJSON(json: any): void;
+
+    /**
+     * Verifies if the expiration date has passed
+     */
+    private verifyExpiration(): boolean {
+        if (this.metadata.expireAt !== undefined) {
+            return now() < this.metadata.expireAt;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Verifies if the declared public key id belongs to issuer.
+     */
+    private verifyKeyOwnership(): boolean {
+        const signature = this.signature;
+
+        if (signature !== undefined && signature.publicKeyId !== undefined) {
+            const ontId = extractOntId(signature.publicKeyId);
+
+            return ontId === this.metadata.issuer;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Serializes payload part of JWT message.
+     */
+    private serializePayload(): string {
+        const metadata = {
+            jti: this.metadata.messageId,
+            iss: this.metadata.issuer,
+            sub: this.metadata.subject,
+            iat: this.metadata.issuedAt,
+            exp: this.metadata.expireAt
+        };
+        const rest = this.payloadToJSON();
+
+        const stringified = JSON.stringify({...metadata, ...rest});
+        return b64.encode(stringified, 'utf-8');
+    }
 }
 
 /**
  * Gets the public key associated with ONT ID from blockchain.
- * 
+ *
  * @param publicKeyId The ID of a signature public key
  * @param url Restful endpoint of Ontology node
  */
@@ -331,10 +332,10 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
     const client = new RestClient(url);
     const tx = buildGetPublicKeyStateTx(ontId, keyId);
     const response = await client.sendRawTransaction(tx.serialize(), true);
-    
+
     if (response.Result) {
         const pkStatus = PublicKeyStatus.deserialize(response.Result);
-        
+
         if (pkStatus.status === PK_STATUS.REVOKED) {
             throw new Error('Revoked public key');
         } else {
@@ -347,7 +348,7 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
 
 /**
  * Extracts ONT ID from public key Id.
- * 
+ *
  * @param publicKeyId The ID of a signature public key
  */
 export function extractOntId(publicKeyId: string): string {
@@ -362,7 +363,7 @@ export function extractOntId(publicKeyId: string): string {
 
 /**
  * Extracts key id from public key Id.
- * 
+ *
  * @param publicKeyId The ID of a signature public key
  */
 export function extractKeyId(publicKeyId: string): number {
@@ -375,5 +376,5 @@ export function extractKeyId(publicKeyId: string): number {
     // return num2hexstring(
     //     Number(publicKeyId.substr(index + '#keys-'.length))
     // );
-    return Number(publicKeyId.substr(index + '#keys-'.length))
+    return Number(publicKeyId.substr(index + '#keys-'.length));
 }

@@ -16,85 +16,79 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const ADDR_VERSION = '41'
+export const ADDR_VERSION = '41';
 
 export const DEFAULT_SCRYPT = {
-    cost: 4096,// 除以2时间减半
+    cost: 4096, // 除以2时间减半
     blockSize: 8,
     parallel: 8,
     size: 64
-  }
+};
 
-  // specified by oep, same as bip38
-export const OEP_HEADER = '0142'
+// specified by oep, same as bip38
+export const OEP_HEADER = '0142';
 
-export const OEP_FLAG = 'e0'
-
+export const OEP_FLAG = 'e0';
 
 // Ont://nativeMethod?param1=xxx&param2=yyy
-export const WEBVIEW_SCHEME = 'Ont'
+export const WEBVIEW_SCHEME = 'Ont';
 
 export const DEFAULT_ALGORITHM = {
-  algorithm : "ECDSA",
-  parameters : {
-    "curve": "secp256r1" // also called p256
-  }
-}
+    algorithm: 'ECDSA',
+    parameters: {
+        curve: 'secp256r1' // also called p256
+    }
+};
 
 export const DEFAULT_SM2_ID = '1234567812345678';
 
-
-export const TEST_NODE = 'polaris1.ont.io' //0.8
+export const TEST_NODE = 'polaris1.ont.io'; // 0.8
 // export const TEST_NODE = '139.219.129.55' //0.8
 // export const TEST_NODE = '192.168.50.73'
 // export const TEST_NODE = '127.0.0.1'
 
-
 // export const TEST_NODE = '54.222.182.88'
-export const MAIN_NODE = '54.222.182.88'
+export const MAIN_NODE = '54.222.182.88';
 
-
-export const HTTP_REST_PORT = '20334'
-export const HTTP_WS_PORT   = '20335'
-export const HTTP_JSON_PORT = '20336'
+export const HTTP_REST_PORT = '20334';
+export const HTTP_WS_PORT = '20335';
+export const HTTP_JSON_PORT = '20336';
 
 export const REST_API = {
-  getBalance: '/api/v1/balance',
-  sendRawTx: '/api/v1/transaction',
-  getMerkleProof : '/api/v1/merkleproof' // end with /txHash
-}
-
+    getBalance: '/api/v1/balance',
+    sendRawTx: '/api/v1/transaction',
+    getMerkleProof: '/api/v1/merkleproof' // end with /txHash
+};
 
 export const ONT_NETWORK = {
-  MAIN : 'MainNet',
-  TEST : 'TestNet'
-}
+    MAIN: 'MainNet',
+    TEST: 'TestNet'
+};
 
 export const TEST_ONT_URL = {
-  SOCKET_URL: `ws://${TEST_NODE}:${HTTP_WS_PORT}`,
+    SOCKET_URL: `ws://${TEST_NODE}:${HTTP_WS_PORT}`,
 
-  RPC_URL: `http://${TEST_NODE}:${HTTP_JSON_PORT}`,
+    RPC_URL: `http://${TEST_NODE}:${HTTP_JSON_PORT}`,
 
-  REST_URL: `http://${TEST_NODE}:${HTTP_REST_PORT}`,
+    REST_URL: `http://${TEST_NODE}:${HTTP_REST_PORT}`,
 
-  sendRawTxByRestful : `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
-}
+    sendRawTxByRestful: `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+};
 
 export const MAIN_ONT_URL = {
-  SOCKET_URL: `ws://${MAIN_NODE}:${HTTP_WS_PORT}`,
+    SOCKET_URL: `ws://${MAIN_NODE}:${HTTP_WS_PORT}`,
 
-  RPC_URL: `http://${MAIN_NODE}:${HTTP_JSON_PORT}/`,
+    RPC_URL: `http://${MAIN_NODE}:${HTTP_JSON_PORT}/`,
 
-  REST_URL: `http://${MAIN_NODE}:${HTTP_REST_PORT}/`,
+    REST_URL: `http://${MAIN_NODE}:${HTTP_REST_PORT}/`,
 
-  sendRawTxByRestful : `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+    sendRawTxByRestful: `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
 
-}
-
+};
 
 export const TOKEN_TYPE = {
-  ONT : 'ONT',
-  ONG : 'ONG'
-}
+    ONT: 'ONT',
+    ONG: 'ONG'
+};
 
 export const DEFAULT_GAS_LIMIT = 30000;

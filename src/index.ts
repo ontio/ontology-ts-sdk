@@ -16,119 +16,115 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Account } from './account'
-import { Identity } from './identity'
-import { Wallet } from './wallet'
-import { Claim } from './claim'
-import { Transaction } from './transaction/transaction'
-import * as TransactionBuilder from './transaction/transactionBuilder'
-import * as OntAssetTxBuilder from './smartcontract/ontAssetTxBuilder'
-import {Parameter, ParameterType} from './smartcontract/abi/parameter'
-import AbiFunction from './smartcontract/abi/abiFunction'
-import AbiInfo from './smartcontract/abi/abiInfo'
-import * as Token from './smartcontract/token'
-import * as OntidContract from './smartcontract/ontidContractTxBuilder'
-import RestClient from './network/rest/restClient'
-import RpcClient from './network/rpc/rpcClient'
-import { WebsocketClient } from './network/websocket/websocketClient'
-
-import * as scrypt from './scrypt'
-import * as core from './core'
-import * as utils from './utils'
-import * as CONST from './consts'
-import { SDK } from './sdk/index'
-import * as Crypto from './crypto'
+import { Account } from './account';
+import { Claim } from './claim';
+import * as CONST from './consts';
+import * as core from './core';
+import * as Crypto from './crypto';
+import { Identity } from './identity';
+import RestClient from './network/rest/restClient';
+import RpcClient from './network/rpc/rpcClient';
+import { WebsocketClient } from './network/websocket/websocketClient';
+import * as scrypt from './scrypt';
+import { SDK } from './sdk/index';
+import AbiFunction from './smartcontract/abi/abiFunction';
+import AbiInfo from './smartcontract/abi/abiInfo';
+import { Parameter, ParameterType } from './smartcontract/abi/parameter';
+import * as OntAssetTxBuilder from './smartcontract/ontAssetTxBuilder';
+import * as OntidContract from './smartcontract/ontidContractTxBuilder';
+import * as Token from './smartcontract/token';
+import { Transaction } from './transaction/transaction';
+import * as TransactionBuilder from './transaction/transactionBuilder';
+import * as utils from './utils';
+import { Wallet } from './wallet';
 
 class ONT {
-  Account : any
-  Identity : any
-  Claim : any
-  Transaction : any
-  TransactionBuilder : any
-  OntAssetTxBuilder : any
-  Parameter : any
-  ParameterType : any
-  AbiFunction : any
-  AbiInfo : any
-  core : any
-  utils : any
-  scrypt : any
-  CONST : any
-  Wallet : any
-  SDK : any
-  Token : any
-  OntidContract : any
-  RestClient : any
-  RpcClient : any
-  WebsocketClient : any
-  Crypto : any
+    Account: any;
+    Identity: any;
+    Claim: any;
+    Transaction: any;
+    TransactionBuilder: any;
+    OntAssetTxBuilder: any;
+    Parameter: any;
+    ParameterType: any;
+    AbiFunction: any;
+    AbiInfo: any;
+    core: any;
+    utils: any;
+    scrypt: any;
+    CONST: any;
+    Wallet: any;
+    SDK: any;
+    Token: any;
+    OntidContract: any;
+    RestClient: any;
+    RpcClient: any;
+    WebsocketClient: any;
+    Crypto: any;
+    constructor() {
+        this.Account = Account;
+        this.Identity = Identity;
+        this.Claim = Claim;
+        this.Transaction = Transaction;
+        this.TransactionBuilder = TransactionBuilder;
+        this.OntAssetTxBuilder = OntAssetTxBuilder;
+        this.Parameter = Parameter;
+        this.ParameterType = ParameterType;
+        this.AbiFunction = AbiFunction;
+        this.AbiInfo = AbiInfo;
+        this.core = core;
+        this.utils = utils;
+        this.scrypt = scrypt;
+        this.CONST = CONST;
+        this.Wallet = Wallet;
+        this.SDK = SDK;
+        this.Token = Token;
+        this.OntidContract = OntidContract;
+        this.RestClient = RestClient;
+        this.RpcClient = RpcClient;
+        this.WebsocketClient = WebsocketClient;
+        this.Crypto = Crypto;
+    }
+    setNode(url: string) {
+        this.CONST.TEST_NODE = url;
+    }
 
-  constructor() {
-    this.Account = Account,
-    this.Identity = Identity,
-    this.Claim = Claim,
-    this.Transaction = Transaction,
-    this.TransactionBuilder = TransactionBuilder,
-    this.OntAssetTxBuilder = OntAssetTxBuilder,
-    this.Parameter = Parameter
-    this.ParameterType = ParameterType
-    this.AbiFunction = AbiFunction
-    this.AbiInfo = AbiInfo
-    this.core = core,
-    this.utils = utils,
-    this.scrypt = scrypt,
-    this.CONST = CONST,
-    this.Wallet = Wallet,
-    this.SDK = SDK,
-    this.Token = Token,
-    this.OntidContract = OntidContract
-    this.RestClient = RestClient
-    this.RpcClient = RpcClient
-    this.WebsocketClient = WebsocketClient
-    this.Crypto = Crypto
-  }
-  
+    setRpcPort(port: string) {
+        this.CONST.HTTP_JSON_PORT = port;
+    }
 
-  setNode (url : string) {
-    this.CONST.TEST_NODE = url
-  }
+    setRestPort(port: string) {
+        this.CONST.HTTP_REST_PORT = port;
+    }
 
-  setRpcPort(port : string) {
-    this.CONST.HTTP_JSON_PORT = port
-  }
-
-  setRestPort(port: string) {
-    this.CONST.HTTP_REST_PORT = port
-  }
-
-  setSocketPort(port: string) {
-    this.CONST.HTTP_WS_PORT = port
-  }
+    setSocketPort(port: string) {
+        this.CONST.HTTP_WS_PORT = port;
+    }
 }
 
-export default ONT
+export default ONT;
+
 export {
-  Account,
-  Identity,
-  Claim,
-  Transaction,
-  Parameter,
-  ParameterType,
-  AbiFunction,
-  AbiInfo,
-  TransactionBuilder,
-  OntAssetTxBuilder,
-  core,
-  utils,
-  scrypt,
-  CONST,
-  Wallet,
-  SDK,
-  Token,
-  OntidContract,
-  RestClient,
-  RpcClient,
-  WebsocketClient,
-  Crypto
-}
-  
+    Account,
+    Identity,
+    Claim,
+    Transaction,
+    Parameter,
+    ParameterType,
+    AbiFunction,
+    AbiInfo,
+    TransactionBuilder,
+    OntAssetTxBuilder,
+    core,
+    utils,
+    scrypt,
+    CONST,
+    Wallet,
+    SDK,
+    Token,
+    OntidContract,
+    RestClient,
+    RpcClient,
+    WebsocketClient,
+    Crypto
+};

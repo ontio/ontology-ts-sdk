@@ -17,7 +17,7 @@
  */
 
 export enum ERROR_CODE {
-    SUCCESS	            =     0, //成功
+    SUCCESS	            =     0, // 成功
     SESSION_EXPIRED     = 41001,   // 会话无效或已过期（ 需要重新登录） |
     SERVICE_CEILING     = 41002,   // 达到服务上限 |
     ILLEGAL_DATAFORMAT  = 41003,   // 不合法数据格式 |
@@ -34,10 +34,9 @@ export enum ERROR_CODE {
     INTERNAL_ERROR      = 45001,   // 内部错误 |
     SMARTCODE_ERROR     = 47001,   // 智能合约错误 |
 
-    UNKNOWN_ONTID       = 51000,   //不存在的ONT ID,
-    NETWORK_ERROR       = 52000,   //网络错误,
-    Decrypto_ERROR      = 53000,    //解密错误,
+    UNKNOWN_ONTID       = 51000,   // 不存在的ONT ID,
+    NETWORK_ERROR       = 52000,   // 网络错误,
+    Decrypto_ERROR      = 53000,    // 解密错误,
 
-    PreExec_ERROR = 54000,   //预执行错误
-
+    PreExec_ERROR = 54000   // 预执行错误
 }

@@ -403,8 +403,6 @@ export const makeInvokeTransaction = (
     return tx;
 };
 
-// tslint:disable-next-line:no-consecutive-blank-lines
-
 export function makeDeployCodeTransaction(
     code: string,
     vmType: VmType = VmType.NEOVM,
