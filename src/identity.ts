@@ -88,13 +88,14 @@ export class Identity {
             label = ab2hexstring (core.generateRandomArray(4))
         }
 
-       // identity.create(privateKey, password, label) // will take more time
-        identity.ontid = core.generateOntid(privateKey.key)
+        //generate ontid from p
+        let publicKey = privateKey.getPublicKey()
+        identity.ontid = core.generateOntid(publicKey.serializeHex())
         identity.label = label;
         identity.lock = false;
 
         // control
-        let control = (<ControlData>{})
+        let control = new ControlData()
 
         //start from 1
         control.id = "1";
