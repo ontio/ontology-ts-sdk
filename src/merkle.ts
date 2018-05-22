@@ -129,8 +129,8 @@ export async function constructClaimProof(txHash: string, contractAddr: string) 
     const proof = merkleProof.TargetHashes;
     const leafIndex = merkleProof.BlockHeight;
     const treeSize = merkleProof.CurBlockHeight;
-    const pos = 0;
-    const pathLen = proof.length;
+    // const pos = 0;
+    // const pathLen = proof.length;
 
     const nodes = getProofNodes(leafIndex, treeSize, proof);
 

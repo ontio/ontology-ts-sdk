@@ -17,11 +17,10 @@
  */
 
 import * as cryptoJS from 'crypto-js';
-import * as elliptic from 'elliptic';
 import { sha3_224, sha3_256, sha3_384, sha3_512 } from 'js-sha3';
 import { sm3 } from 'sm.js';
 import { DEFAULT_ALGORITHM } from '../consts';
-import { ab2hexstring, hexstr2str, hexstring2ab, StringReader } from '../utils';
+import { ab2hexstring, hexstring2ab } from '../utils';
 import { CurveLabel } from './CurveLabel';
 import { KeyType } from './KeyType';
 import { SignatureScheme } from './SignatureScheme';

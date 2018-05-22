@@ -21,7 +21,7 @@ import * as uuid from 'uuid';
 import { PK_STATUS, PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from './crypto';
 import RestClient from './network/rest/restClient';
 import { buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
-import { now, num2hexstring } from './utils';
+import { now } from './utils';
 
 /**
  * Factory method type used for creating concrete instances of Message.
@@ -165,7 +165,7 @@ export abstract class Message {
         privateKey: PrivateKey,
         algorithm?: SignatureScheme
     ): Promise<void> {
-        const publicKey = await retrievePublicKey(publicKeyId, url);
+        await retrievePublicKey(publicKeyId, url);
 
         if (algorithm === undefined) {
             algorithm = privateKey.algorithm.defaultSchema;

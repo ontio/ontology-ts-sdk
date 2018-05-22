@@ -16,7 +16,6 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import axios from 'axios';
-import { enc, SHA256 } from 'crypto-js';
 import { WEBVIEW_SCHEME } from './consts';
 
 export function hexstring2ab(str: string): number[] {

@@ -15,8 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import * as BigInteger from 'bigi';
 import * as Bs58check from 'bs58check';
 import * as CryptoJS from 'crypto-js';
 import * as Scrypt from 'js-scrypt';
@@ -238,7 +236,7 @@ export function encryptWithEcb(
     const derived2 = derived.slice(64);
 
     // AES Encrypt
-    const xor = hexXor(privateKey, derived1);
+    hexXor(privateKey, derived1);
     const encrypted = CryptoJS.AES.encrypt(
         CryptoJS.enc.Hex.parse(privateKey),
         CryptoJS.enc.Hex.parse(derived2),

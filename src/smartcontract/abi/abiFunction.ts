@@ -30,9 +30,9 @@ export default class AbiFunction {
     }
 
     getParameter(name: string): any {
-        const p = {} as Parameter;
+        // const p = {} as Parameter;
 
-        for ( const v of this.parameters) {
+        for (const v of this.parameters) {
             if (v.getName() === name) {
                 return v;
             }

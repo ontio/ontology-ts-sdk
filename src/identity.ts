@@ -16,9 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Address, JsonKey, PrivateKey } from './crypto';
-import { ERROR_CODE } from './error';
 import { generateOntid, generateRandomArray } from './helpers';
-import { buildRestfulParam } from './transaction/transactionBuilder';
 import { ab2hexstring } from './utils';
 
 export class ControlData {

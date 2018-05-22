@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as cryptoJS from 'crypto-js';
 import { ERROR_CODE } from '../error';
 import { addressToU160, hash160, u160ToAddress } from '../helpers';
 import { hex2VarBytes, num2hexstring } from '../utils';

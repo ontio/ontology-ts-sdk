@@ -17,32 +17,26 @@
  */
 import axios from 'axios';
 import * as bigInteger from 'bigi';
-import * as base58 from 'bs58';
 import * as cryptoJS from 'crypto-js';
 import * as ecurve from 'ecurve';
 import * as wif from 'wif';
-import { ADDR_VERSION, REST_API, TEST_ONT_URL } from './consts';
+import { REST_API, TEST_ONT_URL } from './consts';
 import {
     Address,
-    CurveLabel,
-    KeyParameters,
-    KeyType,
     PK_STATUS,
     PrivateKey,
     PublicKey,
     PublicKeyStatus,
-    Signature,
-    SignatureScheme
+    Signature
 } from './crypto';
-import { ERROR_CODE } from './error';
-import { generateRandomArray, getSingleSigUInt160, hash160, u160ToAddress } from './helpers';
+import { generateRandomArray, hash160 } from './helpers';
 import { verifyLeafHashInclusion } from './merkle';
 import RestClient from './network/rest/restClient';
 import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
 import { DDO } from './transaction/ddo';
 import { buildRestfulParam, sendRawTxRestfulUrl } from './transaction/transactionBuilder';
 import { VmType } from './transaction/vmcode';
-import { ab2hexstring, hexstr2str, hexstring2ab, num2hexstring, str2hexstr, StringReader } from './utils';
+import { ab2hexstring, hexstring2ab, num2hexstring, str2hexstr } from './utils';
 export * from './helpers';
 
 /**
@@ -89,7 +83,7 @@ export function getPublicKeyPoint(privateKey: string) {
  */
 export function deserializePublickKey(serializedPk: string) {
     const curveType = parseInt(serializedPk.substr(0, 2), 16);
-    const data = serializedPk.substring(2);
+    // const data = serializedPk.substring(2);
     const curve = '';
     const ECKey = '';
     let type  = '';
@@ -200,22 +194,22 @@ export function verifyOntidClaim(claim: any) {
     });
 }
 
-const getDDO = (ontid: string, url?: string) => {
-    const tx = buildGetDDOTx(ontid);
-    const param = buildRestfulParam(tx);
-    url = url || TEST_ONT_URL.REST_URL;
-    const requestUrl = sendRawTxRestfulUrl(url , true);
-    return axios.post(requestUrl, param).then((res: any) => {
-        if (res.data.Result && res.data.Result.length > 0) {
-            // tslint:disable-next-line:no-console
-            console.log('ddo hexstr: ' + res.data.Result[0]);
-            const ddo = DDO.deserialize(res.data.Result[0]);
-            // tslint:disable-next-line:no-console
-            console.log('ddo: ' + JSON.stringify(ddo));
-            return ddo;
-        }
-    });
-};
+// const getDDO = (ontid: string, url?: string) => {
+//     const tx = buildGetDDOTx(ontid);
+//     const param = buildRestfulParam(tx);
+//     url = url || TEST_ONT_URL.REST_URL;
+//     const requestUrl = sendRawTxRestfulUrl(url , true);
+//     return axios.post(requestUrl, param).then((res: any) => {
+//         if (res.data.Result && res.data.Result.length > 0) {
+//             // tslint:disable-next-line:no-console
+//             console.log('ddo hexstr: ' + res.data.Result[0]);
+//             const ddo = DDO.deserialize(res.data.Result[0]);
+//             // tslint:disable-next-line:no-console
+//             console.log('ddo: ' + JSON.stringify(ddo));
+//             return ddo;
+//         }
+//     });
+// };
 
 export const getMerkleProof = (txHash: string, url?: string) => {
     url = url || TEST_ONT_URL.REST_URL;
@@ -229,11 +223,11 @@ export const getMerkleProof = (txHash: string, url?: string) => {
     });
 };
 
-const getRovocationList = (url: string) => {
-    return axios.get(url).then((res) => {
-        return res.data;
-    });
-};
+// const getRovocationList = (url: string) => {
+//     return axios.get(url).then((res) => {
+//         return res.data;
+//     });
+// };
 
 const VerifyOntidClaimResult = {
     CLAIM_NOT_ONCHAIN : 'CLAIM_NOT_ONCHAIN',

@@ -15,23 +15,19 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import axios from 'axios';
-import { TEST_ONT_URL } from '../consts';
-import { Address, PrivateKey, PublicKey } from '../crypto';
-import { ERROR_CODE } from '../error';
-import AbiFunction from '../smartcontract/abi/abiFunction';
+import { Address, PublicKey } from '../crypto';
 import AbiInfo from '../smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
 import abiJson from '../smartcontract/data/idContract.abi';
 import { DDOAttribute } from '../transaction/ddo';
 import { Transaction } from '../transaction/transaction';
-import { makeInvokeTransaction, sendRawTxRestfulUrl, signTransaction } from '../transaction/transactionBuilder';
+import { makeInvokeTransaction } from '../transaction/transactionBuilder';
 import { VmType } from '../transaction/vmcode';
-import { ab2hexstring, num2hexstring, str2hexstr } from '../utils';
+import { num2hexstring, str2hexstr } from '../utils';
 
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
 
-export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey, gas: string) {
+export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey, gas: string): Transaction {
     const f = abiInfo.getFunction('regIDWithPublicKey');
 
     if (ontid.substr(0, 3) === 'did') {

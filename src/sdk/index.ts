@@ -27,10 +27,9 @@
 *************************************************************************************
 */
 import axios from 'axios';
-import { BigNumber } from 'bignumber.js';
 import { Account } from '../account';
 import { Claim } from '../claim/claim';
-import { HTTP_REST_PORT, HTTP_WS_PORT, ONT_NETWORK, REST_API, TEST_NODE, TEST_ONT_URL } from '../consts';
+import { HTTP_REST_PORT, HTTP_WS_PORT, REST_API, TEST_NODE } from '../consts';
 import * as core from '../core';
 import { Address, PgpSignature, PrivateKey } from '../crypto';
 import { ERROR_CODE } from '../error';
@@ -38,18 +37,13 @@ import { Identity } from '../identity';
 import RestClient from '../network/rest/restClient';
 import { makeClaimOngTx, makeTransferTx } from '../smartcontract/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/ontidContractTxBuilder';
-import { DDO, DDOAttribute } from '../transaction/ddo';
+import { DDOAttribute } from '../transaction/ddo';
 import {
     buildRestfulParam,
-    buildRpcParam,
-    buildTxParam,
-    makeTransferTransaction,
-    parseEventNotify,
     sendRawTxRestfulUrl,
     signTransaction
 } from '../transaction/transactionBuilder';
-import TxSender from '../transaction/txSender';
-import { ab2hexstring, EventEmitter, now, sendBackResult2Native, str2hexstr } from '../utils';
+import { now, sendBackResult2Native } from '../utils';
 import { Wallet } from '../wallet';
 
 export class SDK {
@@ -407,7 +401,7 @@ export class SDK {
             return result;
         }
 
-        const claimDataObj = JSON.parse(claimData);
+        // const claimDataObj = JSON.parse(claimData);
         const metadata = {
             issuer: ontid,
             subject: ontid,
@@ -491,7 +485,7 @@ export class SDK {
                 Issuer: issuer
             }
         };
-        const type = 'JSON';
+        // const type = 'JSON';
         const value = JSON.stringify(valueObj);
         const attr = new DDOAttribute();
         attr.key = path;

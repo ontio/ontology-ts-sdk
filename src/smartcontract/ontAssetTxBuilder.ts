@@ -18,12 +18,10 @@
 import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
 import { DEFAULT_GAS_LIMIT, TOKEN_TYPE } from '../consts';
-import { Address, PrivateKey } from '../crypto';
-import { ERROR_CODE } from '../error';
+import { Address } from '../crypto';
 import InvokeCode from '../transaction/payload/invokeCode';
 import { Fee, Transaction, TxType } from '../transaction/transaction';
 import { VmCode, VmType } from '../transaction/vmcode';
-import { ab2hexstring, num2hexstring } from '../utils';
 import { Contract, State, TransferFrom, Transfers } from './token';
 
 export const ONT_CONTRACT = 'ff00000000000000000000000000000000000001';
@@ -91,13 +89,13 @@ export function makeTransferTx(
     state.from = from;
     state.to = to;
 
-    let valueToSend: string;
-    if (tokenType === 'ONT') {
-        valueToSend = new BigNumber(amount).toString();
-    } else {
-        // multi 10^9 to keep precision for ong transfer
-        valueToSend = new BigNumber(amount).multipliedBy(1e9).toString();
-    }
+    // let valueToSend: string;
+    // if (tokenType === 'ONT') {
+    //     valueToSend = new BigNumber(amount).toString();
+    // } else {
+    //     // multi 10^9 to keep precision for ong transfer
+    //     valueToSend = new BigNumber(amount).multipliedBy(1e9).toString();
+    // }
 
     state.value = new Fixed64(amount);
     const transfer = new Transfers();

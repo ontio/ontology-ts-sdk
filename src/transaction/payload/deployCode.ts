@@ -17,14 +17,11 @@
  */
 import {
     bool2VarByte,
-    hex2VarBytes,
     hexstr2str,
-    num2hexstring,
-    num2VarInt,
     str2VarBytes,
     StringReader
 } from '../../utils';
-import { VmCode, VmType } from '../vmcode';
+import { VmCode } from '../vmcode';
 import Payload from './payload';
 
 export default class DeployCode extends Payload {

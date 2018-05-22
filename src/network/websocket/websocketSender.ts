@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { MAIN_ONT_URL, TEST_ONT_URL } from '../../consts';
+import { TEST_ONT_URL } from '../../consts';
 
 /**
  * Creates WebSocket.

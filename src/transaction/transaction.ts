@@ -18,14 +18,12 @@
 
 import * as cryptoJS from 'crypto-js';
 import Fixed64 from '../common/fixed64';
-import Uint160 from '../common/uint160';
 import Uint256 from '../common/uint256';
 import { DEFAULT_GAS_LIMIT } from '../consts';
 import { PublicKey } from '../crypto';
 import { Address } from '../crypto/address';
 import { generateRandomArray } from '../helpers';
-import AbiFunction from '../smartcontract/abi/abiFunction';
-import { ab2hexstring, hex2VarBytes, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../utils';
+import { ab2hexstring, hex2VarBytes, num2hexstring, StringReader } from '../utils';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import Payload from './payload/payload';
