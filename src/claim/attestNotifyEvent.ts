@@ -16,21 +16,17 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { hexstr2str } from "../utils";
+import { hexstr2str } from '../utils';
 
 /**
  * Represents Notify event of attest creation of revocation.
  */
 export class AttestNotifyEvent {
-    Action: string;
-    Error: number;
-    Result: Result[];
-
     /**
      * Deserializes Notify event.
-     * 
+     *
      * States in events are hex encoded.
-     * 
+     *
      * @param e encoded event
      */
     static deserialize(e: any): AttestNotifyEvent {
@@ -42,21 +38,21 @@ export class AttestNotifyEvent {
 
         return event;
     }
+
+    Action: string;
+    Error: number;
+    Result: Result[];
 }
 
 /**
  * One of the results of Notify event.
  */
 export class Result {
-    TxHash: string;
-    ContractAddress: string;
-    States: string[];
-
     /**
      * Deserializes result from event.
-     * 
+     *
      * States are hex encoded.
-     * 
+     *
      * @param r encoded result
      */
     static deserialize(r: any): Result {
@@ -67,4 +63,8 @@ export class Result {
         result.States = r.States.map((s: any) => hexstr2str(s));
         return result;
     }
+
+    TxHash: string;
+    ContractAddress: string;
+    States: string[];
 }

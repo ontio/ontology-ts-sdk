@@ -15,37 +15,35 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
- 
-import Payload from './payload'
-import { num2VarInt, num2hexstring, StringReader, str2hexstr, hexstr2str } from '../../utils'
-import OPCODE from '../opcode'
 import Fixed64 from '../../common/fixed64';
+import { hexstr2str, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../../utils';
+import OPCODE from '../opcode';
 import { VmCode } from '../vmcode';
+import Payload from './payload';
 
 export default class InvokeCode extends Payload {
-    //the length is of bytes 20
-    /* 
+    // the length is of bytes 20
+    /*
     scriptHash : string
     parameters : Array<Parameter> = []
     functionName : string
      */
 
     // gasLimit : Fixed64
-    code : VmCode
+    code: VmCode;
 
     constructor() {
-        super()
+        super();
         // this.gasLimit = new Fixed64()
     }
- 
+
 /*     serialize() : string {
-        let payloadLength 
+        let payloadLength
         let paramsLength = num2hexstring( 0x50 + this.parameters.length) //start from '0x50'
         const paramsEnd = 'c1'
-        let funcNameHex = str2hexstr(this.functionName)  
-        const funcNameLength = num2hexstring(funcNameHex.length/2) 
-       
+        let funcNameHex = str2hexstr(this.functionName)
+        const funcNameLength = num2hexstring(funcNameHex.length/2)
+
         let params = []
         for(let i = this.parameters.length-1; i > -1; i--) {
             let p = this.parameters[i]
@@ -53,7 +51,7 @@ export default class InvokeCode extends Payload {
             let hexPLength = num2VarInt( hexP.length / 2)
             let opcode = ''
             if( hexP.length/2 < OPCODE.PUSHBYTES75) {
-                
+
             } else if (hexP.length / 2 < 0x100) {
                 opcode = num2VarInt( OPCODE.PUSHDATA1 )
             } else if( hexP.length/2 < 0x1000 ) {
@@ -87,7 +85,6 @@ export default class InvokeCode extends Payload {
         result += funcNameHex
         let totalParamsLength = num2VarInt(result.length / 2)
         //result = this.scriptHash + totalParamsLength + result
-        
 
         console.log('invode serialze: '+ result)
 
@@ -95,20 +92,20 @@ export default class InvokeCode extends Payload {
     }  */
 
     serialize() {
-        let result = ''
+        let result = '';
         // if(this.gasLimit) {
         //     result += this.gasLimit.serialize()
         // }
-        result += this.code.serialize()
-        return result
+        result += this.code.serialize();
+        return result;
     }
- 
+
     /* deserialize(ss : StringReader) : void {
         //scriptHash, fixed langth
         this.scriptHash = ss.read(20)
         //payload total lenght
         const payloadLen = ss.readNextLen()
-        
+
         //read params start
         let params = []
         let nextByte = ss.readNextLen()
@@ -136,12 +133,11 @@ export default class InvokeCode extends Payload {
 
     }  */
 
-    deserialize(sr : StringReader) {
-        // let gasLimit = Fixed64.deserialize(sr)
-        let code = VmCode.deserialize(sr)
-        // this.gasLimit = gasLimit
-        this.code = code
-        return this
+    deserialize(sr: StringReader) {
+        // let gasLimit = Fixed64.deserialize(sr);
+        const code = VmCode.deserialize(sr);
+        // this.gasLimit = gasLimit;
+        this.code = code;
+        return this;
     }
-
 }

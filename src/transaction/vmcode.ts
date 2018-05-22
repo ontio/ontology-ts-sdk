@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { num2hexstring, StringReader, num2VarInt, ab2hexstring, hex2VarBytes } from '../utils'
+import { ab2hexstring, hex2VarBytes, num2hexstring, num2VarInt, StringReader } from '../utils';
 
 export enum VmType {
     NativeVM = 0xFF,
@@ -25,24 +25,22 @@ export enum VmType {
 }
 
 export class VmCode {
-    vmType : VmType
-    code : string
+    static deserialize(sr: StringReader): any {
+        const vmcode = new VmCode();
+        const type = parseInt(sr.read(1), 16);
+        const code = sr.readNextBytes();
+        vmcode.vmType = type;
+        vmcode.code = code;
+        return vmcode;
+    }
+
+    vmType: VmType;
+    code: string;
 
     serialize() {
-        let result = ''
-        result += num2hexstring(this.vmType)
-        result += hex2VarBytes(this.code)
-        return result
+        let result = '';
+        result += num2hexstring(this.vmType);
+        result += hex2VarBytes(this.code);
+        return result;
     }
-
-    static deserialize(sr : StringReader) : any {
-        let vmcode = new VmCode()
-        let type = parseInt(sr.read(1), 16)
-        let code = sr.readNextBytes()
-        vmcode.vmType = type
-        vmcode.code = code
-        return vmcode
-    }
-
-
 }

@@ -15,68 +15,67 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-
-import AbiInfo from '../smartcontract/abi/abiInfo'
-import AbiFunction from "../smartcontract/abi/abiFunction";
-import { Parameter, ParameterType } from '../smartcontract/abi/parameter'
-import { Transaction } from '../transaction/transaction'
-import { VmType } from './../transaction/vmcode';
-
-import abiJson from '../smartcontract/data/attestClaim'
-import { str2hexstr } from '../utils';
-import { sendRawTxRestfulUrl, signTransaction, makeInvokeTransaction } from '../transaction/transactionBuilder';
 import { PrivateKey } from '../crypto';
+import AbiFunction from '../smartcontract/abi/abiFunction';
+import AbiInfo from '../smartcontract/abi/abiInfo';
+import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
+import abiJson from '../smartcontract/data/attestClaim';
+import { Transaction } from '../transaction/transaction';
+import { makeInvokeTransaction, sendRawTxRestfulUrl, signTransaction } from '../transaction/transactionBuilder';
+import { VmType } from '../transaction/vmcode';
+import { str2hexstr } from '../utils';
 
-const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson))
+const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
 
-export function buildCommitRecordTx(claimId : string, issuer : string, privateKey : PrivateKey) {
-    let f = abiInfo.getFunction('Commit')
+export function buildCommitRecordTx(claimId: string, issuer: string, privateKey: PrivateKey) {
+    const f = abiInfo.getFunction('Commit');
 
-    let name1 = f.parameters[0].getName(),
-        type1 = ParameterType.ByteArray
-    let p1 = new Parameter(name1, type1, str2hexstr(claimId))
+    const name1 = f.parameters[0].getName();
+    const type1 = ParameterType.ByteArray;
 
-
-    let name2 = f.parameters[1].getName(),
-        type2 = ParameterType.ByteArray
+    const name2 = f.parameters[1].getName();
+    const type2 = ParameterType.ByteArray;
     if (issuer.substr(0, 3) === 'did') {
-        issuer = str2hexstr(issuer)
+        issuer = str2hexstr(issuer);
     }
-    let p2 = new Parameter(name2, type2, issuer)
 
-    f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, '0')
-    signTransaction(tx, privateKey)
-    return tx
+    const p1 = new Parameter(name1, type1, str2hexstr(claimId));
+    const p2 = new Parameter(name2, type2, issuer);
+    f.setParamsValue(p1, p2);
+
+    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, '0');
+    signTransaction(tx, privateKey);
+    return tx;
 }
 
-export function buildRevokeRecordTx(claimId : string, revokerOntid : string, privateKey : PrivateKey) {
-    let f = abiInfo.getFunction('Revoke')
+export function buildRevokeRecordTx(claimId: string, revokerOntid: string, privateKey: PrivateKey) {
+    const f = abiInfo.getFunction('Revoke');
 
-    let name1 = f.parameters[0].getName(),
-        type1 = ParameterType.ByteArray
-    let p1 = new Parameter(name1, type1, str2hexstr(claimId))
+    const name1 = f.parameters[0].getName();
+    const type1 = ParameterType.ByteArray;
 
     if (revokerOntid.substr(0, 3) === 'did') {
-        revokerOntid = str2hexstr(revokerOntid)
+        revokerOntid = str2hexstr(revokerOntid);
     }
-    let p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, revokerOntid)
 
-    f.setParamsValue(p1, p2)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(),VmType.NEOVM, '0')
-    signTransaction(tx, privateKey)
-    return tx
+    const p1 = new Parameter(name1, type1, str2hexstr(claimId));
+    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, revokerOntid);
+    f.setParamsValue(p1, p2);
+
+    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, '0');
+    signTransaction(tx, privateKey);
+    return tx;
 }
 
 export function buildGetRecordStatusTx(claimId: string) {
-    let f = abiInfo.getFunction('GetStatus')
+    const f = abiInfo.getFunction('GetStatus');
 
-    let name1 = f.parameters[0].getName(),
-        type1 = ParameterType.ByteArray
-    let p1 = new Parameter(name1, type1, str2hexstr(claimId))
+    const name1 = f.parameters[0].getName();
+    const type1 = ParameterType.ByteArray;
 
-    f.setParamsValue(p1)
-    let tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, '0')
-    return tx
+    const p1 = new Parameter(name1, type1, str2hexstr(claimId));
+    f.setParamsValue(p1);
+
+    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, '0');
+    return tx;
 }

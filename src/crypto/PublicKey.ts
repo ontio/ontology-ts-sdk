@@ -18,43 +18,27 @@
 
 import * as elliptic from 'elliptic';
 import { sm2 } from 'sm.js';
-import { StringReader, num2hexstring, hexstr2str, hexstring2ab } from '../utils';
-import { Key, KeyParameters } from './Key';
-import { Signature } from './Signature';
-import { KeyType } from './KeyType';
-import { CurveLabel } from './CurveLabel';
-import { SignatureScheme } from './SignatureScheme';
 import { DEFAULT_SM2_ID } from '../consts';
+import { hexstr2str, hexstring2ab, num2hexstring, StringReader } from '../utils';
+import { CurveLabel } from './CurveLabel';
+import { Key, KeyParameters } from './Key';
+import { KeyType } from './KeyType';
+import { Signature } from './Signature';
+import { SignatureScheme } from './SignatureScheme';
 
 export class PublicKey extends Key {
     /**
-     * Verifies if the signature was created with private key corresponding to supplied public key
-     * and was not tampered with using signature schema.
-     * 
-     * @param msg Hex encoded input data
-     * @param signature Signature object
-     */
-    verify(msg: string, signature: Signature): boolean {
-        if (!this.isSchemaSupported(signature.algorithm)) {
-            throw new Error('Signature schema does not match key type.');
-        }
-        
-        const hash = this.computeHash(msg, signature.algorithm);
-        return this.verifySignature(hash, signature.value, signature.algorithm);
-    }
-
-    /**
      * Creates PublicKey from Hex representation.
-     * 
+     *
      * @param sr String reader
      * @param length Byte length of the serialized object
-     * 
+     *
      */
     static deserializeHex(sr: StringReader, length: number = 35): PublicKey {
         const algorithmHex = parseInt(sr.read(1), 16);
-		const curveHex = parseInt(sr.read(1), 16);
-		const pk = sr.read(length - 2);
-        
+        const curveHex = parseInt(sr.read(1), 16);
+        const pk = sr.read(length - 2);
+
         return new PublicKey(
             pk,
             KeyType.fromHex(algorithmHex),
@@ -63,8 +47,24 @@ export class PublicKey extends Key {
     }
 
     /**
-     * Serializes public key to Hex representation. 
-     * 
+     * Verifies if the signature was created with private key corresponding to supplied public key
+     * and was not tampered with using signature schema.
+     *
+     * @param msg Hex encoded input data
+     * @param signature Signature object
+     */
+    verify(msg: string, signature: Signature): boolean {
+        if (!this.isSchemaSupported(signature.algorithm)) {
+            throw new Error('Signature schema does not match key type.');
+        }
+
+        const hash = this.computeHash(msg, signature.algorithm);
+        return this.verifySignature(hash, signature.value, signature.algorithm);
+    }
+
+    /**
+     * Serializes public key to Hex representation.
+     *
      * Length definition is not included.
      */
     serializeHex(): string {
@@ -76,29 +76,29 @@ export class PublicKey extends Key {
     }
 
     verifySignature(hash: string, signature: string, schema: SignatureScheme): boolean {
-        switch(schema) {
-            case SignatureScheme.ECDSAwithSHA224:
-            case SignatureScheme.ECDSAwithSHA256:
-            case SignatureScheme.ECDSAwithSHA384:
-            case SignatureScheme.ECDSAwithSHA512:
-            case SignatureScheme.ECDSAwithSHA3_224:
-            case SignatureScheme.ECDSAwithSHA3_256:
-            case SignatureScheme.ECDSAwithSHA3_384:
-            case SignatureScheme.ECDSAwithSHA3_512:
-            case SignatureScheme.ECDSAwithRIPEMD160:
-                return this.verifyEcDSASignature(hash, signature);
-            case SignatureScheme.EDDSAwithSHA512:
-                return this.verifyEdDSASignature(hash, signature);
-            case SignatureScheme.SM2withSM3:
-                return this.verifySM2Signature(hash, signature);
-            default:
-                throw new Error('Unsupported signature schema.');
+        switch (schema) {
+        case SignatureScheme.ECDSAwithSHA224:
+        case SignatureScheme.ECDSAwithSHA256:
+        case SignatureScheme.ECDSAwithSHA384:
+        case SignatureScheme.ECDSAwithSHA512:
+        case SignatureScheme.ECDSAwithSHA3_224:
+        case SignatureScheme.ECDSAwithSHA3_256:
+        case SignatureScheme.ECDSAwithSHA3_384:
+        case SignatureScheme.ECDSAwithSHA3_512:
+        case SignatureScheme.ECDSAwithRIPEMD160:
+            return this.verifyEcDSASignature(hash, signature);
+        case SignatureScheme.EDDSAwithSHA512:
+            return this.verifyEdDSASignature(hash, signature);
+        case SignatureScheme.SM2withSM3:
+            return this.verifySM2Signature(hash, signature);
+        default:
+            throw new Error('Unsupported signature schema.');
         }
     }
 
     /**
      * Verifies EcDSA signature of message hash. Curve name is derrived from private key.
-     * 
+     *
      * @param hash Message hash
      * @param signature Hex encoded signature
      */
@@ -112,7 +112,7 @@ export class PublicKey extends Key {
 
     /**
      * Verifies EdDSA signature of message hash. Curve name is derrived from private key.
-     * 
+     *
      * @param hash Message hash
      * @param signature Hex encoded signature
      */
@@ -126,9 +126,9 @@ export class PublicKey extends Key {
 
     /**
      * Verifies SM2 signature of message hash.
-     * 
+     *
      * Only default SM2 ID is supported.
-     * 
+     *
      * @param hash Message hash
      * @param signature Hex encoded signature
      */
@@ -146,33 +146,33 @@ export class PublicKey extends Key {
         const keyPair = sm2.SM2KeyPair(this.key);
         return keyPair.verify(hexstring2ab(hash), r, s);
     }
-};
+}
 
 /**
  * Public key status enumaration.
  */
 export enum PK_STATUS  {
-	IN_USE = '01',
-	REVOKED = '00'
-};
+  IN_USE = '01',
+  REVOKED = '00'
+}
 
 /**
  * Pair of public key and its status.
  */
 export class PublicKeyStatus {
-	pk: PublicKey;
+    static deserialize(hexstr: string): PublicKeyStatus {
+        const sr = new StringReader(hexstr);
+        const status = sr.read(1);
+        const publicKey = PublicKey.deserializeHex(sr);
+
+        return new PublicKeyStatus(publicKey, status);
+    }
+
+    pk: PublicKey;
     status: string;
-    
+
     constructor(pk: PublicKey, status: string) {
         this.pk = pk;
         this.status = status;
     }
-
-	static deserialize(hexstr: string) : PublicKeyStatus {
-		const sr = new StringReader(hexstr);
-		const status = sr.read(1);
-        const publicKey = PublicKey.deserializeHex(sr);
-
-		return new PublicKeyStatus(publicKey, status);
-	}
-};
+}

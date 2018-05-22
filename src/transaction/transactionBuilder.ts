@@ -16,86 +16,98 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import AbiInfo from '../smartcontract/abi/abiInfo'
-import AbiFunction from "../smartcontract/abi/abiFunction";
-import {Parameter,  ParameterType } from '../smartcontract/abi/parameter'
-import InvokeCode from './payload/invokeCode'
-import DeployCode from './payload/deployCode'
-import {Transaction, TxType, Sig, Fee} from './transaction'
-import {Transfers, Contract, State} from '../smartcontract/token'
-import {TransactionAttribute, TransactionAttributeUsage} from './txAttribute'
-import * as core from '../core'
-import { ab2hexstring, axiosPost, str2hexstr, hexstr2str , reverseHex, num2hexstring, str2VarBytes, hex2VarBytes, num2VarInt} from '../utils'
-import json from '../smartcontract/data/idContract.abi'
-import {ERROR_CODE} from '../error'
+import { BigNumber } from 'bignumber.js';
+import * as cryptoJS from 'crypto-js';
 import { reverse } from 'dns';
-import {TOKEN_TYPE, HTTP_REST_PORT, TEST_NODE, REST_API, DEFAULT_GAS_LIMIT} from '../consts'
-import { VmCode, VmType } from './vmcode';
-import * as cryptoJS from 'crypto-js'
-import opcode from './opcode';
-import {BigNumber} from 'bignumber.js'
-import {SignatureScheme, PrivateKey, KeyType, CurveLabel, KeyParameters} from '../crypto';
-import { PublicKey } from '../crypto/PublicKey';
-import { Address } from '../crypto/address';
 import Fixed64 from '../common/fixed64';
+import { DEFAULT_GAS_LIMIT, HTTP_REST_PORT, REST_API, TEST_NODE, TOKEN_TYPE } from '../consts';
+import * as core from '../core';
+import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey, SignatureScheme } from '../crypto';
+import { ERROR_CODE } from '../error';
+import AbiFunction from '../smartcontract/abi/abiFunction';
+import AbiInfo from '../smartcontract/abi/abiInfo';
+import { Parameter,  ParameterType } from '../smartcontract/abi/parameter';
+import json from '../smartcontract/data/idContract.abi';
+import { Contract, State, Transfers } from '../smartcontract/token';
+import {
+    ab2hexstring,
+    axiosPost,
+    hex2VarBytes,
+    hexstr2str,
+    num2hexstring,
+    num2VarInt,
+    reverseHex,
+    str2hexstr,
+    str2VarBytes
+} from '../utils';
+import opcode from './opcode';
+import DeployCode from './payload/deployCode';
+import InvokeCode from './payload/invokeCode';
+import { Fee, Sig, Transaction, TxType } from './transaction';
+import { TransactionAttribute, TransactionAttributeUsage } from './txAttribute';
+import { VmCode, VmType } from './vmcode';
 
-const WebSocket = require('ws');
+const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
-
-const abiInfo = AbiInfo.parseJson(JSON.stringify(json))
-
-
+// tslint:disable-next-line:variable-name
 export const Default_params = {
-    "Action": "sendrawtransaction",
-    "Version": "1.0.0",
-    "Type": "",
-    "Op": "test"
-}
+    Action: 'sendrawtransaction',
+    Version: '1.0.0',
+    Type: '',
+    Op: 'test'
+};
 
+const ONT_CONTRACT = 'ff00000000000000000000000000000000000001';
 
-const ONT_CONTRACT = "ff00000000000000000000000000000000000001"
-export const makeTransferTransaction = (tokenType:string, from : Address, to : Address, value : string,  privateKey : PrivateKey)=> {
-    let state = new State()
-    state.from = from
-    state.to = to
+export const makeTransferTransaction = (
+    tokenType: string,
+    from: Address,
+    to: Address,
+    value: string,
+    privateKey: PrivateKey
+) => {
+    const state = new State();
+    state.from = from;
+    state.to = to;
 
-    //multi 10^8 to keep precision
-    let valueToSend = new BigNumber(Number(value)).toString()
+    // multi 10^8 to keep precision
+    const valueToSend = new BigNumber(Number(value)).toString();
 
-    state.value = new Fixed64(valueToSend)
-    let transfer = new Transfers()
-    transfer.states = [state]
+    state.value = new Fixed64(valueToSend);
+    const transfer = new Transfers();
+    transfer.states = [state];
 
-    let contract = new Contract()
-    contract.address = ONT_CONTRACT
-    contract.method = 'transfer'
-    contract.args = transfer.serialize()
-    
-    let tx = new Transaction()
-    tx.version = 0x00
-    tx.type = TxType.Invoke
-    
-    //inovke
-    let code = ''
-    //TODO: change with token type
-    
-    code += contract.serialize()
-    let vmcode = new VmCode()
-    vmcode.code = code
-    vmcode.vmType = VmType.NativeVM
-    let invokeCode = new InvokeCode()
-    invokeCode.code = vmcode
-    tx.payload = invokeCode
-    signTransaction(tx, privateKey)
+    const contract = new Contract();
+    contract.address = ONT_CONTRACT;
+    contract.method = 'transfer';
+    contract.args = transfer.serialize();
 
-    return tx
-}
+    const tx = new Transaction();
+    tx.version = 0x00;
+    tx.type = TxType.Invoke;
+
+    // inovke
+    let code = '';
+    // TODO: change with token type
+
+    code += contract.serialize();
+    const vmcode = new VmCode();
+    vmcode.code = code;
+    vmcode.vmType = VmType.NativeVM;
+    const invokeCode = new InvokeCode();
+    invokeCode.code = vmcode;
+    tx.payload = invokeCode;
+
+    signTransaction(tx, privateKey);
+
+    return tx;
+};
 
 /**
  * Signs the transaction object.
- * 
+ *
  * If the signature schema is not provided, default schema for Private key type is used.
- * 
+ *
  * @param tx Transaction to sign
  * @param privateKey Private key to sign with
  * @param schema Signature Schema to use
@@ -108,343 +120,365 @@ export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?
     }
 
     const signature = privateKey.sign(tx.getHash(), schema);
-    let sig = new Sig()
-    sig.M = 1   
-    sig.pubKeys = [publicKey]
-    sig.sigData = [signature.serializeHex()]
-    tx.sigs = [sig]
-}
+    const sig = new Sig();
+    sig.M = 1;
+    sig.pubKeys = [publicKey];
+    sig.sigData = [signature.serializeHex()];
+    tx.sigs = [sig];
+};
 
 /**
- * 
- * @param tx 
- * @param pris 
- * @param schema 
+ *
+ * @param tx
+ * @param pris
+ * @param schema
  */
 export const signTx = (tx: Transaction, pris: PrivateKey[][], schema?: SignatureScheme) => {
-    let sigs = new Array<Sig>(pris.length)
-    for(let i = 0; i< pris.length; i++) {
-        sigs[i] = new Sig()
+    const sigs = new Array<Sig>(pris.length);
+    for (let i = 0; i < pris.length; i++) {
+        sigs[i] = new Sig();
         sigs[i].M = 0;
-        sigs[i].pubKeys = new Array<PublicKey>(pris[i].length)
-        sigs[i].sigData = new Array<string>(pris[i].length)
+        sigs[i].pubKeys = new Array<PublicKey>(pris[i].length);
+        sigs[i].sigData = new Array<string>(pris[i].length);
         for (let j = 0; j < pris[i].length; j++) {
-            sigs[i].M++
-            const signature = pris[i][j].sign(tx.getHash(), schema)
-            const publicKey = pris[i][j].getPublicKey()
-            sigs[i].pubKeys[j] = publicKey
-            sigs[i].sigData[j] = signature.serializeHex()
+            sigs[i].M++;
+            const signature = pris[i][j].sign(tx.getHash(), schema);
+            const publicKey = pris[i][j].getPublicKey();
+            sigs[i].pubKeys[j] = publicKey;
+            sigs[i].sigData[j] = signature.serializeHex();
         }
     }
-    tx.sigs = sigs
-}
+    tx.sigs = sigs;
+};
 
-export const pushBool = (param : boolean) => {
-    let result = ''
-    if(param) {
-        result += opcode.PUSHT
+export const pushBool = (param: boolean) => {
+    let result = '';
+    if (param) {
+        result += opcode.PUSHT;
     } else {
-        result += opcode.PUSHF
+        result += opcode.PUSHF;
     }
-    return result
-}
+    return result;
+};
 
-export const pushInt = (param : number) => {
-    let result = ''
-    if(param == -1) {
-        result += opcode.PUSHM1
-    }
-    else if(param == 0) {
-        result += opcode.PUSH0
-    } 
-    else if(param > 0 && param < 16) {
-        let num = opcode.PUSH1 - 1 + param
-        result += num2hexstring(num)
-    }  
-    else {
-        result += num2VarInt(param)
-    } 
-    return result
-}
-
-export const pushHexString = (param : string) => {
-    let result = ''
-    let len = param.length/2
-    if(len < opcode.PUSHBYTES75) {
-        result += num2hexstring(len)
-    } 
-    else if(len < 0x100) {
-        result += num2hexstring(opcode.PUSHDATA1)
-        result += num2hexstring(len)
-    } 
-    else if(len < 0x10000) {
-        result += num2hexstring(opcode.PUSHDATA2)
-        result += num2hexstring(len, 2, true)
+export const pushInt = (param: number) => {
+    let result = '';
+    if (param === -1) {
+        result += opcode.PUSHM1;
+    } else if (param === 0) {
+        result += opcode.PUSH0;
+    } else if (param > 0 && param < 16) {
+        const num = opcode.PUSH1 - 1 + param;
+        result += num2hexstring(num);
     } else {
-        result += num2hexstring(opcode.PUSHDATA4)
-        result += num2hexstring(len, 4, true)
+        result += num2VarInt(param);
     }
-    result += param
-    return result
-}
 
+    return result;
+};
 
-//params is like [param1, param2...]
-export const buildSmartContractParam = (functionName : string, params : Array<Parameter>) => {
-    let result = ''
-    for (let i= params.length -1; i > -1; i--) {
-        const type = params[i].getType()
+export const pushHexString = (param: string) => {
+    let result = '';
+    const len = param.length / 2;
+    if (len < opcode.PUSHBYTES75) {
+        result += num2hexstring(len);
+    } else if (len < 0x100) {
+        result += num2hexstring(opcode.PUSHDATA1);
+        result += num2hexstring(len);
+    } else if (len < 0x10000) {
+        result += num2hexstring(opcode.PUSHDATA2);
+        result += num2hexstring(len, 2, true);
+    } else {
+        result += num2hexstring(opcode.PUSHDATA4);
+        result += num2hexstring(len, 4, true);
+    }
+    result += param;
+    return result;
+};
+
+// params is like [param1, param2...]
+export const buildSmartContractParam = (functionName: string, params: Parameter[]) => {
+    let result = '';
+    for (let i = params.length - 1; i > -1; i--) {
+        const type = params[i].getType();
         switch (type) {
-            case ParameterType.Boolean:
-                result += pushBool(params[i].getValue())
-                break;
-
-            case ParameterType.Number:
-                result += pushInt(params[i].getValue())
-                break;
-
-            case ParameterType.String:
-                let value = str2hexstr(params[i].getValue())
-                result += pushHexString(value)
-                break;
-
-            case ParameterType.ByteArray:
-                result += pushHexString(params[i].getValue())
-                break;
-
-            /* case "[object Object]":
-                let temp = []
-                let keys = Object.keys(params[i])
-                for(let k of keys) {
-                    temp.push( params[i][k])
-                }
-                result += buildSmartContractParam(temp)
-                break; */
-        
-            default:
-                throw new Error('Unsupported param type: '+params[i])
-        }
-    }
-    //to work with vm
-    if (params.length === 0) {
-        result += '00'
-        params.length = 1
-    }
-    let paramsLen = num2hexstring(params.length + 0x50)
-    result += paramsLen
-
-    const paramsEnd = 'c1'
-    result += paramsEnd
-
-    result += hex2VarBytes(functionName)
-
-    return result
-}
-
-export const buildWasmContractParam = (params : Array<Parameter>) => {
-    let pList = new Array()
-    for(let p of params) {
-        let type = p.getType()
-        let o
-        switch (type) {
-            case ParameterType.String:
-                o = {
-                    type: 'string',
-                    value: p.getValue()
-                }
-                break;
-            case ParameterType.Int:
-                o = {
-                    type : 'int',
-                    value : p.getValue().toString()
-                }
-                break;
-            case ParameterType.Long:
-                o = {
-                    type : 'int64',
-                    value : p.getValue()
-                }
-                break;
-            case ParameterType.IntArray:
-                o = {
-                    type : 'int_array',
-                    value : p.getValue()
-                }
-                break;
-            case ParameterType.LongArray:
-                o = {
-                    type : 'int_array',
-                    value : p.getValue()
-                }
-                break;
-            default:
-                break;
-        }
-        pList.push(o)
-    }
-    let result = {
-        "Params" : pList
-    }
-    return str2hexstr(JSON.stringify(result))
-}
-
-export const buildNativeContractParam = (params : Array<Parameter>) => {
-    let result = ''
-    for( let p of params) {
-        const type = p.getType()
-        switch (type) {
-            case ParameterType.ByteArray:
-                result += hex2VarBytes(p.value);
+        case ParameterType.Boolean:
+            result += pushBool(params[i].getValue());
             break;
-            case ParameterType.Int:
-                result += p.value;
-            default:
-                break;
+
+        case ParameterType.Number:
+            result += pushInt(params[i].getValue());
+            break;
+
+        case ParameterType.String:
+            const value = str2hexstr(params[i].getValue());
+            result += pushHexString(value);
+            break;
+
+        case ParameterType.ByteArray:
+            result += pushHexString(params[i].getValue());
+            break;
+
+        /* case "[object Object]":
+            let temp = []
+            let keys = Object.keys(params[i])
+            for(let k of keys) {
+                temp.push( params[i][k])
+            }
+            result += buildSmartContractParam(temp)
+            break; */
+        default:
+            throw new Error('Unsupported param type: ' + params[i]);
+        }
+    }
+    // to work with vm
+    if (params.length === 0) {
+        result += '00';
+        params.length = 1;
+    }
+    const paramsLen = num2hexstring(params.length + 0x50);
+    result += paramsLen;
+
+    const paramsEnd = 'c1';
+    result += paramsEnd;
+
+    result += hex2VarBytes(functionName);
+
+    return result;
+};
+
+export const buildWasmContractParam = (params: Parameter[]) => {
+    const pList = [];
+
+    for (const p of params) {
+        const type = p.getType();
+        let o;
+
+        switch (type) {
+        case ParameterType.String:
+            o = {
+                type: 'string',
+                value: p.getValue()
+            };
+            break;
+        case ParameterType.Int:
+            o = {
+                type : 'int',
+                value : p.getValue().toString()
+            };
+            break;
+        case ParameterType.Long:
+            o = {
+                type : 'int64',
+                value : p.getValue()
+            };
+            break;
+        case ParameterType.IntArray:
+            o = {
+                type : 'int_array',
+                value : p.getValue()
+            };
+            break;
+        case ParameterType.LongArray:
+            o = {
+                type : 'int_array',
+                value : p.getValue()
+            };
+            break;
+        default:
+            break;
+        }
+        pList.push(o);
+    }
+
+    const result = {
+        Params: pList
+    };
+    return str2hexstr(JSON.stringify(result));
+};
+
+export const buildNativeContractParam = (params: Parameter[]) => {
+    let result = '';
+
+    for ( const p of params) {
+        const type = p.getType();
+        switch (type) {
+        case ParameterType.ByteArray:
+            result += hex2VarBytes(p.value);
+            break;
+        case ParameterType.Int:
+            result += p.value;
+        default:
+            break;
         }
     }
 
-    return result
-}
+    return result;
+};
 
-export const makeInvokeCode = (funcName : string,  params : Array<Parameter>, codeHash : string, vmType : VmType = VmType.NEOVM) => {
-    let invokeCode = new InvokeCode()
-    let vmCode = new VmCode()
-    const funcNameHex = str2hexstr(funcName)
-    if(vmType === VmType.NEOVM) {
-        let args = buildSmartContractParam(funcNameHex, params)
-        let contract = new Contract()
-        contract.address = codeHash
-        contract.args = args
-        contract.method = ''
-        let code = contract.serialize()
-        code = num2hexstring(opcode.APPCALL) + code
+export const makeInvokeCode = (
+    funcName: string,
+    params: Parameter[],
+    codeHash: string,
+    vmType: VmType = VmType.NEOVM
+) => {
+    const invokeCode = new InvokeCode();
+    const vmCode = new VmCode();
+    const funcNameHex = str2hexstr(funcName);
 
-        vmCode.code = code
-        vmCode.vmType = vmType
-    } else if(vmType === VmType.WASMVM) {
-        let args = buildWasmContractParam(params)
-        let contract = new Contract()
-        contract.version = '01'
-        contract.address = codeHash
-        contract.method = funcName
-        contract.args = args
-        let code = contract.serialize()
+    if (vmType === VmType.NEOVM) {
+        const args = buildSmartContractParam(funcNameHex, params);
+        const contract = new Contract();
+        contract.address = codeHash;
+        contract.args = args;
+        contract.method = '';
+        let code = contract.serialize();
+        code = num2hexstring(opcode.APPCALL) + code;
 
-        vmCode.code = code
-        vmCode.vmType = vmType
-    } else if(vmType === VmType.NativeVM) {
-        let args = buildNativeContractParam(params)
-        let contract = new Contract()
-        contract.address = codeHash
-        contract.args = args
-        contract.method = funcName
-        let code = contract.serialize()
-        vmCode.code = code
-        vmCode.vmType = vmType
+        vmCode.code = code;
+        vmCode.vmType = vmType;
+
+    } else if (vmType === VmType.WASMVM) {
+        const args = buildWasmContractParam(params);
+        const contract = new Contract();
+        contract.version = '01';
+        contract.address = codeHash;
+        contract.method = funcName;
+        contract.args = args;
+        const code = contract.serialize();
+
+        vmCode.code = code;
+        vmCode.vmType = vmType;
+
+    } else if (vmType === VmType.NativeVM) {
+        const args = buildNativeContractParam(params);
+        const contract = new Contract();
+        contract.address = codeHash;
+        contract.args = args;
+        contract.method = funcName;
+        const code = contract.serialize();
+        vmCode.code = code;
+        vmCode.vmType = vmType;
     }
-    
-    invokeCode.code = vmCode
-    return invokeCode
-}
 
-export const makeInvokeTransaction = (funcName : string, parameters : Array<Parameter>, scriptHash : string, vmType : VmType = VmType.NEOVM,
-    gas: string, payer ?: Address) => {
-    let tx = new Transaction()
-    tx.type = TxType.Invoke
-    tx.version = 0x00
+    invokeCode.code = vmCode;
+    return invokeCode;
+};
+
+export const makeInvokeTransaction = (
+    funcName: string,
+    parameters: Parameter[],
+    scriptHash: string,
+    vmType: VmType = VmType.NEOVM,
+    gas: string,
+    payer?: Address
+) => {
+    const tx = new Transaction();
+    tx.type = TxType.Invoke;
+    tx.version = 0x00;
 
     // let scriptHash = abiInfo.getHash()
-    if(scriptHash.substr(0,2) === '0x'){
-        scriptHash = scriptHash.substring(2)
-        scriptHash = reverseHex(scriptHash)
+    if (scriptHash.substr(0, 2) === '0x') {
+        scriptHash = scriptHash.substring(2);
+        scriptHash = reverseHex(scriptHash);
     }
-    console.log('codehash: '+scriptHash)
 
-    let payload = makeInvokeCode(funcName, parameters, scriptHash, vmType)
+    // tslint:disable-next-line:no-console
+    console.log('codehash: ' + scriptHash);
 
-    tx.payload = payload
+    const payload = makeInvokeCode(funcName, parameters, scriptHash, vmType);
 
-    //gas
-    if(DEFAULT_GAS_LIMIT === Number(0)) {
-        tx.gasPrice = new Fixed64()
+    tx.payload = payload;
+
+    // gas
+    if (DEFAULT_GAS_LIMIT === Number(0)) {
+        tx.gasPrice = new Fixed64();
     } else {
-        let price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString()
-        tx.gasPrice = new Fixed64(price)
+        const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
+        tx.gasPrice = new Fixed64(price);
     }
-    if(payer) {
-        tx.payer = payer
+    if (payer) {
+        tx.payer = payer;
     }
-    return tx
-}
+    return tx;
+};
 
+export function makeDeployCodeTransaction(
+    code: string,
+    vmType: VmType = VmType.NEOVM,
+    name: string = '' ,
+    codeVersion: string = '1.0',
+    author: string = '',
+    email: string = '',
+    desp: string = '',
+    needStorage: boolean = true
+) {
+    const dc = new DeployCode();
+    dc.author = author ;
+    const vmCode = new VmCode();
+    vmCode.code = code;
+    vmCode.vmType = vmType;
+    dc.code = vmCode;
+    dc.version = codeVersion;
+    dc.description = desp;
+    dc.email = email;
+    dc.name = name;
+    dc.needStorage = needStorage;
 
-// 
-export function makeDeployCodeTransaction(code : string, vmType: VmType = VmType.NEOVM, name : string='' , codeVersion : string='1.0', author : string='', 
-email : string='', desp:string='', needStorage : boolean=true) {
-    let dc = new DeployCode()
-    dc.author = author 
-    let vmCode = new VmCode()
-    vmCode.code = code
-    vmCode.vmType = vmType
-    dc.code = vmCode
-    dc.version = codeVersion
-    dc.description = desp
-    dc.email = email
-    dc.name = name
-    dc.needStorage =needStorage
+    const tx = new Transaction();
+    tx.version = 0x00;
 
-    let tx = new Transaction()
-    tx.version = 0x00
+    tx.payload = dc;
 
-    tx.payload = dc
+    tx.type = TxType.Deploy;
 
-    tx.type = TxType.Deploy
-
-    //program
+    // program
     // signTransaction(tx, privateKey)
 
-    return tx
+    return tx;
 
 }
 
-export function buildTxParam (tx : Transaction, is_pre_exec : boolean = false) {
-    let op = is_pre_exec ? { 'PreExec':"1"} : {}
-    let serialized = tx.serialize()
-    return JSON.stringify(Object.assign({}, Default_params, { Data: serialized }, op))
+export function buildTxParam(tx: Transaction, isPreExec: boolean = false) {
+    const op = isPreExec ? { PreExec: '1'} : {};
+    const serialized = tx.serialize();
+
+    return JSON.stringify(Object.assign({}, Default_params, { Data: serialized }, op));
 }
 
-//{"jsonrpc": "2.0", "method": "sendrawtransaction", "params": ["raw transactioin in hex"], "id": 0}
-export function buildRpcParam(tx : any, method ?: string) {
-    let param = tx.serialize()
-    let result = {
-        "jsonrpc": "2.0",
-        "method": method || "sendrawtransaction",
-        "params": [param],
-        "id": 10
-    }
-    return result
+// {"jsonrpc": "2.0", "method": "sendrawtransaction", "params": ["raw transactioin in hex"], "id": 0}
+export function buildRpcParam(tx: any, method?: string) {
+    const param = tx.serialize();
+    const result = {
+        jsonrpc: '2.0',
+        method: method || 'sendrawtransaction',
+        params: [param],
+        id: 10
+    };
+    return result;
 }
 
-export function buildRestfulParam(tx : any) {
-    let param = tx.serialize()
+export function buildRestfulParam(tx: any) {
+    const param = tx.serialize();
     return {
-        "Action" : "sendrawtransaction",
-        "Version" : "1.0.0",
-        "Data" : param
-    }
+        Action : 'sendrawtransaction',
+        Version : '1.0.0',
+        Data : param
+    };
 }
 
-export function sendRawTxRestfulUrl(url : string, preExec : boolean = false) {
-    if(url.charAt(url.length - 1) === '/') {
-        url = url.substring(0, url.length-1)
+export function sendRawTxRestfulUrl(url: string, preExec: boolean = false) {
+    if (url.charAt(url.length - 1) === '/') {
+        url = url.substring(0, url.length - 1);
     }
-    let restUrl = url + REST_API.sendRawTx
-    if(preExec) {
-        restUrl += '?preExec=1'
-    }
-    return restUrl
-}
 
+    let restUrl = url + REST_API.sendRawTx;
+    if (preExec) {
+        restUrl += '?preExec=1';
+    }
+
+    return restUrl;
+}
 
 /* {
     "Action": "Notify",
@@ -468,6 +502,7 @@ export function sendRawTxRestfulUrl(url : string, preExec : boolean = false) {
     },
     "Version": "1.0.0"
 } */
+
 const enum EventType {
     Attribute = 'Attribute',
     Register = 'Register',
@@ -477,17 +512,18 @@ const enum EventType {
 /**
  * @deprecated Use NotifyEvent.deserialize() instead.
  */
-export function parseEventNotify(res : any)  {
-    //parse state
-    for(let r of res.Result) {
-        let states = r.States
-        let parsedStates = []
+export function parseEventNotify(res: any)  {
+    // parse state
+    for (const r of res.Result) {
+        const states = r.States;
+        const parsedStates = [];
+
         if (states && states.length > 0) {
-            for (let s of states) {
-                parsedStates.push(hexstr2str(s))
+            for (const s of states) {
+                parsedStates.push(hexstr2str(s));
             }
         }
-        r.States = parsedStates
+        r.States = parsedStates;
     }
-    return res
+    return res;
 }

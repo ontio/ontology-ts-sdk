@@ -20,9 +20,9 @@ import { MAIN_ONT_URL, TEST_ONT_URL } from '../../consts';
 
 /**
  * Creates WebSocket.
- * 
+ *
  * In node environment html5-websocket is used. In browser, native WebSocket is used.
- * 
+ *
  * @param url Url to connect to
  */
 function getWebSocket(url: string): WebSocket {
@@ -38,13 +38,13 @@ export class WebsocketSender {
     url: string;
     debug: boolean;
 
-    constructor (url = TEST_ONT_URL.SOCKET_URL, debug = false) {
+    constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false) {
         this.url = url;
         this.debug = debug;
     }
 
     send(param: string, callback: (err: any, res: any, socket: WebSocket | null) => any) {
-        if(!param) {
+        if (!param) {
             return;
         }
 
@@ -52,6 +52,7 @@ export class WebsocketSender {
 
         socket.onopen = () => {
             if (this.debug) {
+                // tslint:disable-next-line:no-console
                 console.log('connected');
             }
             socket.send(param);
@@ -64,18 +65,19 @@ export class WebsocketSender {
             } else {
                 res = event.data;
             }
-        
-            //pass socket to let caller decide when to close the it.
-            if(callback) {
+
+            // pass socket to let caller decide when to close the it.
+            if (callback) {
                 callback(null, res, socket);
             }
         };
 
         socket.onerror = (err: any) => {
             if (this.debug) {
+                // tslint:disable-next-line:no-console
                 console.log('error', err);
             }
-            //no server or server is stopped
+            // no server or server is stopped
             callback(err, null, null);
             socket.close();
         };

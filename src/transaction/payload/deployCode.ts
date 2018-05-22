@@ -15,69 +15,70 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-import Payload from './payload'
-import {VmType, VmCode} from '../vmcode'
-import {str2VarBytes, hex2VarBytes, num2VarInt, bool2VarByte, StringReader, hexstr2str, num2hexstring} from '../../utils'
+import {
+    bool2VarByte,
+    hex2VarBytes,
+    hexstr2str,
+    num2hexstring,
+    num2VarInt,
+    str2VarBytes,
+    StringReader
+} from '../../utils';
+import { VmCode, VmType } from '../vmcode';
+import Payload from './payload';
 
 export default class DeployCode extends Payload {
-    //hex string
-    code : VmCode
+    // hex string
+    code: VmCode;
 
-    needStorage : boolean
-    name : string
-    version : string
-    author : string
-    email : string
-    description : string
+    needStorage: boolean;
+    name: string;
+    version: string;
+    author: string;
+    email: string;
+    description: string;
 
-    constructor() {
-        super()
+    serialize(): string {
+        let result = '';
+
+        result += this.code.serialize();
+
+        result += bool2VarByte(this.needStorage);
+
+        result += str2VarBytes(this.name);
+
+        result += str2VarBytes(this.version);
+
+        result += str2VarBytes(this.author);
+
+        result += str2VarBytes(this.email);
+
+        result += str2VarBytes(this.description);
+
+        return result;
     }
 
+    deserialize(sr: StringReader): void {
 
-    serialize() : string {
-        let result = ''
+        const code = VmCode.deserialize(sr);
+        this.code = code;
 
-        result += this.code.serialize()
+        const boolValue = sr.read(1);
+        this.needStorage = boolValue === '00' ? false : true;
 
-        result += bool2VarByte(this.needStorage)
+        const name = sr.readNextBytes();
+        this.name = hexstr2str(name);
 
-        result += str2VarBytes(this.name)
+        const codeVersion = sr.readNextBytes();
+        this.version = hexstr2str(codeVersion);
 
-        result += str2VarBytes(this.version)
+        const author = sr.readNextBytes();
+        this.author = hexstr2str(author);
 
-        result += str2VarBytes(this.author)
+        const email = sr.readNextBytes();
+        this.email = hexstr2str(email);
 
-        result += str2VarBytes(this.email)
-
-        result += str2VarBytes(this.description)
-
-        return result
-    }
-
-    deserialize(sr : StringReader) : void {
-
-        const code = VmCode.deserialize(sr)
-        this.code = code
-
-        const boolValue = sr.read(1)
-        this.needStorage = boolValue == '00'? false : true
-
-        const name = sr.readNextBytes()
-        this.name = hexstr2str(name)
-
-        const codeVersion = sr.readNextBytes()
-        this.version = hexstr2str(codeVersion)
-
-        const author = sr.readNextBytes()
-        this.author = hexstr2str(author)
-
-        const email = sr.readNextBytes()
-        this.email = hexstr2str(email)
-
-        const description = sr.readNextBytes()
-        this.description = hexstr2str(description)
+        const description = sr.readNextBytes();
+        this.description = hexstr2str(description);
     }
 }

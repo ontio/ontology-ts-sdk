@@ -15,204 +15,207 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import { num2hexstring, StringReader, num2VarInt, str2hexstr, str2VarBytes, hex2VarBytes, hexstr2str } from "../utils";
-import Uint160 from "../common/uint160";
-import {BigNumber} from 'bignumber.js'
-import { Address } from "../crypto/address";
-import Fixed64 from "../common/fixed64";
+import { BigNumber } from 'bignumber.js';
+import Fixed64 from '../common/fixed64';
+import Uint160 from '../common/uint160';
+import { Address } from '../crypto/address';
+import { hex2VarBytes, hexstr2str, num2hexstring, num2VarInt, str2hexstr, str2VarBytes, StringReader } from '../utils';
 
 export class Transfers {
-    //byte 
+    static deserialize(sr: StringReader) {
+        const t = new Transfers();
+        // const version = sr.read(1);
+        // t.version = version;
+        const states = [];
+        const stateLen = sr.readNextLen();
+        for (let i = 0; i < stateLen; i++) {
+            const state = State.deserialize(sr);
+            states.push(state);
+        }
+        t.states = states;
+        return t;
+    }
+
+    // byte
     // version : string
-    states : Array<State> = []
+    states: State[] = [];
 
     constructor() {
-        // this.version = '00'        
+        // this.version = '00';
     }
 
     serialize() {
-        let result = ''
+        let result = '';
         // result += this.version
-        result += num2hexstring(this.states.length)
+        result += num2hexstring(this.states.length);
+        // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < this.states.length; i++) {
-            result += this.states[i].serialize()
+            result += this.states[i].serialize();
         }
-        return result
-    }
-
-    static deserialize(sr : StringReader) {
-        let t = new Transfers()
-        // const version = sr.read(1)
-        // t.version = version
-        let states = []
-        const stateLen = sr.readNextLen()
-        for (let i = 0; i < stateLen; i++) {
-            let state = State.deserialize(sr)
-            states.push(state)
-        }
-        t.states = states
-        return t
+        return result;
     }
 }
 
 export class TokenTransfer {
-    //20 bytes
-    contract : string
-    states : Array<State>
+    static deserialize(sr: StringReader) {
+        const tf = new TokenTransfer();
+        tf.states = [];
+        const contract = sr.read(20);
+        tf.contract = contract;
 
-    serialize() {
-        let result = ''
-        result += this.contract
-        let len = num2hexstring(this.states.length)
-        result += len
-        for(let i = 0 ; i < this.states.length; i++) {
-            result += this.states[i].serialize()
+        const len = sr.readNextLen();
+        for (let i = 0; i < len; i++) {
+            const state = State.deserialize(sr);
+            tf.states.push(state);
         }
-        return result
+        return tf;
     }
 
-    static deserialize(sr : StringReader) {
-        let tf = new TokenTransfer
-        tf.states = []
-        let contract = sr.read(20)
-        tf.contract = contract
+    // 20 bytes
+    contract: string;
+    states: State[];
 
-        let len = sr.readNextLen()
-        for (let i = 0; i < len; i++) {
-            let state = State.deserialize(sr)
-            tf.states.push(state)
+    serialize() {
+        let result = '';
+        result += this.contract;
+        const len = num2hexstring(this.states.length);
+        result += len;
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0 ; i < this.states.length; i++) {
+            result += this.states[i].serialize();
         }
-        return tf
+        return result;
     }
 }
 
 export class State {
-    //byte
+    static deserialize(sr: StringReader) {
+        const s = new State();
+        // const version = sr.read(1);
+        const from = sr.read(20);
+        const to   = sr.read(20);
+        // const value = (new BigNumber(sr.readNextBytes(), 16)).toString();
+        const value = sr.read(8);
+
+        // s.version = version;
+        s.from = new Address(from);
+        s.to   = new Address(to);
+        s.value = new Fixed64(value);
+        return s;
+    }
+
+    // byte
     // version : string
-    //20 bytes address
-    from  : Address 
-    to    : Address
-    value : Fixed64
+    // 20 bytes address
+    from: Address;
+    to: Address;
+    value: Fixed64;
 
     constructor() {
         // this.version = '00'
     }
 
     serialize() {
-        let result = ''
+        let result = '';
         // result += this.version
-        result += this.from.toHexString()
-        result += this.to.toHexString()
-        result += this.value.serialize()
-        console.log('fixed64: '+ this.value.serialize())
-        return result
-    }
+        result += this.from.toHexString();
+        result += this.to.toHexString();
+        result += this.value.serialize();
 
-    static deserialize(sr : StringReader) {
-        let s = new State()
-        // let version = sr.read(1)
-        let from = sr.read(20)
-        let to   = sr.read(20)
-        // let value = (new BigNumber(sr.readNextBytes(), 16)).toString()
-        let value = sr.read(8)
-
-        // s.version = version
-        s.from = new Address(from)
-        s.to   = new Address(to)
-        s.value = new Fixed64(value)
-        return s
+        // tslint:disable-next-line:no-console
+        console.log('fixed64: ' + this.value.serialize());
+        return result;
     }
 }
 
 export class Contract {
-    //byte
-    version : string
+    static deserialize(sr: StringReader) {
+        const c = new Contract();
+        const version = sr.read(1);
+        const code = sr.readNextBytes();
+        const address = sr.read(20);
+        const method = sr.readNextBytes();
+        const args = sr.readNextBytes();
+        c.version = version;
+        c.code = code;
+        c.address = address;
+        c.method = hexstr2str(method);
+        c.args = args;
+        return c;
+    }
 
-    //TODO
-    code : string = '00'
+    // byte
+    version: string;
 
-    //20 bytes
-    address : string
+    // TODO
+    code: string = '00';
 
-    method : string
+    // 20 bytes
+    address: string;
 
-    //byte
-    args : string
+    method: string;
+
+    // byte
+    args: string;
 
     constructor() {
-        this.version = '00'
+        this.version = '00';
     }
 
     serialize() {
-        let result = ''
-        result += this.version
+        let result = '';
+        result += this.version;
 
-        // result += hex2VarBytes(this.code)
-        result += this.code
+        // result += hex2VarBytes(this.code);
+        result += this.code;
 
-        result += this.address
+        result += this.address;
 
-        result += str2VarBytes(this.method)
+        result += str2VarBytes(this.method);
 
-        result += hex2VarBytes(this.args)
+        result += hex2VarBytes(this.args);
 
-        return result
-    }
-
-    static deserialize(sr : StringReader) {
-        let c = new Contract()
-        const version = sr.read(1)
-        const code = sr.readNextBytes()
-        const address = sr.read(20)
-        const method = sr.readNextBytes()
-        const args = sr.readNextBytes()
-        c.version = version
-        c.code = code
-        c.address = address
-        c.method = hexstr2str(method)
-        c.args = args
-        return c
+        return result;
     }
 }
 
 export class TransferFrom {
+    static deserialize(sr: StringReader): TransferFrom {
+        // const version = sr.read(1);
+        const sender = new Address(sr.read(20));
+        const from = new Address(sr.read(20));
+        const to = new Address(sr.read(20));
+        const value = (new BigNumber(sr.readNextBytes(), 16)).toString();
+        const tf = new TransferFrom(sender, from, to, value);
+        return tf;
+    }
+
     // version : string = '00'
 
-    sender : Address
+    sender: Address;
 
-    from : Address
+    from: Address;
 
-    to : Address
-    
-    value : string
+    to: Address;
 
-    constructor(sender: Address, from: Address, to: Address, value : string) {
+    value: string;
+
+    constructor(sender: Address, from: Address, to: Address, value: string) {
         this.sender = sender;
         this.from = from;
         this.to = to;
         this.value = value;
     }
 
-    serialize() : string {
-        let result = ''
+    serialize(): string {
+        let result = '';
         // result += this.version
-        result += this.sender.toHexString()
-        result += this.from.toHexString()
-        result += this.to.toHexString()
-        let bn = new BigNumber(this.value).toString(16)
-        bn = bn.length % 2 === 0 ? bn : '0' + bn
-        result += hex2VarBytes(bn)
-        return result
-    }
-
-    static deserialize(sr : StringReader) : TransferFrom {
-        // const version = sr.read(1)
-        const sender = new Address(sr.read(20))
-        const from = new Address(sr.read(20))
-        const to = new Address(sr.read(20))
-        const value = (new BigNumber(sr.readNextBytes(), 16)).toString()
-        let tf = new TransferFrom(sender, from ,to, value)
-        return tf
+        result += this.sender.toHexString();
+        result += this.from.toHexString();
+        result += this.to.toHexString();
+        let bn = new BigNumber(this.value).toString(16);
+        bn = bn.length % 2 === 0 ? bn : '0' + bn;
+        result += hex2VarBytes(bn);
+        return result;
     }
 }

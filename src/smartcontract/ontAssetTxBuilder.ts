@@ -15,95 +15,103 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { Fee } from './../transaction/transaction';
-import { VmCode, VmType } from './../transaction/vmcode';
-import { Transaction, TxType } from "../transaction/transaction";
-import { State, Transfers, Contract, TransferFrom } from "./token";
-import { ab2hexstring, num2hexstring } from "../utils";
-import InvokeCode from '../transaction/payload/invokeCode';
-import { TOKEN_TYPE, DEFAULT_GAS_LIMIT } from '../consts';
-import { PrivateKey, Address } from '../crypto';
-import { BigNumber } from 'bignumber.js'
+import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
-import { ERROR_CODE } from '../error';
+import { DEFAULT_GAS_LIMIT, TOKEN_TYPE } from '../consts';
 import { addressToU160 } from '../core';
+import { Address, PrivateKey } from '../crypto';
+import { ERROR_CODE } from '../error';
+import InvokeCode from '../transaction/payload/invokeCode';
+import { Fee, Transaction, TxType } from '../transaction/transaction';
+import { VmCode, VmType } from '../transaction/vmcode';
+import { ab2hexstring, num2hexstring } from '../utils';
+import { Contract, State, TransferFrom, Transfers } from './token';
 
-export const ONT_CONTRACT = "ff00000000000000000000000000000000000001"
-export const ONG_CONTRACT = "ff00000000000000000000000000000000000002"
+export const ONT_CONTRACT = 'ff00000000000000000000000000000000000001';
+export const ONG_CONTRACT = 'ff00000000000000000000000000000000000002';
 
-export function getTokenContract(tokenType : string) {
-    if(tokenType === TOKEN_TYPE.ONT) {
+export function getTokenContract(tokenType: string) {
+    if (tokenType === TOKEN_TYPE.ONT) {
         return ONT_CONTRACT;
     } else if (tokenType === TOKEN_TYPE.ONG) {
         return ONG_CONTRACT;
     } else {
-        throw new Error('Error token type.')
+        throw new Error('Error token type.');
     }
 }
 
-export function verifyAmount(amount : string) {
-    let value = new BigNumber(amount)
-    if ( !value.isInteger() || value <= new BigNumber(0)) {
-        throw new Error('Amount is invalid.')
+export function verifyAmount(amount: string) {
+    const value = new BigNumber(amount);
+
+    if (!value.isInteger() || value <= new BigNumber(0)) {
+        throw new Error('Amount is invalid.');
     }
 }
 
- function makeInvokeCodeTransacton(contract : Contract, vmType : VmType, gas : string) : Transaction {
-     let tx = new Transaction()
-     tx.type = TxType.Invoke
+function makeInvokeCodeTransacton(contract: Contract, vmType: VmType, gas: string): Transaction {
+    const tx = new Transaction();
+    tx.type = TxType.Invoke;
 
-     let code = ''
-     code += contract.serialize()
-     let vmcode = new VmCode()
-     vmcode.code = code
-     vmcode.vmType = VmType.NativeVM
-     let invokeCode = new InvokeCode()
-     invokeCode.code = vmcode
-     tx.payload = invokeCode
-     //gas
-     if (DEFAULT_GAS_LIMIT === Number(0)) {
-         tx.gasPrice = new Fixed64()
-     } else {
-         let price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString()
-         tx.gasPrice = new Fixed64(price)
-     }
-     return tx
+    let code = '';
+    code += contract.serialize();
+    const vmcode = new VmCode();
+    vmcode.code = code;
+    vmcode.vmType = VmType.NativeVM;
+    const invokeCode = new InvokeCode();
+    invokeCode.code = vmcode;
+    tx.payload = invokeCode;
+
+    // gas
+    if (DEFAULT_GAS_LIMIT === Number(0)) {
+        tx.gasPrice = new Fixed64();
+    } else {
+        const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
+        tx.gasPrice = new Fixed64(price);
+    }
+
+    return tx;
 }
 
 /**
- * @param tokenType 
+ * @param tokenType
  * @param from sender's address
  * @param to receiver's address
- * @param amount  
+ * @param amount
  * @param gas the total value of gas, used to calculate gas price
  */
-export function makeTransferTx(tokenType: string, from: Address, to: Address, amount: string, gas : string) : Transaction {
-    verifyAmount(amount)
+export function makeTransferTx(
+    tokenType: string,
+    from: Address,
+    to: Address,
+    amount: string,
+    gas: string
+): Transaction {
+    verifyAmount(amount);
 
-    let state = new State()
-    state.from = from
-    state.to = to
+    const state = new State();
+    state.from = from;
+    state.to = to;
 
-    let valueToSend : string 
-    if(tokenType === 'ONT') {
-        valueToSend = new BigNumber(amount).toString()
+    let valueToSend: string;
+    if (tokenType === 'ONT') {
+        valueToSend = new BigNumber(amount).toString();
     } else {
-        //multi 10^9 to keep precision for ong transfer
-        valueToSend = new BigNumber(amount).multipliedBy(1e9).toString()
+        // multi 10^9 to keep precision for ong transfer
+        valueToSend = new BigNumber(amount).multipliedBy(1e9).toString();
     }
 
-    state.value = new Fixed64(amount)
-    let transfer = new Transfers()
-    transfer.states = [state]
+    state.value = new Fixed64(amount);
+    const transfer = new Transfers();
+    transfer.states = [state];
 
-    let contract = new Contract()
-    contract.address = getTokenContract(tokenType)
-    contract.method = 'transfer'
-    contract.args = transfer.serialize()
+    const contract = new Contract();
+    contract.address = getTokenContract(tokenType);
+    contract.method = 'transfer';
+    contract.args = transfer.serialize();
 
-    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas)
-    tx.payer = from
-    return tx
+    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas);
+    tx.payer = from;
+    return tx;
 }
 
 /**
@@ -114,30 +122,37 @@ export function makeTransferTx(tokenType: string, from: Address, to: Address, am
  * @param to receiver's address
  * @param amounts
  */
-export function makeTransferFromManyTx(tokenType : string, from : Array<Address>, to : Address, amounts : Array<string>, gas : string) : Transaction {
-    let states = new Array<State>(from.length)
+export function makeTransferFromManyTx(
+    tokenType: string,
+    from: Address[],
+    to: Address,
+    amounts: string[],
+    gas: string
+): Transaction {
+    const states = new Array<State>(from.length);
 
-    if(from.length !== amounts.length) {
-        throw new Error('Params error.')
+    if (from.length !== amounts.length) {
+        throw new Error('Params error.');
     }
-    for(let i = 0; i < from.length; i++) {
-        let s = new State()
-        s.from = from[i]
-        s.to = to  
-        verifyAmount(amounts[i])
-        s.value = new Fixed64(amounts[i])
-        states[i] = s
+    for (let i = 0; i < from.length; i++) {
+        const s = new State();
+        s.from = from[i];
+        s.to = to;
+        verifyAmount(amounts[i]);
+        s.value = new Fixed64(amounts[i]);
+        states[i] = s;
     }
-    let transfers = new Transfers()
-    transfers.states = states
-    let contract = new Contract()
-    contract.address = getTokenContract(tokenType)
-    contract.method = 'transfer'
-    contract.args = transfers.serialize()
 
-    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas)
-    tx.payer = from[0]
-    return tx
+    const transfers = new Transfers();
+    transfers.states = states;
+    const contract = new Contract();
+    contract.address = getTokenContract(tokenType);
+    contract.method = 'transfer';
+    contract.args = transfers.serialize();
+
+    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas);
+    tx.payer = from[0];
+    return tx;
 }
 
 /**
@@ -147,29 +162,39 @@ export function makeTransferFromManyTx(tokenType : string, from : Array<Address>
  * @param to
  * @param amounts
  */
-export function makeTransferToMany(tokenType : string, from : Address, to : Array<Address>, amounts : Array<string>, gas : string) : Transaction {
-    let states = new Array<State>(to.length)
-    if (to.length !== amounts.length) {
-        throw new Error('Params error.')
-    }
-    for (let i = 0; i < to.length; i++) {
-        let s = new State()
-        s.from = from
-        s.to = to[i]
-        verifyAmount(amounts[i])      
-        s.value = new Fixed64(amounts[i])
-        states[i] = s
-    }
-    let transfers = new Transfers()
-    transfers.states = states
-    let contract = new Contract()
-    contract.address = getTokenContract(tokenType)
-    contract.method = 'transfer'
-    contract.args = transfers.serialize()
+export function makeTransferToMany(
+    tokenType: string,
+    from: Address,
+    to: Address[],
+    amounts: string[],
+    gas: string
+): Transaction {
+    const states = new Array<State>(to.length);
 
-    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas)
-    tx.payer = from
-    return tx
+    if (to.length !== amounts.length) {
+        throw new Error('Params error.');
+    }
+
+    for (let i = 0; i < to.length; i++) {
+        const s = new State();
+        s.from = from;
+        s.to = to[i];
+
+        verifyAmount(amounts[i]);
+        s.value = new Fixed64(amounts[i]);
+        states[i] = s;
+    }
+
+    const transfers = new Transfers();
+    transfers.states = states;
+    const contract = new Contract();
+    contract.address = getTokenContract(tokenType);
+    contract.method = 'transfer';
+    contract.args = transfers.serialize();
+
+    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas);
+    tx.payer = from;
+    return tx;
 }
 
 /**
@@ -178,18 +203,19 @@ export function makeTransferToMany(tokenType : string, from : Address, to : Arra
  * @param to receiver's address
  * @param amount
  */
-export function makeClaimOngTx(from : Address, to : Address, amount : string, gas : string) : Transaction {
-    verifyAmount(amount)
-    let tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, new BigNumber(Number(amount)).toString())
-    let contract = new Contract()
-    contract.address = ONG_CONTRACT
-    contract.method = 'transferFrom'
-    contract.args = tf.serialize()
+export function makeClaimOngTx(from: Address, to: Address, amount: string, gas: string): Transaction {
+    verifyAmount(amount);
 
-    let fee = new Fee()
-    fee.amount = new Fixed64()
-    fee.payer = from
-    let tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas)
-    tx.payer = from
-    return tx
+    const tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, new BigNumber(Number(amount)).toString());
+    const contract = new Contract();
+    contract.address = ONG_CONTRACT;
+    contract.method = 'transferFrom';
+    contract.args = tf.serialize();
+
+    const fee = new Fee();
+    fee.amount = new Fixed64();
+    fee.payer = from;
+    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas);
+    tx.payer = from;
+    return tx;
 }

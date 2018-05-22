@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SignatureScheme } from "./SignatureScheme";
+import { SignatureScheme } from './SignatureScheme';
 
 /**
  * Type of key.
@@ -25,9 +25,37 @@ export class KeyType {
     static values: KeyType[] = [];
 
     static ECDSA = new KeyType('ECDSA', 0x12, SignatureScheme.ECDSAwithSHA256);
-	static SM2 = new KeyType('SM2', 0x13, SignatureScheme.SM2withSM3);
+    static SM2 = new KeyType('SM2', 0x13, SignatureScheme.SM2withSM3);
     static EDDSA = new KeyType('EDDSA', 0x14, SignatureScheme.EDDSAwithSHA512);
-    
+
+    /**
+     * Finds Key type corresponding to specified hex representation.
+     *
+     * @param hex Byte hex value
+     */
+    static fromHex(hex: number): KeyType {
+        const item = KeyType.values.find((v) => v.hex === hex);
+        if (item === undefined) {
+            throw new Error('Enum value not found');
+        }
+
+        return item;
+    }
+
+    /**
+     * Finds Key type corresponding to specified label representation.
+     *
+     * @param label Label
+     */
+    static fromLabel(label: string): KeyType {
+        const item = KeyType.values.find((v) => v.label === label);
+        if (item === undefined) {
+            throw new Error('Enum value not found');
+        }
+
+        return item;
+    }
+
     label: string;
     hex: number;
     defaultSchema: SignatureScheme;
@@ -39,32 +67,4 @@ export class KeyType {
 
         KeyType.values.push(this);
     }
-
-    /**
-     * Finds Key type corresponding to specified hex representation.
-     * 
-     * @param hex Byte hex value
-     */
-    static fromHex(hex: number): KeyType {
-        const item = KeyType.values.find(v => v.hex === hex);
-        if (item === undefined) {
-            throw new Error('Enum value not found');
-        }
-
-        return item;
-    }
-
-    /**
-     * Finds Key type corresponding to specified label representation.
-     * 
-     * @param label Label
-     */
-    static fromLabel(label: string): KeyType {
-        const item = KeyType.values.find(v => v.label === label);
-        if (item === undefined) {
-            throw new Error('Enum value not found');
-        }
-
-        return item;
-    }
-};
+}

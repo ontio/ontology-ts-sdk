@@ -16,20 +16,20 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { TEST_ONT_URL } from '../../consts'
-import { WebsocketSender } from './websocketSender';
-import * as Builder from './websocketBuilder';
+import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
+import * as Builder from './websocketBuilder';
+import { WebsocketSender } from './websocketSender';
 
 /**
  * Websocket client.
- * 
+ *
  * TODO: correlate request and response with id, so socket can be reused.
  */
 export class WebsocketClient {
     url: string;
     debug: boolean;
-    
+
     constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false) {
         this.url = url;
         this.debug = debug;
@@ -40,8 +40,19 @@ export class WebsocketClient {
         return this.send(raw);
     }
 
-    async sendSubscribe(subscribeEvent = false, subscribeJsonBlock = false, subscribeRawBlock = false, subscribeBlockTxHashes = false): Promise<any> {
-        const raw = Builder.sendSubscribe(subscribeEvent, subscribeJsonBlock, subscribeRawBlock, subscribeBlockTxHashes);
+    async sendSubscribe(
+            subscribeEvent = false,
+            subscribeJsonBlock = false,
+            subscribeRawBlock = false,
+            subscribeBlockTxHashes = false
+        ): Promise<any> {
+        const raw = Builder.sendSubscribe(
+                subscribeEvent,
+                subscribeJsonBlock,
+                subscribeRawBlock,
+                subscribeBlockTxHashes
+            );
+
         return this.send(raw);
     }
 

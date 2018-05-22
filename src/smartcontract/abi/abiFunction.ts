@@ -16,52 +16,53 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Parameter} from './parameter'
+import { Parameter } from './parameter';
 
 export default class AbiFunction {
-    name : string
-    returntype : string
-    parameters : Array<Parameter> 
+    name: string;
+    returntype: string;
+    parameters: Parameter[];
 
-    constructor(name : string, returntype : string, parameters: Array<Parameter>) {
-        this.name = name
-        this.returntype = returntype
-        this.parameters = parameters
+    constructor(name: string, returntype: string, parameters: Parameter[]) {
+        this.name = name;
+        this.returntype = returntype;
+        this.parameters = parameters;
     }
 
-    getParameter(name : string) : any {
-        let p  = <Parameter> {}
-        for( let v of this.parameters) {
-            if(v.getName() === name) {
-                return v
+    getParameter(name: string): any {
+        const p = {} as Parameter;
+
+        for ( const v of this.parameters) {
+            if (v.getName() === name) {
+                return v;
             }
         }
         return null;
-        
     }
 
-    setParamsValue(...args : any[]) : void {
-        for(let i=0, len=args.length; i<len;i++) {
-            for(let j =0 ; j < this.parameters.length; j++) {
-                if(args[i].name === this.parameters[j].getName()) {
-                    this.parameters[j].setValue(args[i])
+    setParamsValue(...args: any[]): void {
+        for (let i = 0, len = args.length; i < len; i++) {
+            // tslint:disable-next-line:prefer-for-of
+            for (let j = 0 ; j < this.parameters.length; j++) {
+                if (args[i].name === this.parameters[j].getName()) {
+                    this.parameters[j].setValue(args[i]);
                 }
             }
         }
-        // let parameters = []
+        // const parameters = [];
         // for (let i = 0, len = args.length; i < len; i++) {
-        //     parameters.push(args[i])
+        //     parameters.push(args[i]);
         // }
-        // this.parameters = parameters
+        // this.parameters = parameters;
     }
 
-    toString() : string {
-        let json = {
+    toString(): string {
+        const json = {
             name : this.name,
             returntype : this.returntype,
             parameters : this.parameters
-        }
+        };
 
-        return JSON.stringify(json)
+        return JSON.stringify(json);
     }
 }

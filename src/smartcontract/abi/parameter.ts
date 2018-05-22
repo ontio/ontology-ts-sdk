@@ -15,14 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 export enum ParameterType  {
     Boolean = 'Boolean',
-    Number  = 'Number', 
+    Number  = 'Number',
     String  = 'String',
     ByteArray = 'ByteArray',
 
-    //for wasm
+    // for wasm
     Int = 'Int',
     Long = 'Long',
     IntArray = 'IntArray',
@@ -30,33 +29,32 @@ export enum ParameterType  {
 }
 
 export class Parameter {
-    public name: string
-    public type: ParameterType
-    public value: any 
-
+    public name: string;
+    public type: ParameterType;
+    public value: any;
     constructor(name: string, type: ParameterType, value: any) {
-        this.name = name
-        this.type = type
-        this.value = value
+        this.name = name;
+        this.type = type;
+        this.value = value;
     }
 
     getName(): string {
-        return this.name
+        return this.name;
     }
 
     getType(): ParameterType {
-        return this.type
+        return this.type;
     }
 
     getValue(): any {
-        return this.value
+        return this.value;
     }
 
     setValue(value: any): boolean {
         if (value.type === this.type && value.name === this.name && value.value) {
-            this.value = value.value
-            return true
+            this.value = value.value;
+            return true;
         }
-        return false
+        return false;
     }
 }
