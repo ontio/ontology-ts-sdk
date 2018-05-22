@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as core from './core';
 import { Address, JsonKey, PrivateKey } from './crypto';
 import { ERROR_CODE } from './error';
+import { generateOntid, generateRandomArray } from './helpers';
 import { buildRestfulParam } from './transaction/transactionBuilder';
 import { ab2hexstring } from './utils';
 
@@ -58,12 +58,12 @@ export class Identity {
         const identity = new Identity();
         const privateKey = encryptedPrivateKey.decrypt(password, checksum);
         if (!label) {
-            label = ab2hexstring (core.generateRandomArray(4));
+            label = ab2hexstring (generateRandomArray(4));
         }
 
         // generate ontid from p
         const publicKey = privateKey.getPublicKey();
-        identity.ontid = core.generateOntid(publicKey.serializeHex());
+        identity.ontid = generateOntid(publicKey.serializeHex());
         identity.label = label;
         identity.lock = false;
 
@@ -140,7 +140,7 @@ export class Identity {
 
         // ontid
         const publicKey = privateKey.getPublicKey();
-        this.ontid = core.generateOntid(publicKey.serializeHex());
+        this.ontid = generateOntid(publicKey.serializeHex());
 
         // TODO register ontid
         // 调用方处理register和监听结果

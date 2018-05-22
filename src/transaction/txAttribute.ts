@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { generateRandomArray } from '../core';
+import { generateRandomArray } from '../helpers';
 import { ab2hexstring, hex2VarBytes, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../utils';
 
 export enum TransactionAttributeUsage {

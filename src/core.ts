@@ -20,7 +20,6 @@ import * as bigInteger from 'bigi';
 import * as base58 from 'bs58';
 import * as cryptoJS from 'crypto-js';
 import * as ecurve from 'ecurve';
-import * as secureRandom from 'secure-random';
 import * as wif from 'wif';
 import { ADDR_VERSION, REST_API, TEST_ONT_URL } from './consts';
 import {
@@ -36,20 +35,15 @@ import {
     SignatureScheme
 } from './crypto';
 import { ERROR_CODE } from './error';
-import { getSingleSigUInt160, hash160, u160ToAddress } from './helpers';
+import { generateRandomArray, getSingleSigUInt160, hash160, u160ToAddress } from './helpers';
 import { verifyLeafHashInclusion } from './merkle';
 import RestClient from './network/rest/restClient';
-import * as scrypt from './scrypt';
 import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
 import { DDO } from './transaction/ddo';
 import { buildRestfulParam, sendRawTxRestfulUrl } from './transaction/transactionBuilder';
 import { VmType } from './transaction/vmcode';
 import { ab2hexstring, hexstr2str, hexstring2ab, num2hexstring, str2hexstr, StringReader } from './utils';
 export * from './helpers';
-
-export function generateRandomArray(len: number): ArrayBuffer {
-    return secureRandom(len);
-}
 
 /**
  * @deprecated Replaced by PrivateKey.random()
@@ -171,12 +165,6 @@ export function getPrivateKeyFromWIF(wifkey: string): string {
 
 export function getWIFFromPrivateKey(privateKey: string): string {
     return wif.encode(128, Buffer.from(privateKey, 'hex'), true);
-}
-
-export function generateOntid(nonce: string) {
-    const programHash = getSingleSigUInt160(nonce);
-    const ontid = 'did:ont:' + u160ToAddress(programHash);
-    return ontid;
 }
 
 /**

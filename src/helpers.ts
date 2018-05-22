@@ -18,6 +18,7 @@
 
 import * as base58 from 'bs58';
 import * as cryptoJS from 'crypto-js';
+import * as secureRandom from 'secure-random';
 import { ADDR_VERSION } from './consts';
 import { ab2hexstring, hexstring2ab } from './utils';
 
@@ -74,4 +75,14 @@ export function ripemd160(data: string) {
 
 export function hash160(SignatureScript: string): string {
     return ripemd160(sha256(SignatureScript));
+}
+
+export function generateRandomArray(len: number): ArrayBuffer {
+    return secureRandom(len);
+}
+
+export function generateOntid(nonce: string) {
+    const programHash = getSingleSigUInt160(nonce);
+    const ontid = 'did:ont:' + u160ToAddress(programHash);
+    return ontid;
 }

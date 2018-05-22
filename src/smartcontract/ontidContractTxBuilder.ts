@@ -17,7 +17,6 @@
 */
 import axios from 'axios';
 import { TEST_ONT_URL } from '../consts';
-import * as core from '../core';
 import { Address, PrivateKey, PublicKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';

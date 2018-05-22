@@ -18,7 +18,6 @@
 import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
 import { DEFAULT_GAS_LIMIT, TOKEN_TYPE } from '../consts';
-import { addressToU160 } from '../core';
 import { Address, PrivateKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import InvokeCode from '../transaction/payload/invokeCode';

@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import * as core from './core';
 import { Address, PrivateKey, SignatureScheme } from './crypto';
+import { generateRandomArray, sha256 } from './helpers';
 import { ab2hexstring } from './utils';
 
 export class Account {
@@ -35,12 +34,12 @@ export class Account {
         //     deployed: false
         // }
         if (!label) {
-            label = ab2hexstring(core.generateRandomArray(4));
+            label = ab2hexstring(generateRandomArray(4));
         }
         account.label = label;
         account.lock = false;
         account.isDefault = false;
-        account.passwordHash = core.sha256(password);
+        account.passwordHash = sha256(password);
 
         account.encryptedKey = encryptedPrivateKey;
 
@@ -101,7 +100,7 @@ export class Account {
     create(privateKey: PrivateKey, password: string, label: string, signatureScheme?: SignatureScheme ): Account {
         this.label = label;
         this.lock = false;
-        this.passwordHash = core.sha256(password);
+        this.passwordHash = sha256(password);
         this.isDefault = false;
 
         if (signatureScheme) {

@@ -21,7 +21,6 @@ import * as cryptoJS from 'crypto-js';
 import { reverse } from 'dns';
 import Fixed64 from '../common/fixed64';
 import { DEFAULT_GAS_LIMIT, HTTP_REST_PORT, REST_API, TEST_NODE, TOKEN_TYPE } from '../consts';
-import * as core from '../core';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey, SignatureScheme } from '../crypto';
 import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';
