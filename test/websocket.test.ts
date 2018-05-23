@@ -1,21 +1,22 @@
-import { WebsocketClient } from '../src/network/websocket/websocketClient'
-import { buildGetDDOTx } from '../src/smartcontract/ontidContractTxBuilder';
 import { TEST_ONT_URL } from '../src/consts';
-import { Address } from '../src/crypto'
+import { Address } from '../src/crypto';
+import { WebsocketClient } from '../src/network/websocket/websocketClient';
+import { buildGetDDOTx } from '../src/smartcontract/ontidContractTxBuilder';
 
 describe('test websocket', () => {
     const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, false);
 
-    var txHash = 'd5200d614994ea5242462f3a6601134ef235b9be03b6ce2f39e871fec2c36768',
+    // tslint:disable-next-line:one-variable-per-declaration
+    const txHash = 'd5200d614994ea5242462f3a6601134ef235b9be03b6ce2f39e871fec2c36768',
         blockHash = '9d51e95d4cc0365b3ed06f66c5df4808491c09723810cc28ad37d5be152f230b',
         codeHash = 'ff00000000000000000000000000000000000003',
         height = 1000,
         ontid = 'did:ont:TA7j42nDdZSyUBdYhWoxnnE5nUdLyiPoK3',
-        address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG'
+        address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
 
     test('send heartbeat', async () => {
         const result = await client.sendHeartBeat();
-        
+
         expect(result.Action).toBe('heartbeat');
         expect(result.Desc).toBe('SUCCESS');
         expect(result.Result.ConstractsFilter).toBeNull();
@@ -27,7 +28,7 @@ describe('test websocket', () => {
 
     test('send subscribe', async () => {
         const result = await client.sendSubscribe();
-        
+
         expect(result.Action).toBe('subscribe');
         expect(result.Desc).toBe('SUCCESS');
         expect(result.Result.ConstractsFilter).toBeNull();
@@ -40,7 +41,7 @@ describe('test websocket', () => {
     test('send sendRawTransaction', async () => {
         const tx = buildGetDDOTx(ontid);
         const result = await client.sendRawTransaction(tx.serialize(), true);
-        
+
         expect(result.Action).toBe('sendrawtransaction');
         expect(result.Desc).toBe('SUCCESS');
         expect(result.Result).toBeDefined();
@@ -48,7 +49,7 @@ describe('test websocket', () => {
 
     test('test getRawTransaction', async () => {
         const result = await client.getRawTransaction(txHash);
-        
+
         expect(result.Action).toBe('gettransaction');
         expect(result.Desc).toBe('SUCCESS');
         expect(result.Result).toBeDefined();
@@ -122,7 +123,7 @@ describe('test websocket', () => {
     });
 
     test('test getBalance', async () => {
-        const address = new Address('TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE')
+        const address = new Address('TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE');
         const result = await client.getBalance(address);
 
         expect(result.Action).toBe('getbalance');
@@ -173,7 +174,7 @@ describe('test websocket', () => {
         expect(result.Desc).toBe('SUCCESS');
         expect(typeof result.Result).toBe('number');
     });
-    
+
     test.skip('test getStorage', async () => {
         const key = '2a6469643a6f6e743a5443375a6b556a62694e36794b61415433687735567a714c713138587538635a4a5702';
         const result = await client.getStorage(codeHash, key);
@@ -191,4 +192,4 @@ describe('test websocket', () => {
         expect(result.Result).toBeDefined();
         expect(result.Result.Type).toBe('MerkleProof');
     });
-})
+});

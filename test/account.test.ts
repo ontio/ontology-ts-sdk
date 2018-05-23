@@ -16,51 +16,49 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Account} from '../src/account'
-import * as core from '../src/core'
-import * as utils from '../src/utils'
-import {ERROR_CODE} from '../src/error'
+import { Account } from '../src/account';
+import * as core from '../src/core';
 import { PrivateKey } from '../src/crypto';
-describe('test account', ()=>{
-  
-    var privateKey:PrivateKey,
-        accountDataStr:string,
-        account:Account,
-        encryptedPrivateKey : PrivateKey
+import { ERROR_CODE } from '../src/error';
+import * as utils from '../src/utils';
+describe('test account', () => {
 
-    beforeAll(()=>{
-        privateKey = PrivateKey.random();    
-    })
+    let privateKey: PrivateKey,
+        accountDataStr: string,
+        account: Account,
+        encryptedPrivateKey: PrivateKey;
 
-    test('test create', ()=>{
-        account = new Account()
-        account.create(privateKey, '123456', 'mickey')
-        encryptedPrivateKey = account.encryptedKey
-        accountDataStr = account.toJson()
-        expect(accountDataStr).toBeDefined()
-        console.log('address: '+account.address.toBase58)
-        console.log('privateKey: '+privateKey)
-        console.log('addressU160: '+ account.address.toHexString())
-    })
+    beforeAll(() => {
+        privateKey = PrivateKey.random();
+    });
+
+    test('test create', () => {
+        account = new Account();
+        account.create(privateKey, '123456', 'mickey');
+        encryptedPrivateKey = account.encryptedKey;
+        accountDataStr = account.toJson();
+        expect(accountDataStr).toBeDefined();
+        console.log('address: ' + account.address.toBase58);
+        console.log('privateKey: ' + privateKey);
+        console.log('addressU160: ' + account.address.toHexString());
+    });
     test('test import account with correct password', () => {
-        let a
+        let a;
         try {
-           a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address)
+           a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address);
 
-        } catch(err) {}
+        } catch (err) {}
 
-        expect(a.label).toBe('mickey')
+        expect(a.label).toBe('mickey');
 
-    })
-
-    
+    });
 
     test('test import  with incorrect password', () => {
         try {
-            let a = Account.importAccount('mickey',encryptedPrivateKey, '1234567',account.address)
-        } catch(err) {
-            expect(err).toEqual(ERROR_CODE.Decrypto_ERROR)
+            const a = Account.importAccount('mickey', encryptedPrivateKey, '1234567', account.address);
+        } catch (err) {
+            expect(err).toEqual(ERROR_CODE.Decrypto_ERROR);
         }
 
-    })
-})
+    });
+});

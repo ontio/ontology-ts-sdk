@@ -16,17 +16,17 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PrivateKey, KeyType, KeyParameters, CurveLabel, SignatureScheme, PublicKey, Signature } from '../src/crypto';
-import { str2ab, ab2hexstring, str2hexstr, ab2str } from '../src/utils';
 import { sm2 } from 'sm.js';
+import { CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey, Signature, SignatureScheme } from '../src/crypto';
+import { ab2hexstring, ab2str, str2ab, str2hexstr } from '../src/utils';
 
 describe('SM2 and SM3 cryptographics functions tests', () => {
     test('test SM3 hash', () => {
         const key: PrivateKey = PrivateKey.random(KeyType.SM2);
-        
+
         const msg = 'test';
         const encoded = str2hexstr(msg);
-       
+
         const hash = key.computeHash(encoded, SignatureScheme.SM2withSM3);
 
         expect(hash).toEqual('55e12e91650d2fec56ec74e1d3e4ddbfce2ef3a65890c2a19ecf88a307e76a23');
@@ -38,12 +38,13 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
 
         const pk = '24cb29b451a688e73bb34841a6667a6c814ea4746139cc92abd5e0';
         const privateKey = new PrivateKey(pk, KeyType.SM2, new KeyParameters(CurveLabel.SM2P256V1));
-        
+
         const signature = privateKey.sign(encoded, SignatureScheme.SM2withSM3);
+        // tslint:disable-next-line:no-console
         console.log('signature', signature);
-        
+
         const publicKey = privateKey.getPublicKey();
-        
+
         const result = publicKey.verify(encoded, signature);
         expect(result).toBeTruthy();
     });
@@ -54,15 +55,16 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
 
         const signature = new Signature(
             SignatureScheme.SM2withSM3,
+            // tslint:disable-next-line:max-line-length
             '3132333435363738313233343536373800739a23d629d9e6c5a17aa03323dfce98b68753ab4715d0d80ef27a6f9d80a6dc80eb7b959d3afc64f41d92edd0df37bfaefcc8e52b9aeb0b2037159f8c1ab9bd'
         );
-        
+
         const publicKey = new PublicKey(
             '03b8116ad47c29c22ba35d36f7352b667b7f5075c36523998e7e1ff2364e1de186',
             KeyType.SM2,
             new KeyParameters(CurveLabel.SM2P256V1)
-        )
-        
+        );
+
         const result = publicKey.verify(encoded, signature);
         expect(result).toBeTruthy();
     });

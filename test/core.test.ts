@@ -16,81 +16,86 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- 
-import * as core from '../src/core'
-import * as utils from '../src/utils'
-import { verifySignature, getMerkleProof, verifyExpiration, getPkStatus, verifyClaimSignature, generateOntid, getPublicKey, sha256 } from '../src/core';
-import { PK_STATUS, PrivateKey, KeyType, CurveLabel, KeyParameters } from '../src/crypto';
-import {Claim, Metadata } from '../src/claim'
+import { Claim, Metadata } from '../src/claim';
+import * as core from '../src/core';
+import { generateOntid, getMerkleProof, getPkStatus, getPublicKey, sha256, verifyClaimSignature,
+    verifyExpiration, verifySignature
+} from '../src/core';
+import { CurveLabel, KeyParameters, KeyType, PK_STATUS, PrivateKey } from '../src/crypto';
+import * as utils from '../src/utils';
 
-describe('test core', ()=>{
+// tslint:disable : no-console
+describe('test core', () => {
 
-    var privateKey:string,
-        wifKey:string
+    let privateKey: string;
+    let wifKey: string;
 
     beforeAll(() => {
-        privateKey = utils.ab2hexstring( core.generatePrivateKey() )
-    })
+        privateKey = utils.ab2hexstring( core.generatePrivateKey() );
+    });
 
     test('test getWIFFromPrivateKey', () => {
-        wifKey = core.getWIFFromPrivateKey(privateKey)
-        expect(wifKey).toBeDefined()
-    })
+        wifKey = core.getWIFFromPrivateKey(privateKey);
+        expect(wifKey).toBeDefined();
+    });
 
     test('test getPrivateKeyFromWIF', () => {
-        let key = core.getPrivateKeyFromWIF(wifKey)
-        expect(key).toEqual(privateKey)
-    })
+        const key = core.getPrivateKeyFromWIF(wifKey);
+        expect(key).toEqual(privateKey);
+    });
 
     test('get public key', () => {
-        let pkBuffer = core.getPublicKey(privateKey, true)
-        let pk = utils.ab2hexstring(pkBuffer)
-        console.log('get pk: ' + pk)
-        expect(pk).toBeDefined()
-    })
+        const pkBuffer = core.getPublicKey(privateKey, true);
+        const pk = utils.ab2hexstring(pkBuffer);
+        console.log('get pk: ' + pk);
+        expect(pk).toBeDefined();
+    });
 
     test('encrypt private key', () => {
+        // tslint:disable-next-line:no-shadowed-variable
         const privateKey = new PrivateKey('b02304dcb35bc9a055147f07b2a3291db4ac52f664ec38b436470c98db4200d9');
-        const encrypt = privateKey.encrypt('123456')
-        console.log('encrypt: '+ encrypt.key)
-    })
+        const encrypt = privateKey.encrypt('123456');
+        console.log('encrypt: ' + encrypt.key);
+    });
 
     test('sign and verify', () => {
+        // tslint:disable-next-line:no-shadowed-variable
         const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
-        const data = utils.str2hexstr('hello world')
-        const signed = privateKey.sign(data)
-        console.log('signed: ' + signed.value)
+        const data = utils.str2hexstr('hello world');
+        const signed = privateKey.sign(data);
+        console.log('signed: ' + signed.value);
 
-        const pk = privateKey.getPublicKey()
-        const verifyResult = pk.verify(data, signed)
-        console.log('verifyResult: ' + verifyResult)
-        expect(verifyResult).toBeTruthy()
-    })
+        const pk = privateKey.getPublicKey();
+        const verifyResult = pk.verify(data, signed);
+        console.log('verifyResult: ' + verifyResult);
+        expect(verifyResult).toBeTruthy();
+    });
 
-    var claim = {
-        "Context": "claim:github_authentication",
-        "Content": {
-            "GistCreateTime": "2018-04-02T13:33:46Z",
-            "Email": "919506719@qq.com",
-            "Alias": "zg919506719",
-            "Bio": "Android",
-            "Id": "17962347",
-            "GistUrl": "https://gist.github.com/4c6eeed8c4e2eb8618ac503b6fc0d930",
-            "Avatar": "https://avatars2.githubusercontent.com/u/17962347?v=4",
-            "Name": "朱刚"
+    const claim = {
+        Context: 'claim:github_authentication',
+        Content: {
+            GistCreateTime: '2018-04-02T13:33:46Z',
+            Email: '919506719@qq.com',
+            Alias: 'zg919506719',
+            Bio: 'Android',
+            Id: '17962347',
+            GistUrl: 'https://gist.github.com/4c6eeed8c4e2eb8618ac503b6fc0d930',
+            Avatar: 'https://avatars2.githubusercontent.com/u/17962347?v=4',
+            Name: '朱刚'
         },
-        "Signature": {
-            "Format": "pgp",
-            "Value": "6d5ae8f66b6c9e1dbdbe1be6aa66f2dae58f4ea92514de34143fe35634c411fc966806c6edf77f28da6559baab9bcd97a0eb7516412c28355ddbb9a548a9afb1",
-            "Algorithm": "ECDSAwithSHA256"
+        Signature: {
+            Format: 'pgp',
+            // tslint:disable-next-line:max-line-length
+            Value: '6d5ae8f66b6c9e1dbdbe1be6aa66f2dae58f4ea92514de34143fe35634c411fc966806c6edf77f28da6559baab9bcd97a0eb7516412c28355ddbb9a548a9afb1',
+            Algorithm: 'ECDSAwithSHA256'
         },
-        "Metadata": {
-            "Issuer": "did:ont:TVvLUjRmkco7S5LgJ1fjNpnnJCYyS1uFHF",
-            "CreateTime": "2018-04-02T13:33:57Z",
-            "Subject": "did:ont:TVvLUjRmkco7S5LgJ1fjNpnnJCYyS1uFHF"
+        Metadata: {
+            Issuer: 'did:ont:TVvLUjRmkco7S5LgJ1fjNpnnJCYyS1uFHF',
+            CreateTime: '2018-04-02T13:33:57Z',
+            Subject: 'did:ont:TVvLUjRmkco7S5LgJ1fjNpnnJCYyS1uFHF'
         },
-        "Id": "0653401141e15edcb3fea6e39c38bd3fcaa178d66b22384c3eb8cdb75aac259e"
-    }
+        Id: '0653401141e15edcb3fea6e39c38bd3fcaa178d66b22384c3eb8cdb75aac259e'
+    };
 
     // test('verify pkStatus', async () => {
     //     let issuerDid = claim.Metadata.Issuer
@@ -108,4 +113,18 @@ describe('test core', ()=>{
     //     console.log(res)
     // })
 
-})
+    test('test_mnemonic', () => {
+        const seed = utils.ab2hexstring(core.generateRandomArray(16));
+        const pri = core.sha256(seed);
+        console.log('pri: ' + pri);
+        const mn = core.generateMnemonic(seed).split(' ');
+        console.log(mn);
+        expect(mn.length).toEqual(12);
+        const parsed = core.parseMnemonic(mn.join(' '));
+        const parsedHash = core.sha256(parsed);
+        console.log('parsed: ' + parsed);
+        expect(parsedHash).toEqual(pri);
+
+    });
+
+});

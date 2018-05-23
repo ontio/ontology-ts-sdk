@@ -27,6 +27,7 @@
 *************************************************************************************
 */
 import axios from 'axios';
+import * as bip39 from 'bip39';
 import { Account } from '../account';
 import { Claim } from '../claim/claim';
 import { HTTP_REST_PORT, HTTP_WS_PORT, REST_API, TEST_NODE } from '../consts';
@@ -329,13 +330,20 @@ export class SDK {
 
     static createAccount(label: string, password: string, callback?: string) {
         const account = new Account();
-        const privateKey = PrivateKey.random();
+        // generate mnemnic
+        const mnemonic = bip39.generateMnemonic();
+        // generate seed
+        const seed = bip39.mnemonicToSeedHex(mnemonic);
+        // generate privateKey
+        const pri = seed.substr(0, 64);
+        const privateKey = new PrivateKey(pri);
         account.create(privateKey, password, label);
         const result = account.toJson();
         const obj = {
             error : ERROR_CODE.SUCCESS,
             result,
-            desc : ''
+            desc : '',
+            mnemonic
         };
 
         if (callback) {
@@ -431,8 +439,16 @@ export class SDK {
     ) {
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        let check;
+        if (checksum.length === 8) {
+            check = checksum;
+        } else if (checksum.length === 40 || checksum.length === 34) {
+            check = new Address(checksum);
+        } else {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
+            privateKey = encryptedPrivateKeyObj.decrypt(password, check);
         } catch (err) {
             const result = this.getDecryptError(err);
 
@@ -856,5 +872,25 @@ export class SDK {
             sendBackResult2Native(JSON.stringify(result), callback);
         }
         return result;
+    }
+
+    static importAccountMnemonic(mnemonic: string, password: string, callback: string) {
+        const seed = bip39.mnemonicToSeedHex(mnemonic);
+        const pri = seed.substr(0, 64);
+        const privateKey = new PrivateKey(pri);
+        const account = new Account();
+        account.create(privateKey, password);
+        const result = account.toJson();
+        const obj = {
+            error: ERROR_CODE.SUCCESS,
+            result,
+            desc: '',
+            mnemonic
+        };
+
+        if (callback) {
+            sendBackResult2Native(JSON.stringify(obj), callback);
+        }
+        return obj;
     }
 }

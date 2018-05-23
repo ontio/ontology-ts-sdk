@@ -16,44 +16,46 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Wallet} from '../src/wallet'
-import {Account} from '../src/account'
-import * as core from '../src/core'
-import * as utils from '../src/utils'
-import * as scrypt from '../src/scrypt'
-import { Identity } from '../src/identity';
+import { Account } from '../src/account';
+import * as core from '../src/core';
 import { PrivateKey } from '../src/crypto';
+import { Identity } from '../src/identity';
+import * as scrypt from '../src/scrypt';
+import * as utils from '../src/utils';
+import { Wallet } from '../src/wallet';
 
-describe('test wallet', ()=>{
-    var wallet:Wallet,
-        walletDataStr:string
-    beforeAll(()=>{
-        console.log(Wallet)
-        wallet = new Wallet()
-        let privateKey = PrivateKey.random()
-        wallet.create('mickey')
-        walletDataStr = wallet.toJson()
-    })
+// tslint:disable:no-console
+describe('test wallet', () => {
+    // tslint:disable-next-line:one-variable-per-declaration
+    let wallet: Wallet,
+        walletDataStr: string;
+    beforeAll(() => {
+        console.log(Wallet);
+        wallet = new Wallet();
+        const privateKey = PrivateKey.random();
+        wallet.create('mickey');
+        walletDataStr = wallet.toJson();
+    });
 
-    it('test create wallet with name and password', ()=>{
-        expect(walletDataStr).toBeDefined()
-    })
+    it('test create wallet with name and password', () => {
+        expect(walletDataStr).toBeDefined();
+    });
 
     it('test add identity', () => {
-        let privateKey = PrivateKey.random()
+        const privateKey = PrivateKey.random();
 
-        let identity = new Identity()
-        identity.create(privateKey, '123456', 'mickey')
-        wallet.addIdentity(identity)
-        expect(wallet.identities.length).toEqual(1)
-    })
+        const identity = new Identity();
+        identity.create(privateKey, '123456', 'mickey');
+        wallet.addIdentity(identity);
+        expect(wallet.identities.length).toEqual(1);
+    });
 
     it('test add account', () => {
-        let privateKey = PrivateKey.random()
-        let ac = new Account()
-        ac.create(privateKey, '123456', 'mickey')
-        wallet.addAccount(ac)
-        expect(wallet.accounts.length).toEqual(1)
-    })
+        const privateKey = PrivateKey.random();
+        const ac = new Account();
+        ac.create(privateKey, '123456', 'mickey');
+        wallet.addAccount(ac);
+        expect(wallet.accounts.length).toEqual(1);
+    });
 
-})
+});

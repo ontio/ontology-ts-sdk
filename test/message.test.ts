@@ -16,23 +16,23 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { extractOntId, extractKeyId, retrievePublicKey, Message } from '../src/message';
 import { PrivateKey } from '../src/crypto';
+import { extractKeyId, extractOntId, Message, retrievePublicKey } from '../src/message';
 
-describe('test message', ()=> {
+describe('test message', () => {
     const restUrl = 'http://polaris1.ont.io:20334';
     const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
 
     class TestMessage extends Message {
+        static deserialize(jwt: string): TestMessage {
+            return super.deserializeInternal(jwt, (m, s) => new TestMessage(m, s));
+        }
         payloadToJSON(): any {
             return {};
         }
-    
-        payloadFromJSON(json: any): void {
-        }
 
-        static deserialize(jwt: string): TestMessage {
-            return super.deserializeInternal(jwt, (m, s) => new TestMessage(m, s));
+        // tslint:disable-next-line:no-empty
+        payloadFromJSON(json: any): void {
         }
     }
 
@@ -79,8 +79,8 @@ describe('test message', ()=> {
         }, undefined);
 
         expect(msg.serializeUnsigned()).toEqual('eyJ0eXAiOiJKV1QifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9udD' +
-            'pUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWl' + 
-            'tZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzMDE1fQ')
+            'pUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWl' +
+            'tZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzMDE1fQ');
     });
 
     test('test messageId generation', async () => {
@@ -103,7 +103,7 @@ describe('test message', ()=> {
         }, undefined);
 
         const publicKeyId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-1';
-        
+
         await msg.sign(restUrl, publicKeyId, privateKey);
 
         expect(msg.serialize()).toEqual('eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
@@ -128,7 +128,7 @@ describe('test message', ()=> {
 
     test('test unsigned message deserialization', async () => {
         const serialized = 'eyJ0eXAiOiJKV1QifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9udD' +
-            'pUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWl' + 
+            'pUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWl' +
             'tZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzMDE1fQ';
 
         const msg = TestMessage.deserialize(serialized);
@@ -141,11 +141,11 @@ describe('test message', ()=> {
     });
 
     test('test signed message deserialization', async () => {
-        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRp' + 
-            'ZDpvbnQ6VEdwb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiO' + 
-            'iIxIiwiaXNzIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic' + 
-            '3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxN' + 
-            'TI1ODAwODIzMDE1fQ.ems6wDdb9UncdNFq6qtOJuBKaMhE-fskAQAyId9T7oI8ZfkryLElEctQfF' + 
+        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRp' +
+            'ZDpvbnQ6VEdwb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiO' +
+            'iIxIiwiaXNzIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic' +
+            '3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxN' +
+            'TI1ODAwODIzMDE1fQ.ems6wDdb9UncdNFq6qtOJuBKaMhE-fskAQAyId9T7oI8ZfkryLElEctQfF' +
             'YB2zWf4fVPTNwmYTz0noOeudb8ag';
 
         const msg = TestMessage.deserialize(serialized);
@@ -156,16 +156,16 @@ describe('test message', ()=> {
         expect(msg.metadata.issuedAt).toEqual(1525800823015);
         expect(msg.signature.algorithm).toBeDefined();
         expect(msg.signature.publicKeyId).toBe('did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-1');
-        expect(msg.signature.value).toBe('7a6b3ac0375bf549dc74d16aeaab4e26e04a68c844f9fb2401003221d' + 
+        expect(msg.signature.value).toBe('7a6b3ac0375bf549dc74d16aeaab4e26e04a68c844f9fb2401003221d' +
             'f53ee823c65f92bc8b12511cb507c5601db359fe1f54f4cdc26613cf49e839eb9d6fc6a');
     });
 
     test('test verify', async () => {
-        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRp' + 
-            'ZDpvbnQ6VEdwb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiO' + 
-            'iIxIiwiaXNzIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic' + 
-            '3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxN' + 
-            'TI1ODAwODIzMDE1fQ.ems6wDdb9UncdNFq6qtOJuBKaMhE-fskAQAyId9T7oI8ZfkryLElEctQfF' + 
+        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRp' +
+            'ZDpvbnQ6VEdwb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiO' +
+            'iIxIiwiaXNzIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic' +
+            '3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxN' +
+            'TI1ODAwODIzMDE1fQ.ems6wDdb9UncdNFq6qtOJuBKaMhE-fskAQAyId9T7oI8ZfkryLElEctQfF' +
             'YB2zWf4fVPTNwmYTz0noOeudb8ag';
 
         const msg = TestMessage.deserialize(serialized);
@@ -176,11 +176,11 @@ describe('test message', ()=> {
     });
 
     test('test verify tampered', async () => {
-        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRp' + 
-            'ZDpvbnQ6VEdwb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiO' + 
-            'iIxIiwiaXNzIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic' + 
-            '3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzlhIiwiaWF0IjoxN' + 
-            'TI1ODAwODIzMDE1fQ.ems6wDdb9UncdNFq6qtOJuBKaMhE-fskAQAyId9T7oI8ZfkryLElEctQfF' + 
+        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRp' +
+            'ZDpvbnQ6VEdwb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiO' +
+            'iIxIiwiaXNzIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic' +
+            '3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzlhIiwiaWF0IjoxN' +
+            'TI1ODAwODIzMDE1fQ.ems6wDdb9UncdNFq6qtOJuBKaMhE-fskAQAyId9T7oI8ZfkryLElEctQfF' +
             'YB2zWf4fVPTNwmYTz0noOeudb8ag';
 
         const msg = TestMessage.deserialize(serialized);
