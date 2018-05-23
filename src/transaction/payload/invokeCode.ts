@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import Fixed64 from '../../common/fixed64';
-import { hexstr2str, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../../utils';
-import OPCODE from '../opcode';
+import { StringReader } from '../../utils';
 import { VmCode } from '../vmcode';
 import Payload from './payload';
 

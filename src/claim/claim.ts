@@ -22,7 +22,7 @@ import { Message, Metadata } from '../message';
 import RestClient from '../network/rest/restClient';
 import { WebsocketClient } from '../network/websocket/websocketClient';
 import { buildCommitRecordTx, buildGetRecordStatusTx, buildRevokeRecordTx } from '../smartcontract/recordContract';
-import { ab2hexstring, hexstr2str } from '../utils';
+import { hexstr2str } from '../utils';
 import { AttestNotifyEvent } from './attestNotifyEvent';
 import { ClaimProof } from './claimProof';
 

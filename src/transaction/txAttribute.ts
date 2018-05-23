@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import { generateRandomArray } from '../core';
-import { ab2hexstring, hex2VarBytes, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../utils';
+import { hex2VarBytes, num2hexstring, StringReader } from '../utils';
 
 export enum TransactionAttributeUsage {
     Nonce           = 0x00,

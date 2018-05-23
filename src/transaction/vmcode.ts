@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ab2hexstring, hex2VarBytes, num2hexstring, num2VarInt, StringReader } from '../utils';
+import { hex2VarBytes, num2hexstring, StringReader } from '../utils';
 
 export enum VmType {
     NativeVM = 0xFF,

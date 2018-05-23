@@ -17,9 +17,8 @@
  */
 import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
-import Uint160 from '../common/uint160';
 import { Address } from '../crypto/address';
-import { hex2VarBytes, hexstr2str, num2hexstring, num2VarInt, str2hexstr, str2VarBytes, StringReader } from '../utils';
+import { hex2VarBytes, hexstr2str, num2hexstring, str2VarBytes, StringReader } from '../utils';
 
 export class Transfers {
     static deserialize(sr: StringReader) {

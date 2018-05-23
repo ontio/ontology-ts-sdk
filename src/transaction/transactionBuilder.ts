@@ -17,37 +17,26 @@
  */
 
 import { BigNumber } from 'bignumber.js';
-import * as cryptoJS from 'crypto-js';
-import { reverse } from 'dns';
 import Fixed64 from '../common/fixed64';
-import { DEFAULT_GAS_LIMIT, HTTP_REST_PORT, REST_API, TEST_NODE, TOKEN_TYPE } from '../consts';
-import * as core from '../core';
-import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey, SignatureScheme } from '../crypto';
-import { ERROR_CODE } from '../error';
-import AbiFunction from '../smartcontract/abi/abiFunction';
-import AbiInfo from '../smartcontract/abi/abiInfo';
+import { DEFAULT_GAS_LIMIT, REST_API } from '../consts';
+import { Address, PrivateKey, PublicKey, SignatureScheme } from '../crypto';
 import { Parameter,  ParameterType } from '../smartcontract/abi/parameter';
-import json from '../smartcontract/data/idContract.abi';
 import { Contract, State, Transfers } from '../smartcontract/token';
 import {
-    ab2hexstring,
-    axiosPost,
     hex2VarBytes,
     hexstr2str,
     num2hexstring,
     num2VarInt,
     reverseHex,
-    str2hexstr,
-    str2VarBytes
+    str2hexstr
 } from '../utils';
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
-import { Fee, Sig, Transaction, TxType } from './transaction';
-import { TransactionAttribute, TransactionAttributeUsage } from './txAttribute';
+import { Sig, Transaction, TxType } from './transaction';
 import { VmCode, VmType } from './vmcode';
 
-const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
+// const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
 // tslint:disable-next-line:variable-name
 export const Default_params = {
@@ -403,8 +392,6 @@ export const makeInvokeTransaction = (
     return tx;
 };
 
-// tslint:disable-next-line:no-consecutive-blank-lines
-
 export function makeDeployCodeTransaction(
     code: string,
     vmType: VmType = VmType.NEOVM,
@@ -510,11 +497,11 @@ export function sendRawTxRestfulUrl(url: string, preExec: boolean = false) {
     "Version": "1.0.0"
 } */
 
-const enum EventType {
-    Attribute = 'Attribute',
-    Register = 'Register',
-    PublicKey = 'PublicKey'
-}
+// const enum EventType {
+//     Attribute = 'Attribute',
+//     Register = 'Register',
+//     PublicKey = 'PublicKey'
+// }
 
 /**
  * @deprecated Use NotifyEvent.deserialize() instead.

@@ -27,10 +27,9 @@
 *************************************************************************************
 */
 import axios from 'axios';
-import { BigNumber } from 'bignumber.js';
 import { Account } from '../account';
 import { Claim } from '../claim/claim';
-import { HTTP_REST_PORT, HTTP_WS_PORT, ONT_NETWORK, REST_API, TEST_NODE, TEST_ONT_URL } from '../consts';
+import { HTTP_REST_PORT, HTTP_WS_PORT, REST_API, TEST_NODE } from '../consts';
 import * as core from '../core';
 import { Address, PgpSignature, PrivateKey } from '../crypto';
 import { ERROR_CODE } from '../error';
@@ -38,18 +37,13 @@ import { Identity } from '../identity';
 import RestClient from '../network/rest/restClient';
 import { makeClaimOngTx, makeTransferTx } from '../smartcontract/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/ontidContractTxBuilder';
-import { DDO, DDOAttribute } from '../transaction/ddo';
+import { DDOAttribute } from '../transaction/ddo';
 import {
     buildRestfulParam,
-    buildRpcParam,
-    buildTxParam,
-    makeTransferTransaction,
-    parseEventNotify,
     sendRawTxRestfulUrl,
     signTransaction
 } from '../transaction/transactionBuilder';
-import TxSender from '../transaction/txSender';
-import { ab2hexstring, EventEmitter, now, sendBackResult2Native, str2hexstr } from '../utils';
+import { now, sendBackResult2Native } from '../utils';
 import { Wallet } from '../wallet';
 
 export class SDK {
@@ -57,15 +51,15 @@ export class SDK {
     static REST_PORT: string = HTTP_REST_PORT;
     static SOCKET_PORT: string = HTTP_WS_PORT;
 
-    static setServerNode(node : string) {
-        if(node) {
-            let url = ''
-            if(node.indexOf('http') > -1) {
-                url = node.substr('http://'.length)
+    static setServerNode(node: string) {
+        if (node) {
+            let url = '';
+            if (node.indexOf('http') > -1) {
+                url = node.substr('http://'.length);
             } else {
-                url = node
+                url = node;
             }
-            SDK.SERVER_NODE = url
+            SDK.SERVER_NODE = url;
             return;
         }
 
@@ -118,16 +112,17 @@ export class SDK {
             result: walletDataStr,
             desc: '',
             tx : ''
-        }
-        let publicKey = privateKey.getPublicKey()
-        let tx = buildRegisterOntidTx(identity.ontid, publicKey,'0')
-        tx.payer = new Address(payer)
-        signTransaction(tx, privateKey)
-        //add preExec
-        let restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`)
+        };
+
+        const publicKey = privateKey.getPublicKey();
+        const tx = buildRegisterOntidTx(identity.ontid, publicKey, '0');
+        tx.payer = new Address(payer);
+        signTransaction(tx, privateKey);
+        // add preExec
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
-            //preExec success, send real request
-            if (res.Result.Result == '01') {
+            // preExec success, send real request
+            if (res.Result.Result === '01') {
                 // restClient.sendRawTransaction(tx.serialize(), false)
                 obj.tx = tx.serialize();
 
@@ -189,16 +184,16 @@ export class SDK {
             error : ERROR_CODE.SUCCESS,
             result : walletStr,
             desc : ''
-        }
-        //check ontid on chain
-        let tx = buildGetDDOTx(identity.ontid)
-        let param = buildRestfulParam(tx)
-        let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`
-        let url = sendRawTxRestfulUrl(restUrl, true)
-        return axios.post(url, param).then((res:any) => {
-            let result = res.data.Result
+        };
+        // check ontid on chain
+        const tx = buildGetDDOTx(identity.ontid);
+        const param = buildRestfulParam(tx);
+        const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`;
+        const url = sendRawTxRestfulUrl(restUrl, true);
+        return axios.post(url, param).then((res: any) => {
+            const result = res.data.Result;
             if (result.Result) {
-                                    
+                //
             } else {
                 obj.error = ERROR_CODE.UNKNOWN_ONTID;
                 obj.result = '';
@@ -243,20 +238,20 @@ export class SDK {
                 error: ERROR_CODE.SUCCESS,
                 result: walletStr,
                 desc: ''
-            }
-            //check ontid on chain
-            let tx = buildGetDDOTx(identity.ontid)
-            let param = buildRestfulParam(tx)
-            let restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`            
-            let url = sendRawTxRestfulUrl(restUrl, true)
+            };
+            // check ontid on chain
+            const tx = buildGetDDOTx(identity.ontid);
+            const param = buildRestfulParam(tx);
+            const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`;
+            const url = sendRawTxRestfulUrl(restUrl, true);
             return axios.post(url, param).then((res: any) => {
-                let result = res.data.Result
+                const result = res.data.Result;
                 if (result.Result) {
-
+                    //
                 } else {
-                    obj.error = ERROR_CODE.UNKNOWN_ONTID
-                    obj.result = ''
-                    obj.desc = res.data.Result
+                    obj.error = ERROR_CODE.UNKNOWN_ONTID;
+                    obj.result = '';
+                    obj.desc = res.data.Result;
                 }
                 return obj;
             }).catch((err) => {
@@ -291,16 +286,16 @@ export class SDK {
             result,
             desc: '',
             tx : ''
-        }
-        //register ontid
-        let publicKey = privateKey.getPublicKey()
-        let tx = buildRegisterOntidTx(identity.ontid, publicKey,'0')
-        tx.payer = new Address(payer)
-        signTransaction(tx, privateKey)
-        let restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`)
+        };
+        // register ontid
+        const publicKey = privateKey.getPublicKey();
+        const tx = buildRegisterOntidTx(identity.ontid, publicKey, '0');
+        tx.payer = new Address(payer);
+        signTransaction(tx, privateKey);
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
-            //preExec success, send real request
-            if (res.Result.Result == '01') {
+            // preExec success, send real request
+            if (res.Result.Result === '01') {
                 // restClient.sendRawTransaction(tx.serialize(), false)
                 obj.tx = tx.serialize();
 
@@ -406,7 +401,7 @@ export class SDK {
             return result;
         }
 
-        const claimDataObj = JSON.parse(claimData);
+        // const claimDataObj = JSON.parse(claimData);
         const metadata = {
             issuer: ontid,
             subject: ontid,
@@ -458,58 +453,76 @@ export class SDK {
         return obj;
     }
 
-    static getClaim(claimId : string, context: string, issuer : string, subject : string, encryptedPrivateKey: string,
-         password : string, payer:string, callback ?: string ) {
-            let privateKey: PrivateKey;
-            let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)   
-            let checksum = core.getChecksumFromOntid(subject)     
-            try {
-                privateKey = encryptedPrivateKeyObj.decrypt(password,checksum);
-            } catch (err) {
-                let result = this.getDecryptError(err)
-                callback && sendBackResult2Native(JSON.stringify(result), callback)
-                return result
+    static getClaim(
+        claimId: string,
+        context: string,
+        issuer: string,
+        subject: string,
+        encryptedPrivateKey: string,
+        password: string,
+        payer: string,
+        callback ?: string
+    ) {
+        let privateKey: PrivateKey;
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        const checksum = core.getChecksumFromOntid(subject);
+        try {
+            privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
             }
-            let path = 'claim' + claimId
-            let valueObj = {
-                Type : 'JSON',
-                Value : {
-                    Context: context,
-                    Issuer: issuer
+
+            return result;
+        }
+        const path = 'claim' + claimId;
+        const valueObj = {
+            Type : 'JSON',
+            Value : {
+                Context: context,
+                Issuer: issuer
+            }
+        };
+        // const type = 'JSON';
+        const value = JSON.stringify(valueObj);
+        const attr = new DDOAttribute();
+        attr.key = path;
+        attr.type = 'JSON';
+        attr.value = value;
+        const publicKey = privateKey.getPublicKey();
+        const tx = buildAddAttributeTx(subject, [attr], publicKey, '0');
+        tx.payer = new Address(payer);
+        signTransaction(tx, privateKey);
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+            if (res.Result.Result === '01') {
+                // user agent will do this
+                // restClient.sendRawTransaction(tx.serialize(), false)
+                // const hash = core.sha256(core.sha256(tx.serializeUnsignedData()))
+                const obj = {
+                    error: ERROR_CODE.SUCCESS,
+                    result: '',
+                    tx: tx.serialize()
+                };
+
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(obj), callback);
                 }
-            }
-            const type = 'JSON'
-            const value = JSON.stringify(valueObj)
-            let attr = new DDOAttribute()
-            attr.key = path
-            attr.type = 'JSON'
-            attr.value = value
-            let publicKey = privateKey.getPublicKey()
-            let tx = buildAddAttributeTx(subject,[attr], publicKey, '0')
-            tx.payer = new Address(payer)
-            signTransaction(tx, privateKey)
-            let restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`)
-            return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
-                if (res.Result.Result == '01') {
-                    //user agent will do this
-                    // restClient.sendRawTransaction(tx.serialize(), false)
-                    // const hash = core.sha256(core.sha256(tx.serializeUnsignedData()))
-                    let obj = {
-                        error: ERROR_CODE.SUCCESS,
-                        result: '',
-                        tx : tx.serialize()
-                    }
-                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                    return obj
-                } else {
-                    let obj = {
-                        error: ERROR_CODE.PreExec_ERROR,
-                        result: ''
-                    }
-                    callback && sendBackResult2Native(JSON.stringify(obj), callback)
-                    return obj
+                return obj;
+            } else {
+                const obj = {
+                    error: ERROR_CODE.PreExec_ERROR,
+                    result: ''
+                };
+
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(obj), callback);
                 }
+                return obj;
             }
+        }
         ).catch((err: any) => {
             const obj = {
                 error: ERROR_CODE.NETWORK_ERROR,
@@ -530,18 +543,18 @@ export class SDK {
         callback?: string
     ): PgpSignature | object {
         let privateKey: PrivateKey;
-        let encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey)
-        let check : string | Address    
-        if(checksum.length === 8) {
-            check = checksum
-        } else if(checksum.length === 40 || checksum.length === 34) {
-            check = new Address(checksum)
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        let check: string | Address;
+        if (checksum.length === 8) {
+            check = checksum;
+        } else if (checksum.length === 40 || checksum.length === 34) {
+            check = new Address(checksum);
         } else {
-            throw ERROR_CODE.INVALID_PARAMS
-        } 
-        let result   
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        let result;
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password,check);
+            privateKey = encryptedPrivateKeyObj.decrypt(password, check);
         } catch (err) {
             result = this.getDecryptError(err);
 
@@ -724,13 +737,16 @@ export class SDK {
             }
             return result;
         }
-        let addressObj = new Address(address)
-        let tx = makeClaimOngTx(addressObj, addressObj, value,'0')
-        tx.payer = addressObj
-        signTransaction(tx, privateKey)
-        let restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`)
-        return restClient.sendRawTransaction(tx.serialize()).then( res=> {
-            console.log('transfer response: ' + JSON.stringify(res))
+        const addressObj = new Address(address);
+        const tx = makeClaimOngTx(addressObj, addressObj, value, '0');
+        tx.payer = addressObj;
+        signTransaction(tx, privateKey);
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        return restClient.sendRawTransaction(tx.serialize()).then((res) => {
+
+            // tslint:disable-next-line:no-console
+            console.log('transfer response: ' + JSON.stringify(res));
+
             if (res.Error === 0) {
                 const obj = {
                     error: 0,
@@ -804,11 +820,11 @@ export class SDK {
         return result;
     }
 
-    static exportAccountToQrcode(accountDataStr: string, callback : string) {
-        let obj = Account.parseJson(accountDataStr)
-        let checksum = core.getChecksumFromAddress(obj.address)
-        let result = {
-            type: "A",
+    static exportAccountToQrcode(accountDataStr: string, callback: string) {
+        const obj = Account.parseJson(accountDataStr);
+        const checksum = core.getChecksumFromAddress(obj.address);
+        const result = {
+            type: 'A',
             label: obj.label,
             algorithm: 'ECDSA',
             scrypt: {

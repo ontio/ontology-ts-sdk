@@ -16,18 +16,17 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { PrivateKey } from '../crypto';
-import AbiFunction from '../smartcontract/abi/abiFunction';
 import AbiInfo from '../smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
 import abiJson from '../smartcontract/data/attestClaim';
 import { Transaction } from '../transaction/transaction';
-import { makeInvokeTransaction, sendRawTxRestfulUrl, signTransaction } from '../transaction/transactionBuilder';
+import { makeInvokeTransaction, signTransaction } from '../transaction/transactionBuilder';
 import { VmType } from '../transaction/vmcode';
 import { str2hexstr } from '../utils';
 
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
 
-export function buildCommitRecordTx(claimId: string, issuer: string, privateKey: PrivateKey) {
+export function buildCommitRecordTx(claimId: string, issuer: string, privateKey: PrivateKey): Transaction {
     const f = abiInfo.getFunction('Commit');
 
     const name1 = f.parameters[0].getName();

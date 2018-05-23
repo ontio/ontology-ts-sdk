@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ab2hexstring, hex2VarBytes, hexstring2ab, num2VarInt, StringReader } from '../utils';
+import { ab2hexstring, hex2VarBytes, hexstring2ab, StringReader } from '../utils';
 
 const UINT256SIZE = 32;
 

@@ -15,14 +15,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import * as core from './core'
-import { PrivateKey, JsonKey, Address } from './crypto';
-import { ab2hexstring } from './utils'
-import {ERROR_CODE} from './error'
-import { buildRestfulParam } from './transaction/transactionBuilder';
+import { Address, JsonKey, PrivateKey } from './crypto';
+import { generateOntid, generateRandomArray } from './helpers';
+import { ab2hexstring } from './utils';
 
 export class ControlData {
+    static fromJson(json: any): ControlData {
+        return new ControlData(json.id, PrivateKey.deserializeJson(json as JsonKey));
+    }
+
     id: string;
     encryptedKey: PrivateKey;
 
@@ -40,77 +41,47 @@ export class ControlData {
         return {
             id: this.id,
             ...this.encryptedKey.serializeJson()
-        }
-    }
-
-    static fromJson(json: any): ControlData {
-        return new ControlData(json.id, PrivateKey.deserializeJson(json as JsonKey));
+        };
     }
 }
 
 export class Identity {
-
-    ontid: string;
-    label: string;
-    lock: boolean;
-    controls: Array<ControlData> = [];
-    extra: null;
-
-    constructor() {
-    }
-
-    create( privateKey: PrivateKey, keyphrase: string, label: string ) {
-        
-        this.ontid = "";
-        this.label = label;
-        this.lock = false;
-
-        const encryptedPrivateKey = privateKey.encrypt(keyphrase);
-
-        //start from 1
-        const control = new ControlData('1', encryptedPrivateKey);
-        this.controls.push( control );
-
-        // ontid
-        let publicKey = privateKey.getPublicKey()
-        this.ontid = core.generateOntid(publicKey.serializeHex())
-
-        //TODO register ontid
-        //调用方处理register和监听结果
-        return this
-    }
-    
-    static importIdentity(label : string ,encryptedPrivateKey : PrivateKey, password : string, checksum : string|Address): Identity {
-        //create identity
-        let identity = new Identity()
+    static importIdentity(
+        label: string,
+        encryptedPrivateKey: PrivateKey,
+        password: string,
+        checksum: string | Address
+    ): Identity {
+        // create identity
+        const identity = new Identity();
         const privateKey = encryptedPrivateKey.decrypt(password, checksum);
-        if(!label) {
-            label = ab2hexstring (core.generateRandomArray(4))
+        if (!label) {
+            label = ab2hexstring (generateRandomArray(4));
         }
 
-        //generate ontid from p
-        let publicKey = privateKey.getPublicKey()
-        identity.ontid = core.generateOntid(publicKey.serializeHex())
+        // generate ontid from p
+        const publicKey = privateKey.getPublicKey();
+        identity.ontid = generateOntid(publicKey.serializeHex());
         identity.label = label;
         identity.lock = false;
 
         // control
-        let control = new ControlData()
+        const control = new ControlData();
 
-        //start from 1
-        control.id = "1";
+        // start from 1
+        control.id = '1';
         control.encryptedKey = encryptedPrivateKey;
 
         identity.controls.push(control);
 
-        //check ontid on chain
+        // check ontid on chain
         /* return checkOntid(identity.ontid).then((res:any)=>{
             let result
             if(res == ERROR_CODE.SUCCESS) {
                 result = identity
             } else {
                 result = null
-            } 
+            }
             return {
                 error : res,
                 result : result,
@@ -124,39 +95,7 @@ export class Identity {
             }
         }) */
 
-        return identity
-    }
-
-    addControl(control : ControlData) {
-        for(let c of this.controls) {
-            if(c.encryptedKey.key === control.encryptedKey.key) {
-                return;
-            }
-        }
-        control.id = (this.controls.length + 1).toString()
-        this.controls.push(control)
-    }
-
-
-    toJson(): string {
-        return JSON.stringify(this.toJsonObj());
-    }
-
-    /**
-     * Serializes to JSON object.
-     * 
-     * Returned object will not be stringified.
-     * 
-     */
-    toJsonObj(): any {
-        let obj = {
-            ontid: this.ontid,
-            label: this.label,
-            lock: this.lock,
-            controls: this.controls.map(c => c.toJson()),
-            extra: this.extra,
-        }
-        return obj;
+        return identity;
     }
 
     static parseJson(json: string): Identity {
@@ -165,20 +104,75 @@ export class Identity {
 
     /**
      * Deserializes JSON object.
-     * 
+     *
      * Object should be real object, not stringified.
-     * 
+     *
      * @param obj JSON object
      */
     static parseJsonObj(obj: any): Identity {
-        let id = new Identity()
-        id.ontid = obj.ontid
-        id.label = obj.label
-        id.lock = obj.lock
-        id.controls = (obj.controls as any[]).map(c => ControlData.fromJson(c))
-        id.extra = obj.extra
+        const id = new Identity();
+        id.ontid = obj.ontid;
+        id.label = obj.label;
+        id.lock = obj.lock;
+        id.controls = (obj.controls as any[]).map((c) => ControlData.fromJson(c));
+        id.extra = obj.extra;
         return id;
     }
 
-}
+    ontid: string;
+    label: string;
+    lock: boolean;
+    controls: ControlData[] = [];
+    extra: null;
 
+    create(privateKey: PrivateKey, keyphrase: string, label: string) {
+        this.ontid = '';
+        this.label = label;
+        this.lock = false;
+
+        const encryptedPrivateKey = privateKey.encrypt(keyphrase);
+
+        // start from 1
+        const control = new ControlData('1', encryptedPrivateKey);
+        this.controls.push( control );
+
+        // ontid
+        const publicKey = privateKey.getPublicKey();
+        this.ontid = generateOntid(publicKey.serializeHex());
+
+        // TODO register ontid
+        // 调用方处理register和监听结果
+        return this;
+    }
+
+    addControl(control: ControlData) {
+        for (const c of this.controls) {
+            if (c.encryptedKey.key === control.encryptedKey.key) {
+                return;
+            }
+        }
+        control.id = (this.controls.length + 1).toString();
+        this.controls.push(control);
+    }
+
+    toJson(): string {
+        return JSON.stringify(this.toJsonObj());
+    }
+
+    /**
+     * Serializes to JSON object.
+     *
+     * Returned object will not be stringified.
+     *
+     */
+    toJsonObj(): any {
+        const obj = {
+            ontid: this.ontid,
+            label: this.label,
+            lock: this.lock,
+            controls: this.controls.map((c) => c.toJson()),
+            extra: this.extra
+        };
+        return obj;
+    }
+}

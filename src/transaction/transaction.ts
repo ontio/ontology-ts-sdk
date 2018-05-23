@@ -18,14 +18,12 @@
 
 import * as cryptoJS from 'crypto-js';
 import Fixed64 from '../common/fixed64';
-import Uint160 from '../common/uint160';
 import Uint256 from '../common/uint256';
 import { DEFAULT_GAS_LIMIT } from '../consts';
-import * as core from '../core';
 import { PublicKey } from '../crypto';
 import { Address } from '../crypto/address';
-import AbiFunction from '../smartcontract/abi/abiFunction';
-import { ab2hexstring, hex2VarBytes, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../utils';
+import { generateRandomArray } from '../helpers';
+import { ab2hexstring, hex2VarBytes, num2hexstring, StringReader } from '../utils';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import Payload from './payload/payload';
@@ -208,7 +206,7 @@ export class Transaction {
     hash: Uint256;
 
     constructor() {
-        this.nonce = ab2hexstring(core.generateRandomArray(4));
+        this.nonce = ab2hexstring(generateRandomArray(4));
         this.gasPrice = new Fixed64();
 
         const limit = num2hexstring(DEFAULT_GAS_LIMIT, 8, true);
