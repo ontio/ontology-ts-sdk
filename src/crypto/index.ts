@@ -16,6 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+export { Address } from './address';
 export { KeyType } from './KeyType';
 export { CurveLabel } from './CurveLabel';
 export { SignatureScheme } from './SignatureScheme';
@@ -23,4 +24,3 @@ export { KeyParameters, JsonKeyParameters, JsonKey } from './Key';
 export { PrivateKey } from './PrivateKey';
 export { PublicKey, PK_STATUS, PublicKeyStatus } from './PublicKey';
 export { Signature, PgpSignature } from './Signature';
-export { Address } from './address';

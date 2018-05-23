@@ -1,4 +1,5 @@
-import { PublicKey } from './../src/crypto/PublicKey';
+import * as CryptoJS from 'crypto-js';
+import { Account } from '../src/account';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -16,47 +17,68 @@ import { PublicKey } from './../src/crypto/PublicKey';
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as CryptoJS from 'crypto-js'
-import * as scrypt from '../src/scrypt'
-import * as core from '../src/core'
-import { ERROR_CODE } from '../src/error';
-import { ab2hexstring, str2hexstr } from '../src/utils';
-import { PrivateKey, KeyType, KeyParameters, CurveLabel , Address} from '../src/crypto';
-import { Account } from '../src/account';
+import * as core from '../src/core';
 import { u160ToAddress } from '../src/core';
+import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src/crypto';
+import { ERROR_CODE } from '../src/error';
+import * as scrypt from '../src/scrypt';
+import { ab2hexstring, str2hexstr } from '../src/utils';
+import { PublicKey } from './../src/crypto/PublicKey';
 
 describe('test scrypt', () => {
     it('test encrypt and decrypt', () => {
-        // let privateKey = PrivateKey.random();
-        let privateKey = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07')
-        let publicKey = privateKey.getPublicKey().serializeHex()
-        let address = Address.addressFromPubKey(privateKey.getPublicKey())
-        console.log('add: '+address)
-        
-        let encrypt = scrypt.encrypt(privateKey.key, publicKey, '123456')
-        expect(encrypt).toBeDefined()
+        // const privateKey = PrivateKey.random();
+        const privateKey = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07');
+        const publicKey = privateKey.getPublicKey().serializeHex();
+        const address = Address.addressFromPubKey(privateKey.getPublicKey());
+        // tslint:disable-next-line:no-console
+        console.log('add: ' + address.toBase58());
 
-        let encryptPri = privateKey.encrypt('123456')
+        const encrypt = scrypt.encrypt(privateKey.key, publicKey, '123456');
+        // tslint:disable-next-line:no-console
+        console.log('encrypt: ' + encrypt);
+        expect(encrypt).toBeDefined();
 
-        let decryptPri =  encryptPri.decrypt('123456', address)
+        const encryptPri = privateKey.encrypt('123456');
 
-        expect(decryptPri.key).toEqual(privateKey.key)
-        
+        const decryptPri =  encryptPri.decrypt('123456', address);
+
+        expect(decryptPri.key).toEqual(privateKey.key);
+
         // console.log('encrypt : '+ encrypt)
 
-        // let checksum = core.getChecksumFromAddress(address)
-        
-        // let decrypt = scrypt.decrypt(encrypt, '123456', checksum)
+        // const checksum = core.getChecksumFromAddress(address)
+
+        // const decrypt = scrypt.decrypt(encrypt, '123456', checksum)
         // expect(decrypt).toEqual(privateKey.key)
-        
-        
 
         // const key = '6PYReg3c35DGiwKvfTCKSFHEUv9imMoLNXu5RWsYi3Y9C8EQzTDKfWvLzv';
-        // let pass = 'passwordtest'
-        // let pri = scrypt.decrypt(key, pass)
+        // const pass = 'passwordtest'
+        // const pri = scrypt.decrypt(key, pass)
         // scrypt.checkDecrypted(key, pri, new PrivateKey(pri).getPublicKey().key);
         // console.log(pri)
-    })
+    });
 
-})
+    test('encrypt_with16384', () => {
+        const params = {
+            cost: 16384,
+            blockSize: 8,
+            parallel: 8,
+            size: 64
+        };
 
+        const enc = new PrivateKey('lZSpCtGa0VtEUPXr27xSKAg+I4hIucDeOIidbN1AyXE=');
+        const pri = enc.decrypt('111111', new Address('TA7WWJ4FqyADWDrU7ZLhYX2woFoFvDfw8P'), params);
+        expect(pri).toBeDefined();
+
+        const pri2 = PrivateKey.random();
+        const enc2 = pri2.encrypt('111111', params);
+        const pub = pri2.getPublicKey();
+        const address = Address.addressFromPubKey(pub);
+        // tslint:disable-next-line:no-console
+        console.log('address: ' + address.toBase58());
+        // tslint:disable-next-line:no-console
+        console.log('enc2: ' + enc2.key);
+    });
+
+});

@@ -18,7 +18,7 @@
 
 import * as uuid from 'uuid';
 import { Claim, RevocationType } from '../src/claim/claim';
-import { PrivateKey, Signature, KeyType } from '../src/crypto';
+import { KeyType, PrivateKey, Signature } from '../src/crypto';
 import { now } from '../src/utils';
 
 describe('test attest claim', () => {
@@ -48,14 +48,14 @@ describe('test attest claim', () => {
     test('test attest new', async () => {
         const claim = randomClaim();
         const result = await claim.attest(sockUrl, privateKey);
-        
+
         expect(result).toBeTruthy();
     }, 10000);
 
     test('test attest existing', async () => {
         const claim = claimWithId('4df086e3-713d-489d-96fe-8c1bb08ce3ea');
         const result = await claim.attest(sockUrl, privateKey);
-        
+
         expect(result).toBeFalsy();
     }, 10000);
 
@@ -65,14 +65,14 @@ describe('test attest claim', () => {
         const resultAttest = await claim.attest(sockUrl, privateKey);
         expect(resultAttest).toBeTruthy();
 
-        const resultRevoke = await claim.revoke(sockUrl, privateKey);        
+        const resultRevoke = await claim.revoke(sockUrl, privateKey);
         expect(resultRevoke).toBeTruthy();
     }, 20000);
 
     test('test revoke non existing', async () => {
         const claim = randomClaim();
-        const resultRevoke = await claim.revoke(sockUrl, privateKey);        
-        
+        const resultRevoke = await claim.revoke(sockUrl, privateKey);
+
         expect(resultRevoke).toBeFalsy();
     }, 10000);
 
@@ -104,7 +104,7 @@ describe('test attest claim', () => {
         const resultAttest = await claim.attest(sockUrl, privateKey);
         expect(resultAttest).toBeTruthy();
 
-        const resultRevoke = await claim.revoke(sockUrl, privateKey);        
+        const resultRevoke = await claim.revoke(sockUrl, privateKey);
         expect(resultRevoke).toBeTruthy();
 
         const result = await claim.getStatus(restUrl);

@@ -15,18 +15,26 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { PrivateKey } from '../crypto';
+import { Address  } from '../crypto';
 import AbiInfo from '../smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
 import abiJson from '../smartcontract/data/attestClaim';
-import { Transaction } from '../transaction/transaction';
-import { makeInvokeTransaction, signTransaction } from '../transaction/transactionBuilder';
+import { makeInvokeTransaction } from '../transaction/transactionBuilder';
 import { VmType } from '../transaction/vmcode';
 import { str2hexstr } from '../utils';
+import { Transaction } from './../transaction/transaction';
 
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
 
-export function buildCommitRecordTx(claimId: string, issuer: string, privateKey: PrivateKey): Transaction {
+/**
+ * attest claim
+ * @param claimId claimId
+ * @param issuer issuer's ONT ID
+ * @param subject issuer's ONT ID
+ * @param gas gas
+ * @param payer payer
+ */
+export function buildCommitRecordTx(claimId: string, issuer: string, subject: string,  gas: string, payer: Address)  {
     const f = abiInfo.getFunction('Commit');
 
     const name1 = f.parameters[0].getName();
@@ -37,17 +45,21 @@ export function buildCommitRecordTx(claimId: string, issuer: string, privateKey:
     if (issuer.substr(0, 3) === 'did') {
         issuer = str2hexstr(issuer);
     }
-
+    if (subject.substr(0, 3) === 'did') {
+        subject = str2hexstr(issuer);
+    }
+    const value = issuer + '&' + subject;
     const p1 = new Parameter(name1, type1, str2hexstr(claimId));
-    const p2 = new Parameter(name2, type2, issuer);
+    const p2 = new Parameter(name2, type2, value);
     f.setParamsValue(p1, p2);
 
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, '0');
-    signTransaction(tx, privateKey);
+    let tx = new Transaction();
+    tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gas, payer);
+    // signTransaction(tx, privateKey);
     return tx;
 }
 
-export function buildRevokeRecordTx(claimId: string, revokerOntid: string, privateKey: PrivateKey) {
+export function buildRevokeRecordTx(claimId: string, revokerOntid: string, gas: string, payer: Address) {
     const f = abiInfo.getFunction('Revoke');
 
     const name1 = f.parameters[0].getName();
@@ -61,9 +73,9 @@ export function buildRevokeRecordTx(claimId: string, revokerOntid: string, priva
     const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, revokerOntid);
     f.setParamsValue(p1, p2);
 
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, '0');
-    signTransaction(tx, privateKey);
-    return tx;
+    return makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gas, payer);
+    // signTransaction(tx, privateKey);
+
 }
 
 export function buildGetRecordStatusTx(claimId: string) {

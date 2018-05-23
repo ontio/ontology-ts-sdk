@@ -16,52 +16,58 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import AbiInfo from '../src/smartcontract/abi/abiInfo'
-import AbiFunction from '../src/smartcontract/abi/abiFunction'
-import {Parameter, ParameterType} from '../src/smartcontract/abi/parameter'
+import AbiFunction from '../src/smartcontract/abi/abiFunction';
+import AbiInfo from '../src/smartcontract/abi/abiInfo';
+import { Parameter, ParameterType } from '../src/smartcontract/abi/parameter';
 
-import json from '../src/smartcontract/data/idContract.abi'
-import {Transaction} from '../src/transaction/transaction'
+import json from '../src/smartcontract/data/idContract.abi';
+import { Transaction } from '../src/transaction/transaction';
 import { VmType } from './../src/transaction/vmcode';
 
-import { makeInvokeTransaction} from '../src/transaction/transactionBuilder'
-import {str2hexstr} from '../src/utils'
+import { makeInvokeTransaction } from '../src/transaction/transactionBuilder';
+import { str2hexstr } from '../src/utils';
 
 describe('test AbiInfo', () => {
 
-    var a : AbiInfo,
-        f : AbiFunction,
-        tx : Transaction,
-        serialized : string
+    // tslint:disable-next-line:one-variable-per-declaration
+    let a: AbiInfo,
+        f: AbiFunction,
+        tx: Transaction,
+        serialized: string;
 
-    a = AbiInfo.parseJson(JSON.stringify(json))
-    f = a.getFunction('regIDWithPublicKey')
+    a = AbiInfo.parseJson(JSON.stringify(json));
+    f = a.getFunction('regIDWithPublicKey');
     test('test read json', () => {
-        
-        expect(f.parameters.length).toEqual(2)
 
-        let ontidhex = str2hexstr('did:ont:TQLASLtT6pWbThcSCYU1biVqhMnzhTgLFq')
-        let p1 = new Parameter('ontid', ParameterType.ByteArray,ontidhex)
-        let p2 = new Parameter('publicKey', ParameterType.ByteArray, '039fbb47841f7338c0c654addd6225995642b5b6d492413563f7f8755ba83c0ecd')
+        expect(f.parameters.length).toEqual(2);
 
-        f.setParamsValue(p1,p2)
+        const ontidhex = str2hexstr('did:ont:TQLASLtT6pWbThcSCYU1biVqhMnzhTgLFq');
+        const p1 = new Parameter('ontid', ParameterType.ByteArray, ontidhex);
+        // tslint:disable-next-line:max-line-length
+        const p2 = new Parameter('publicKey', ParameterType.ByteArray, '039fbb47841f7338c0c654addd6225995642b5b6d492413563f7f8755ba83c0ecd');
 
-        console.log(f)
+        f.setParamsValue(p1, p2);
 
-    })
+        // tslint:disable-next-line:no-console
+        console.log(f);
+
+    });
 
     test('test make invokecode tx', () => {
-        tx = makeInvokeTransaction( f.name,f.parameters, a.getHash(), VmType.NEOVM, '0')
-        console.log(tx)
-        
-        serialized = tx.serialize()
-        console.log('serialize: '+serialized)
-        expect(serialized).toBeDefined()
-    })
+        tx = makeInvokeTransaction( f.name, f.parameters, a.getHash(), VmType.NEOVM, '0');
+        // tslint:disable-next-line:no-console
+        console.log(tx);
+
+        serialized = tx.serialize();
+        // tslint:disable-next-line:no-console
+        console.log('serialize: ' + serialized);
+        expect(serialized).toBeDefined();
+    });
 
     test('test deserialize', () => {
-        let t = Transaction.deserialize(serialized)
-        console.log('deserialized: '+ t.toString())
-        expect(t.txAttributes.length).toEqual(0)
-    }) 
-})
+        const t = Transaction.deserialize(serialized);
+        // tslint:disable-next-line:no-console
+        console.log('deserialized: ' + t.toString());
+        expect(t.txAttributes.length).toEqual(0);
+    });
+});

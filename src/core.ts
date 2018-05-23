@@ -17,6 +17,7 @@
  */
 import axios from 'axios';
 import * as bigInteger from 'bigi';
+import * as bip39 from 'bip39';
 import * as cryptoJS from 'crypto-js';
 import * as ecurve from 'ecurve';
 import * as wif from 'wif';
@@ -159,6 +160,14 @@ export function getPrivateKeyFromWIF(wifkey: string): string {
 
 export function getWIFFromPrivateKey(privateKey: string): string {
     return wif.encode(128, Buffer.from(privateKey, 'hex'), true);
+}
+
+export function generateMnemonic(hexstr: string) {
+    return bip39.entropyToMnemonic(hexstr);
+}
+
+export function parseMnemonic(str: string) {
+    return bip39.mnemonicToEntropy(str);
 }
 
 /**

@@ -16,8 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Claim, RevocationType } from '../src/claim/claim'
-import { PrivateKey, Signature, KeyType } from '../src/crypto';
+import { Claim, RevocationType } from '../src/claim/claim';
+import { KeyType, PrivateKey, Signature } from '../src/crypto';
 
 describe('test claim', () => {
     const restUrl = 'http://polaris1.ont.io:20334';

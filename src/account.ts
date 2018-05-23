@@ -97,7 +97,10 @@ export class Account {
     signatureScheme: string;
     isDefault: boolean;
 
-    create(privateKey: PrivateKey, password: string, label: string, signatureScheme?: SignatureScheme ): Account {
+    create(privateKey: PrivateKey, password: string, label?: string, signatureScheme?: SignatureScheme ): Account {
+        if (!label) {
+            label = ab2hexstring(generateRandomArray(4));
+        }
         this.label = label;
         this.lock = false;
         this.passwordHash = sha256(password);
