@@ -1,69 +1,50 @@
-const webpack = require('webpack')
-const CleanWebpackPlugin = require('clean-webpack-plugin')
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
-
-require('babel-polyfill')
+var path = require('path');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+var nodeExternals = require('webpack-node-externals');
 
 let common = {
-  entry: ['babel-polyfill','./src/index.ts'],
-  resolve : {
-    extensions : ['.ts', '.js']
-  },
+  entry: './src/index.ts',
+  devtool: 'source-map',
   module: {
-    loaders: [
+    rules: [
       {
-        test: /\.js$/,
-        // exclude: /(node_modules)/,
-        use: {
-          loader: 'babel-loader'
-        }
-      },
-      { test: /\.ts$/, loader: 'ts-loader' }
+        test: /\.tsx?$/,
+        use: ['babel-loader', 'ts-loader'],
+        exclude: /node_modules/
+      }
     ]
   },
-  node: {
-    fs: 'empty',
-    'child_process': 'empty'
-  },
   plugins: [
-    new CleanWebpackPlugin(['lib/*.js', 'lib/*.js.map', 'lib/types/*'])
-  ]
-}
+    new CleanWebpackPlugin(['lib']),
+  ],
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js']
+  },
+};
 
-module.exports = function (env) {
-  if (env && env.prod) {
-    common.plugins = common.plugins.concat([
-      new UglifyJSPlugin({
-        parallel: true,
-        sourceMap: true
-      }),
-    
-      new webpack.DefinePlugin({
-        'process.env': {
-          'NODE_ENV': JSON.stringify('production')
-        }
-      })
-    ])
-  } else {
-    common.devtool = 'source-map'
-  }
-  return [
-    Object.assign({}, common, {
-      target: 'web',
-      output: {
-        path: __dirname,
-        filename: './lib/browser.js',
-        libraryTarget: 'umd',
-        library: 'Ont' // This is the var name in browser
-      }
-    }),
-    Object.assign({}, common, {
-      target: 'node',
-      output: {
-        path: __dirname,
-        filename: './lib/index.js',
-        libraryTarget: 'umd',
-      }
-    })
-  ]
-}
+module.exports = [
+  Object.assign({}, common, {
+    target: 'web',
+    entry: ['babel-polyfill', './src/index.ts'],
+    output: {
+      path: path.resolve(__dirname, 'lib'),
+      filename: 'browser.js',
+      libraryTarget: 'var',
+      library: 'Ont' // This is the var name in browser
+    },
+    node: {
+      fs: 'empty',
+      child_process: 'empty'
+    }
+  }),
+  Object.assign({}, common, {
+    target: 'node',
+    output: {
+      path: path.resolve(__dirname, 'lib'),
+      filename: 'index.js',
+      libraryTarget: 'commonjs2',
+    },
+    externals: [nodeExternals()]
+  })
+]
+
