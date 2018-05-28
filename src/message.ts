@@ -18,9 +18,10 @@
 
 import * as b64 from 'base64-url';
 import * as uuid from 'uuid';
-import { PK_STATUS, PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from './crypto';
+import { PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from './crypto';
 import RestClient from './network/rest/restClient';
-import { buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
+import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
+import { DDO } from './transaction/ddo';
 import { now } from './utils';
 
 /**
@@ -194,6 +195,11 @@ export abstract class Message {
                     return false;
                 }
 
+                const state = await retrievePublicKeyState(signature.publicKeyId, url);
+                if (state === PublicKeyStatus.REVOKED) {
+                    return false;
+                }
+
                 const publicKey = await retrievePublicKey(signature.publicKeyId, url);
 
                 const msg = this.serializeUnsigned(signature.algorithm, signature.publicKeyId);
@@ -330,17 +336,40 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
     const keyId = extractKeyId(publicKeyId);
 
     const client = new RestClient(url);
+    const tx = buildGetDDOTx(ontId);
+    const response = await client.sendRawTransaction(tx.serialize(), true);
+
+    if (response.Result && response.Result.Result) {
+        const ddo = DDO.deserialize(response.Result.Result);
+
+        const publicKey = ddo.publicKeys.find((pk) => pk.id === keyId);
+
+        if (publicKey === undefined) {
+            throw new Error('Not found');
+        }
+
+        return publicKey.pk;
+    } else {
+        throw new Error('Not found');
+    }
+}
+
+/**
+ * Gets the state of public key associated with ONT ID from blockchain.
+ *
+ * @param publicKeyId The ID of a signature public key
+ * @param url Restful endpoint of Ontology node
+ */
+export async function retrievePublicKeyState(publicKeyId: string, url: string): Promise<PublicKeyStatus> {
+    const ontId = extractOntId(publicKeyId);
+    const keyId = extractKeyId(publicKeyId);
+
+    const client = new RestClient(url);
     const tx = buildGetPublicKeyStateTx(ontId, keyId);
     const response = await client.sendRawTransaction(tx.serialize(), true);
 
-    if (response.Result) {
-        const pkStatus = PublicKeyStatus.deserialize(response.Result);
-
-        if (pkStatus.status === PK_STATUS.REVOKED) {
-            throw new Error('Revoked public key');
-        } else {
-            return pkStatus.pk;
-        }
+    if (response.Result && response.Result.Result) {
+        return PublicKeyStatus.fromHexLabel(response.Result.Result);
     } else {
         throw new Error('Not found');
     }

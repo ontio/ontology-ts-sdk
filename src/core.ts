@@ -24,20 +24,13 @@ import * as wif from 'wif';
 import { REST_API, TEST_ONT_URL } from './consts';
 import {
     Address,
-    PK_STATUS,
     PrivateKey,
     PublicKey,
-    PublicKeyStatus,
     Signature
 } from './crypto';
 import { generateRandomArray, hash160 } from './helpers';
-import { verifyLeafHashInclusion } from './merkle';
-import RestClient from './network/rest/restClient';
-import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
-import { DDO } from './transaction/ddo';
-import { buildRestfulParam, sendRawTxRestfulUrl } from './transaction/transactionBuilder';
 import { VmType } from './transaction/vmcode';
-import { ab2hexstring, hexstring2ab, num2hexstring, str2hexstr } from './utils';
+import { ab2hexstring, hexstring2ab, num2hexstring } from './utils';
 export * from './helpers';
 
 /**
@@ -170,56 +163,6 @@ export function parseMnemonic(str: string) {
     return bip39.mnemonicToEntropy(str);
 }
 
-/**
- * @param claim json object
- */
-export function verifyOntidClaim(claim: any) {
-    if (!claim.Metadata || !claim.Metadata.Issuer) {
-        throw new Error('Invalid claim.');
-    }
-    const issuerDid = claim.Metadata.Issuer;
-    const tx = buildGetDDOTx(issuerDid);
-    const param = buildRestfulParam(tx);
-    const url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true);
-    return axios.post(url, param).then( (res: any) => {
-        if (res.data.Result && res.data.Result.length > 0) {
-            // tslint:disable-next-line:no-console
-            console.log('ddo hexstr: ' + res.data.Result[0]);
-            const ddo = DDO.deserialize(res.data.Result[0]);
-            // tslint:disable-next-line:no-console
-            console.log('ddo: ' + JSON.stringify(ddo));
-            if (ddo.publicKeys.length > 0) {
-                const pkWithId = ddo.publicKeys[0];
-                const signature = claim.Signature;
-                claim.delete('Signature');
-                return pkWithId.pk.verify(
-                    str2hexstr(JSON.stringify(claim)),
-                    Signature.deserializePgp(signature)
-                );
-            } else {
-                return false;
-            }
-        }
-    });
-}
-
-// const getDDO = (ontid: string, url?: string) => {
-//     const tx = buildGetDDOTx(ontid);
-//     const param = buildRestfulParam(tx);
-//     url = url || TEST_ONT_URL.REST_URL;
-//     const requestUrl = sendRawTxRestfulUrl(url , true);
-//     return axios.post(requestUrl, param).then((res: any) => {
-//         if (res.data.Result && res.data.Result.length > 0) {
-//             // tslint:disable-next-line:no-console
-//             console.log('ddo hexstr: ' + res.data.Result[0]);
-//             const ddo = DDO.deserialize(res.data.Result[0]);
-//             // tslint:disable-next-line:no-console
-//             console.log('ddo: ' + JSON.stringify(ddo));
-//             return ddo;
-//         }
-//     });
-// };
-
 export const getMerkleProof = (txHash: string, url?: string) => {
     url = url || TEST_ONT_URL.REST_URL;
     const requestUrl = `${url}${REST_API.getMerkleProof}/${txHash}`;
@@ -238,123 +181,22 @@ export const getMerkleProof = (txHash: string, url?: string) => {
 //     });
 // };
 
-const VerifyOntidClaimResult = {
-    CLAIM_NOT_ONCHAIN : 'CLAIM_NOT_ONCHAIN',
-    INVALID_SIGNATURE : 'INVALID_SIGNATURE',
-    PK_IN_REVOKED     : 'PK_IN_REVOKED',
-    NO_ISSUER_PK      : 'NO_ISSUER_PK',
-    EXPIRED_CLAIM     : 'EXPIRED_CLAIM',
-    REVOKED_CLAIM     : 'REVOKED_CLAIM',
-    VALID_CLAIM       : 'VALID_CLAIM'
-};
+// export async function verifyMerkleProof(claim: any ) {
+//     const txHash = claim.Proof.TxnHash;
+//     const blockHeight = claim.Proof.BlockHeight;
+//     const merkle = await getMerkleProof(txHash);
 
-/**
- * @param claim claim json object
- * @param url the node to send tx, eg: http://192.168.3.111:20334
- */
-export async function verifyOntidClaimAsync(claim: any, url?: string) {
-    if (!claim.Metadata || !claim.Metadata.Issuer) {
-        throw new Error('Invalid claim.');
-    }
+//     const leafHash = merkle.TransactionsRoot;
+//     const leafIndex = merkle.BlockHeight;
+//     const proof = merkle.TargetHashes;
+//     const rootHash = merkle.CurBlockRoot;
+//     const treeSize = merkle.CurBlockHeight;
 
-    // verify expiration
-    const verifyExpirationResult = verifyExpiration(claim.Metadata.Expires);
-    if (!verifyExpirationResult) {
-        return VerifyOntidClaimResult.EXPIRED_CLAIM;
-    }
-
-    const issuerDid = claim.Metadata.Issuer;
-    const didEnd = issuerDid.indexOf('#');
-    const issuerOntid = issuerDid.substring(0, didEnd);
-    // issuer is : ONTID#PkId
-    const issuerPkId = issuerDid.substr(didEnd + 1);
-    // pkStatus = { publicKey, status : [IN USE, Revoked] }
-    const pkStatus = await getPkStatus(issuerOntid, issuerPkId);
-    if (!pkStatus) {
-        return VerifyOntidClaimResult.NO_ISSUER_PK;
-    }
-    if (pkStatus && pkStatus.status === PK_STATUS.REVOKED) {
-        return VerifyOntidClaimResult.PK_IN_REVOKED;
-    }
-
-    // verify signature
-    const pk = pkStatus.pk;
-    // the order of claim's attributes matters.
-    const result = verifyClaimSignature(claim, pk);
-    if (!result) {
-        return VerifyOntidClaimResult.INVALID_SIGNATURE;
-    }
-    const verifyMerkleResult = await verifyMerkleProof(claim);
-
-    if (!verifyMerkleResult) {
-        return VerifyOntidClaimResult.CLAIM_NOT_ONCHAIN;
-    }
-
-    // verify revoke - optional
-    if (claim.Metadata.Revocation) {
-        // const url = claim.Metadata.Crl;
-        if (claim.Metadata.Revocation === 'RevocationList' && claim.Metadata.Crl) {
-            //
-        } else if (claim.Metadata.Revocation === 'RevocationUrl') {
-            //
-        }
-    }
-
-    return VerifyOntidClaimResult.VALID_CLAIM;
-}
-
-export function verifyExpiration(dateString: string) {
-    const expiration = new Date(dateString);
-    if (expiration.toString() === 'Invalid Date') {
-        throw new Error('Invalid date string: ' + dateString);
-    }
-    const d = new Date();
-    if (d > expiration) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-export async function getPkStatus(ontid: string, pkId: number): Promise<PublicKeyStatus | undefined> {
-    const tx = buildGetPublicKeyStateTx(ontid, pkId);
-    const restClient = new RestClient();
-    const res = await restClient.sendRawTransaction(tx.serialize(), true);
-
-    if (res.Result[0] && res.Result[0].length > 0) {
-        return PublicKeyStatus.deserialize(res.Result[0]);
-    }
-}
-
-export function verifyClaimSignature(claim: any, pk: PublicKey) {
-    const signatureOriginal = Object.assign({}, {
-        Context: claim.Context,
-        Id: claim.Id,
-        Content: claim.Content,
-        Metadata: claim.Metadata
-    });
-    return pk.verify(
-        str2hexstr(JSON.stringify(signatureOriginal)),
-        Signature.deserializePgp(claim.Signature)
-    );
-}
-
-export async function verifyMerkleProof(claim: any ) {
-    const txHash = claim.Proof.TxnHash;
-    const blockHeight = claim.Proof.BlockHeight;
-    const merkle = await getMerkleProof(txHash);
-
-    const leafHash = merkle.TransactionsRoot;
-    const leafIndex = merkle.BlockHeight;
-    const proof = merkle.TargetHashes;
-    const rootHash = merkle.CurBlockRoot;
-    const treeSize = merkle.CurBlockHeight;
-
-    // 1. verify blockHeight
-    if (blockHeight !== leafIndex) {
-        return false;
-    }
-    // 2. verify merkle
-    const verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize);
-    return verifyMerkleResult;
-}
+//     // 1. verify blockHeight
+//     if (blockHeight !== leafIndex) {
+//         return false;
+//     }
+//     // 2. verify merkle
+//     const verifyMerkleResult = verifyLeafHashInclusion(leafHash, leafIndex, proof, rootHash, treeSize);
+//     return verifyMerkleResult;
+// }

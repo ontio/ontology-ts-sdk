@@ -151,28 +151,34 @@ export class PublicKey extends Key {
 /**
  * Public key status enumaration.
  */
-export enum PK_STATUS  {
-  IN_USE = '01',
-  REVOKED = '00'
-}
-
-/**
- * Pair of public key and its status.
- */
 export class PublicKeyStatus {
-    static deserialize(hexstr: string): PublicKeyStatus {
-        const sr = new StringReader(hexstr);
-        const status = sr.read(1);
-        const publicKey = PublicKey.deserializeHex(sr);
+    static values: PublicKeyStatus[] = [];
 
-        return new PublicKeyStatus(publicKey, status);
+    static IN_USE = new PublicKeyStatus('in use');
+
+    static REVOKED = new PublicKeyStatus('revoked');
+
+    /**
+     * Finds Public key status corresponding to specified label representation.
+     *
+     * @param label Hex encoded label
+     */
+    static fromHexLabel(hexLabel: string): PublicKeyStatus {
+        const label = hexstr2str(hexLabel);
+
+        const item = PublicKeyStatus.values.find((v) => v.label === label);
+        if (item === undefined) {
+            throw new Error('Enum value not found');
+        }
+
+        return item;
     }
 
-    pk: PublicKey;
-    status: string;
+    label: string;
 
-    constructor(pk: PublicKey, status: string) {
-        this.pk = pk;
-        this.status = status;
+    constructor(label: string) {
+        this.label = label;
+
+        PublicKeyStatus.values.push(this);
     }
 }

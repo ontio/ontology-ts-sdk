@@ -18,10 +18,14 @@
 
 import { PrivateKey } from '../src/crypto';
 import { extractKeyId, extractOntId, Message, retrievePublicKey } from '../src/message';
+import { WebsocketClient } from '../src/network/websocket/websocketClient';
+import { buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test message', () => {
     const restUrl = 'http://polaris1.ont.io:20334';
     const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const publicKey = privateKey.getPublicKey();
 
     class TestMessage extends Message {
         static deserialize(jwt: string): TestMessage {
@@ -35,6 +39,15 @@ describe('test message', () => {
         payloadFromJSON(json: any): void {
         }
     }
+
+    beforeAll(async () => {
+        const ontId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
+        const tx = buildRegisterOntidTx(ontId, publicKey, '0');
+        signTransaction(tx, privateKey);
+
+        const client = new WebsocketClient();
+        await client.sendRawTransaction(tx.serialize(), false, true);
+    }, 10000);
 
     test('test extractOntId and extractKeyId', () => {
         const publicKeyId = 'did:ont:TRAtosUZHNSiLhzBdHacyxMX4Bg3cjWy3r#keys-1';
@@ -62,7 +75,7 @@ describe('test message', () => {
         const publicKeyId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-1';
 
         await expect(retrievePublicKey(publicKeyId, restUrl)).resolves.toBeDefined();
-    });
+    }, 10000);
 
     test('test retrievePublicKey', async () => {
         const publicKeyId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-2';
