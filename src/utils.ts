@@ -180,9 +180,14 @@ export const reverseHex = (hex: string) => {
 export class StringReader {
     str: string;
     pos: number;
+    size: number;
     constructor(str = '') {
+        if (this.str.length % 2 !== 0) {
+            throw new Error('Param\'s length is not even.');
+        }
         this.str = str;
         this.pos = 0;
+        this.size = this.str.length / 2;
     }
 
     /**

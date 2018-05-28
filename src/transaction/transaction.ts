@@ -19,7 +19,6 @@
 import * as cryptoJS from 'crypto-js';
 import Fixed64 from '../common/fixed64';
 import Uint256 from '../common/uint256';
-import { DEFAULT_GAS_LIMIT } from '../consts';
 import { PublicKey } from '../crypto';
 import { Address } from '../crypto/address';
 import { generateRandomArray } from '../helpers';
@@ -209,9 +208,9 @@ export class Transaction {
         this.nonce = ab2hexstring(generateRandomArray(4));
         this.gasPrice = new Fixed64();
 
-        const limit = num2hexstring(DEFAULT_GAS_LIMIT, 8, true);
+        // const limit = num2hexstring(DEFAULT_GAS_LIMIT, 8, true);
 
-        this.gasLimit = new Fixed64(limit);
+        this.gasLimit = new Fixed64();
         this.payer = new Address('0000000000000000000000000000000000000000');
     }
 

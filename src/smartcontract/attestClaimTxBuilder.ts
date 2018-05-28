@@ -34,7 +34,8 @@ const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
  * @param gas gas
  * @param payer payer
  */
-export function buildCommitRecordTx(claimId: string, issuer: string, subject: string,  gas: string, payer: Address)  {
+export function buildCommitRecordTx(claimId: string, issuer: string, subject: string,
+                                    gasPrice: string, gasLimit: string, payer: Address)  {
     const f = abiInfo.getFunction('Commit');
 
     const name1 = f.parameters[0].getName();
@@ -54,12 +55,13 @@ export function buildCommitRecordTx(claimId: string, issuer: string, subject: st
     f.setParamsValue(p1, p2);
 
     let tx = new Transaction();
-    tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gas, payer);
+    tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gasPrice, gasLimit, payer);
     // signTransaction(tx, privateKey);
     return tx;
 }
 
-export function buildRevokeRecordTx(claimId: string, revokerOntid: string, gas: string, payer: Address) {
+export function buildRevokeRecordTx(claimId: string, revokerOntid: string,
+                                    gasPrice: string, gasLimit: string, payer: Address) {
     const f = abiInfo.getFunction('Revoke');
 
     const name1 = f.parameters[0].getName();
@@ -73,7 +75,7 @@ export function buildRevokeRecordTx(claimId: string, revokerOntid: string, gas: 
     const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, revokerOntid);
     f.setParamsValue(p1, p2);
 
-    return makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gas, payer);
+    return makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gasPrice, gasLimit, payer);
     // signTransaction(tx, privateKey);
 
 }
@@ -87,6 +89,6 @@ export function buildGetRecordStatusTx(claimId: string) {
     const p1 = new Parameter(name1, type1, str2hexstr(claimId));
     f.setParamsValue(p1);
 
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, '0');
+    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM);
     return tx;
 }

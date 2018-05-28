@@ -17,6 +17,7 @@
  */
 import { Address, JsonKey, PrivateKey } from './crypto';
 import { generateOntid, generateRandomArray } from './helpers';
+import { ScryptParams } from './scrypt';
 import { ab2hexstring } from './utils';
 
 export class ControlData {
@@ -50,11 +51,12 @@ export class Identity {
         label: string,
         encryptedPrivateKey: PrivateKey,
         password: string,
-        checksum: string | Address
+        checksum: string | Address,
+        params?: ScryptParams
     ): Identity {
         // create identity
         const identity = new Identity();
-        const privateKey = encryptedPrivateKey.decrypt(password, checksum);
+        const privateKey = encryptedPrivateKey.decrypt(password, checksum, params);
         if (!label) {
             label = ab2hexstring (generateRandomArray(4));
         }

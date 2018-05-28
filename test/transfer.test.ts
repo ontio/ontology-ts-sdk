@@ -59,8 +59,10 @@ const accHexAddress = '012845c2ed3b508d135066dba00f850a82b192fd';
 
 const  testTransferTx = () => {
 
+    const gasLimit = '300000';
+    const gasPrice = '0';
     const tx = makeTransferTx('ONT', new Address(accountFrom.address),
-        new Address('TA7o8xgm6AfTa8R1Xn9XbvGKN75QNPTzKz'), '1000', '0');
+        new Address('TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG'), '10000', gasPrice, gasLimit);
     signTransaction(tx, accountFrom.privateKey);
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress,
     // '01716379e393d1a540615e022ede47b97e0577c6', value,
@@ -103,6 +105,8 @@ const testClaimOng = () => {
     const pri = new PrivateKey('a53213c27eb1de0796b9d0b44c96e7e30228f1466d8657c47b471a4700777c0c');
     const hexAddress = '01716379e393d1a540615e022ede47b97e0577c6';
     console.log(hexAddress);
+    const gasPrice = '0';
+    const gasLimit = '30000';
 
     // let pri = new PrivateKey('c62bbce37fc96c90e2eea6de474b0031e560ef3630d2f6efe275f16f85ed1543')
     // let address = 'TA9VgmPJcok9cBBLwcLqwhRAfD45vtWa5i'
@@ -110,7 +114,7 @@ const testClaimOng = () => {
     // let from = hexAddress
     // let to = from
     // let to = accountFrom.hexAddress
-    const tx = makeClaimOngTx(new Address(hexAddress), new Address(hexAddress), '1', '0');
+    const tx = makeClaimOngTx(new Address(hexAddress), new Address(hexAddress), '100', gasPrice, gasLimit);
     signTransaction(tx, pri);
 
     console.log(tx.serialize());
@@ -130,7 +134,7 @@ const address3 = new Address('01716379e393d1a540615e022ede47b97e0577c6');
 
 const testTransferFromMany = () => {
 
-    const tx = makeTransferFromManyTx('ONT', [address1, address2], address3, ['100', '200'], '0');
+    const tx = makeTransferFromManyTx('ONT', [address1, address2], address3, ['100', '200'], '0', '30000');
     const pris = [ [pri1], [pri2]];
     signTx(tx, pris);
     const param = buildTxParam(tx);
@@ -141,7 +145,7 @@ const testTransferFromMany = () => {
 };
 
 const testTransferToMany = () => {
-    const tx = makeTransferToMany('ONT', address1, [address2, address3], ['100', '200'], '0');
+    const tx = makeTransferToMany('ONT', address1, [address2, address3], ['100', '200'], '0', '30000');
     signTransaction(tx, pri1);
     const param = buildTxParam(tx);
     const callback = (err, res, socket) => {
@@ -156,7 +160,7 @@ const testAccountTransfer = () => {
 
 };
 
-// testTransferTx()
+// testTransferTx();
 const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
 testGetBalance(accountFrom.address, '');
 

@@ -1,25 +1,26 @@
 /*
- * Copyright (C) 2018 The ontology Authors
- * This file is part of The ontology library.
- *
- * The ontology is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The ontology is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2018 The ontology Authors
+* This file is part of The ontology library.
+*
+* The ontology is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* The ontology is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 import * as uuid from 'uuid';
 import { Claim, RevocationType } from '../src/claim/claim';
 import { KeyType, PrivateKey, Signature } from '../src/crypto';
 import { now } from '../src/utils';
+import { Account } from './../src/account';
 
 describe('test attest claim', () => {
     const sockUrl = 'ws://polaris1.ont.io:20335';
@@ -27,6 +28,10 @@ describe('test attest claim', () => {
     const ontId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
     const publicKeyId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-1';
     const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const account = new Account();
+    account.create(privateKey, '123456');
+    const gasPrice = '0';
+    const gasLimit = '30000';
 
     function randomClaim(): Claim {
         return new Claim({
