@@ -17,11 +17,16 @@
  */
 
 import * as b64 from 'base64-url';
-import { PrivateKey, Signature, SignatureScheme } from '../crypto';
+import { Address, PrivateKey, Signature, SignatureScheme } from '../crypto';
 import { Message, Metadata } from '../message';
 import RestClient from '../network/rest/restClient';
 import { WebsocketClient } from '../network/websocket/websocketClient';
-import { buildCommitRecordTx, buildGetRecordStatusTx, buildRevokeRecordTx } from '../smartcontract/recordContract';
+import {
+    buildCommitRecordTx,
+    buildGetRecordStatusTx,
+    buildRevokeRecordTx
+} from '../smartcontract/attestClaimTxBuilder';
+import { signTransaction } from '../transaction/transactionBuilder';
 import { hexstr2str } from '../utils';
 import { AttestNotifyEvent } from './attestNotifyEvent';
 import { ClaimProof } from './claimProof';
@@ -113,16 +118,20 @@ export class Claim extends Message {
      *
      * @param url Websocket endpoint of Ontology node
      * @param privateKey Private key to sign the transaction
+     * @param gas gas
+     * @param payer payer
      */
-    async attest(url: string, privateKey: PrivateKey): Promise<boolean> {
+    async attest(url: string, privateKey: PrivateKey, gas: string, payer: Address): Promise<boolean> {
         const attesterId = this.metadata.issuer;
+        const subjectId = this.metadata.subject;
         const claimId = this.metadata.messageId;
         if (claimId === undefined) {
             throw new Error('Claim id not specified.');
         }
 
         const client = new WebsocketClient(url);
-        const tx = buildCommitRecordTx(claimId, attesterId, privateKey);
+        const tx = buildCommitRecordTx(claimId, attesterId, subjectId, gas, payer);
+        signTransaction(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
 
         const event = AttestNotifyEvent.deserialize(response);
@@ -134,8 +143,10 @@ export class Claim extends Message {
      *
      * @param privateKey Private key to sign the transaction
      * @param url Websocket endpoint of Ontology node
+     * @param gas gas
+     * @param payer payer
      */
-    async revoke(url: string, privateKey: PrivateKey): Promise<boolean> {
+    async revoke(url: string, privateKey: PrivateKey, gas: string, payer: Address): Promise<boolean> {
         const attesterId = this.metadata.issuer;
         const claimId = this.metadata.messageId;
         if (claimId === undefined) {
@@ -143,7 +154,8 @@ export class Claim extends Message {
         }
 
         const client = new WebsocketClient(url);
-        const tx = buildRevokeRecordTx(claimId, attesterId, privateKey);
+        const tx = buildRevokeRecordTx(claimId, attesterId, gas, payer);
+        signTransaction(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
 
         const event = AttestNotifyEvent.deserialize(response);

@@ -33,6 +33,7 @@ import { Parameter, ParameterType } from './smartcontract/abi/parameter';
 import * as OntAssetTxBuilder from './smartcontract/ontAssetTxBuilder';
 import * as OntidContract from './smartcontract/ontidContractTxBuilder';
 import * as Token from './smartcontract/token';
+import { DDO, DDOAttribute } from './transaction/ddo';
 import { Transaction } from './transaction/transaction';
 import * as TransactionBuilder from './transaction/transactionBuilder';
 import * as utils from './utils';
@@ -42,6 +43,8 @@ class ONT {
     Account: any;
     Identity: any;
     Claim: any;
+    DDO: any;
+    DDOAttribute: any;
     Transaction: any;
     TransactionBuilder: any;
     OntAssetTxBuilder: any;
@@ -65,6 +68,8 @@ class ONT {
         this.Account = Account;
         this.Identity = Identity;
         this.Claim = Claim;
+        this.DDO = DDO;
+        this.DDOAttribute = DDOAttribute;
         this.Transaction = Transaction;
         this.TransactionBuilder = TransactionBuilder;
         this.OntAssetTxBuilder = OntAssetTxBuilder;
@@ -108,6 +113,8 @@ export {
     Account,
     Identity,
     Claim,
+    DDO,
+    DDOAttribute,
     Transaction,
     Parameter,
     ParameterType,
