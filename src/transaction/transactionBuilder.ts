@@ -18,7 +18,7 @@
 
 import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
-import { DEFAULT_GAS_LIMIT, REST_API } from '../consts';
+import { REST_API } from '../consts';
 import { Address, PrivateKey, PublicKey, SignatureScheme } from '../crypto';
 import { Parameter,  ParameterType } from '../smartcontract/abi/parameter';
 import { Contract, State, Transfers } from '../smartcontract/token';
@@ -359,7 +359,8 @@ export const makeInvokeTransaction = (
     parameters: Parameter[],
     scriptHash: string,
     vmType: VmType = VmType.NEOVM,
-    gas: string,
+    gasPrice?: string,
+    gasLimit?: string,
     payer?: Address
 ) => {
     const tx = new Transaction();
@@ -380,11 +381,17 @@ export const makeInvokeTransaction = (
     tx.payload = payload;
 
     // gas
-    if (DEFAULT_GAS_LIMIT === Number(0)) {
-        tx.gasPrice = new Fixed64();
-    } else {
-        const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
-        tx.gasPrice = new Fixed64(price);
+    // if (DEFAULT_GAS_LIMIT === Number(0)) {
+    //     tx.gasPrice = new Fixed64();
+    // } else {
+    //     const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
+    //     tx.gasPrice = new Fixed64(price);
+    // }
+    if (gasLimit) {
+        tx.gasLimit = new Fixed64(gasLimit);
+    }
+    if (gasPrice) {
+        tx.gasPrice = new Fixed64(gasPrice);
     }
     if (payer) {
         tx.payer = payer;
@@ -399,7 +406,7 @@ export function makeDeployCodeTransaction(
     codeVersion: string= '1.0',
     author: string= '',
     email: string= '',
-    desp: string= '', needStorage: boolean= true, gas: string, payer?: Address) {
+    desp: string= '', needStorage: boolean= true, gasPrice: string, gasLimit: string, payer?: Address) {
     const dc = new DeployCode();
     dc.author = author;
     const vmCode = new VmCode();
@@ -419,12 +426,14 @@ export function makeDeployCodeTransaction(
 
     tx.type = TxType.Deploy;
     // gas
-    if (DEFAULT_GAS_LIMIT === Number(0)) {
-        tx.gasPrice = new Fixed64();
-    } else {
-        const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
-        tx.gasPrice = new Fixed64(price);
-    }
+    // if (DEFAULT_GAS_LIMIT === Number(0)) {
+    //     tx.gasPrice = new Fixed64();
+    // } else {
+    //     const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
+    //     tx.gasPrice = new Fixed64(price);
+    // }
+    tx.gasLimit = new Fixed64(gasLimit);
+    tx.gasPrice = new Fixed64(gasPrice);
     if (payer) {
         tx.payer = payer;
     }

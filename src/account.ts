@@ -17,6 +17,7 @@
  */
 import { Address, PrivateKey, SignatureScheme } from './crypto';
 import { generateRandomArray, sha256 } from './helpers';
+import { ScryptParams } from './scrypt';
 import { ab2hexstring } from './utils';
 
 export class Account {
@@ -24,10 +25,11 @@ export class Account {
         label: string ,
         encryptedPrivateKey: PrivateKey,
         password: string,
-        checksum: string | Address
+        checksum: string | Address,
+        params?: ScryptParams
     ): Account {
         const account = new Account();
-        const privateKey = encryptedPrivateKey.decrypt(password, checksum);
+        const privateKey = encryptedPrivateKey.decrypt(password, checksum, params);
         // let contract = {
         //     script: '',
         //     parameters: [],

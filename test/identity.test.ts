@@ -88,25 +88,32 @@ describe('test identity', () => {
     });
 
     test('test_userAgent_devicecode', async () => {
+        const pri = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95')
         const a = new Identity();
-        const encrypt = new PrivateKey('xLdlFLuWMUcHZagEAiFZEiCwm1eQYbSEONIwxxL4qPk=');
-        const pri = encrypt.decrypt('111111', new Address('TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ'));
-        a.create(pri, '123456', 'test');
+        a.create(pri, '123456','');
+        // const encrypt = new PrivateKey('xLdlFLuWMUcHZagEAiFZEiCwm1eQYbSEONIwxxL4qPk=');
+        // const pri = encrypt.decrypt('111111', new Address('TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ'));
+        // a.create(pri, '123456', 'test');
         const data = {
             OwnerOntId : a.ontid
         };
+        const msg = JSON.stringify(data);
         const pkId = a.ontid + '#key-1';
-        const sig = pri.sign(JSON.stringify(data), undefined, pkId);
+        console.log('msg: '+ msg);
+        const sig = pri.sign(msg, undefined, pkId);
         const body = {
-            OwnerOntId: 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ',
+            OwnerOntId: a.ontid,
             Signature : sig.serializePgp()
         };
+        console.log('value: '+ body.Signature.Value)
+
+        console.log('pk: ' + pri.getPublicKey().serializeHex())
         console.log(JSON.stringify(body));
-        const userAgent = 'http://192.168.3.107:9099/api/v1/ontpass/devicecode/gain';
-        const res = await axios.post(userAgent, body).then( (res) => {
-            console.log(res.data);
-            return res.data;
-        });
+        // const userAgent = 'http://192.168.50.121:9099/api/v1/ontpass/devicecode/gain';
+        // const res = await axios.post(userAgent, body).then( (res) => {
+        //     console.log(res.data);
+        //     return res.data;
+        // });
     });
 
 });

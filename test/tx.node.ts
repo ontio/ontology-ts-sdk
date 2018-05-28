@@ -16,6 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// tslint:disable:max-line-length
 import axios from 'axios';
 import { TEST_ONT_URL } from '../src/consts';
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
@@ -42,23 +43,27 @@ import { Account } from './../src/account';
 import { buildCommitRecordTx, buildGetRecordStatusTx, buildRevokeRecordTx } from './../src/smartcontract/attestClaimTxBuilder';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
 
-const codeHash = '80e7d2fc22c24c466f44c7688569cc6e6d6c6f92';
+const gasPrice = '0';
+const gasLimit = '30000';
 
 const txSender = new TxSender(TEST_ONT_URL.SOCKET_URL);
 
 // const SOCKET_URL = 'ws://52.80.115.91:20335'
+// tslint:disable-next-line:variable-name
 const Default_params = {
     Action: 'sendrawtransaction',
     Version: '1.0.0',
     Type: '',
     Op: 'exec'
 };
+// tslint:disable-next-line:no-var-requires
 const WebSocket = require('ws');
 
 let privateKey: PrivateKey;
 let publicKey: PublicKey;
 let pk2: PublicKey;
 let ontid: string;
+// tslint:disable:prefer-const
 let oldrecovery: string;
 let newrecovery: string;
 let pkId: string;
@@ -118,6 +123,7 @@ const recoveryAddress = Address.addressFromMultiPubKeys(2, [pri3.getPublicKey(),
 // identity.create(privateKey, '123456', 'mickey')
 // ontid = str2hexstr(identity.ontid)
 
+// tslint:disable:no-console
 ontid = core.generateOntid(publicKey.serializeHex());
 console.log('ontid: ' + ontid);
 
@@ -140,7 +146,7 @@ const sendTx = (param, callback = null) => {
         }
         console.log('response for send tx: ' + JSON.stringify(res));
         if (callback) {
-            if (res.Result && res.Action != 'sendrawtransaction') {
+            if (res.Result && res.Action !== 'sendrawtransaction') {
                 callback(event.data);
                 socket.close();
             }
@@ -159,6 +165,7 @@ const sendTx = (param, callback = null) => {
     };
 };
 
+// tslint:disable-next-line:only-arrow-functions
 const callback = function(res, socket) {
     console.log('response: ' + JSON.stringify(res));
 
@@ -173,6 +180,7 @@ const callback = function(res, socket) {
 
 const testDDOTx = () => {
     console.log('account4 recovery: ' + account4.address.toHexString());
+    // tslint:disable-next-line:no-shadowed-variable
     const ontid = 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ';
     const tx = buildGetDDOTx(ontid);
     // tx.payer = account.address
@@ -213,8 +221,9 @@ const parseDDO = (result) => {
 };
 
 const testRegisterOntid = () => {
+    // tslint:disable-next-line:no-shadowed-variable
     const publicKey = privateKey.getPublicKey();
-    const tx = buildRegisterOntidTx(str2hexstr(ontid), publicKey, '0');
+    const tx = buildRegisterOntidTx(ontid, publicKey, gasPrice, gasLimit);
     tx.payer = account.address;
     signTransaction(tx, privateKey);
     const serialized = tx.serialize();
@@ -238,7 +247,7 @@ const testRegIdWithAttributes = () => {
     attr.key = 'hello';
     attr.type = 'string',
     attr.value = 'world';
-    const tx = buildRegIdWithAttributes(ontid, [attr], pub2, '0');
+    const tx = buildRegIdWithAttributes(ontid, [attr], pub2, gasPrice, gasLimit);
     tx.payer = account2.address;
     signTransaction(tx, pri2);
     const param = buildTxParam(tx);
@@ -247,6 +256,7 @@ const testRegIdWithAttributes = () => {
 
 const testAddAttribute = () => {
 
+    // tslint:disable-next-line:one-variable-per-declaration
     const claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a',
         context = 'claim:staff_authentication8',
         issuer = 'did:ont:TVuF6FH1PskzWJAFhWAFg17NSitMDEBNoa';
@@ -254,12 +264,12 @@ const testAddAttribute = () => {
 
     const type = 'JSON';
     const data = {
-            Type : 'JSON',
-            Value : {
-                Context: context,
-                Issuer: issuer
-            }
-        };
+        Type : 'JSON',
+        Value : {
+            Context: context,
+            Issuer: issuer
+        }
+    };
     const value = JSON.stringify(data);
         // console.log('value: '+value)
         // value = str2hexstr(value)
@@ -272,7 +282,7 @@ const testAddAttribute = () => {
     attr.key = claimId;
     attr.type = type;
     attr.value = value;
-    const tx = buildAddAttributeTx(ontid, [attr], publicKey, '0');
+    const tx = buildAddAttributeTx(ontid, [attr], publicKey, gasPrice, gasLimit);
     tx.payer = account.address;
     signTransaction(tx, privateKey);
 
@@ -295,7 +305,7 @@ const testRemoveAttribute = () => {
     // let key = str2hexstr('Claim:twitter')
 
     console.log('removeAttr key: ' + key);
-    const tx = buildRemoveAttributeTx(ontid, key, publicKey, '0');
+    const tx = buildRemoveAttributeTx(ontid, key, publicKey, gasPrice, gasLimit);
     tx.payer = account.address;
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
@@ -340,7 +350,7 @@ const testGetPublicKeyState = () => {
 };
 
 const testAddPK = () => {
-    const tx = buildAddControlKeyTx(ontid, pk2, publicKey, '0');
+    const tx = buildAddControlKeyTx(ontid, pk2, publicKey, gasPrice, gasLimit);
     tx.payer = account.address;
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
@@ -364,7 +374,7 @@ const testGetPublicKeys = () => {
 };
 
 const testRemovePK = () => {
-    const tx = buildRemoveControlKeyTx(ontid, pk2, publicKey, '0');
+    const tx = buildRemoveControlKeyTx(ontid, pk2, publicKey, gasPrice, gasLimit);
     tx.payer = account.address;
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
@@ -373,7 +383,7 @@ const testRemovePK = () => {
 };
 
 const testAddRecovery = () => {
-    const tx = buildAddRecoveryTx(ontid, account5.address, publicKey, '0');
+    const tx = buildAddRecoveryTx(ontid, account5.address, publicKey, gasPrice, gasLimit);
     tx.payer = account.address;
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
@@ -381,7 +391,7 @@ const testAddRecovery = () => {
 };
 
 const testChangeRecovery = () => {
-    const tx = buildChangeRecoveryTx(ontid, account3.address, account5.address, '0');
+    const tx = buildChangeRecoveryTx(ontid, account3.address, account5.address, gasPrice, gasLimit);
     tx.payer = account5.address;
     signTransaction(tx, pri5);
     const param = buildTxParam(tx);
@@ -390,7 +400,7 @@ const testChangeRecovery = () => {
 };
 
 const testAddmnRecovery = () => {
-    const tx = buildAddRecoveryTx(ontid, recoveryAddress, publicKey, '0');
+    const tx = buildAddRecoveryTx(ontid, recoveryAddress, publicKey, gasPrice, gasLimit);
     tx.payer = account.address;
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
@@ -398,7 +408,7 @@ const testAddmnRecovery = () => {
 };
 
 const testChangemnRecovery = () => {
-    const tx = buildChangeRecoveryTx(ontid, account4.address, recoveryAddress, '0');
+    const tx = buildChangeRecoveryTx(ontid, account4.address, recoveryAddress, gasPrice, gasLimit);
     tx.payer = recoveryAddress;
     console.log('recoveryAddres: ' + recoveryAddress.toHexString());
     signTx(tx, [ [pri3, pri4] ]);
@@ -428,7 +438,7 @@ const testCommitTx = () => {
     const issuer = core.generateOntid(account3.publicKey);
     const sub = core.generateOntid(account4.publicKey);
     const claimId = str2hexstr('claimId:123456');
-    const tx = buildCommitRecordTx(claimId, issuer, sub, '0', account3.address);
+    const tx = buildCommitRecordTx(claimId, issuer, sub, gasPrice, gasLimit, account3.address);
     signTransaction(tx, pri3);
     const param = buildTxParam(tx);
     sendTx(param);

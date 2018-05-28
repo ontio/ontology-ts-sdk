@@ -35,6 +35,7 @@ import * as core from '../core';
 import { Address, PgpSignature, PrivateKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
+import { scrypt } from '../index';
 import RestClient from '../network/rest/restClient';
 import { makeClaimOngTx, makeTransferTx } from '../smartcontract/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/ontidContractTxBuilder';
@@ -44,8 +45,11 @@ import {
     sendRawTxRestfulUrl,
     signTransaction
 } from '../transaction/transactionBuilder';
-import { now, sendBackResult2Native } from '../utils';
+import { hexstr2str, now, sendBackResult2Native, str2hexstr } from '../utils';
 import { Wallet } from '../wallet';
+
+// tslint:disable:no-unused-expression
+// tslint:disable:no-shadowed-variable
 
 export class SDK {
     static SERVER_NODE: string = TEST_NODE;
@@ -92,7 +96,8 @@ export class SDK {
         };
     }
 
-    static createWallet(name: string, password: string, payer: string, callback?: string) {
+    static createWallet(name: string,
+                        password: string, payer: string, gasPrice: string, gasLimit: string, callback?: string) {
         const wallet = new Wallet();
         wallet.create(name);
 
@@ -116,9 +121,12 @@ export class SDK {
         };
 
         const publicKey = privateKey.getPublicKey();
-        const tx = buildRegisterOntidTx(identity.ontid, publicKey, '0');
+        const tx = buildRegisterOntidTx(identity.ontid, publicKey, gasPrice, gasLimit);
         tx.payer = new Address(payer);
         signTransaction(tx, privateKey);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
         // add preExec
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
@@ -191,6 +199,8 @@ export class SDK {
         const param = buildRestfulParam(tx);
         const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`;
         const url = sendRawTxRestfulUrl(restUrl, true);
+        // clear privateKey and password
+        password = '';
         return axios.post(url, param).then((res: any) => {
             const result = res.data.Result;
             if (result.Result) {
@@ -254,6 +264,8 @@ export class SDK {
                     obj.result = '';
                     obj.desc = res.data.Result;
                 }
+                // clear privateKey and password
+                password = '';
                 return obj;
             }).catch((err) => {
                 obj = {
@@ -277,7 +289,8 @@ export class SDK {
         }
     }
 
-    static createIdentity(label: string, password: string, payer: string, callback?: string) {
+    static createIdentity(label: string, password: string, payer: string,
+                          gasPrice: string, gasLimit: string, callback?: string) {
         const identity = new Identity();
         const privateKey = PrivateKey.random();
         identity.create(privateKey, password, label);
@@ -290,7 +303,7 @@ export class SDK {
         };
         // register ontid
         const publicKey = privateKey.getPublicKey();
-        const tx = buildRegisterOntidTx(identity.ontid, publicKey, '0');
+        const tx = buildRegisterOntidTx(identity.ontid, publicKey, gasPrice, gasLimit);
         tx.payer = new Address(payer);
         signTransaction(tx, privateKey);
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
@@ -303,6 +316,9 @@ export class SDK {
                 if (callback) {
                     sendBackResult2Native(JSON.stringify(obj), callback);
                 }
+                // clear privateKey and password
+                privateKey.key = '';
+                password = '';
                 return obj;
             } else {
                 const errResult = {
@@ -332,23 +348,50 @@ export class SDK {
         const account = new Account();
         // generate mnemnic
         const mnemonic = bip39.generateMnemonic();
+
+        const mnemonicHex = str2hexstr(mnemonic);
         // generate seed
         const seed = bip39.mnemonicToSeedHex(mnemonic);
         // generate privateKey
         const pri = seed.substr(0, 64);
         const privateKey = new PrivateKey(pri);
         account.create(privateKey, password, label);
+        const mnemonicEnc = scrypt.encrypt(mnemonicHex, account.publicKey, password);
         const result = account.toJson();
         const obj = {
             error : ERROR_CODE.SUCCESS,
             result,
             desc : '',
-            mnemonic
+            mnemonicEnc
         };
 
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);
         }
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return obj;
+    }
+
+    static decryptMnemonicEnc(mnemonicEnc: string,
+                              passwordHash: string, password: string, address: string, callback: string) {
+        let obj;
+        if (core.sha256(password) !== passwordHash) {
+            obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+        } else {
+            const decMneHex = scrypt.decrypt(mnemonicEnc, password, new Address(address));
+            const decMne = hexstr2str(decMneHex);
+            obj = {
+                error: ERROR_CODE.SUCCESS,
+                result: decMne
+            };
+        }
+        // tslint:disable-next-line:no-unused-expression
+        callback && sendBackResult2Native(JSON.stringify(obj), callback);
         return obj;
     }
 
@@ -383,6 +426,8 @@ export class SDK {
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);
         }
+        // clear privateKey and password
+        password = '';
         return obj;
     }
 
@@ -428,6 +473,9 @@ export class SDK {
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);
         }
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
         return obj;
     }
 
@@ -459,13 +507,16 @@ export class SDK {
         }
         const obj = {
             error : 0,
-            result : privateKey,
+            result : privateKey.key,
             desc : ''
         };
 
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);
         }
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
         return obj;
     }
 
@@ -477,6 +528,8 @@ export class SDK {
         encryptedPrivateKey: string,
         password: string,
         payer: string,
+        gasPrice: string,
+        gasLimit: string,
         callback ?: string
     ) {
         let privateKey: PrivateKey;
@@ -508,7 +561,7 @@ export class SDK {
         attr.type = 'JSON';
         attr.value = value;
         const publicKey = privateKey.getPublicKey();
-        const tx = buildAddAttributeTx(subject, [attr], publicKey, '0');
+        const tx = buildAddAttributeTx(subject, [attr], publicKey, gasPrice, gasLimit);
         tx.payer = new Address(payer);
         signTransaction(tx, privateKey);
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
@@ -526,6 +579,9 @@ export class SDK {
                 if (callback) {
                     sendBackResult2Native(JSON.stringify(obj), callback);
                 }
+                // clear privateKey and password
+                privateKey.key = '';
+                password = '';
                 return obj;
             } else {
                 const obj = {
@@ -585,6 +641,9 @@ export class SDK {
         if (callback) {
             sendBackResult2Native(JSON.stringify(result), callback);
         }
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
         return result;
     }
 
@@ -637,7 +696,9 @@ export class SDK {
         value: string,
         encryptedPrivateKey: string,
         password: string,
-        gas: string,
+        gasPrice: string,
+        gasLimit: string,
+        payer: string,
         callback: string) {
         try {
             if (from.length !== 40) {
@@ -672,47 +733,57 @@ export class SDK {
             return result;
         }
 
-        const tx = makeTransferTx(token, new Address(from), new Address(to), value, '0');
-        tx.payer = new Address(from);
+        const tx = makeTransferTx(token, new Address(from), new Address(to), value, gasPrice, gasLimit);
+        tx.payer = new Address(payer);
         signTransaction(tx, privateKey);
-        const param = buildRestfulParam(tx);
-        const request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`;
-        return axios.post(request, param).then( (res: any) => {
-            // tslint:disable-next-line:no-console
-            console.log('transfer response: ' + JSON.stringify(res.data));
-            if (res.data.Error === 0) {
-                const obj = {
-                    error : 0,
-                    result : '',
-                    desc : 'Send transfer success.'
-                };
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: '',
+            tx: tx.serialize()
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
+        // const param = buildRestfulParam(tx);
+        // const request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`;
+        // return axios.post(request, param).then( (res: any) => {
+        //     // tslint:disable-next-line:no-console
+        //     console.log('transfer response: ' + JSON.stringify(res.data));
+        //     if (res.data.Error === 0) {
+        //         const obj = {
+        //             error : 0,
+        //             result : '',
+        //             desc : 'Send transfer success.'
+        //         };
 
-                if (callback) {
-                    sendBackResult2Native(JSON.stringify(obj), callback);
-                }
-                return obj;
-            } else {
-                const obj = {
-                    error: res.data.Error,
-                    result: '',
-                    desc: 'Send transfer failed.'
-                };
+        //         if (callback) {
+        //             sendBackResult2Native(JSON.stringify(obj), callback);
+        //         }
+        //         return obj;
+        //     } else {
+        //         const obj = {
+        //             error: res.data.Error,
+        //             result: '',
+        //             desc: 'Send transfer failed.'
+        //         };
 
-                if (callback) {
-                    sendBackResult2Native(JSON.stringify(obj), callback);
-                }
-                return obj;
-            }
-        }).catch( (err: any) => {
-            const obj = {
-                error: ERROR_CODE.NETWORK_ERROR,
-                result: ''
-            };
+        //         if (callback) {
+        //             sendBackResult2Native(JSON.stringify(obj), callback);
+        //         }
+        //         return obj;
+        //     }
+        // }).catch( (err: any) => {
+        //     const obj = {
+        //         error: ERROR_CODE.NETWORK_ERROR,
+        //         result: ''
+        //     };
 
-            if (callback) {
-                sendBackResult2Native(JSON.stringify(obj), callback);
-            }
-        });
+        //     if (callback) {
+        //         sendBackResult2Native(JSON.stringify(obj), callback);
+        //     }
+        // });
     }
 
     static claimOng(
@@ -720,7 +791,9 @@ export class SDK {
         value: string,
         encryptedPrivateKey: string,
         password: string,
-        gas: string,
+        gasPrice: string,
+        gasLimit: string,
+        payer: string,
         callback: string
     ) {
         try {
@@ -754,48 +827,19 @@ export class SDK {
             return result;
         }
         const addressObj = new Address(address);
-        const tx = makeClaimOngTx(addressObj, addressObj, value, '0');
-        tx.payer = addressObj;
+        const tx = makeClaimOngTx(addressObj, addressObj, value, gasPrice, gasLimit);
+        tx.payer = new Address(payer);
         signTransaction(tx, privateKey);
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
-        return restClient.sendRawTransaction(tx.serialize()).then((res) => {
-
-            // tslint:disable-next-line:no-console
-            console.log('transfer response: ' + JSON.stringify(res));
-
-            if (res.Error === 0) {
-                const obj = {
-                    error: 0,
-                    result: '',
-                    desc: 'Claim ong successed.'
-                };
-
-                if (callback) {
-                    sendBackResult2Native(JSON.stringify(obj), callback);
-                }
-                return obj;
-            } else {
-                const obj = {
-                    error: res.Error,
-                    result: '',
-                    desc: 'Claim ong failed.'
-                };
-
-                if (callback) {
-                    sendBackResult2Native(JSON.stringify(obj), callback);
-                }
-                return obj;
-            }
-        }).catch((err: any) => {
-            const obj = {
-                error: ERROR_CODE.NETWORK_ERROR,
-                result: ''
-            };
-
-            if (callback) {
-                sendBackResult2Native(JSON.stringify(obj), callback);
-            }
-        });
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: '',
+            tx: tx.serialize()
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
     }
 
     static exportIdentityToQrcode(identityDataStr: string, callback: string) {
@@ -875,6 +919,16 @@ export class SDK {
     }
 
     static importAccountMnemonic(mnemonic: string, password: string, callback: string) {
+        if (!mnemonic || mnemonic.split(' ').length !== 12) {
+            // tslint:disable-next-line:no-shadowed-variable
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            // tslint:disable-next-line:no-unused-expression
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        }
         const seed = bip39.mnemonicToSeedHex(mnemonic);
         const pri = seed.substr(0, 64);
         const privateKey = new PrivateKey(pri);
@@ -891,6 +945,138 @@ export class SDK {
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);
         }
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
         return obj;
     }
+
+    static exportWifPrivakeKey(encryptedKey: string, password: string, address: string, callback: string) {
+        if (address.length !== 34 && address.length !== 40) {
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        }
+        const encrypt = new PrivateKey(encryptedKey);
+        const privateKey = encrypt.decrypt(password, new Address(address));
+        const wif = core.getWIFFromPrivateKey(privateKey.key);
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: wif
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
+    }
+
+    static importAccountWithWif(wif: string, password: string, callback: string) {
+        let pri = '';
+        try {
+            pri = core.getPrivateKeyFromWIF(wif);
+        } catch (err) {
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        }
+        const privateKey = new PrivateKey(pri);
+        const account = new Account();
+        account.create(privateKey, password);
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: account.toJson()
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
+    }
+
+    static importAccountWithPrivateKey(privateKey: string, password: string, callback: string) {
+        privateKey = privateKey.trim();
+        if (!privateKey || privateKey.length !== 64) {
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        }
+        const pri = new PrivateKey(privateKey);
+        const account = new Account();
+        account.create(pri, password);
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: account.toJson()
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey = '';
+        password = '';
+        return result;
+    }
+
+    /**
+     * Actually import with Qrcode
+     */
+    static importAccountWithKeystore(keystore: string, password: string, callback: string) {
+        let keyStoreObj;
+        try {
+            keyStoreObj = JSON.parse(keystore);
+        } catch (err) {
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        }
+        if (keyStoreObj.type !== 'A') {
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        } else {
+            let account = new Account();
+            const encryptedPrivateKeyObj = new PrivateKey(keyStoreObj.key);
+            try {
+                const params = {
+                    cost: keyStoreObj.scrypt.n || 4096,
+                    blockSize: keyStoreObj.scrypt.p || 8,
+                    parallel: keyStoreObj.scrypt.r || 8,
+                    size: keyStoreObj.scrypt.dkLen || 64
+                };
+                account = Account.importAccount(
+                    keyStoreObj.label, encryptedPrivateKeyObj, password, keyStoreObj.prefix, params);
+                const obj = {
+                    error: ERROR_CODE.SUCCESS,
+                    result: account.toJson(),
+                    desc: ''
+                };
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(obj), callback);
+                }
+                // clear privateKey and password
+                password = '';
+                return obj;
+            } catch (err) {
+                const result = this.getDecryptError(err);
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(result), callback);
+                }
+                return result;
+            }
+        }
+    }
+
 }

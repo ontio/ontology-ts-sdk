@@ -17,7 +17,7 @@
  */
 import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
-import { DEFAULT_GAS_LIMIT, TOKEN_TYPE } from '../consts';
+import { TOKEN_TYPE } from '../consts';
 import { Address } from '../crypto';
 import InvokeCode from '../transaction/payload/invokeCode';
 import { Fee, Transaction, TxType } from '../transaction/transaction';
@@ -45,7 +45,7 @@ export function verifyAmount(amount: string) {
     }
 }
 
-function makeInvokeCodeTransacton(contract: Contract, vmType: VmType, gas: string): Transaction {
+function makeInvokeCodeTransacton(contract: Contract, vmType: VmType, gasPrice: string, gasLimit: string): Transaction {
     const tx = new Transaction();
     tx.type = TxType.Invoke;
 
@@ -59,12 +59,14 @@ function makeInvokeCodeTransacton(contract: Contract, vmType: VmType, gas: strin
     tx.payload = invokeCode;
 
     // gas
-    if (DEFAULT_GAS_LIMIT === Number(0)) {
-        tx.gasPrice = new Fixed64();
-    } else {
-        const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
-        tx.gasPrice = new Fixed64(price);
-    }
+    // if (DEFAULT_GAS_LIMIT === Number(0)) {
+    //     tx.gasPrice = new Fixed64();
+    // } else {
+    //     const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
+    //     tx.gasPrice = new Fixed64(price);
+    // }
+    tx.gasLimit = new Fixed64(gasLimit);
+    tx.gasPrice = new Fixed64(gasPrice);
 
     return tx;
 }
@@ -74,14 +76,16 @@ function makeInvokeCodeTransacton(contract: Contract, vmType: VmType, gas: strin
  * @param from sender's address
  * @param to receiver's address
  * @param amount
- * @param gas the total value of gas, used to calculate gas price
+ * @param gasPrice
+ * @param gasLimit
  */
 export function makeTransferTx(
     tokenType: string,
     from: Address,
     to: Address,
     amount: string,
-    gas: string
+    gasPrice: string,
+    gasLimit: string
 ): Transaction {
     verifyAmount(amount);
 
@@ -106,7 +110,7 @@ export function makeTransferTx(
     contract.method = 'transfer';
     contract.args = transfer.serialize();
 
-    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas);
+    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gasPrice, gasLimit);
     tx.payer = from;
     return tx;
 }
@@ -124,7 +128,8 @@ export function makeTransferFromManyTx(
     from: Address[],
     to: Address,
     amounts: string[],
-    gas: string
+    gasPrice: string,
+    gasLimit: string
 ): Transaction {
     const states = new Array<State>(from.length);
 
@@ -147,7 +152,7 @@ export function makeTransferFromManyTx(
     contract.method = 'transfer';
     contract.args = transfers.serialize();
 
-    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas);
+    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gasPrice, gasLimit);
     tx.payer = from[0];
     return tx;
 }
@@ -164,7 +169,8 @@ export function makeTransferToMany(
     from: Address,
     to: Address[],
     amounts: string[],
-    gas: string
+    gasPrice: string,
+    gasLimit: string
 ): Transaction {
     const states = new Array<State>(to.length);
 
@@ -189,7 +195,7 @@ export function makeTransferToMany(
     contract.method = 'transfer';
     contract.args = transfers.serialize();
 
-    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas);
+    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gasPrice, gasLimit);
     tx.payer = from;
     return tx;
 }
@@ -200,7 +206,8 @@ export function makeTransferToMany(
  * @param to receiver's address
  * @param amount
  */
-export function makeClaimOngTx(from: Address, to: Address, amount: string, gas: string): Transaction {
+export function makeClaimOngTx(from: Address, to: Address, amount: string,
+                               gasPrice: string, gasLimit: string): Transaction {
     verifyAmount(amount);
 
     const tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, new BigNumber(Number(amount)).toString());
@@ -212,7 +219,7 @@ export function makeClaimOngTx(from: Address, to: Address, amount: string, gas: 
     const fee = new Fee();
     fee.amount = new Fixed64();
     fee.payer = from;
-    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gas);
+    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gasPrice, gasLimit);
     tx.payer = from;
     return tx;
 }

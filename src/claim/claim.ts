@@ -1,20 +1,20 @@
 /*
- * Copyright (C) 2018 The ontology Authors
- * This file is part of The ontology library.
- *
- * The ontology is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The ontology is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2018 The ontology Authors
+* This file is part of The ontology library.
+*
+* The ontology is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* The ontology is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 import * as b64 from 'base64-url';
 import { Address, PrivateKey, Signature, SignatureScheme } from '../crypto';
@@ -130,11 +130,15 @@ export class Claim extends Message {
      * Attests the claim onto blockchain.
      *
      * @param url Websocket endpoint of Ontology node
+     * @param gas the cost of the transaction
+     * @param payer the payer of the gas
      * @param privateKey Private key to sign the transaction
-     * @param gas gas
+     * @param gasPrice gasPrice
+     * @param gasLimit gasLimit
      * @param payer payer
      */
-    async attest(url: string, privateKey: PrivateKey, gas: string, payer: Address): Promise<boolean> {
+    async attest(url: string, gasPrice: string, gasLimit: string,
+                 payer: Address, privateKey: PrivateKey): Promise<boolean> {
         const attesterId = this.metadata.issuer;
         const subjectId = this.metadata.subject;
         const claimId = this.metadata.messageId;
@@ -143,7 +147,7 @@ export class Claim extends Message {
         }
 
         const client = new WebsocketClient(url);
-        const tx = buildCommitRecordTx(claimId, attesterId, subjectId, gas, payer);
+        const tx = buildCommitRecordTx(claimId, attesterId, subjectId, gasPrice, gasLimit, payer);
         signTransaction(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
 
@@ -154,20 +158,23 @@ export class Claim extends Message {
     /**
      * Revokes claim attest from blockchain.
      *
+     * @param gas the cost of the transactoin
+     * @param payer the payer of the cost
      * @param privateKey Private key to sign the transaction
      * @param url Websocket endpoint of Ontology node
-     * @param gas gas
+     * @param gasPrice gasPrice
+     * @param gasLimit gasLimit
      * @param payer payer
      */
-    async revoke(url: string, privateKey: PrivateKey, gas: string, payer: Address): Promise<boolean> {
+    async revoke(url: string, gasPrice: string,
+                 gasLimit: string, payer: Address, privateKey: PrivateKey): Promise<boolean> {
         const attesterId = this.metadata.issuer;
         const claimId = this.metadata.messageId;
         if (claimId === undefined) {
             throw new Error('Claim id not specified.');
         }
-
         const client = new WebsocketClient(url);
-        const tx = buildRevokeRecordTx(claimId, attesterId, gas, payer);
+        const tx = buildRevokeRecordTx(claimId, attesterId, gasPrice, gasLimit, payer);
         signTransaction(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
 

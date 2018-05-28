@@ -212,44 +212,30 @@ export function encryptWithEcb(
 ): string {
     const u160 = getSingleSigUInt160(publicKey);
     // console.log( "programHash: ", programHash );
-
     const address = u160ToAddress(u160);
-
-    // tslint:disable-next-line:no-console
-    console.log('address: ', address);
-
+    // console.log( "address: ", address );
     const addressSha256 = CryptoJS.SHA256(address).toString();
     const addressSha2562 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
     const addresshash = addressSha2562.slice(0, 8);
-
-    // tslint:disable-next-line:no-console
-    console.log('addresshash: ', addresshash);
-
+    // console.log( "addresshash: ", addresshash );
     // Scrypt
     const derived = Scrypt.hashSync(
         Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
         Buffer.from(addresshash, 'hex'),
-        scryptParams
-    ).toString('hex');
-
+        scryptParams).toString('hex');
     const derived1 = derived.slice(0, 64);
     const derived2 = derived.slice(64);
 
     // AES Encrypt
-    hexXor(privateKey, derived1);
+    const xor = hexXor(privateKey, derived1);
     const encrypted = CryptoJS.AES.encrypt(
-        CryptoJS.enc.Hex.parse(privateKey),
+        CryptoJS.enc.Hex.parse(xor),
         CryptoJS.enc.Hex.parse(derived2),
-        { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding }
-    );
+        { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding });
     // console.log( "encrypted: ", encrypted.ciphertext.toString() );
-
     // Construct
     const assembled = OEP_HEADER + OEP_FLAG + addresshash + encrypted.ciphertext.toString();
-    // let assembled = encrypted.ciphertext.toString();
-
     // console.log( "assembled: ", assembled );
-
     return Bs58check.encode(Buffer.from(assembled, 'hex'));
 }
 
@@ -259,45 +245,53 @@ export function decryptWithEcb(
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ): string {
     const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
-
     // console.log( "assembled: ", assembled );
-
-    const addressHash = assembled.substr(0, 8);
+    const addressHash = assembled.substr(6, 8);
     // console.log( "addressHash: ", addressHash );
-
-    const encrypted = assembled.substr(8);
+    const encrypted = assembled.substr(-64);
     // console.log( "encrypted: ", encrypted );
-
     // Scrypt
     const derived = Scrypt.hashSync(
-        Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
-        Buffer.from(addressHash, 'hex'),
-        scryptParams
-    ).toString('hex');
+        Buffer.from(keyphrase.normalize('NFC'),
+        'utf8'), Buffer.from(addressHash, 'hex'),
+        scryptParams).toString('hex');
     const derived1 = derived.slice(0, 64);
     const derived2 = derived.slice(64);
 
     // AES Decrypt
     const ciphertexts = { ciphertext: CryptoJS.enc.Hex.parse(encrypted), salt: '', iv: '' };
-
     const decrypted = CryptoJS.AES.decrypt(
         ciphertexts,
         CryptoJS.enc.Hex.parse(derived2),
-        { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding }
-    );
+        { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding });
     // console.log( "decrypted: ", decrypted.toString() );
-    const privateKey = hexXor(decrypted.toString(), derived1);
-
     // Check PrivateKey
     // ----------------------------------------------------------
-    const publicKey = ab2hexstring(core.getPublicKey(privateKey, true));
+    // PrivateKey
+    const privateKey = hexXor(decrypted.toString(), derived1);
+    // console.log( "privateKey: ", privateKey );
+    return privateKey;
+}
+
+/**
+ * Checks if the password supplied to decrypt was correct.
+ *
+ * This method was taken out from decrypt, because it needs to create public key from private key
+ * and it needs to be supplied from outside.
+ *
+ * @param encryptedKey Original encrypted key
+ * @param decryptedKey Decrypted key with decrypt
+ * @param publicKey Public key from decrypted key
+ */
+export function checkEcbDecrypted(encryptedKey: string, decryptedKey: string, publicKey: string): void {
+    const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
+    // console.log( "assembled: ", assembled );
+    const addressHash = assembled.substr(6, 8);
+    // console.log( "addressHash: ", addressHash );
     // Address
     const u160 = getSingleSigUInt160(publicKey);
     const address = u160ToAddress(u160);
-
-    // tslint:disable-next-line:no-console
-    console.log('address 2', address);
-
+    // console.log('address', address)
     // AddressHash
     const addressSha256 = CryptoJS.SHA256(address).toString();
     const addressSha2562 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
@@ -306,12 +300,6 @@ export function decryptWithEcb(
     if (addressHashNew !== addressHash) {
         // tslint:disable-next-line:no-console
         console.log('keyphrase error.');
-
         throw ERROR_CODE.Decrypto_ERROR;
     }
-
-    // PrivateKey
-    // let privateKey = decrypted.toString()
-    // console.log( "privateKey: ", privateKey );
-    return privateKey;
 }
