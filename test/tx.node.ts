@@ -21,7 +21,7 @@ import { TEST_ONT_URL } from '../src/consts';
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
 import { generateOntid } from '../src/core';
 import * as core from '../src/core';
-import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey, PublicKeyStatus } from '../src/crypto';
+import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { RestClient } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';

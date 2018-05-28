@@ -50,7 +50,7 @@ export function buildCommitRecordTx(claimId: string, issuer: string, subject: st
     }
     const value = issuer + '&' + subject;
     const p1 = new Parameter(name1, type1, str2hexstr(claimId));
-    const p2 = new Parameter(name2, type2, value);
+    const p2 = new Parameter(name2, type2, str2hexstr(value));
     f.setParamsValue(p1, p2);
 
     let tx = new Transaction();

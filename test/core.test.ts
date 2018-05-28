@@ -18,10 +18,8 @@
 
 import { Claim, Metadata } from '../src/claim';
 import * as core from '../src/core';
-import { generateOntid, getMerkleProof, getPkStatus, getPublicKey, sha256, verifyClaimSignature,
-    verifyExpiration, verifySignature
-} from '../src/core';
-import { CurveLabel, KeyParameters, KeyType, PK_STATUS, PrivateKey } from '../src/crypto';
+import { generateOntid, getMerkleProof, getPublicKey, sha256, verifySignature } from '../src/core';
+import { CurveLabel, KeyParameters, KeyType, PrivateKey } from '../src/crypto';
 import * as utils from '../src/utils';
 
 // tslint:disable : no-console

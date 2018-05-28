@@ -84,6 +84,19 @@ export class Claim extends Message {
 
     /**
      * Overrides default message verification with added attest verification.
+     *
+     * TODO: return more than boolean
+     *
+     * const VerifyOntidClaimResult = {
+     *   CLAIM_NOT_ONCHAIN : 'CLAIM_NOT_ONCHAIN',
+     *   INVALID_SIGNATURE : 'INVALID_SIGNATURE',
+     *   PK_IN_REVOKED     : 'PK_IN_REVOKED',
+     *   NO_ISSUER_PK      : 'NO_ISSUER_PK',
+     *   EXPIRED_CLAIM     : 'EXPIRED_CLAIM',
+     *   REVOKED_CLAIM     : 'REVOKED_CLAIM',
+     *   VALID_CLAIM       : 'VALID_CLAIM'
+     * };
+     *
      * @param url Restful endpoint of Ontology node
      * @param checkAttest Should be the attest tested
      */
@@ -179,6 +192,7 @@ export class Claim extends Message {
         const tx = buildGetRecordStatusTx(claimId);
 
         const response = await client.sendRawTransaction(tx.serialize(), true);
+        console.log('resp:', response);
         const result = GetStatusResponse.deserialize(response);
 
         return result.status === Status.ATTESTED && result.attesterId === attesterId;
@@ -243,12 +257,12 @@ class GetStatusResponse {
     static deserialize(r: any): GetStatusResponse {
         const response = new GetStatusResponse();
 
-        if (r.Result === '') {
+        if (r.Result !== undefined && r.Result.Result === '') {
             response.status = Status.NOTFOUND;
             return response;
         }
 
-        const decoded = hexstr2str(r.Result);
+        const decoded = hexstr2str(r.Result.Result);
         const data = decoded.split('#');
 
         if (data.length !== 3) {

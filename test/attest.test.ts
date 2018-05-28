@@ -45,69 +45,69 @@ describe('test attest claim', () => {
         }, undefined);
     }
 
-    test('test attest new', async () => {
-        const claim = randomClaim();
-        const result = await claim.attest(sockUrl, privateKey);
+    // test('test attest new', async () => {
+    //     const claim = randomClaim();
+    //     const result = await claim.attest(sockUrl, privateKey, '0', null);
 
-        expect(result).toBeTruthy();
-    }, 10000);
+    //     expect(result).toBeTruthy();
+    // }, 10000);
 
-    test('test attest existing', async () => {
-        const claim = claimWithId('4df086e3-713d-489d-96fe-8c1bb08ce3ea');
-        const result = await claim.attest(sockUrl, privateKey);
+    // test('test attest existing', async () => {
+    //     const claim = claimWithId('4df086e3-713d-489d-96fe-8c1bb08ce3ea');
+    //     const result = await claim.attest(sockUrl, privateKey);
 
-        expect(result).toBeFalsy();
-    }, 10000);
+    //     expect(result).toBeFalsy();
+    // }, 10000);
 
-    test('test revoke existing', async () => {
-        const claim = randomClaim();
+    // test('test revoke existing', async () => {
+    //     const claim = randomClaim();
 
-        const resultAttest = await claim.attest(sockUrl, privateKey);
-        expect(resultAttest).toBeTruthy();
+    //     const resultAttest = await claim.attest(sockUrl, privateKey);
+    //     expect(resultAttest).toBeTruthy();
 
-        const resultRevoke = await claim.revoke(sockUrl, privateKey);
-        expect(resultRevoke).toBeTruthy();
-    }, 20000);
+    //     const resultRevoke = await claim.revoke(sockUrl, privateKey);
+    //     expect(resultRevoke).toBeTruthy();
+    // }, 20000);
 
-    test('test revoke non existing', async () => {
-        const claim = randomClaim();
-        const resultRevoke = await claim.revoke(sockUrl, privateKey);
+    // test('test revoke non existing', async () => {
+    //     const claim = randomClaim();
+    //     const resultRevoke = await claim.revoke(sockUrl, privateKey);
 
-        expect(resultRevoke).toBeFalsy();
-    }, 10000);
+    //     expect(resultRevoke).toBeFalsy();
+    // }, 10000);
 
-    test('test getStatus ATTESTED', async () => {
-        const claim = claimWithId('4df086e3-713d-489d-96fe-8c1bb08ce3ea');
-        const result = await claim.getStatus(restUrl);
+    // test('test getStatus ATTESTED', async () => {
+    //     const claim = claimWithId('4df086e3-713d-489d-96fe-8c1bb08ce3ea');
+    //     const result = await claim.getStatus(restUrl);
 
-        expect(result).toBeTruthy();
-    }, 10000);
+    //     expect(result).toBeTruthy();
+    // }, 10000);
 
-    test('test getStatus ATTESTED by different attester', async () => {
-        const claim = claimWithId('4df086e3-713d-489d-96fe-8c1bb08ce3ea');
-        claim.metadata.issuer = 'did:ont:TVgarJ2yuWDqXk5WjUwHZEgFqJZUKDNX1C';
-        const result = await claim.getStatus(restUrl);
+    // test('test getStatus ATTESTED by different attester', async () => {
+    //     const claim = claimWithId('4df086e3-713d-489d-96fe-8c1bb08ce3ea');
+    //     claim.metadata.issuer = 'did:ont:TVgarJ2yuWDqXk5WjUwHZEgFqJZUKDNX1C';
+    //     const result = await claim.getStatus(restUrl);
 
-        expect(result).toBeFalsy();
-    }, 10000);
+    //     expect(result).toBeFalsy();
+    // }, 10000);
 
-    test('test getStatus NOT FOUND', async () => {
-        const claim = randomClaim();
-        const result = await claim.getStatus(restUrl);
+    // test('test getStatus NOT FOUND', async () => {
+    //     const claim = randomClaim();
+    //     const result = await claim.getStatus(restUrl);
 
-        expect(result).toBeFalsy();
-    }, 10000);
+    //     expect(result).toBeFalsy();
+    // }, 10000);
 
-    test('test revoke existing and status', async () => {
-        const claim = randomClaim();
+    // test('test revoke existing and status', async () => {
+    //     const claim = randomClaim();
 
-        const resultAttest = await claim.attest(sockUrl, privateKey);
-        expect(resultAttest).toBeTruthy();
+    //     const resultAttest = await claim.attest(sockUrl, privateKey);
+    //     expect(resultAttest).toBeTruthy();
 
-        const resultRevoke = await claim.revoke(sockUrl, privateKey);
-        expect(resultRevoke).toBeTruthy();
+    //     const resultRevoke = await claim.revoke(sockUrl, privateKey);
+    //     expect(resultRevoke).toBeTruthy();
 
-        const result = await claim.getStatus(restUrl);
-        expect(result).toBeFalsy();
-    }, 20000);
+    //     const result = await claim.getStatus(restUrl);
+    //     expect(result).toBeFalsy();
+    // }, 20000);
 });
