@@ -182,7 +182,7 @@ export class StringReader {
     pos: number;
     size: number;
     constructor(str = '') {
-        if (this.str.length % 2 !== 0) {
+        if (str.length % 2 !== 0) {
             throw new Error('Param\'s length is not even.');
         }
         this.str = str;

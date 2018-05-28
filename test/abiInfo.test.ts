@@ -63,11 +63,4 @@ describe('test AbiInfo', () => {
         console.log('serialize: ' + serialized);
         expect(serialized).toBeDefined();
     });
-
-    test('test deserialize', () => {
-        const t = Transaction.deserialize(serialized);
-        // tslint:disable-next-line:no-console
-        console.log('deserialized: ' + t.toString());
-        expect(t.txAttributes.length).toEqual(0);
-    });
 });
