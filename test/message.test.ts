@@ -42,7 +42,7 @@ describe('test message', () => {
 
     beforeAll(async () => {
         const ontId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-        const tx = buildRegisterOntidTx(ontId, publicKey, '0');
+        const tx = buildRegisterOntidTx(ontId, publicKey, '0', '30000');
         signTransaction(tx, privateKey);
 
         const client = new WebsocketClient();
