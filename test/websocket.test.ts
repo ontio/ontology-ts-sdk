@@ -1,18 +1,67 @@
 import { TEST_ONT_URL } from '../src/consts';
-import { Address } from '../src/crypto';
+import { Address, PrivateKey } from '../src/crypto';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildGetDDOTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test websocket', () => {
     const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, false);
 
     // tslint:disable-next-line:one-variable-per-declaration
-    const txHash = 'd5200d614994ea5242462f3a6601134ef235b9be03b6ce2f39e871fec2c36768',
-        blockHash = '9d51e95d4cc0365b3ed06f66c5df4808491c09723810cc28ad37d5be152f230b',
-        codeHash = 'ff00000000000000000000000000000000000003',
-        height = 1000,
-        ontid = 'did:ont:TA7j42nDdZSyUBdYhWoxnnE5nUdLyiPoK3',
-        address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
+    const codeHash = 'ff00000000000000000000000000000000000003';
+    const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
+    const address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
+
+    let txHash: string;
+    let blockHash: string;
+    let height: number;
+
+    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const publicKey = privateKey.getPublicKey();
+
+    /**
+     * Registers new ONT ID to create transaction with Events and new block
+     */
+    beforeAll(async () => {
+        const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
+        signTransaction(tx, privateKey);
+
+        const result = await client.sendRawTransaction(tx.serialize(), false, true);
+        txHash = result.Result.TxHash;
+    }, 10000);
+
+    /**
+     * Gets current block height to be used by following tests.
+     */
+    test('test getBlockHeight', async () => {
+        const result = await client.getBlockHeight();
+
+        expect(result.Action).toBe('getblockheight');
+        expect(result.Desc).toBe('SUCCESS');
+        expect(typeof result.Result).toBe('number');
+        height = result.Result;
+    });
+
+    test('test getBlock by height', async () => {
+        const result = await client.getBlock(height);
+
+        expect(result.Action).toBe('getblockbyheight');
+        expect(result.Desc).toBe('SUCCESS');
+        expect(typeof result.Result).toBe('string');
+    });
+
+    /**
+     * Gets block hash to be used by following tests.
+     */
+    test('test getBlockJson by height', async () => {
+        const result = await client.getBlockJson(height);
+
+        expect(result.Action).toBe('getblockbyheight');
+        expect(result.Desc).toBe('SUCCESS');
+        expect(typeof result.Result).toBe('object');
+        expect(result.Result.Hash).toBeDefined();
+        blockHash = result.Result.Hash;
+    });
 
     test('send heartbeat', async () => {
         const result = await client.sendHeartBeat();
@@ -80,37 +129,12 @@ describe('test websocket', () => {
         expect(typeof result.Result).toBe('number');
     });
 
-    test('test getBlockHeight', async () => {
-        const result = await client.getBlockHeight();
-
-        expect(result.Action).toBe('getblockheight');
-        expect(result.Desc).toBe('SUCCESS');
-        expect(typeof result.Result).toBe('number');
-    });
-
-    test('test getBlock by height', async () => {
-        const result = await client.getBlock(height);
-
-        expect(result.Action).toBe('getblockbyheight');
-        expect(result.Desc).toBe('SUCCESS');
-        expect(typeof result.Result).toBe('string');
-    });
-
     test('test getBlock by hash', async () => {
         const result = await client.getBlock(blockHash);
 
         expect(result.Action).toBe('getblockbyhash');
         expect(result.Desc).toBe('SUCCESS');
         expect(typeof result.Result).toBe('string');
-    });
-
-    test('test getBlockJson by height', async () => {
-        const result = await client.getBlockJson(height);
-
-        expect(result.Action).toBe('getblockbyheight');
-        expect(result.Desc).toBe('SUCCESS');
-        expect(typeof result.Result).toBe('object');
-        expect(result.Result.Hash).toBeDefined();
     });
 
     test('test getBlockJson by hash', async () => {
@@ -123,15 +147,13 @@ describe('test websocket', () => {
     });
 
     test('test getBalance', async () => {
-        const address = new Address('TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE');
-        const result = await client.getBalance(address);
+        const result = await client.getBalance(new Address(address));
 
         expect(result.Action).toBe('getbalance');
         expect(result.Desc).toBe('SUCCESS');
         expect(typeof result.Result).toBe('object');
         expect(result.Result.ont).toBeDefined();
         expect(result.Result.ong).toBeDefined();
-        expect(result.Result.ong_appove).toBeDefined();
     });
 
     test('test getContract', async () => {

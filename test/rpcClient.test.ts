@@ -10,7 +10,7 @@ describe('test rpc client', () => {
     const rpcClient = new RpcClient();
 
     const codeHash = 'ff00000000000000000000000000000000000003';
-    const ontid = 'did:ont:TA7j42nDdZSyUBdYhWoxnnE5nUdLyiPoK3';
+    const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
     const address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
 
     let txHash: string;
