@@ -8,7 +8,7 @@ import { signTransaction } from '../src/transaction/transactionBuilder';
 // tslint:disable:no-console
 describe('test restClient', () => {
     const rest = new RestClient();
-    // tslint:disable-next-line:one-variable-per-declaration
+
     const codeHash = 'ff00000000000000000000000000000000000003';
     const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
     const address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
