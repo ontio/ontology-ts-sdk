@@ -27,6 +27,16 @@ import { num2hexstring, str2hexstr } from '../utils';
 
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
 
+/**
+ * Registers Identity.
+ *
+ * GAS calculation: gasLimit * gasPrice is equal to the amount of gas consumed.
+ *
+ * @param ontid User's ONT ID
+ * @param publicKey Public key
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ */
 export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
                                      gasPrice: string, gasLimit: string): Transaction {
     const f = abiInfo.getFunction('regIDWithPublicKey');
@@ -62,10 +72,13 @@ export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
 }
 
 /**
+ * Registers Identity with initial attributes.
  *
- * @param ontid user's ONT ID
- * @param attributes user's serialized attributes
- * @param publicKey user's public key
+ * @param ontid User's ONT ID
+ * @param attributes User's serialized attributes
+ * @param publicKey User's public key
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function buildRegIdWithAttributes(
     ontid: string,
@@ -104,12 +117,13 @@ export function buildRegIdWithAttributes(
 }
 
 /**
+ * Adds attributes to ONT ID.
  *
- * @param ontid user's ONT ID
- * @param attributes attributes list
- * @param publicKey user's public key
- * @param gasPrice
- * @param gasLimit
+ * @param ontid User's ONT ID
+ * @param attributes User's serialized attributes
+ * @param publicKey User's public key
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], publicKey: PublicKey,
                                     gasPrice: string, gasLimit: string) {
@@ -142,11 +156,14 @@ export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], p
 }
 
 /**
- * @param ontid user's ONT ID
- * @param key key of attribute to be remove
- * @param publicKey user's publicKey
- * @param gasPrice
- * @param gasLimit
+ * Removes attribute from ONT ID.
+ *
+ * @param ontid User's ONT ID
+ * @param key Key of attribute to remove
+ * @param publicKey User's public key
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ *
  */
 export function buildRemoveAttributeTx(ontid: string, key: string, publicKey: PublicKey,
                                        gasPrice: string, gasLimit: string) {
@@ -174,7 +191,9 @@ export function buildRemoveAttributeTx(ontid: string, key: string, publicKey: Pu
 }
 
 /**
- *  @param ontid user's ONT ID
+ * Queries attributes attached to ONT ID.
+ *
+ * @param ontid User's ONT ID
  */
 export function buildGetAttributesTx(ontid: string) {
     const f = abiInfo.getFunction('getAttributes');
@@ -190,6 +209,11 @@ export function buildGetAttributesTx(ontid: string) {
     return tx;
 }
 
+/**
+ * Queries ONT ID Description Object of ONT ID.
+ *
+ * @param ontid User's ONT ID
+ */
 export function buildGetDDOTx(ontid: string) {
     const f = abiInfo.getFunction('getDDO');
 
@@ -205,11 +229,15 @@ export function buildGetDDOTx(ontid: string) {
 }
 
 /**
- * @param ontid user's ONT ID
- * @param newPk new public key to be added
- * @param publicKey user's public key
+ * Adds a new public key to ONT ID.
+ *
+ * @param ontid User's ONT ID
+ * @param newPk New public key to be added
+ * @param publicKey User's public key
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
-export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  publicKey: PublicKey,
+export function buildAddControlKeyTx(ontid: string, newPk: PublicKey, publicKey: PublicKey,
                                      gasPrice: string, gasLimit: string) {
     const f = abiInfo.getFunction('addKey');
 
@@ -236,10 +264,13 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  publicKey
 }
 
 /**
+ * Revoked a public key from ONT ID.
  *
- * @param ontid user's ONT ID
- * @param pk2Remove public key to be removed
- * @param sender user's public key
+ * @param ontid User's ONT ID
+ * @param pk2Remove Public key to be removed
+ * @param sender User's public key
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey,
                                         sender: PublicKey, gasPrice: string, gasLimit: string) {
@@ -266,6 +297,11 @@ export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey,
     return tx;
 }
 
+/**
+ * Queries public keys attached to ONT ID.
+ *
+ * @param ontid User's ONT ID
+ */
 export function buildGetPublicKeysTx(ontid: string) {
     const f = abiInfo.getFunction('getPublicKeys');
 
@@ -281,10 +317,13 @@ export function buildGetPublicKeysTx(ontid: string) {
 }
 
 /**
+ * Adds recovery address to ONT ID.
  *
- * @param ontid user's ONT ID
- * @param recovery recovery address, must have not be set
- * @param publicKey user's public key, must be user's existing public key
+ * @param ontid User's ONT ID
+ * @param recovery Recovery address, must have not be set
+ * @param publicKey User's public key, must be user's existing public key
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function buildAddRecoveryTx(ontid: string, recovery: Address,
                                    publicKey: PublicKey, gasPrice: string, gasLimit: string) {
@@ -304,11 +343,15 @@ export function buildAddRecoveryTx(ontid: string, recovery: Address,
 }
 
 /**
+ * Changes recovery address of ONT ID.
+ *
+ * This contract call must be initiated by the original recovery address.
  *
  * @param ontid user's ONT ID
- * @param newrecovery new recovery address
- * @param oldrecovery original recoevery address
- * This contract call must be initiated by the original recovery address.
+ * @param newrecovery New recovery address
+ * @param oldrecovery Original recoevery address
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function buildChangeRecoveryTx(ontid: string, newrecovery: Address,
                                       oldrecovery: Address, gasPrice: string, gasLimit: string) {
@@ -328,6 +371,12 @@ export function buildChangeRecoveryTx(ontid: string, newrecovery: Address,
     return tx;
 }
 
+/**
+ * Queries the state of the public key associated with ONT ID.
+ *
+ * @param ontid user's ONT ID
+ * @param pkId User's public key Id
+ */
 export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
     const f = abiInfo.getFunction('getKeyState');
 
@@ -348,23 +397,5 @@ export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
     f.setParamsValue(p1, p2);
 
     const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM);
-    return tx;
-}
-
-/**
- * This method is Deprecated.
- */
-export function buildGetPublicKeyIdTx(ontid: string, pk: PublicKey) {
-    const f = abiInfo.getFunction('GetPublicKeyId');
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
-
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk.serializeHex());
-    f.setParamsValue(p1, p2);
-
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, '0');
     return tx;
 }
