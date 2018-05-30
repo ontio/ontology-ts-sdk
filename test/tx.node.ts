@@ -30,7 +30,7 @@ import AbiFunction from '../src/smartcontract/abi/abiFunction';
 import AbiInfo from '../src/smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../src/smartcontract/abi/parameter';
 import json2 from '../src/smartcontract/data/idContract.abi';
-import { buildAddAttributeTx, buildAddControlKeyTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetAttributesTx, buildGetDDOTx, buildGetPublicKeyIdTx, buildGetPublicKeyStateTx, buildGetPublicKeysTx, buildRegIdWithAttributes, buildRegisterOntidTx, buildRemoveAttributeTx, buildRemoveControlKeyTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildAddAttributeTx, buildAddControlKeyTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetAttributesTx, buildGetDDOTx, buildGetPublicKeyStateTx, buildGetPublicKeysTx, buildRegIdWithAttributes, buildRegisterOntidTx, buildRemoveAttributeTx, buildRemoveControlKeyTx } from '../src/smartcontract/ontidContractTxBuilder';
 import { DDO, DDOAttribute, PublicKeyWithId } from '../src/transaction/ddo';
 import InvokeCode from '../src/transaction/payload/invokeCode';
 import { Transaction } from '../src/transaction/transaction';
