@@ -1,3 +1,4 @@
+import { ERROR_CODE } from './../../error';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -208,6 +209,18 @@ export default class RestClient {
             url = this.url + UrlConsts.Url_get_block_by_hash + value;
         }
 
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+    getAllowance(asset: string, from: Address, to: Address) {
+        asset = asset.toLowerCase();
+        if (asset !== 'ont' && asset !== 'ong') {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        const url = this.url + UrlConsts.Url_get_allowance +
+                    asset.toLowerCase() + '/' + from.toBase58() + '/' + to.toBase58();
         return axios.get(url).then((res) => {
             return res.data;
         });

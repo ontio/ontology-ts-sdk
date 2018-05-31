@@ -19,6 +19,7 @@
 import axios from 'axios';
 import { BigNumber } from 'bignumber.js';
 import { Account } from '../src/account';
+import Fixed64 from '../src/common/fixed64';
 import { HTTP_REST_PORT, ONT_NETWORK, REST_API, TEST_NODE, TEST_ONT_URL } from '../src/consts';
 import { getSingleSigUInt160 } from '../src/core';
 import * as core from '../src/core';
@@ -28,7 +29,8 @@ import { addressToU160, u160ToAddress } from '../src/helpers';
 import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
-import { makeClaimOngTx, makeTransferFromManyTx, makeTransferToMany, makeTransferTx
+import { makeClaimOngTx, makeQueryAllowanceTx, makeTransferFromManyTx, makeTransferToMany,
+    makeTransferTx, ONG_CONTRACT, ONT_CONTRACT
 } from '../src/smartcontract/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/token';
 import { Transaction } from '../src/transaction/transaction';
@@ -61,8 +63,8 @@ const  testTransferTx = () => {
     const gasLimit = '300000';
     const gasPrice = '0';
     const tx = makeTransferTx('ONT', new Address(accountFrom.address),
-        new Address('TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG'), '10000', gasPrice, gasLimit);
-    signTransaction(tx, accountFrom.privateKey);
+        new Address('TA5KvS6o9puusWQeiyWDezDWgi5NvKQotf'), '10', gasPrice, gasLimit);
+    // signTransaction(tx, accountFrom.privateKey);
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress,
     // '01716379e393d1a540615e022ede47b97e0577c6', value,
     // accountFrom.privateKey)
@@ -84,7 +86,7 @@ const  testTransferTx = () => {
 };
 
 const testGetBalance = (address, addressName) => {
-    const request = `https://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`;
+    const request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`;
     axios.get(request).then((res) => {
         const result = res.data.Result;
         // console.log(result)
@@ -100,9 +102,24 @@ const testGetBalance = (address, addressName) => {
 // 1202023cd636327150065fb4d3b354bd48ace5e402904f6f28f39f2fe22cd642986d9c
 // c62bbce37fc96c90e2eea6de474b0031e560ef3630d2f6efe275f16f85ed1543
 
+const testGetUnclaimedOng = (address) => {
+    const restClient = new RestClient();
+    restClient.getAllowance('ong', new Address(ONT_CONTRACT), address).then( (res) => {
+        console.log(res);
+    });
+};
+
+const testQueryAllowance = (from, to) => {
+    const tx = makeQueryAllowanceTx('ong', from, to);
+    const restClient = new RestClient();
+    restClient.sendRawTransaction(tx.serialize(), true).then((res) => {
+        console.log(res);
+    });
+};
+
 const testClaimOng = () => {
-    const pri = new PrivateKey('a53213c27eb1de0796b9d0b44c96e7e30228f1466d8657c47b471a4700777c0c');
-    const hexAddress = '01716379e393d1a540615e022ede47b97e0577c6';
+    const pri = accountFrom.privateKey;
+    const hexAddress = accountFrom.hexAddress;
     console.log(hexAddress);
     const gasPrice = '0';
     const gasLimit = '30000';
@@ -113,14 +130,30 @@ const testClaimOng = () => {
     // let from = hexAddress
     // let to = from
     // let to = accountFrom.hexAddress
-    const tx = makeClaimOngTx(new Address(hexAddress), new Address(hexAddress), '100', gasPrice, gasLimit);
+    // tslint:disable-next-line:max-line-length
+    const tx = makeClaimOngTx(new Address(hexAddress), new Address(hexAddress), '10000', new Address(hexAddress), gasPrice, gasLimit);
     signTransaction(tx, pri);
-
-    console.log(tx.serialize());
     const restClient = new RestClient();
-    restClient.sendRawTransaction(tx.serialize()).then((res) => {
-        console.log(res);
-    });
+    restClient.sendRawTransaction(tx.serialize()).then( res => {
+        console.log(res.Result);
+        const txhash = res.Result;
+        restClient.getSmartCodeEvent(txhash).then(resp => {
+            console.log('resp: ' + JSON.stringify(resp))
+        })
+
+        setTimeout( () => {
+            restClient.getSmartCodeEvent(txhash).then(respon => {
+                console.log('respon: ' + JSON.stringify(respon));
+            })
+        }, 6000);
+    })
+    // tslint:disable:no-console
+    console.log(tx.serialize());
+    const param = buildTxParam(tx);
+    const callback = (err, res, socket) => {
+        console.log('res : ' + JSON.stringify(res));
+    };
+    // txSender.sendTxWithSocket(param, callback);
 };
 
 const pri1 = new PrivateKey('c19f16785b8f3543bbaf5e1dbb5d398dfa6c85aaad54fc9d71203ce83e505c07');
@@ -161,10 +194,12 @@ const testAccountTransfer = () => {
 
 // testTransferTx();
 const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
-testGetBalance(accountFrom.address, '');
+// testGetBalance(accountFrom.address, '');
 
-// testClaimOng()
+testClaimOng();
 
 // testTransferFromMany()
 
 // testTransferToMany()
+
+// testGetUnclaimedOng(new Address(accountFrom.hexAddress));

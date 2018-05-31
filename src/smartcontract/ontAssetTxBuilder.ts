@@ -1,27 +1,31 @@
+
 /*
- * Copyright (C) 2018 The ontology Authors
- * This file is part of The ontology library.
- *
- * The ontology is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The ontology is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2018 The ontology Authors
+* This file is part of The ontology library.
+*
+* The ontology is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* The ontology is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+*/
 import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
 import { TOKEN_TYPE } from '../consts';
 import { Address } from '../crypto';
+import { ERROR_CODE } from '../error';
 import InvokeCode from '../transaction/payload/invokeCode';
-import { Fee, Transaction, TxType } from '../transaction/transaction';
+import { Transaction, TxType } from '../transaction/transaction';
 import { VmCode, VmType } from '../transaction/vmcode';
+import { hex2VarBytes } from '../utils';
+import { makeInvokeTransaction } from './../transaction/transactionBuilder';
 import { Contract, State, TransferFrom, Transfers } from './token';
 
 export const ONT_CONTRACT = 'ff00000000000000000000000000000000000001';
@@ -43,32 +47,6 @@ export function verifyAmount(amount: string) {
     if (!value.isInteger() || value <= new BigNumber(0)) {
         throw new Error('Amount is invalid.');
     }
-}
-
-function makeInvokeCodeTransacton(contract: Contract, vmType: VmType, gasPrice: string, gasLimit: string): Transaction {
-    const tx = new Transaction();
-    tx.type = TxType.Invoke;
-
-    let code = '';
-    code += contract.serialize();
-    const vmcode = new VmCode();
-    vmcode.code = code;
-    vmcode.vmType = VmType.NativeVM;
-    const invokeCode = new InvokeCode();
-    invokeCode.code = vmcode;
-    tx.payload = invokeCode;
-
-    // gas
-    // if (DEFAULT_GAS_LIMIT === Number(0)) {
-    //     tx.gasPrice = new Fixed64();
-    // } else {
-    //     const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
-    //     tx.gasPrice = new Fixed64(price);
-    // }
-    tx.gasLimit = new Fixed64(gasLimit);
-    tx.gasPrice = new Fixed64(gasPrice);
-
-    return tx;
 }
 
 /**
@@ -105,12 +83,9 @@ export function makeTransferTx(
     const transfer = new Transfers();
     transfer.states = [state];
 
-    const contract = new Contract();
-    contract.address = getTokenContract(tokenType);
-    contract.method = 'transfer';
-    contract.args = transfer.serialize();
-
-    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gasPrice, gasLimit);
+    const params = transfer.serialize();
+    const contract = getTokenContract(tokenType);
+    const tx = makeInvokeTransaction('transfer', params, contract, VmType.NativeVM, gasPrice, gasLimit);
     tx.payer = from;
     return tx;
 }
@@ -147,12 +122,10 @@ export function makeTransferFromManyTx(
 
     const transfers = new Transfers();
     transfers.states = states;
-    const contract = new Contract();
-    contract.address = getTokenContract(tokenType);
-    contract.method = 'transfer';
-    contract.args = transfers.serialize();
 
-    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gasPrice, gasLimit);
+    const contract = getTokenContract(tokenType);
+    const params = transfers.serialize();
+    const tx = makeInvokeTransaction('transfer', params, contract, VmType.NativeVM, gasPrice, gasLimit);
     tx.payer = from[0];
     return tx;
 }
@@ -190,12 +163,10 @@ export function makeTransferToMany(
 
     const transfers = new Transfers();
     transfers.states = states;
-    const contract = new Contract();
-    contract.address = getTokenContract(tokenType);
-    contract.method = 'transfer';
-    contract.args = transfers.serialize();
 
-    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gasPrice, gasLimit);
+    const contract = getTokenContract(tokenType);
+    const params = transfers.serialize();
+    const tx = makeInvokeTransaction('transfer', params, contract, VmType.NativeVM, gasPrice, gasLimit);
     tx.payer = from;
     return tx;
 }
@@ -206,20 +177,32 @@ export function makeTransferToMany(
  * @param to receiver's address
  * @param amount
  */
-export function makeClaimOngTx(from: Address, to: Address, amount: string,
+export function makeClaimOngTx(from: Address, to: Address, amount: string, payer: Address,
                                gasPrice: string, gasLimit: string): Transaction {
     verifyAmount(amount);
 
-    const tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, new BigNumber(Number(amount)).toString());
-    const contract = new Contract();
-    contract.address = ONG_CONTRACT;
-    contract.method = 'transferFrom';
-    contract.args = tf.serialize();
+    const tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, amount);
 
-    const fee = new Fee();
-    fee.amount = new Fixed64();
-    fee.payer = from;
-    const tx = makeInvokeCodeTransacton(contract, VmType.NativeVM, gasPrice, gasLimit);
-    tx.payer = from;
+    const params = tf.serialize();
+    const tx = makeInvokeTransaction('transferFrom', params, ONG_CONTRACT, VmType.NativeVM, gasPrice, gasLimit);
+    tx.payer = payer;
+    return tx;
+}
+
+export function makeQueryAllowanceTx(asset: string, from: Address, to: Address): Transaction {
+    asset = asset.toLowerCase();
+    if (asset !== 'ont' && asset !== 'ong') {
+        throw ERROR_CODE.INVALID_PARAMS;
+    }
+    let params = '';
+    params += from.toHexString();
+    params += to.toHexString();
+    let contract = '';
+    if (asset === 'ong') {
+        contract = ONG_CONTRACT;
+    } else {
+        contract = ONT_CONTRACT;
+    }
+    const tx = makeInvokeTransaction('allowance', params, contract, VmType.NativeVM, '0', '0');
     return tx;
 }

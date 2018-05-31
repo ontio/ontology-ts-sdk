@@ -1,20 +1,20 @@
 /*
- * Copyright (C) 2018 The ontology Authors
- * This file is part of The ontology library.
- *
- * The ontology is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The ontology is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2018 The ontology Authors
+* This file is part of The ontology library.
+*
+* The ontology is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* The ontology is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+*/
 import axios from 'axios';
 import * as bigInteger from 'bigi';
 import * as bip39 from 'bip39';
@@ -28,6 +28,8 @@ import {
     PublicKey,
     Signature
 } from './crypto';
+import { KeyParameters } from './crypto/Key';
+import { ERROR_CODE } from './error';
 import { generateRandomArray, hash160 } from './helpers';
 import { VmType } from './transaction/vmcode';
 import { ab2hexstring, hexstring2ab, num2hexstring } from './utils';
@@ -155,8 +157,23 @@ export function getWIFFromPrivateKey(privateKey: string): string {
     return wif.encode(128, Buffer.from(privateKey, 'hex'), true);
 }
 
-export function generateMnemonic(hexstr: string) {
-    return bip39.entropyToMnemonic(hexstr);
+export function generateMnemonic(size: number = 16): string {
+    const random = ab2hexstring(generateRandomArray(size));
+    return bip39.entropyToMnemonic(random);
+}
+
+export function generatePrivatekeyFromMnemonic(
+    mnemonic: string,
+    algorithm?: KeyType,
+    parameters?: KeyParameters): PrivateKey {
+    if (mnemonic.split(' ').length !== 12) {
+        throw ERROR_CODE.INVALID_PARAMS;
+    }
+    const seed = bip39.mnemonicToSeedHex(mnemonic);
+    // generate privateKey
+    const pri = seed.substr(0, 64);
+    const privateKey = new PrivateKey(pri);
+    return privateKey;
 }
 
 export function parseMnemonic(str: string) {

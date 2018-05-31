@@ -227,18 +227,17 @@ export function buildGetDDOTx(ontid: string) {
     const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM);
     return tx;
 }
-
 /**
  * Adds a new public key to ONT ID.
  *
  * @param ontid User's ONT ID
  * @param newPk New public key to be added
- * @param publicKey User's public key
+ * @param userKey User's public key or address
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  */
-export function buildAddControlKeyTx(ontid: string, newPk: PublicKey, publicKey: PublicKey,
-                                     gasPrice: string, gasLimit: string) {
+export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  userKey: PublicKey | Address,
+                                     payer: Address, gasPrice: string, gasLimit: string) {
     const f = abiInfo.getFunction('addKey');
 
     if (ontid.substr(0, 3) === 'did') {
@@ -247,7 +246,12 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey, publicKey:
 
     const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
     const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, newPk.serializeHex());
-    const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex());
+    let p3;
+    if (userKey instanceof PublicKey) {
+        p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, userKey.serializeHex());
+    } else if (userKey instanceof Address) {
+        p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, userKey.toHexString());
+    }
     f.setParamsValue(p1, p2, p3);
 
     const tx = makeInvokeTransaction(
@@ -257,7 +261,7 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey, publicKey:
         VmType.NativeVM,
         gasPrice,
         gasLimit,
-        Address.addressFromPubKey(publicKey)
+        payer
     );
 
     return tx;
@@ -268,12 +272,12 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey, publicKey:
  *
  * @param ontid User's ONT ID
  * @param pk2Remove Public key to be removed
- * @param sender User's public key
+ * @param sender User's public key or address
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  */
-export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey,
-                                        sender: PublicKey, gasPrice: string, gasLimit: string) {
+export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey, sender: PublicKey | Address,
+                                        payer: Address, gasPrice: string, gasLimit: string) {
     const f = abiInfo.getFunction('removeKey');
 
     if (ontid.substr(0, 3) === 'did') {
@@ -282,7 +286,12 @@ export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey,
 
     const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
     const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk2Remove.serializeHex());
-    const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender.serializeHex());
+    let p3;
+    if (sender instanceof PublicKey) {
+        p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender.serializeHex());
+    } else if (sender instanceof Address) {
+        p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender.toHexString());
+    }
     f.setParamsValue(p1, p2, p3);
 
     const tx = makeInvokeTransaction(
@@ -292,7 +301,7 @@ export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey,
         VmType.NativeVM,
         gasPrice,
         gasLimit,
-        Address.addressFromPubKey(sender)
+        payer
     );
     return tx;
 }

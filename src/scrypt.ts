@@ -106,7 +106,7 @@ export function decrypt(
     const encrypted = Buffer.from(encryptedKey, 'base64').toString('hex');
 
     // tslint:disable-next-line:no-console
-    console.log('dec assembled: ', encrypted);
+    // console.log('dec assembled: ', encrypted);
 
     let addressHash = '';
     if (typeof checksum === 'string' && checksum.length === 8) {

@@ -33,9 +33,9 @@ export default class Fixed64 {
     // 8 bytes
     value: string;
     constructor(value?: string) {
-        // if(value && value.length !== 16) {
-        //     throw new Error('Invalid value.')
-        // }
+        if (value && value.length > 16 || value && !/^[0-9]\d*$/.test(value)) {
+            throw new Error('Invalid value.' + value);
+        }
         this.value = value || '0000000000000000';
     }
 

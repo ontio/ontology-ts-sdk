@@ -30,5 +30,6 @@ export default {
     Url_get_smartcodeevent_by_txhash : '/api/v1/smartcode/event/txhash/',
     Url_get_block_height_by_txhash : '/api/v1/block/height/txhash/',
     Url_get_storage : '/api/v1/storage/',
-    Url_get_merkleproof : '/api/v1/merkleproof/'
+    Url_get_merkleproof : '/api/v1/merkleproof/',
+    Url_get_allowance: '/api/v1/allowance/'
 };

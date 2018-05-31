@@ -18,7 +18,7 @@
 import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
 import { Address } from '../crypto/address';
-import { hex2VarBytes, hexstr2str, num2hexstring, str2VarBytes, StringReader } from '../utils';
+import { hex2VarBytes, hexstr2str, num2hexstring, num2VarInt, str2VarBytes, StringReader } from '../utils';
 
 export class Transfers {
     static deserialize(sr: StringReader) {
@@ -94,7 +94,8 @@ export class State {
         const from = sr.read(20);
         const to   = sr.read(20);
         // const value = (new BigNumber(sr.readNextBytes(), 16)).toString();
-        const value = sr.read(8);
+        // const value = sr.read(8);
+        const value = sr.readNextLen().toString();
 
         // s.version = version;
         s.from = new Address(from);
@@ -119,10 +120,8 @@ export class State {
         // result += this.version
         result += this.from.toHexString();
         result += this.to.toHexString();
-        result += this.value.serialize();
-
-        // tslint:disable-next-line:no-console
-        console.log('fixed64: ' + this.value.serialize());
+        // result += this.value.serialize();
+        result += num2VarInt(parseInt(this.value.value, 10));
         return result;
     }
 }
@@ -184,7 +183,8 @@ export class TransferFrom {
         const sender = new Address(sr.read(20));
         const from = new Address(sr.read(20));
         const to = new Address(sr.read(20));
-        const value = (new BigNumber(sr.readNextBytes(), 16)).toString();
+        // const value = (new BigNumber(sr.readNextBytes(), 16)).toString();
+        const value = sr.readNextLen().toString();
         const tf = new TransferFrom(sender, from, to, value);
         return tf;
     }
@@ -197,13 +197,13 @@ export class TransferFrom {
 
     to: Address;
 
-    value: string;
+    value: Fixed64;
 
     constructor(sender: Address, from: Address, to: Address, value: string) {
         this.sender = sender;
         this.from = from;
         this.to = to;
-        this.value = value;
+        this.value = new Fixed64(value);
     }
 
     serialize(): string {
@@ -212,9 +212,8 @@ export class TransferFrom {
         result += this.sender.toHexString();
         result += this.from.toHexString();
         result += this.to.toHexString();
-        let bn = new BigNumber(this.value).toString(16);
-        bn = bn.length % 2 === 0 ? bn : '0' + bn;
-        result += hex2VarBytes(bn);
+        // result += this.value.serialize();
+        result += num2VarInt(parseInt(this.value.value, 10));
         return result;
     }
 }

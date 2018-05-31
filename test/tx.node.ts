@@ -127,7 +127,7 @@ const recoveryAddress = Address.addressFromMultiPubKeys(2, [pri3.getPublicKey(),
 ontid = core.generateOntid(publicKey.serializeHex());
 console.log('ontid: ' + ontid);
 
-const sendTx = (param, callback = null) => {
+export const sendTx = (param, callback = null) => {
     const socket = new WebSocket(TEST_ONT_URL.SOCKET_URL);
     socket.onopen = () => {
         console.log('connected');
@@ -181,7 +181,7 @@ const callback = function(res, socket) {
 const testDDOTx = () => {
     console.log('account4 recovery: ' + account4.address.toHexString());
     // tslint:disable-next-line:no-shadowed-variable
-    const ontid = 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ';
+    // const ontid = 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ';
     const tx = buildGetDDOTx(ontid);
     // tx.payer = account.address
 
