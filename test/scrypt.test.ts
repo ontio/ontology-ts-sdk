@@ -1,6 +1,3 @@
-import * as bip39 from 'bip39';
-import * as CryptoJS from 'crypto-js';
-import { Account } from '../src/account';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -18,7 +15,9 @@ import { Account } from '../src/account';
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as core from '../src/core';
+import * as bip39 from 'bip39';
+import * as CryptoJS from 'crypto-js';
+import { Account } from '../src/account';
 import { sha256, u160ToAddress } from '../src/core';
 import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src/crypto';
 import { ERROR_CODE } from '../src/error';
@@ -119,8 +118,9 @@ describe('test scrypt', () => {
         const decMneHex = scrypt.decrypt(encMne, '123456', account.address);
         const decMne = utils.hexstr2str(decMneHex);
         expect(decMne).toEqual(mnemonic);
-        console.log('encMen: ' + encMne);
 
+        // tslint:disable-next-line:no-console
+        console.log('encMen: ' + encMne);
     });
 
     test('test_encWithEcb', () => {

@@ -15,24 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+import * as Html5WebSocket from 'html5-websocket';
 import { TEST_ONT_URL } from '../consts';
 
 /**
- * Creates WebSocket.
- *
- * In node environment html5-websocket is used. In browser, native WebSocket is used.
- *
- * @param url Url to connect to
+ * We can import html5-websocket directly, because webpack will use html5-websocket/browser.js
+ * in browser environment, which does not require 'ws'.
  */
-function getWebSocket(url: string): WebSocket {
-    if (typeof WebSocket === 'undefined') {
-        const WS = require('html5-websocket');
-        return new WS(url);
-    } else {
-        return new WebSocket(url);
-    }
-}
 
 /**
  * @deprecated Use WebsocketClient instead.
@@ -49,7 +38,7 @@ export default class TxSender {
             return;
         }
 
-        const socket = getWebSocket(this.SOCKET_URL);
+        const socket = new Html5WebSocket(this.SOCKET_URL);
         socket.onopen = () => {
             // console.log('connected')
             socket.send(param);

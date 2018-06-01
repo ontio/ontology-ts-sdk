@@ -161,7 +161,7 @@ export function verifyClaimProof(txHash: string, merkleRoot: string, nodes: any[
     for (const n of nodes) {
         if (n.Direction === 'Right') {
             p = hashChildren(p, n.TargetHash);
-        } else {
+        } else if (n.Direction === 'Left') {
             p = hashChildren(n.TargetHash, p);
         }
     }

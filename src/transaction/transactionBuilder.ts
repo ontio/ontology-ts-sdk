@@ -15,13 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
 import { REST_API } from '../consts';
-import { Address, PrivateKey, PublicKey, SignatureScheme } from '../crypto';
+import { Address, PrivateKey, SignatureScheme } from '../crypto';
 import { Parameter,  ParameterType } from '../smartcontract/abi/parameter';
-import { Contract, State, Transfers } from '../smartcontract/token';
+import { Contract } from '../smartcontract/token';
 import {
     hex2VarBytes,
     hexstr2str,
@@ -33,7 +31,8 @@ import {
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
-import { Sig, Transaction, TxType } from './transaction';
+import { Transaction, TxType } from './transaction';
+import { TxSignature } from './txSignature';
 import { VmCode, VmType } from './vmcode';
 
 // const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
@@ -46,55 +45,10 @@ export const Default_params = {
     Op: 'test'
 };
 
-const ONT_CONTRACT = 'ff00000000000000000000000000000000000001';
-
-export const makeTransferTransaction = (
-    tokenType: string,
-    from: Address,
-    to: Address,
-    value: string,
-    privateKey: PrivateKey
-) => {
-    const state = new State();
-    state.from = from;
-    state.to = to;
-
-    // multi 10^8 to keep precision
-    const valueToSend = new BigNumber(Number(value)).toString();
-
-    state.value = new Fixed64(valueToSend);
-    const transfer = new Transfers();
-    transfer.states = [state];
-
-    const contract = new Contract();
-    contract.address = ONT_CONTRACT;
-    contract.method = 'transfer';
-    contract.args = transfer.serialize();
-
-    const tx = new Transaction();
-    tx.version = 0x00;
-    tx.type = TxType.Invoke;
-
-    // inovke
-    let code = '';
-    // TODO: change with token type
-
-    code += contract.serialize();
-    const vmcode = new VmCode();
-    vmcode.code = code;
-    vmcode.vmType = VmType.NativeVM;
-    const invokeCode = new InvokeCode();
-    invokeCode.code = vmcode;
-    tx.payload = invokeCode;
-
-    signTransaction(tx, privateKey);
-
-    return tx;
-};
-
 /**
  * Signs the transaction object.
  *
+ * If there is already a signature, the new one will replace existing.
  * If the signature schema is not provided, default schema for Private key type is used.
  *
  * @param tx Transaction to sign
@@ -102,42 +56,51 @@ export const makeTransferTransaction = (
  * @param schema Signature Schema to use
  */
 export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
-    const publicKey = privateKey.getPublicKey();
+    const hash = tx.getHash();
 
-    if (schema === undefined) {
-        schema = privateKey.algorithm.defaultSchema;
-    }
+    const signature = TxSignature.create(hash, [privateKey], [schema]);
 
-    const signature = privateKey.sign(tx.getHash(), schema);
-    const sig = new Sig();
-    sig.M = 1;
-    sig.pubKeys = [publicKey];
-    sig.sigData = [signature.serializeHex()];
-    tx.sigs = [sig];
+    tx.sigs = [signature];
 };
 
 /**
+ * Signs the transaction object.
  *
- * @param tx
- * @param pris
- * @param schema
+ * If there is already a signature, the new one will be added to the end.
+ * If the signature schema is not provided, default schema for Private key type is used.
+ *
+ * @param tx Transaction to sign
+ * @param privateKey Private key to sign with
+ * @param schema Signature Schema to use
  */
-export const signTx = (tx: Transaction, pris: PrivateKey[][], schema?: SignatureScheme) => {
-    const sigs = new Array<Sig>(pris.length);
-    for (let i = 0; i < pris.length; i++) {
-        sigs[i] = new Sig();
-        sigs[i].M = 0;
-        sigs[i].pubKeys = new Array<PublicKey>(pris[i].length);
-        sigs[i].sigData = new Array<string>(pris[i].length);
-        for (let j = 0; j < pris[i].length; j++) {
-            sigs[i].M++;
-            const signature = pris[i][j].sign(tx.getHash(), schema);
-            const publicKey = pris[i][j].getPublicKey();
-            sigs[i].pubKeys[j] = publicKey;
-            sigs[i].sigData[j] = signature.serializeHex();
-        }
+export const addSign = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
+    const hash = tx.getHash();
+
+    const signature = TxSignature.create(hash, [privateKey], [schema]);
+
+    tx.sigs.push(signature);
+};
+
+/**
+ * Signs the transaction with multiple signatures with multi-sign keys.
+ *
+ * If there is already a signature, the new ones will be added to the end.
+ * If the signature schema is not provided, default schema for Private key type is used.
+ *
+ * @param tx Transaction to sign
+ * @param privateKeys2D 2D array of private keys
+ * @param schemas2D 2D array of signature schemas to use
+ */
+export const signTx = (tx: Transaction, privateKeys2D: PrivateKey[][], schemas2D?: SignatureScheme[][]) => {
+    const hash = tx.getHash();
+
+    for (let i = 0; i < privateKeys2D.length; i++) {
+        const privateKeys = privateKeys2D[i];
+        const schemas = schemas2D !== undefined ? schemas2D[i] : undefined;
+
+        const signature = TxSignature.create(hash, privateKeys, schemas);
+        tx.sigs.push(signature);
     }
-    tx.sigs = sigs;
 };
 
 export const pushBool = (param: boolean) => {

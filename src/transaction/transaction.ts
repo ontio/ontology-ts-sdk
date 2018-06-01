@@ -19,14 +19,14 @@
 import * as cryptoJS from 'crypto-js';
 import Fixed64 from '../common/fixed64';
 import Uint256 from '../common/uint256';
-import { PublicKey } from '../crypto';
 import { Address } from '../crypto/address';
 import { generateRandomArray } from '../helpers';
-import { ab2hexstring, hex2VarBytes, num2hexstring, StringReader } from '../utils';
+import { ab2hexstring, num2hexstring, StringReader } from '../utils';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import Payload from './payload/payload';
 import { TransactionAttribute } from './txAttribute';
+import { TxSignature } from './txSignature';
 
 export enum TxType  {
     BookKeeping     = 0x00,
@@ -83,61 +83,6 @@ export class Fee {
     }
 }
 
-export class Sig {
-    static deserialize(sr: StringReader) {
-        const sig = new Sig();
-        sig.pubKeys = [];
-        const pubKeyLength = sr.readNextLen();
-
-        for (let i = 0; i < pubKeyLength; i++) {
-            const serializedLength = sr.readNextLen();
-            const pk = PublicKey.deserializeHex(sr, serializedLength);
-            sig.pubKeys.push(pk);
-        }
-
-        sig.M = sr.readNextLen();
-        sig.sigData = [];
-
-        const dataLength = sr.readNextLen();
-        for (let i = 0; i < dataLength; i++) {
-            const data = sr.readNextBytes();
-            sig.sigData.push(data);
-        }
-
-        return sig;
-    }
-
-    pubKeys: PublicKey[];
-
-    // M uint8
-    M: number;
-
-    // sigData hexstrings array
-    sigData: string[];
-
-    serialize() {
-        let result = '';
-        result += num2hexstring(this.pubKeys.length);
-
-        // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < this.pubKeys.length; i++) {
-            const serialized = this.pubKeys[i].serializeHex();
-            result += num2hexstring(serialized.length / 2);
-            result += serialized;
-        }
-
-        result += num2hexstring(this.M);
-
-        result += num2hexstring(this.sigData.length);
-
-        // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < this.sigData.length; i++) {
-            result += hex2VarBytes(this.sigData[i]);
-        }
-        return result;
-    }
-}
-
 export class Transaction {
     static deserialize(hexstring: string): Transaction {
         const tx = new Transaction();
@@ -177,7 +122,7 @@ export class Transaction {
 
         const sigLength = ss.readNextLen();
         for (let i = 0; i < sigLength; i++) {
-            tx.sigs.push(Sig.deserialize(ss));
+            tx.sigs.push(TxSignature.deserialize(ss));
         }
 
         return tx;
@@ -200,7 +145,7 @@ export class Transaction {
 
     payer: Address;
 
-    sigs: Sig[] = [];
+    sigs: TxSignature[] = [];
 
     hash: Uint256;
 

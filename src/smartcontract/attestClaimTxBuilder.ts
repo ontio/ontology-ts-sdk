@@ -27,12 +27,14 @@ import { Transaction } from './../transaction/transaction';
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
 
 /**
- * attest claim
- * @param claimId claimId
- * @param issuer issuer's ONT ID
- * @param subject issuer's ONT ID
- * @param gas gas
- * @param payer payer
+ * Attests the claim.
+ *
+ * @param claimId Unique id of the claim
+ * @param issuer Issuer's ONT ID
+ * @param subject Subject's ONT ID
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Payer's address
  */
 export function buildCommitRecordTx(claimId: string, issuer: string, subject: string,
                                     gasPrice: string, gasLimit: string, payer: Address)  {
@@ -60,6 +62,15 @@ export function buildCommitRecordTx(claimId: string, issuer: string, subject: st
     return tx;
 }
 
+/**
+ * Revokes the claim.
+ *
+ * @param claimId Unique id of the claim
+ * @param revokerOntid Revoker's ONT ID
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Payer's address
+ */
 export function buildRevokeRecordTx(claimId: string, revokerOntid: string,
                                     gasPrice: string, gasLimit: string, payer: Address) {
     const f = abiInfo.getFunction('Revoke');
@@ -80,6 +91,11 @@ export function buildRevokeRecordTx(claimId: string, revokerOntid: string,
 
 }
 
+/**
+ * Queries the state of attest.
+ *
+ * @param claimId Unique id of the claim
+ */
 export function buildGetRecordStatusTx(claimId: string) {
     const f = abiInfo.getFunction('GetStatus');
 

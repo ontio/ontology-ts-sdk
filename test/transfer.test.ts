@@ -32,8 +32,7 @@ import { makeClaimOngTx, makeTransferFromManyTx, makeTransferToMany, makeTransfe
 } from '../src/smartcontract/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/token';
 import { Transaction } from '../src/transaction/transaction';
-import { buildRestfulParam, buildRpcParam, buildTxParam, makeTransferTransaction
-} from '../src/transaction/transactionBuilder';
+import { buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
 import { ab2hexstring, StringReader } from '../src/utils';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';

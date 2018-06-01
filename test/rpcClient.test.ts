@@ -1,20 +1,62 @@
+import { PrivateKey } from '../src/crypto';
 import { Address } from '../src/crypto/address';
 import RpcClient from '../src/network/rpc/rpcClient';
-import { buildGetDDOTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { WebsocketClient } from '../src/network/websocket/websocketClient';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { signTransaction } from '../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console
 describe('test rpc client', () => {
     const rpcClient = new RpcClient();
-    // tslint:disable-next-line:one-variable-per-declaration
-    const txHash = 'd5200d614994ea5242462f3a6601134ef235b9be03b6ce2f39e871fec2c36768',
-        blockHash = '9d51e95d4cc0365b3ed06f66c5df4808491c09723810cc28ad37d5be152f230b',
-        codeHash = 'ff00000000000000000000000000000000000003',
-        height = 1000,
-        ontid = 'did:ont:TA7j42nDdZSyUBdYhWoxnnE5nUdLyiPoK3',
-        address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
 
+    const codeHash = 'ff00000000000000000000000000000000000003';
+    const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
+    const address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
+
+    let txHash: string;
+    let blockHash: string;
+    let height: number;
+
+    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const publicKey = privateKey.getPublicKey();
+
+    /**
+     * Registers new ONT ID to create transaction with Events and new block
+     */
+    beforeAll(async () => {
+        const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
+        signTransaction(tx, privateKey);
+
+        const client = new WebsocketClient();
+        const result = await client.sendRawTransaction(tx.serialize(), false, true);
+        txHash = result.Result.TxHash;
+    }, 10000);
+
+    /**
+     * Gets current block height to be used by following tests.
+     */
     test('test getBlockHeight', async () => {
         const res = await rpcClient.getBlockHeight();
+        console.log(res);
+        expect(res.desc).toEqual('SUCCESS');
+        expect(res.result).toBeDefined();
+        height = res.result - 1;
+    });
+
+    /**
+     * Gets block hash to be used by following tests.
+     */
+    test('test getBlockJson by height', async () => {
+        const res = await rpcClient.getBlockJson(height);
+        console.log(res);
+        expect(res.desc).toEqual('SUCCESS');
+        expect(res.result).toBeTruthy();
+        expect(res.result.Hash).toBeDefined();
+        blockHash = res.result.Hash;
+    });
+
+    test('test getBlock by height', async () => {
+        const res = await rpcClient.getBlock(height);
         console.log(res);
         expect(res.desc).toEqual('SUCCESS');
     });
@@ -66,11 +108,6 @@ describe('test rpc client', () => {
     test('test getBlock by hash', async () => {
         const res = await rpcClient.getBlock(blockHash);
         console.log(res);
-        expect(res.desc).toEqual('SUCCESS');
-    });
-
-    test('test getBlock by height', async () => {
-        const res = await rpcClient.getBlock(height);
         expect(res.desc).toEqual('SUCCESS');
     });
 
