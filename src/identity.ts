@@ -100,6 +100,27 @@ export class Identity {
         return identity;
     }
 
+    static create(privateKey: PrivateKey, keyphrase: string, label: string) {
+        const identity = new Identity();
+        identity.ontid = '';
+        identity.label = label;
+        identity.lock = false;
+
+        const encryptedPrivateKey = privateKey.encrypt(keyphrase);
+
+        // start from 1
+        const control = new ControlData('1', encryptedPrivateKey);
+        identity.controls.push(control);
+
+        // ontid
+        const publicKey = privateKey.getPublicKey();
+        identity.ontid = generateOntid(publicKey.serializeHex());
+
+        // TODO register ontid
+        // 调用方处理register和监听结果
+        return identity;
+    }
+
     static parseJson(json: string): Identity {
         return Identity.parseJsonObj(JSON.parse(json));
     }
@@ -126,26 +147,6 @@ export class Identity {
     lock: boolean;
     controls: ControlData[] = [];
     extra: null;
-
-    create(privateKey: PrivateKey, keyphrase: string, label: string) {
-        this.ontid = '';
-        this.label = label;
-        this.lock = false;
-
-        const encryptedPrivateKey = privateKey.encrypt(keyphrase);
-
-        // start from 1
-        const control = new ControlData('1', encryptedPrivateKey);
-        this.controls.push( control );
-
-        // ontid
-        const publicKey = privateKey.getPublicKey();
-        this.ontid = generateOntid(publicKey.serializeHex());
-
-        // TODO register ontid
-        // 调用方处理register和监听结果
-        return this;
-    }
 
     addControl(control: ControlData) {
         for (const c of this.controls) {

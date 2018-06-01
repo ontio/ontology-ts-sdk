@@ -31,9 +31,8 @@ describe('test wallet', () => {
         walletDataStr: string;
     beforeAll(() => {
         console.log(Wallet);
-        wallet = new Wallet();
         const privateKey = PrivateKey.random();
-        wallet.create('mickey');
+        wallet = Wallet.create('mickey');
         walletDataStr = wallet.toJson();
     });
 
@@ -44,16 +43,14 @@ describe('test wallet', () => {
     it('test add identity', () => {
         const privateKey = PrivateKey.random();
 
-        const identity = new Identity();
-        identity.create(privateKey, '123456', 'mickey');
+        const identity = Identity.create(privateKey, '123456', 'mickey');
         wallet.addIdentity(identity);
         expect(wallet.identities.length).toEqual(1);
     });
 
     it('test add account', () => {
         const privateKey = PrivateKey.random();
-        const ac = new Account();
-        ac.create(privateKey, '123456', 'mickey');
+        const ac = Account.create(privateKey, '123456', 'mickey');
         wallet.addAccount(ac);
         expect(wallet.accounts.length).toEqual(1);
     });

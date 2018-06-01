@@ -33,7 +33,11 @@ function varifyPositiveInt(v: number) {
     return;
 }
 
-export function makeInitContractAdminTx(adminOntId: string, payer: Address, gasPrice: string, gasLimit: string) {
+export function makeInitContractAdminTx(
+    adminOntId: string,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string): Transaction {
     if (adminOntId.substr(0, 3) === 'did') {
         adminOntId = str2hexstr(adminOntId);
     }
@@ -59,7 +63,7 @@ export function makeTransferAuthTx(
     payer: Address,
     gasPrice: string,
     gasLimit: string
-) {
+): Transaction {
     varifyPositiveInt(keyNo);
     if (newAdminOntid.substr(0, 3) === 'did') {
         newAdminOntid = str2hexstr(newAdminOntid);
@@ -91,7 +95,7 @@ export function makeVerifyTokenTx(
     payer: Address,
     gasPrice: string,
     gasLimit: string
-) {
+): Transaction {
     varifyPositiveInt(keyNo);
     if (callerOntId.substr(0, 3) === 'did') {
         callerOntId = str2hexstr(callerOntId);
@@ -125,7 +129,7 @@ export function makeAssignFuncsToRoleTx(
     payer: Address,
     gasPrice: string,
     gasLimit: string
-) {
+): Transaction {
     varifyPositiveInt(keyNo);
     if (adminOntId.substr(0, 3) === 'did') {
         adminOntId = str2hexstr(adminOntId);
@@ -164,7 +168,7 @@ export function makeAssignOntIdsToRoleTx(
     payer: Address,
     gasPrice: string,
     gasLimit: string
-) {
+): Transaction {
     varifyPositiveInt(keyNo);
     if (adminOntId.substr(0, 3) === 'did') {
         adminOntId = str2hexstr(adminOntId);
@@ -211,7 +215,7 @@ export function makeDelegateRoleTx(
     payer: Address,
     gasPrice: string,
     gasLimit: string
-) {
+): Transaction {
     varifyPositiveInt(keyNo);
     varifyPositiveInt(period);
     if (from.substr(0, 3) === 'did') {
@@ -253,7 +257,7 @@ export function makeWithdrawRoleTx(
     payer: Address,
     gasPrice: string,
     gasLimit: string
-) {
+): Transaction {
     varifyPositiveInt(keyNo);
     if (initiator.substr(0, 3) === 'did') {
         initiator = str2hexstr(initiator);

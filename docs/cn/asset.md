@@ -57,8 +57,7 @@
 
 ````
 import {Wallet} from 'Ont'
-var wallet = new Wallet()
-wallet.create( name )
+var wallet = Wallet.create( name )
 ````
 
 #### 2) 创建账户并添加到钱包中
@@ -78,9 +77,8 @@ wallet.create( name )
 
 ````
 import {Account, Core} from 'Ont'
-var account = new Account()
+var account = Account.create( privateKey, password, name )
 var privateKey = Core.generatePrivateKeyStr()
-account.create( privateKey, password, name )
 wallet.addAccount(account)
 ````
 
@@ -117,12 +115,11 @@ wallet.addAccount(account)
 ````
 import {Account, Core} from 'Ont'
 var privateKey = Core.generatePrivateKeyStr()
-var account = new Account()
 //@param {string} privateKey 用户的私钥
 //@param {string} password 密码
 //@param {string} label 账户的名称
 //@param {object} algorithmObj 可选参数，加密算法对象
-account.create(privateKey, password, label, algorithmObj)
+var account = Account.create(privateKey, password, label, algorithmObj)
 ````
 
 ###  导入账户

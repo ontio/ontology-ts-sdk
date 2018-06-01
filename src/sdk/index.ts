@@ -97,12 +97,10 @@ export class SDK {
 
     static createWallet(name: string,
                         password: string, payer: string, gasPrice: string, gasLimit: string, callback?: string) {
-        const wallet = new Wallet();
-        wallet.create(name);
+        const wallet = Wallet.create(name);
 
-        const identity = new Identity();
         const privateKey = PrivateKey.random();
-        identity.create(privateKey, password, name);
+        const identity = Identity.create(privateKey, password, name);
 
         wallet.defaultOntid = identity.ontid;
         wallet.addIdentity(identity);
@@ -239,8 +237,7 @@ export class SDK {
         try {
             const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
             identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, checksum);
-            const wallet = new Wallet();
-            wallet.create(identity.label);
+            const wallet = Wallet.create(identity.label);
             wallet.defaultOntid = identity.ontid;
             wallet.addIdentity(identity);
             const walletStr = wallet.toJson();
@@ -290,9 +287,8 @@ export class SDK {
 
     static createIdentity(label: string, password: string, payer: string,
                           gasPrice: string, gasLimit: string, callback?: string) {
-        const identity = new Identity();
         const privateKey = PrivateKey.random();
-        identity.create(privateKey, password, label);
+        const identity = Identity.create(privateKey, password, label);
         const result = identity.toJson();
         let obj: any = {
             error: ERROR_CODE.SUCCESS,
@@ -344,14 +340,13 @@ export class SDK {
     }
 
     static createAccount(label: string, password: string, callback?: string) {
-        const account = new Account();
         // generate mnemnic
         const mnemonic = core.generateMnemonic();
 
         const mnemonicHex = str2hexstr(mnemonic);
 
         const privateKey = core.generatePrivatekeyFromMnemonic(mnemonic);
-        account.create(privateKey, password, label);
+        const account = Account.create(privateKey, password, label);
         const mnemonicEnc = scrypt.encrypt(mnemonicHex, account.publicKey, password);
         const result = account.toJson();
         const obj = {
@@ -927,8 +922,7 @@ export class SDK {
         const seed = bip39.mnemonicToSeedHex(mnemonic);
         const pri = seed.substr(0, 64);
         const privateKey = new PrivateKey(pri);
-        const account = new Account();
-        account.create(privateKey, password);
+        const account = Account.create(privateKey, password);
         const result = account.toJson();
         const obj = {
             error: ERROR_CODE.SUCCESS,
@@ -982,8 +976,7 @@ export class SDK {
             return obj;
         }
         const privateKey = new PrivateKey(pri);
-        const account = new Account();
-        account.create(privateKey, password);
+        const account = Account.create(privateKey, password);
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: account.toJson()
@@ -1006,8 +999,7 @@ export class SDK {
             return obj;
         }
         const pri = new PrivateKey(privateKey);
-        const account = new Account();
-        account.create(pri, password);
+        const account = Account.create(pri, password);
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: account.toJson()

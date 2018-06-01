@@ -187,8 +187,7 @@ const testTransferToMany = () => {
 };
 
 const testAccountTransfer = () => {
-    const account = new Account();
-    account.create(accountFrom.privateKey, '123456', 'test');
+    const account = Account.create(accountFrom.privateKey, '123456', 'test');
 
 };
 

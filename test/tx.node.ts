@@ -77,14 +77,12 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2));
 // console.log('publick key: ' + publicKey)
 
 privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
-const account = new Account();
-account.create(privateKey, '123456', '');
+const account = Account.create(privateKey, '123456', '');
 publicKey = privateKey.getPublicKey();
 pkId = '';
 
 const pri2 = new PrivateKey('cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406');
-const account2 = new Account();
-account2.create(pri2, '123456', '');
+const account2 = Account.create(pri2, '123456', '');
 const pub2 = pri2.getPublicKey();
 // let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
 
@@ -101,16 +99,13 @@ pk2 = new PublicKey('035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0
 // recovery = ab2hexstring(core.generateRandomArray(20))
 
 const pri3 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
-const account3 = new Account();
-account3.create(pri3, '123456', '');
+const account3 = Account.create(pri3, '123456', '');
 
 const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
-const account4 = new Account();
-account4.create(pri4, '123456', '');
+const account4 = Account.create(pri4, '123456', '');
 
 const pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
-const account5 = new Account();
-account5.create(pri5, '123456', '');
+const account5 = Account.create(pri5, '123456', '');
 
 const recoveryAddress = Address.addressFromMultiPubKeys(2, [pri3.getPublicKey(), pri4.getPublicKey()]);
 
@@ -350,8 +345,7 @@ const testGetPublicKeyState = () => {
 };
 
 const testAddPK = () => {
-    const tx = buildAddControlKeyTx(ontid, pk2, publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
+    const tx = buildAddControlKeyTx(ontid, pk2, publicKey, account.address, gasPrice, gasLimit);
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
     console.log('add pk param: ' + param);
@@ -374,8 +368,7 @@ const testGetPublicKeys = () => {
 };
 
 const testRemovePK = () => {
-    const tx = buildRemoveControlKeyTx(ontid, pk2, publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
+    const tx = buildRemoveControlKeyTx(ontid, pk2, publicKey, account.address, gasPrice, gasLimit);
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
     console.log('remove pk param: ' + param);

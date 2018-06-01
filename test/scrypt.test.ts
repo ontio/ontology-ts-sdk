@@ -19,6 +19,7 @@ import * as bip39 from 'bip39';
 import * as CryptoJS from 'crypto-js';
 import { Account } from '../src/account';
 import { sha256, u160ToAddress } from '../src/core';
+import * as core from '../src/core';
 import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src/crypto';
 import { ERROR_CODE } from '../src/error';
 import { utils } from '../src/index';
@@ -76,7 +77,7 @@ describe('test scrypt', () => {
         const enc2 = pri2.encrypt('111111', params);
         const pub = pri2.getPublicKey();
         const address = Address.addressFromPubKey(pub);
-        // tslint:disable-next-line:no-console
+        // tslint:disable:no-console
         console.log('address: ' + address.toBase58());
         // tslint:disable-next-line:no-console
         console.log('enc2: ' + enc2.key);
@@ -110,15 +111,14 @@ describe('test scrypt', () => {
         // generate privateKey
         const password = '123456';
         const privateKey = core.generatePrivatekeyFromMnemonic(mnemonic);
-        const account = new Account();
-        account.create(privateKey, password, '');
+        const account = Account.create(privateKey, password, '');
         const encMne = scrypt.encrypt(
             '2ab720ff80fcdd31a769925476c26120a879e235182594fbb57b67c0743558d7', account.publicKey, password);
         const decMneHex = scrypt.decrypt(encMne, '123456', account.address);
         console.log('address: ' + account.address.toBase58());
         console.log('privateKey: ' + privateKey.key);
         console.log('encMne: ' + encMne);
-        
+
         const decMne = utils.hexstr2str(decMneHex);
         console.log('decMne: ' + decMne);
         expect(decMne).toEqual(mnemonic);

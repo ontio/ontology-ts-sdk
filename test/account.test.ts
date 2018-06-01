@@ -23,6 +23,7 @@ import { ERROR_CODE } from '../src/error';
 import * as utils from '../src/utils';
 describe('test account', () => {
 
+    // tslint:disable-next-line:one-variable-per-declaration
     let privateKey: PrivateKey,
         accountDataStr: string,
         account: Account,
@@ -33,11 +34,11 @@ describe('test account', () => {
     });
 
     test('test create', () => {
-        account = new Account();
-        account.create(privateKey, '123456', 'mickey');
+        account = Account.create(privateKey, '123456', 'mickey');
         encryptedPrivateKey = account.encryptedKey;
         accountDataStr = account.toJson();
         expect(accountDataStr).toBeDefined();
+        // tslint:disable:no-console
         console.log('address: ' + account.address.toBase58);
         console.log('privateKey: ' + privateKey);
         console.log('addressU160: ' + account.address.toHexString());
@@ -45,9 +46,11 @@ describe('test account', () => {
     test('test import account with correct password', () => {
         let a;
         try {
-           a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address);
+            a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address);
 
-        } catch (err) {}
+        } catch (err) {
+            console.log(err);
+        }
 
         expect(a.label).toBe('mickey');
 

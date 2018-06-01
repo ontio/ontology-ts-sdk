@@ -22,11 +22,13 @@ import { ERROR_CODE } from '../src/error';
 import { Identity } from '../src/identity';
 import { buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
 import * as utils from '../src/utils';
+import { Account } from './../src/account';
 import * as core from './../src/core';
 import { signTransaction } from './../src/transaction/transactionBuilder';
 
 describe('test identity', () => {
 
+    // tslint:disable-next-line:one-variable-per-declaration
     let privateKey: PrivateKey,
         identityDataStr: string,
         identity: Identity,
@@ -38,8 +40,7 @@ describe('test identity', () => {
     });
 
     test('test create', () => {
-        identity = new Identity();
-        identity.create(privateKey, '123456', 'mickey');
+        identity = Identity.create(privateKey, '123456', 'mickey');
         const ontid = identity.ontid;
         checksum = core.getChecksumFromOntid(ontid);
         encryptedPrivateKey = identity.controls[0].encryptedKey;
@@ -48,13 +49,15 @@ describe('test identity', () => {
     });
 
     test('test import with correct password', () => {
+        // tslint:disable:no-console
         console.log('encryptedkey: ' + encryptedPrivateKey.key);
         let a: Identity;
+        // tslint:disable-next-line:one-variable-per-declaration
         const encrypt = new PrivateKey('Eg3FtGvUSbSb8S4JNYG1vxPcwTJBgMVhBkPuinA0F6A='),
             ontid = 'did:ont:TA9WVH2J7nCksYjvzhs3eWjaUFAE3Tr8at',
             password = '111111';
         try {
-         a = Identity.importIdentity('mickey', encrypt, '111111', core.getChecksumFromOntid(ontid));
+            a = Identity.importIdentity('mickey', encrypt, '111111', core.getChecksumFromOntid(ontid));
         } catch (err) {
             console.log(err);
         }
@@ -71,10 +74,9 @@ describe('test identity', () => {
     });
 
     test('test_create_with_userAgent', () => {
-        const a = new Identity();
         const pri = PrivateKey.random();
-        a.create(pri, '123456', 'test');
-        const tx = buildRegisterOntidTx(a.ontid, pri.getPublicKey(), '0');
+        const a = Identity.create(pri, '123456', 'test');
+        const tx = buildRegisterOntidTx(a.ontid, pri.getPublicKey(), '0', '300000');
         // user agent address
         tx.payer = new Address('TA4pCAb4zUifHyxSx32dZRjTrnXtxEWKZr');
         signTransaction(tx, pri);
@@ -88,9 +90,8 @@ describe('test identity', () => {
     });
 
     test('test_userAgent_devicecode', async () => {
-        const pri = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95')
-        const a = new Identity();
-        a.create(pri, '123456','');
+        const pri = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
+        const a = Identity.create(pri, '123456', '');
         // const encrypt = new PrivateKey('xLdlFLuWMUcHZagEAiFZEiCwm1eQYbSEONIwxxL4qPk=');
         // const pri = encrypt.decrypt('111111', new Address('TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ'));
         // a.create(pri, '123456', 'test');
@@ -99,15 +100,15 @@ describe('test identity', () => {
         };
         const msg = JSON.stringify(data);
         const pkId = a.ontid + '#key-1';
-        console.log('msg: '+ msg);
+        console.log('msg: ' + msg);
         const sig = pri.sign(msg, undefined, pkId);
         const body = {
             OwnerOntId: a.ontid,
             Signature : sig.serializePgp()
         };
-        console.log('value: '+ body.Signature.Value)
+        console.log('value: ' + body.Signature.Value);
 
-        console.log('pk: ' + pri.getPublicKey().serializeHex())
+        console.log('pk: ' + pri.getPublicKey().serializeHex());
         console.log(JSON.stringify(body));
         // const userAgent = 'http://192.168.50.121:9099/api/v1/ontpass/devicecode/gain';
         // const res = await axios.post(userAgent, body).then( (res) => {

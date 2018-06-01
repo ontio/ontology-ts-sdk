@@ -54,6 +54,35 @@ export class Account {
         return account;
     }
 
+    static create(
+        privateKey: PrivateKey,
+        password: string,
+        label?: string,
+        signatureScheme?: SignatureScheme
+    ): Account {
+        const account = new Account();
+        if (!label) {
+            label = ab2hexstring(generateRandomArray(4));
+        }
+        account.label = label;
+        account.lock = false;
+        account.passwordHash = sha256(password);
+        account.isDefault = false;
+
+        if (signatureScheme) {
+            account.signatureScheme = signatureScheme.label;
+        } else {
+            account.signatureScheme = privateKey.algorithm.defaultSchema.label;
+        }
+
+        account.encryptedKey = privateKey.encrypt(password);
+        const publicKey = privateKey.getPublicKey();
+        account.publicKey = publicKey.serializeHex();
+        account.address = Address.addressFromPubKey(publicKey);
+
+        return account;
+    }
+
     static parseJson(json: string): Account {
         return Account.parseJsonObj(JSON.parse(json));
     }
@@ -98,29 +127,6 @@ export class Account {
     publicKey: string;
     signatureScheme: string;
     isDefault: boolean;
-
-    create(privateKey: PrivateKey, password: string, label?: string, signatureScheme?: SignatureScheme ): Account {
-        if (!label) {
-            label = ab2hexstring(generateRandomArray(4));
-        }
-        this.label = label;
-        this.lock = false;
-        this.passwordHash = sha256(password);
-        this.isDefault = false;
-
-        if (signatureScheme) {
-            this.signatureScheme = signatureScheme.label;
-        } else {
-            this.signatureScheme = privateKey.algorithm.defaultSchema.label;
-        }
-
-        this.encryptedKey = privateKey.encrypt(password);
-        const publicKey = privateKey.getPublicKey();
-        this.publicKey = publicKey.serializeHex();
-        this.address = Address.addressFromPubKey(publicKey);
-
-        return this;
-    }
 
     toJson(): string {
         return JSON.stringify(this.toJsonObj());

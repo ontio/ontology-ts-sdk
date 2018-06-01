@@ -28,8 +28,7 @@ describe('test attest claim', () => {
     const ontId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
     const publicKeyId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-1';
     const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
-    const account = new Account();
-    account.create(privateKey, '123456');
+    const account = Account.create(privateKey, '123456');
     const gasPrice = '0';
     const gasLimit = '30000';
 
