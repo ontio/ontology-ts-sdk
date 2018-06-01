@@ -30,8 +30,7 @@ ONT ID是一个去中心化的身份标识，能够管理用户的各种数字�
 
 ```
 import {Identity} from 'Ont'
-var identity = new Identity()
-identity.create(privateKey, password)
+var identity = Identity.create(privateKey, password)
 console.log(identity.ontid)
 ```
 

@@ -23,14 +23,12 @@ import { Identity } from './identity';
 export class Wallet {
 
     static createIdentityWallet(password: string, name?: string) {
-        const wallet = new Wallet();
         if (!name) {
             name = 'Default name';
         }
-        wallet.create(name);
-        const identity = new Identity();
+        const wallet = Wallet.create(name);
         const privateKey = PrivateKey.random();
-        identity.create(privateKey, password, name);
+        const identity = Identity.create(privateKey, password, name);
 
         wallet.defaultOntid = identity.ontid;
         wallet.addIdentity(identity);
@@ -67,6 +65,24 @@ export class Wallet {
         return wallet;
     }
 
+    // create a empty wallet
+    static create(name: string): Wallet {
+        const wallet = new Wallet();
+        wallet.name = name;
+
+        // createtime
+        wallet.createTime = (new Date()).toISOString();
+        wallet.version = '1.0';
+        wallet.scrypt = {
+            n: DEFAULT_SCRYPT.cost,
+            r: DEFAULT_SCRYPT.blockSize,
+            p: DEFAULT_SCRYPT.parallel,
+            dkLen: DEFAULT_SCRYPT.size
+        };
+
+        return wallet;
+    }
+
     name: string;
     defaultOntid: string = '';
     defaultAccountAddress: string = '';
@@ -76,26 +92,11 @@ export class Wallet {
         n: number;
         r: number;
         p: number;
+        dkLen: number;
     };
     identities: Identity[] = [];
     accounts: Account[] = [];
     extra: null;
-
-    // create a empty wallet
-    create(name: string): Wallet {
-        this.name = name;
-
-        // createtime
-        this.createTime = (new Date()).toISOString();
-        this.version = '1.0';
-        this.scrypt = {
-            n: DEFAULT_SCRYPT.cost,
-            r: DEFAULT_SCRYPT.blockSize,
-            p: DEFAULT_SCRYPT.parallel
-        };
-
-        return this;
-    }
 
     addAccount(account: Account): void {
         for (const ac of this.accounts) {

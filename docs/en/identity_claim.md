@@ -32,8 +32,7 @@ The method needs parameters as follows:
 
 ```
 import {Identity} from 'Ont'
-var identity = new Identity()
-identity.create(privateKey, password)
+var identity = Identity.create(privateKey, password)
 console.log(identity.ontid)
 ```
 
