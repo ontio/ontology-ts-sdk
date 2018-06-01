@@ -21,12 +21,10 @@ import Fixed64 from '../common/fixed64';
 import { TOKEN_TYPE } from '../consts';
 import { Address } from '../crypto';
 import { ERROR_CODE } from '../error';
-import InvokeCode from '../transaction/payload/invokeCode';
-import { Transaction, TxType } from '../transaction/transaction';
-import { VmCode, VmType } from '../transaction/vmcode';
-import { hex2VarBytes } from '../utils';
+import { Transaction } from '../transaction/transaction';
+import { VmType } from '../transaction/vmcode';
 import { makeInvokeTransaction } from './../transaction/transactionBuilder';
-import { Contract, State, TransferFrom, Transfers } from './token';
+import { State, TransferFrom, Transfers } from './token';
 
 export const ONT_CONTRACT = 'ff00000000000000000000000000000000000001';
 export const ONG_CONTRACT = 'ff00000000000000000000000000000000000002';

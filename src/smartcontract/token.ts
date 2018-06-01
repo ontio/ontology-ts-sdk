@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { BigNumber } from 'bignumber.js';
 import Fixed64 from '../common/fixed64';
 import { Address } from '../crypto/address';
 import { hex2VarBytes, hexstr2str, num2hexstring, num2VarInt, str2VarBytes, StringReader } from '../utils';
