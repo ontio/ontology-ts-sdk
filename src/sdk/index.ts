@@ -1,4 +1,3 @@
-
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -37,7 +36,7 @@ import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
 import RestClient from '../network/rest/restClient';
 import * as scrypt from '../scrypt';
-import { makeClaimOngTx, makeTransferTx } from '../smartcontract/ontAssetTxBuilder';
+import { makeClaimOngTx, makeTransferTx, ONT_CONTRACT } from '../smartcontract/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/ontidContractTxBuilder';
 import { DDOAttribute } from '../transaction/ddo';
 import {
@@ -347,14 +346,11 @@ export class SDK {
     static createAccount(label: string, password: string, callback?: string) {
         const account = new Account();
         // generate mnemnic
-        const mnemonic = bip39.generateMnemonic();
+        const mnemonic = core.generateMnemonic();
 
         const mnemonicHex = str2hexstr(mnemonic);
-        // generate seed
-        const seed = bip39.mnemonicToSeedHex(mnemonic);
-        // generate privateKey
-        const pri = seed.substr(0, 64);
-        const privateKey = new PrivateKey(pri);
+
+        const privateKey = core.generatePrivatekeyFromMnemonic(mnemonic);
         account.create(privateKey, password, label);
         const mnemonicEnc = scrypt.encrypt(mnemonicHex, account.publicKey, password);
         const result = account.toJson();
@@ -827,8 +823,7 @@ export class SDK {
             return result;
         }
         const addressObj = new Address(address);
-        const tx = makeClaimOngTx(addressObj, addressObj, value, gasPrice, gasLimit);
-        tx.payer = new Address(payer);
+        const tx = makeClaimOngTx(addressObj, addressObj, value, new Address(payer), gasPrice, gasLimit);
         signTransaction(tx, privateKey);
         const result = {
             error: ERROR_CODE.SUCCESS,
@@ -1077,6 +1072,54 @@ export class SDK {
                 return result;
             }
         }
+    }
+
+    static getUnclaimedOng(address: string, callback: string) {
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        return restClient.getAllowance('ong', new Address(ONT_CONTRACT), new Address(address)).then((res) => {
+            const result = {
+                error: ERROR_CODE.SUCCESS,
+                result: res.Result
+            };
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }).catch((err) => {
+            const result = {
+                error: err.Error,
+                result: '',
+                desc: err
+            };
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        });
+    }
+
+    static querySmartCodeEventByTxhash(txHash: string, callback: string) {
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        return restClient.getSmartCodeEvent(txHash).then((res) => {
+            const obj = {
+                error: ERROR_CODE.SUCCESS,
+                result: res
+            };
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(obj), callback);
+            }
+            return obj;
+        }).catch((err) => {
+            const result = {
+                error: err.Error,
+                result: '',
+                desc: err
+            };
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        });
     }
 
 }

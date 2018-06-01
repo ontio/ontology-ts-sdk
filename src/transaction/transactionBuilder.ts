@@ -270,7 +270,7 @@ export const buildNativeContractParam = (params: Parameter[]) => {
 
 export const makeInvokeCode = (
     funcName: string,
-    params: Parameter[],
+    params: Parameter[] | string,
     codeHash: string,
     vmType: VmType = VmType.NEOVM
 ) => {
@@ -279,7 +279,12 @@ export const makeInvokeCode = (
     const funcNameHex = str2hexstr(funcName);
 
     if (vmType === VmType.NEOVM) {
-        const args = buildSmartContractParam(funcNameHex, params);
+        let args = '';
+        if (typeof(params) === 'string') {
+            args = params;
+        } else {
+            args = buildSmartContractParam(funcNameHex, params);
+        }
         const contract = new Contract();
         contract.address = codeHash;
         contract.args = args;
@@ -291,7 +296,12 @@ export const makeInvokeCode = (
         vmCode.vmType = vmType;
 
     } else if (vmType === VmType.WASMVM) {
-        const args = buildWasmContractParam(params);
+        let args = '';
+        if (typeof (params) === 'string') {
+            args = params;
+        } else {
+            args = buildWasmContractParam(params);
+        }
         const contract = new Contract();
         contract.version = '01';
         contract.address = codeHash;
@@ -303,7 +313,12 @@ export const makeInvokeCode = (
         vmCode.vmType = vmType;
 
     } else if (vmType === VmType.NativeVM) {
-        const args = buildNativeContractParam(params);
+        let args = '';
+        if (typeof (params) === 'string') {
+            args = params;
+        } else {
+            args = buildNativeContractParam(params);
+        }
         const contract = new Contract();
         contract.address = codeHash;
         contract.args = args;
@@ -319,7 +334,7 @@ export const makeInvokeCode = (
 
 export const makeInvokeTransaction = (
     funcName: string,
-    parameters: Parameter[],
+    parameters: Parameter[] | string,
     scriptHash: string,
     vmType: VmType = VmType.NEOVM,
     gasPrice?: string,

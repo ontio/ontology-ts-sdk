@@ -58,7 +58,6 @@ export function buildCommitRecordTx(claimId: string, issuer: string, subject: st
 
     let tx = new Transaction();
     tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gasPrice, gasLimit, payer);
-    // signTransaction(tx, privateKey);
     return tx;
 }
 
@@ -87,8 +86,6 @@ export function buildRevokeRecordTx(claimId: string, revokerOntid: string,
     f.setParamsValue(p1, p2);
 
     return makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gasPrice, gasLimit, payer);
-    // signTransaction(tx, privateKey);
-
 }
 
 /**

@@ -106,17 +106,21 @@ describe('test scrypt', () => {
 
         // console.log(bip39.entropyToMnemonic('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07'))
         const mnemonic = 'doll remember harbor resource desert curious fatigue nature arrest fix nation rhythm';
-        const mneHex = utils.str2hexstr(mnemonic);
-        const seed = bip39.mnemonicToSeedHex(mnemonic);
+        const mnemonicHex = utils.str2hexstr(mnemonic);
         // generate privateKey
         const password = '123456';
-        const pri = seed.substr(0, 64);
-        const privateKey = new PrivateKey(pri);
+        const privateKey = core.generatePrivatekeyFromMnemonic(mnemonic);
         const account = new Account();
         account.create(privateKey, password, '');
-        const encMne = scrypt.encrypt(mneHex, account.publicKey, password);
+        const encMne = scrypt.encrypt(
+            '2ab720ff80fcdd31a769925476c26120a879e235182594fbb57b67c0743558d7', account.publicKey, password);
         const decMneHex = scrypt.decrypt(encMne, '123456', account.address);
+        console.log('address: ' + account.address.toBase58());
+        console.log('privateKey: ' + privateKey.key);
+        console.log('encMne: ' + encMne);
+        
         const decMne = utils.hexstr2str(decMneHex);
+        console.log('decMne: ' + decMne);
         expect(decMne).toEqual(mnemonic);
 
         // tslint:disable-next-line:no-console

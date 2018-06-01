@@ -18,6 +18,10 @@
 
 import { Address } from '../../crypto/address';
 
+// const generateReqId = () => {
+//     return Math.floor(Math.random() * 10e8);
+// };
+
 export function sendHeartBeat() {
     const param = {
         Action : 'heartbeat',
@@ -208,6 +212,17 @@ export function getMerkleProof(hash: string) {
         Action: 'getmerkleproof',
         Version: '1.0.0',
         Hash: hash
+    };
+    return JSON.stringify(param);
+}
+
+export function getAllowance(asset: string, from: Address, to: Address) {
+    const param = {
+        Action: 'getallowance',
+        Version: '1.0.0',
+        Asset: asset,
+        From: from.toBase58(),
+        To: to.toBase58()
     };
     return JSON.stringify(param);
 }

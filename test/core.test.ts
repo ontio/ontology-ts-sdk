@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+import * as bip39 from 'bip39';
 import { Claim, Metadata } from '../src/claim';
 import * as core from '../src/core';
 import { generateOntid, getMerkleProof, getPublicKey, sha256, verifySignature } from '../src/core';
@@ -119,20 +119,6 @@ describe('test core', () => {
     //     console.log(res)
     // })
 
-    test('test_mnemonic', () => {
-        const seed = utils.ab2hexstring(core.generateRandomArray(16));
-        const pri = core.sha256(seed);
-        console.log('pri: ' + pri);
-        const mn = core.generateMnemonic(seed).split(' ');
-        console.log(mn);
-        expect(mn.length).toEqual(12);
-        const parsed = core.parseMnemonic(mn.join(' '));
-        const parsedHash = core.sha256(parsed);
-        console.log('parsed: ' + parsed);
-        expect(parsedHash).toEqual(pri);
-
-    });
-
     test('test_verifySignature', () => {
         const pub = PublicKey.deserializeHex(
             new StringReader('12020290cd6eaa63bf52a3318e770364ff1a21360f907680959ca4dce11136fbded6a1'));
@@ -144,6 +130,20 @@ describe('test core', () => {
         const result = pub.verify(content, signature);
         console.log(result);
         expect(result).toBeTruthy();
+    });
+
+    // entropy: 67a144559c029099e66c24175a3143a7
+// MnmenoicCodes: guilt any betray day cinnamon erupt often loyal blanket spice extend exact
+// seed: 54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166358fb8b7253b4abbc0799f386d81e472352da1413eaa817638a4a887db03fdf5
+// prikey: 54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166
+
+    test('test_mnemonicWithJava', () => {
+        const entropy = '67a144559c029099e66c24175a3143a7';
+        const mne = bip39.entropyToMnemonic(entropy);
+        expect(mne).toEqual('guilt any betray day cinnamon erupt often loyal blanket spice extend exact');
+
+        const pri = core.generatePrivatekeyFromMnemonic(mne);
+        expect(pri.key).toEqual('54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166');
     });
 
 

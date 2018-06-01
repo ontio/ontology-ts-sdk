@@ -131,6 +131,11 @@ export class WebsocketClient {
         return this.send(raw);
     }
 
+    async getAllowance(asset: string, from: Address, to: Address) {
+        const raw = Builder.getAllowance(asset, from, to);
+        return this.send(raw);
+    }
+
     private async send(raw: string, waitNotify = false): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             const sender = new WebsocketSender(this.url, this.debug);

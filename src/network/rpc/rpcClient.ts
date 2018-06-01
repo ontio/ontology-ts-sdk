@@ -19,6 +19,7 @@
 import axios from 'axios';
 import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
+import { ERROR_CODE } from '../../error';
 
 export default class RpcClient {
     url: string;
@@ -181,6 +182,16 @@ export default class RpcClient {
         // tslint:disable-next-line:no-console
         console.log(req);
 
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getAllowance(asset: string, from: Address, to: Address) {
+        if (asset !== 'ont' && asset !== 'ong') {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        const req = this.makeRequest('getallowance', asset, from.toBase58(), to.toBase58());
         return axios.post(this.url, req).then((res) => {
             return res.data;
         });
