@@ -17,7 +17,6 @@
  */
 
 import { Account } from '../src/account';
-import * as core from '../src/core';
 import { PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import * as scrypt from '../src/scrypt';

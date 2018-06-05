@@ -65,7 +65,7 @@ export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
         VmType.NativeVM,
         gasPrice,
         gasLimit,
-        Address.addressFromPubKey(publicKey)
+        Address.fromPubKey(publicKey)
     );
 
     return tx;
@@ -110,7 +110,7 @@ export function buildRegIdWithAttributes(
         VmType.NativeVM,
         gasPrice,
         gasLimit,
-        Address.addressFromPubKey(publicKey)
+        Address.fromPubKey(publicKey)
     );
 
     return tx;
@@ -150,7 +150,7 @@ export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], p
         VmType.NativeVM,
         gasPrice,
         gasLimit,
-        Address.addressFromPubKey(publicKey)
+        Address.fromPubKey(publicKey)
     );
     return tx;
 }
@@ -185,7 +185,7 @@ export function buildRemoveAttributeTx(ontid: string, key: string, publicKey: Pu
         VmType.NativeVM,
         gasPrice,
         gasLimit,
-        Address.addressFromPubKey(publicKey)
+        Address.fromPubKey(publicKey)
     );
     return tx;
 }

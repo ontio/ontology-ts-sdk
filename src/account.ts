@@ -16,9 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Address, PrivateKey, SignatureScheme } from './crypto';
-import { generateRandomArray, sha256 } from './helpers';
 import { ScryptParams } from './scrypt';
-import { ab2hexstring } from './utils';
+import { ab2hexstring, generateRandomArray, sha256 } from './utils';
 
 export class Account {
     static importAccount(
@@ -49,7 +48,7 @@ export class Account {
         account.publicKey = publicKey.key;
         account.signatureScheme = privateKey.algorithm.defaultSchema.label;
 
-        account.address = Address.addressFromPubKey(publicKey);
+        account.address = Address.fromPubKey(publicKey);
 
         return account;
     }
@@ -78,7 +77,7 @@ export class Account {
         account.encryptedKey = privateKey.encrypt(password);
         const publicKey = privateKey.getPublicKey();
         account.publicKey = publicKey.serializeHex();
-        account.address = Address.addressFromPubKey(publicKey);
+        account.address = Address.fromPubKey(publicKey);
 
         return account;
     }

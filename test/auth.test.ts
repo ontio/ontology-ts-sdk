@@ -15,7 +15,6 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { generateOntid } from '../src/core';
 import TxSender from '../src/transaction/txSender';
 import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
@@ -32,23 +31,23 @@ const targetContract = '806256c36653d4091a3511d308aac5c414b2a444';
 
 const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
 const publicKey = privateKey.getPublicKey();
-const address = Address.addressFromPubKey(publicKey);
-const ontid = generateOntid(publicKey.serializeHex());
+const address = Address.fromPubKey(publicKey);
+const ontid = Address.generateOntid(publicKey);
 
 const pri2 = new PrivateKey('cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406');
 const pub2 = pri2.getPublicKey();
-const address2 = Address.addressFromPubKey(pub2);
-const ontid2 = generateOntid(pub2.serializeHex());
+const address2 = Address.fromPubKey(pub2);
+const ontid2 = Address.generateOntid(pub2);
 
 const pri3 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
 const pub3 = pri3.getPublicKey();
-const address3 = Address.addressFromPubKey(pub3);
-const ontid3 = generateOntid(pub3.serializeHex());
+const address3 = Address.fromPubKey(pub3);
+const ontid3 = Address.generateOntid(pub3);
 
 const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
 const pub4 = pri4.getPublicKey();
-const address4 = Address.addressFromPubKey(pub4);
-const ontid4 = generateOntid(pub4.serializeHex());
+const address4 = Address.fromPubKey(pub4);
+const ontid4 = Address.generateOntid(pub4);
 
 const gasPrice = '0';
 const gasLimit = '30000';
@@ -106,7 +105,7 @@ const testAssign = () => {
     signTransaction(tx4, pri4);
     const param4 = buildTxParam(tx4);
     txSender.sendTxWithSocket(param4, callback);
-}
+};
 
 const testDelegateWithdraw = () => {
     // const tx = makeDelegateRoleTx(targetContract, ontid3, ontid, role1, 1000, 1, 1, address3, gasPrice, gasLimit);
@@ -128,9 +127,10 @@ const testDelegateWithdraw = () => {
     // signTransaction(tx4, privateKey);
     // const param4 = buildTxParam(tx4);
     // txSender.sendTxWithSocket(param4, callback);
-}
+};
 
-const testVarifyToken = (id, func, address, privateKey) => {
+// tslint:disable-next-line:no-shadowed-variable
+const testVerifyToken = (id, func, address, privateKey) => {
     const tx = makeVerifyTokenTx(targetContract, id, func, 1, address, gasPrice, gasLimit);
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
@@ -144,4 +144,4 @@ const testVarifyToken = (id, func, address, privateKey) => {
 
 // testDelegateWithdraw();
 
-testVarifyToken(ontid, func1, address, privateKey);
+testVerifyToken(ontid, func1, address, privateKey);

@@ -30,7 +30,6 @@ import * as bip39 from 'bip39';
 import { Account } from '../account';
 import { Claim } from '../claim/claim';
 import { HTTP_REST_PORT, HTTP_WS_PORT, REST_API, TEST_NODE } from '../consts';
-import * as core from '../core';
 import { Address, PgpSignature, PrivateKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
@@ -44,7 +43,7 @@ import {
     sendRawTxRestfulUrl,
     signTransaction
 } from '../transaction/transactionBuilder';
-import { hexstr2str, now, sendBackResult2Native, str2hexstr } from '../utils';
+import { generateMnemonic, hexstr2str, now, sendBackResult2Native, sha256, str2hexstr } from '../utils';
 import { Wallet } from '../wallet';
 
 // tslint:disable:no-unused-expression
@@ -341,11 +340,11 @@ export class SDK {
 
     static createAccount(label: string, password: string, callback?: string) {
         // generate mnemnic
-        const mnemonic = core.generateMnemonic();
+        const mnemonic = generateMnemonic();
 
         const mnemonicHex = str2hexstr(mnemonic);
 
-        const privateKey = core.generatePrivatekeyFromMnemonic(mnemonic);
+        const privateKey = PrivateKey.generateFromMnemonic(mnemonic);
         const account = Account.create(privateKey, password, label);
         const mnemonicEnc = scrypt.encrypt(mnemonicHex, account.publicKey, password);
         const result = account.toJson();
@@ -368,7 +367,7 @@ export class SDK {
     static decryptMnemonicEnc(mnemonicEnc: string,
                               passwordHash: string, password: string, address: string, callback: string) {
         let obj;
-        if (core.sha256(password) !== passwordHash) {
+        if (sha256(password) !== passwordHash) {
             obj = {
                 error: ERROR_CODE.INVALID_PARAMS,
                 result: ''
@@ -433,7 +432,7 @@ export class SDK {
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`;
-        const checksum = core.getChecksumFromOntid(ontid);
+        const checksum = Address.fromOntid(ontid).getB58Checksum();
         try {
             privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
         } catch (err) {
@@ -525,7 +524,7 @@ export class SDK {
     ) {
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        const checksum = core.getChecksumFromOntid(subject);
+        const checksum = Address.fromOntid(subject).getB58Checksum();
         try {
             privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
         } catch (err) {
@@ -560,7 +559,7 @@ export class SDK {
             if (res.Result.Result === '01') {
                 // user agent will do this
                 // restClient.sendRawTransaction(tx.serialize(), false)
-                // const hash = core.sha256(core.sha256(tx.serializeUnsignedData()))
+                // const hash = sha256(sha256(tx.serializeUnsignedData()))
                 const obj = {
                     error: ERROR_CODE.SUCCESS,
                     result: '',
@@ -639,10 +638,8 @@ export class SDK {
     }
 
     static getBalance(address: string, callback?: string) {
-        if (address.length === 40) {
-            address = core.u160ToAddress(address);
-        }
-        const request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalance}/${address}`;
+        const addressObj = new Address(address);
+        const request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalance}/${addressObj.toBase58()}`;
         return axios.get(request).then((res: any) => {
             if (res.data.Error === 0) {
                 const result = res.data.Result;
@@ -691,13 +688,13 @@ export class SDK {
         gasLimit: string,
         payer: string,
         callback: string) {
+
+        let fromAddress: Address;
+        let toAddress: Address;
+
         try {
-            if (from.length !== 40) {
-                from = core.addressToU160(from);
-            }
-            if (to.length !== 40) {
-                to = core.addressToU160(to);
-            }
+            fromAddress = new Address(from);
+            toAddress = new Address(to);
         } catch (err) {
             const result = {
                 error : ERROR_CODE.INVALID_PARAMS,
@@ -713,7 +710,7 @@ export class SDK {
 
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        const checksum = core.getChecksumFromAddress(new Address(from));
+        const checksum = fromAddress.getB58Checksum();
         try {
             privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
         } catch (err) {
@@ -724,7 +721,7 @@ export class SDK {
             return result;
         }
 
-        const tx = makeTransferTx(token, new Address(from), new Address(to), value, gasPrice, gasLimit);
+        const tx = makeTransferTx(token, fromAddress, toAddress, value, gasPrice, gasLimit);
         tx.payer = new Address(payer);
         signTransaction(tx, privateKey);
         const result = {
@@ -787,10 +784,9 @@ export class SDK {
         payer: string,
         callback: string
     ) {
+        let addressObj: Address;
         try {
-            if (address.length !== 40) {
-                address = core.addressToU160(address);
-            }
+            addressObj = new Address(address);
 
         } catch (err) {
             const result = {
@@ -807,7 +803,7 @@ export class SDK {
 
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        const checksum = core.getChecksumFromAddress(new Address(address));
+        const checksum = addressObj.getB58Checksum();
         try {
             privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
         } catch (err) {
@@ -817,7 +813,7 @@ export class SDK {
             }
             return result;
         }
-        const addressObj = new Address(address);
+
         const tx = makeClaimOngTx(addressObj, addressObj, value, new Address(payer), gasPrice, gasLimit);
         signTransaction(tx, privateKey);
         const result = {
@@ -834,7 +830,7 @@ export class SDK {
 
     static exportIdentityToQrcode(identityDataStr: string, callback: string) {
         const obj = Identity.parseJson(identityDataStr);
-        const checksum = core.getChecksumFromOntid(obj.ontid);
+        const checksum = Address.fromOntid(obj.ontid).getB58Checksum();
         const result = {
             type : 'I',
             label : obj.label,
@@ -860,7 +856,7 @@ export class SDK {
 
     static exportIdentityToKeystring(identityDataStr: string, callback: string) {
         const obj = Identity.parseJson(identityDataStr);
-        const checksum = core.getChecksumFromOntid(obj.ontid);
+        const checksum = Address.fromOntid(obj.ontid).getB58Checksum();
         const key = obj.controls[0].encryptedKey.key;
         const result = checksum + key;
 
@@ -872,7 +868,7 @@ export class SDK {
 
     static exportAccountToQrcode(accountDataStr: string, callback: string) {
         const obj = Account.parseJson(accountDataStr);
-        const checksum = core.getChecksumFromAddress(obj.address);
+        const checksum = obj.address.getB58Checksum();
         const result = {
             type: 'A',
             label: obj.label,
@@ -898,7 +894,7 @@ export class SDK {
 
     static exportAccountToKeystring(accountDataStr: string, callback: string) {
         const obj = Account.parseJson(accountDataStr);
-        const checksum = core.getChecksumFromAddress(obj.address);
+        const checksum = obj.address.getB58Checksum();
         const key = obj.encryptedKey.key;
         const result = checksum + key;
 
@@ -951,7 +947,7 @@ export class SDK {
         }
         const encrypt = new PrivateKey(encryptedKey);
         const privateKey = encrypt.decrypt(password, new Address(address));
-        const wif = core.getWIFFromPrivateKey(privateKey.key);
+        const wif = privateKey.serializeWIF();
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: wif
@@ -964,9 +960,9 @@ export class SDK {
     }
 
     static importAccountWithWif(wif: string, password: string, callback: string) {
-        let pri = '';
+        let privateKey;
         try {
-            pri = core.getPrivateKeyFromWIF(wif);
+            privateKey = PrivateKey.deserializeWIF(wif);
         } catch (err) {
             const obj = {
                 error: ERROR_CODE.INVALID_PARAMS,
@@ -975,7 +971,6 @@ export class SDK {
             callback && sendBackResult2Native(JSON.stringify(obj), callback);
             return obj;
         }
-        const privateKey = new PrivateKey(pri);
         const account = Account.create(privateKey, password);
         const result = {
             error: ERROR_CODE.SUCCESS,

@@ -19,7 +19,6 @@
 import { Account } from './account';
 import { Claim } from './claim';
 import * as CONST from './consts';
-import * as core from './core';
 import * as Crypto from './crypto';
 import { Identity } from './identity';
 import RestClient from './network/rest/restClient';
@@ -52,7 +51,6 @@ class ONT {
     ParameterType: any;
     AbiFunction: any;
     AbiInfo: any;
-    core: any;
     utils: any;
     scrypt: any;
     CONST: any;
@@ -77,7 +75,6 @@ class ONT {
         this.ParameterType = ParameterType;
         this.AbiFunction = AbiFunction;
         this.AbiInfo = AbiInfo;
-        this.core = core;
         this.utils = utils;
         this.scrypt = scrypt;
         this.CONST = CONST;
@@ -122,7 +119,6 @@ export {
     AbiInfo,
     TransactionBuilder,
     OntAssetTxBuilder,
-    core,
     utils,
     scrypt,
     CONST,

@@ -26,6 +26,10 @@ export interface Node {
     TargetHash: string;
 }
 
+/**
+ * TODO: Add merkle proof verification.
+ *
+ */
 export class ClaimProof {
     Type: 'MerkleProof';
     TxnHash: string;

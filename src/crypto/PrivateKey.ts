@@ -16,10 +16,13 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as bip39 from 'bip39';
 import * as elliptic from 'elliptic';
 import * as secureRandom from 'secure-random';
 import { sm2 } from 'sm.js';
+import * as wif from 'wif';
 import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID } from '../consts';
+import { ERROR_CODE } from '../error';
 import { checkDecrypted, decrypt, encrypt, ScryptParams } from '../scrypt';
 import { ab2hexstring, hexstring2ab, str2hexstr } from '../utils';
 import { Address } from './address';
@@ -62,6 +65,37 @@ export class PrivateKey extends Key {
         KeyType.fromLabel(json.algorithm),
         KeyParameters.deserializeJson(json.parameters)
         );
+    }
+
+    /**
+     * Creates PrivateKey from Wallet Import Format (WIF) representation.
+     *
+     * @param wifkey WIF private key representation
+     *
+     */
+    static deserializeWIF(wifkey: string): PrivateKey {
+        const key = ab2hexstring(wif.decode(wifkey, 128).privateKey);
+        return new PrivateKey(key);
+    }
+
+    /**
+     * Creates PrivateKey from mnemonic according to BIP39 protocol.
+     *
+     * @param mnemonic Space separated list of words
+     * @param algorithm Algorithm for the key
+     * @param parameters Parameters for the key
+     *
+     */
+    static generateFromMnemonic(mnemonic: string, algorithm?: KeyType, parameters?: KeyParameters): PrivateKey {
+        if (mnemonic.split(' ').length !== 12) {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        const seed = bip39.mnemonicToSeedHex(mnemonic);
+
+        // generate privateKey
+        const pri = seed.substr(0, 64);
+        const privateKey = new PrivateKey(pri);
+        return privateKey;
     }
 
     /**
@@ -231,5 +265,13 @@ export class PrivateKey extends Key {
         const id = DEFAULT_SM2_ID;
 
         return str2hexstr(id + '\0') + signed.r + signed.s;
+    }
+
+    /**
+     * Gets Wallet Import Format (WIF) representation of the PrivateKey.
+     *
+     */
+    serializeWIF(): string {
+        return wif.encode(128, Buffer.from(this.key, 'hex'), true);
     }
 }

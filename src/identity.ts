@@ -16,9 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Address, JsonKey, PrivateKey } from './crypto';
-import { generateOntid, generateRandomArray } from './helpers';
 import { ScryptParams } from './scrypt';
-import { ab2hexstring } from './utils';
+import { ab2hexstring, generateRandomArray } from './utils';
 
 export class ControlData {
     static fromJson(json: any): ControlData {
@@ -63,7 +62,7 @@ export class Identity {
 
         // generate ontid from p
         const publicKey = privateKey.getPublicKey();
-        identity.ontid = generateOntid(publicKey.serializeHex());
+        identity.ontid = Address.generateOntid(publicKey);
         identity.label = label;
         identity.lock = false;
 
@@ -114,7 +113,7 @@ export class Identity {
 
         // ontid
         const publicKey = privateKey.getPublicKey();
-        identity.ontid = generateOntid(publicKey.serializeHex());
+        identity.ontid = Address.generateOntid(publicKey);
 
         // TODO register ontid
         // 调用方处理register和监听结果

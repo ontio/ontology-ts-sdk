@@ -20,8 +20,6 @@
 import axios from 'axios';
 import { TEST_ONT_URL } from '../src/consts';
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
-import { generateOntid } from '../src/core';
-import * as core from '../src/core';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { RestClient } from '../src/index';
@@ -72,7 +70,7 @@ let abiInfo: AbiInfo;
 let identity: Identity;
 
 abiInfo = AbiInfo.parseJson(JSON.stringify(json2));
-// privateKey = core.generatePrivateKeyStr()
+// privateKey = PrivateKey.random()
 // console.log('privatekey: ' + privateKey)
 // console.log('publick key: ' + publicKey)
 
@@ -84,19 +82,18 @@ pkId = '';
 const pri2 = new PrivateKey('cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406');
 const account2 = Account.create(pri2, '123456', '');
 const pub2 = pri2.getPublicKey();
-// let publicKey2 = ab2hexstring(core.getPublicKey(privateKey, true))
+// let publicKey2 = privateKey.getPublicKey()
 
-// var pkPoint = core.getPublicKeyPoint(privateKey)
 // console.log('pk false: '+ publicKey)
 // console.log('pk true: ' + publicKey2)
 
 // privateKey = 'cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406'
 // ontid = '6469643a6f6e743a626f626162636465636465666768c'
-// ontid = generateOntid(privateKey)
+// ontid = Address.generateOntid(privateKey.getPublicKey())
 ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJW';
 pk2 = new PublicKey('035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c');
 
-// recovery = ab2hexstring(core.generateRandomArray(20))
+// recovery = ab2hexstring(utils.generateRandomArray(20))
 
 const pri3 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
 const account3 = Account.create(pri3, '123456', '');
@@ -107,7 +104,7 @@ const account4 = Account.create(pri4, '123456', '');
 const pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
 const account5 = Account.create(pri5, '123456', '');
 
-const recoveryAddress = Address.addressFromMultiPubKeys(2, [pri3.getPublicKey(), pri4.getPublicKey()]);
+const recoveryAddress = Address.fromMultiPubKeys(2, [pri3.getPublicKey(), pri4.getPublicKey()]);
 
 // var invoke = new InvokeCode();
 // var sr = new StringReader('5999efd79e56f5b4edc78ba2bafae3cd2c3bb68dfd030121023ed0ac36b2222e47f4997e58e420b6e29cf8b7f2d540fce9ec92ebbdf1c72cbe5e7b22436f6e74657874223a22636c61696d3a73746166665f61757468656e7469636174696f6e34222c224f6e746964223a226469643a6f6e743a545675463646483150736b7a574a4146685741466731374e5369744d4445424e6f44227d06537472696e6740623561383762656139326435323532356236656261336236373035393563663862396362623531653937326635636266663439396434383637376464656538612a6469643a6f6e743a544146593162684c446b685a706b4e47685335664775425935474c544d416256584e55c10c416464417474726962757465')
@@ -119,9 +116,10 @@ const recoveryAddress = Address.addressFromMultiPubKeys(2, [pri3.getPublicKey(),
 // ontid = str2hexstr(identity.ontid)
 
 // tslint:disable:no-console
-ontid = core.generateOntid(publicKey.serializeHex());
+ontid = Address.generateOntid(publicKey);
 console.log('ontid: ' + ontid);
 
+// tslint:disable-next-line:no-shadowed-variable
 export const sendTx = (param, callback = null) => {
     const socket = new WebSocket(TEST_ONT_URL.SOCKET_URL);
     socket.onopen = () => {
@@ -237,7 +235,8 @@ const testRegisterOntid = () => {
 };
 
 const testRegIdWithAttributes = () => {
-    const ontid = core.generateOntid(pub2.serializeHex());
+    // tslint:disable-next-line:no-shadowed-variable
+    const ontid = Address.generateOntid(pub2);
     const attr = new DDOAttribute();
     attr.key = 'hello';
     attr.type = 'string',
@@ -428,8 +427,8 @@ const testInvokeWasmContract = () => {
 };
 
 const testCommitTx = () => {
-    const issuer = core.generateOntid(account3.publicKey);
-    const sub = core.generateOntid(account4.publicKey);
+    const issuer = Address.generateOntid(pri3.getPublicKey());
+    const sub = Address.generateOntid(pri4.getPublicKey());
     const claimId = str2hexstr('claimId:123456');
     const tx = buildCommitRecordTx(claimId, issuer, sub, gasPrice, gasLimit, account3.address);
     signTransaction(tx, pri3);
