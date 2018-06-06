@@ -15,24 +15,69 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+import * as base58 from 'bs58';
+import * as cryptoJS from 'crypto-js';
+import { ADDR_VERSION } from '../consts';
 import { ERROR_CODE } from '../error';
-import { addressToU160, hash160, u160ToAddress } from '../helpers';
-import { hex2VarBytes, num2hexstring } from '../utils';
+import { VmType } from '../transaction/vmcode';
+import { ab2hexstring, hash160, hex2VarBytes, hexstring2ab, num2hexstring, sha256 } from '../utils';
 import { PublicKey } from './PublicKey';
 
+/**
+ * Representation of Address.
+ *
+ * There are 4 types of address:
+ * 1. Public key based
+ * 2. Multi public key based (m, n)
+ * 3. Contract based
+ * 4. ONT ID based
+ *
+ * The value is stored as base58 or hex encoded, therefore always use
+ * toBase58() or toHexString() according to requirements.
+ */
 export class Address {
-    static addressFromPubKey(publicKey: PublicKey): Address {
+    /**
+     * Generates public key based address.
+     *
+     * @param publicKey Public key to use
+     */
+    static fromPubKey(publicKey: PublicKey): Address {
         let programHash = hash160(publicKey.serializeHex());
         programHash = '01' + programHash.substring(2);
         return new Address(programHash);
     }
 
     /**
-     * (m,n) threshold address
-     * @param m is the threshold
-     * @param publicKeys total value n
+     * Generates identity based address.
+     * @param ontid ONT ID in the form did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w
      */
-    static addressFromMultiPubKeys(m: number, publicKeys: PublicKey[]): Address {
+    static fromOntid(ontid: string): Address {
+        const address = ontid.substr(8);
+        return new Address(address);
+    }
+
+    /**
+     * Generates address from smart contract code.
+     *
+     * @param avmCode Hex encoded smart contract code
+     * @param vmType Type of VM
+     */
+    static fromContract(avmCode: string, vmType: VmType = VmType.NEOVM): Address {
+        let programHash = hash160(avmCode);
+        programHash = num2hexstring(vmType) + programHash.substring(2);
+        return new Address(programHash);
+    }
+
+    /**
+     * Generates (m, n) threshold address.
+     *
+     * m - threshold
+     * n - total number of public keys
+     *
+     * @param m The threshold
+     * @param publicKeys Public key
+     */
+    static fromMultiPubKeys(m: number, publicKeys: PublicKey[]): Address {
         const n = publicKeys.length;
 
         if (m <= 0 || m > n || n > 24 ) {
@@ -53,6 +98,19 @@ export class Address {
         return new Address(programHash);
     }
 
+    /**
+     * Deterministicaly generates ONT ID from this public key.
+     */
+    static generateOntid(publicKey: PublicKey): string {
+        const address = Address.fromPubKey(publicKey);
+        const ontid = 'did:ont:' + address.toBase58();
+
+        return ontid;
+    }
+
+    /**
+     * Base58 or Hex encoded address
+     */
     value: string;
 
     constructor(value: string) {
@@ -63,19 +121,61 @@ export class Address {
         }
     }
 
+    /**
+     * Gets Base58 encoded representation of the address.
+     */
     toBase58() {
         if (this.value.length === 34) {
             return this.value;
         } else {
-            return u160ToAddress(this.value);
+            return hexToBase58(this.value);
         }
     }
 
+    /**
+     * Gets Hex encoded representation of the address.
+     */
     toHexString() {
         if (this.value.length === 40) {
             return this.value;
         } else {
-            return addressToU160(this.value);
+            return base58ToHex(this.value);
         }
     }
+
+    /**
+     * Computes the salt from address for decrypt.
+     */
+    getB58Checksum() {
+        const address = this.toBase58();
+        const hash = cryptoJS.SHA256(address).toString();
+        const hash2 = sha256(hash);
+        return hash2.slice(0, 8);
+    }
+}
+
+/**
+ *
+ * @param programhash
+ */
+function hexToBase58(hexEncoded: string): string {
+    const data = ADDR_VERSION + hexEncoded;
+
+    const hash = sha256(data);
+    const hash2 = sha256(hash);
+    const checksum = hash2.slice(0, 8);
+
+    const datas = data + checksum;
+
+    return base58.encode(hexstring2ab(datas));
+}
+
+function base58ToHex(base58Encoded: string) {
+    const decoded = base58.decode(base58Encoded);
+    const hexEncoded = ab2hexstring(decoded).substr(2, 40);
+
+    if (base58Encoded !== hexToBase58(hexEncoded)) {
+        throw new Error('[addressToU160] decode encoded verify failed');
+    }
+    return hexEncoded;
 }

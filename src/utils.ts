@@ -16,6 +16,9 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import axios from 'axios';
+import * as bip39 from 'bip39';
+import * as cryptoJS from 'crypto-js';
+import * as secureRandom from 'secure-random';
 import { WEBVIEW_SCHEME } from './consts';
 
 export function hexstring2ab(str: string): number[] {
@@ -319,4 +322,53 @@ export const axiosPost = (url: string, params: any) => {
  */
 export function now(): number {
     return Math.floor(Date.now() / 1000);
+}
+
+/**
+ * Computes sha-256 hash from hex encoded data.
+ *
+ * @param data Hex encoded data
+ */
+export function sha256(data: string) {
+    const hex = cryptoJS.enc.Hex.parse(data);
+    const sha = cryptoJS.SHA256(hex).toString();
+    return sha;
+}
+
+/**
+ * Computes ripemd-160 hash from hex encoded data.
+ *
+ * @param data Hex encoded data
+ */
+export function ripemd160(data: string) {
+    const hex = cryptoJS.enc.Hex.parse(data);
+    const ripemd = cryptoJS.RIPEMD160(hex).toString();
+    return ripemd;
+}
+
+/**
+ * Computes ripemd-160 hash of sha-256 hash from hex encoded data.
+ *
+ * @param data Hex encoded data
+ */
+export function hash160(SignatureScript: string): string {
+    return ripemd160(sha256(SignatureScript));
+}
+
+/**
+ * Generates random ArrayBuffer of specified length.
+ *
+ * @param len Length of the array to generate
+ */
+export function generateRandomArray(len: number): ArrayBuffer {
+    return secureRandom(len);
+}
+
+export function generateMnemonic(size: number = 16): string {
+    const random = ab2hexstring(generateRandomArray(size));
+    return bip39.entropyToMnemonic(random);
+}
+
+export function parseMnemonic(str: string) {
+    return bip39.mnemonicToEntropy(str);
 }

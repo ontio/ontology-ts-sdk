@@ -19,7 +19,6 @@
 import DeployCode from '../src/transaction/payload/deployCode';
 import { Transaction, TxType } from '../src/transaction/transaction';
 
-import { getContractHash } from '../src/core';
 import { buildRestfulParam, buildRpcParam, buildTxParam, Default_params, makeDeployCodeTransaction,
      makeInvokeTransaction, parseEventNotify, sendRawTxRestfulUrl, signTransaction
     } from '../src/transaction/transactionBuilder';
@@ -32,6 +31,7 @@ import AbiInfo from '../src/smartcontract/abi/abiInfo';
 import { Parameter } from '../src/smartcontract/abi/parameter';
 import TxSender from '../src/transaction/txSender';
 
+import { Address } from '../src/crypto';
 import json from '../src/smartcontract/data/idContract.abi';
 import { VmCode, VmType } from '../src/transaction/vmcode';
 import { Account } from './../src/account';
@@ -119,7 +119,7 @@ const testDeployCodeTx = (code, vmType = VmType.NEOVM) => {
 };
 
 const getContract = (avmCode, vmType= VmType.NEOVM) => {
-    const codeHash = getContractHash(avmCode, vmType);
+    const codeHash = Address.fromContract(avmCode, vmType).toHexString();
     console.log('codeHash: ' + codeHash);
     const url = `${TEST_ONT_URL.REST_URL}/api/v1/contract/${codeHash}`;
     console.log('url : ' + url);

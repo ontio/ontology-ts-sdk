@@ -17,39 +17,36 @@
  */
 import * as bip39 from 'bip39';
 import { Claim, Metadata } from '../src/claim';
-import * as core from '../src/core';
-import { generateOntid, getMerkleProof, getPublicKey, sha256, verifySignature } from '../src/core';
 import { CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
 import * as utils from '../src/utils';
 import { Signature } from './../src/crypto/Signature';
 import { SignatureScheme } from './../src/crypto/SignatureScheme';
-import { StringReader } from './../src/utils';
+import { sha256, StringReader } from './../src/utils';
 // tslint:disable : no-console
 describe('test core', () => {
 
-    let privateKey: string;
+    let privateKey: PrivateKey;
     let wifKey: string;
 
     beforeAll(() => {
-        privateKey = utils.ab2hexstring( core.generatePrivateKey() );
+        privateKey = PrivateKey.random();
     });
 
     test('test getWIFFromPrivateKey', () => {
-        const pri = 'e467a2a9c9f56b012c71cf2270df42843a9d7ff181934068b4a62bcdd570e8be';
-        wifKey = core.getWIFFromPrivateKey(pri);
+        const pri = new PrivateKey('e467a2a9c9f56b012c71cf2270df42843a9d7ff181934068b4a62bcdd570e8be');
+        wifKey = pri.serializeWIF();
         // expect(wifKey).toBeDefined();
         expect(wifKey).toEqual('L4shZ7B4NFQw2eqKncuUViJdFRq6uk1QUb6HjiuedxN4Q2CaRQKW');
     });
 
     test('test getPrivateKeyFromWIF', () => {
         const wif = 'L4shZ7B4NFQw2eqKncuUViJdFRq6uk1QUb6HjiuedxN4Q2CaRQKW';
-        const key = core.getPrivateKeyFromWIF(wif);
-        expect(key).toEqual('e467a2a9c9f56b012c71cf2270df42843a9d7ff181934068b4a62bcdd570e8be');
+        const key = PrivateKey.deserializeWIF(wif);
+        expect(key.key).toEqual('e467a2a9c9f56b012c71cf2270df42843a9d7ff181934068b4a62bcdd570e8be');
     });
 
     test('get public key', () => {
-        const pkBuffer = core.getPublicKey(privateKey, true);
-        const pk = utils.ab2hexstring(pkBuffer);
+        const pk = privateKey.getPublicKey().serializeHex();
         console.log('get pk: ' + pk);
         expect(pk).toBeDefined();
     });
@@ -77,42 +74,6 @@ describe('test core', () => {
         expect(verifyResult).toBeTruthy();
     });
 
-    const claim = {
-        Context: 'claim:github_authentication',
-        Content: {
-            GistCreateTime: '2018-04-02T13:33:46Z',
-            Email: '919506719@qq.com',
-            Alias: 'zg919506719',
-            Bio: 'Android',
-            Id: '17962347',
-            GistUrl: 'https://gist.github.com/4c6eeed8c4e2eb8618ac503b6fc0d930',
-            Avatar: 'https://avatars2.githubusercontent.com/u/17962347?v=4',
-            Name: '朱刚'
-        },
-        Signature: {
-            Format: 'pgp',
-            // tslint:disable-next-line:max-line-length
-            Value: '6d5ae8f66b6c9e1dbdbe1be6aa66f2dae58f4ea92514de34143fe35634c411fc966806c6edf77f28da6559baab9bcd97a0eb7516412c28355ddbb9a548a9afb1',
-            Algorithm: 'ECDSAwithSHA256'
-        },
-        Metadata: {
-            Issuer: 'did:ont:TVvLUjRmkco7S5LgJ1fjNpnnJCYyS1uFHF',
-            CreateTime: '2018-04-02T13:33:57Z',
-            Subject: 'did:ont:TVvLUjRmkco7S5LgJ1fjNpnnJCYyS1uFHF'
-        },
-        Id: '0653401141e15edcb3fea6e39c38bd3fcaa178d66b22384c3eb8cdb75aac259e'
-    };
-
-    // test('verify pkStatus', async () => {
-    //     let issuerDid = claim.Metadata.Issuer
-    //     let didEnd = issuerDid.indexOf('#')
-    //     let issuerOntid = issuerDid.substring(0, didEnd)
-    //     //issuer is : ONTID#PkId
-    //     let issuerPkId = issuerDid.substr(didEnd + 1)
-    //     let result = await getPkStatus(issuerOntid, issuerPkId)
-    //     expect(result.status).toEqual(PK_STATUS.IN_USE)
-    // })
-
     // test('verify getMerkleProof', async () => {
     //     let txHash = '82c17d7430140a1f3863b8f6f03db07bbdfbdb7da22ffdb2358a1d2e185f8bf3'
     //     let res = await getMerkleProof(txHash)
@@ -134,6 +95,7 @@ describe('test core', () => {
 
     // entropy: 67a144559c029099e66c24175a3143a7
 // MnmenoicCodes: guilt any betray day cinnamon erupt often loyal blanket spice extend exact
+// tslint:disable-next-line:max-line-length
 // seed: 54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166358fb8b7253b4abbc0799f386d81e472352da1413eaa817638a4a887db03fdf5
 // prikey: 54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166
 
@@ -142,10 +104,7 @@ describe('test core', () => {
         const mne = bip39.entropyToMnemonic(entropy);
         expect(mne).toEqual('guilt any betray day cinnamon erupt often loyal blanket spice extend exact');
 
-        const pri = core.generatePrivatekeyFromMnemonic(mne);
+        const pri = PrivateKey.generateFromMnemonic(mne);
         expect(pri.key).toEqual('54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166');
     });
-
-
-
 });

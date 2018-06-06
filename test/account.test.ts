@@ -17,7 +17,6 @@
  */
 
 import { Account } from '../src/account';
-import * as core from '../src/core';
 import { PrivateKey } from '../src/crypto';
 import { ERROR_CODE } from '../src/error';
 import * as utils from '../src/utils';
@@ -39,7 +38,7 @@ describe('test account', () => {
         accountDataStr = account.toJson();
         expect(accountDataStr).toBeDefined();
         // tslint:disable:no-console
-        console.log('address: ' + account.address.toBase58);
+        console.log('address: ' + account.address.toBase58());
         console.log('privateKey: ' + privateKey);
         console.log('addressU160: ' + account.address.toHexString());
     });

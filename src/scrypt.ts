@@ -19,11 +19,10 @@ import * as Bs58check from 'bs58check';
 import * as CryptoJS from 'crypto-js';
 import * as Scrypt from 'js-scrypt';
 import { DEFAULT_SCRYPT, OEP_FLAG, OEP_HEADER } from './consts';
-import * as core from './core';
-import { Address } from './crypto';
+import { Address } from './crypto/address';
+import { PublicKey } from './crypto/PublicKey';
 import { ERROR_CODE } from './error';
-import { getSingleSigUInt160, u160ToAddress } from './helpers';
-import { ab2hexstring, hexXor } from './utils';
+import { ab2hexstring, hexXor, StringReader } from './utils';
 
 export interface ScryptParams {
     cost: number;
@@ -34,27 +33,21 @@ export interface ScryptParams {
 
 export function encrypt(
     privateKey: string,
-    publicKey: string,
+    publicKeyEncoded: string,
     keyphrase: string,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ): string {
-    // let privateKey = core.getPrivateKeyFromWIF(wifKey);
+    // let privateKey = PrivateKey.deserializeWIF(wifKey);
     // console.log( "privateKey: ", privateKey );
 
     // console.log( "publickeyEncode: ", publicKey );
 
-    // let signatureScript = core.createSignatureScript(publickeyEncode);
-    // console.log( "signatureScript: ", signatureScript );
+    const publicKey = PublicKey.deserializeHex(new StringReader(publicKeyEncoded));
 
-    const u160 = getSingleSigUInt160(publicKey);
-    // console.log( "programHash: ", programHash );
-
-    const address = u160ToAddress(u160);
+    const address = Address.fromPubKey(publicKey);
     // console.log( "address: ", address );
 
-    const addressSha256 = CryptoJS.SHA256(address).toString();
-    const addressSha2562 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
-    const addresshash = addressSha2562.slice(0, 8);
+    const addresshash = address.getB58Checksum();
     // console.log( "addresshash: ", addresshash );
 
     // Scrypt
@@ -94,12 +87,12 @@ export function encrypt(
 /**
  * @param encryptedKey encrypted private key
  * @param keyphrase user's password to encrypt private key
- * @param checksum 4 bytes or address in base58 format
+ * @param saltOrAddress 4 hex encoded bytes salt or Address object
  */
 export function decrypt(
     encryptedKey: string,
     keyphrase: string,
-    checksum: string | Address,
+    saltOrAddress: string | Address,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ): string {
     // let assembled = ab2hexstring(Bs58check.decode(encryptedKey));
@@ -108,11 +101,11 @@ export function decrypt(
     // tslint:disable-next-line:no-console
     // console.log('dec assembled: ', encrypted);
 
-    let addressHash = '';
-    if (typeof checksum === 'string' && checksum.length === 8) {
-        addressHash = checksum;
-    } else if (checksum instanceof Address) {
-        addressHash = core.getChecksumFromAddress(checksum);
+    let salt = '';
+    if (typeof saltOrAddress === 'string' && saltOrAddress.length === 8) {
+        salt = saltOrAddress;
+    } else if (saltOrAddress instanceof Address) {
+        salt = saltOrAddress.getB58Checksum();
     } else {
         throw ERROR_CODE.INVALID_PARAMS;
     }
@@ -126,7 +119,7 @@ export function decrypt(
     // Scrypt
     const derived = Scrypt.hashSync(
         Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
-        Buffer.from(addressHash, 'hex'),
+        Buffer.from(salt, 'hex'),
         scryptParams
     ).toString('hex');
     const derived1 = derived.slice(0, 32);
@@ -160,10 +153,10 @@ export function decrypt(
  * This method was taken out from decrypt, because it needs to create public key from private key
  * and it needs to be supplied from outside.
  *
- * @param checksum
- * @param publicKey Public key from decrypted key
+ * @param saltOrAddress 4 hex encoded bytes salt or Address object
+ * @param publicKeyEncoded Public key from decrypted key
  */
-export function checkDecrypted(checksum: string | Address, publicKey: string): void {
+export function checkDecrypted(saltOrAddress: string | Address, publicKeyEncoded: string): void {
     // const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
     // let assembled = Buffer.from(encryptedKey, 'base64').toString('hex')
 
@@ -173,25 +166,25 @@ export function checkDecrypted(checksum: string | Address, publicKey: string): v
     // console.log( "addressHash: ", addressHash );
 
     // console.log('publicKey', publicKey)
-    let addressHash = '';
-    if (typeof checksum === 'string' && checksum.length === 8) {
-        addressHash = checksum;
-    } else if (checksum instanceof Address) {
-        addressHash = core.getChecksumFromAddress(checksum);
+    let salt = '';
+    if (typeof saltOrAddress === 'string' && saltOrAddress.length === 8) {
+        salt = saltOrAddress;
+    } else if (saltOrAddress instanceof Address) {
+        salt = saltOrAddress.getB58Checksum();
     } else {
         throw ERROR_CODE.INVALID_PARAMS;
     }
+
+    const publicKey = PublicKey.deserializeHex(new StringReader(publicKeyEncoded));
+
     // Address
-    const u160 = getSingleSigUInt160(publicKey);
-    const address = u160ToAddress(u160);
+    const address = Address.fromPubKey(publicKey);
     // console.log('address 2', address)
 
     // AddressHash
-    const addressSha256 = CryptoJS.SHA256(address).toString();
-    const addressSha2562 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
-    const addressHashNew = addressSha2562.slice(0, 8);
+    const saltNew = address.getB58Checksum();
 
-    if (addressHashNew !== addressHash) {
+    if (saltNew !== salt) {
 
         // tslint:disable-next-line:no-console
         console.log('keyphrase error.');
@@ -200,23 +193,22 @@ export function checkDecrypted(checksum: string | Address, publicKey: string): v
     }
 
     // WIF
-    // let wifKey = core.getWIFFromPrivateKey(privateKey);
+    // let wifKey = privateKey.serializeWIF();
     // console.log( "wifKey: ", wifKey );
 }
 
 export function encryptWithEcb(
     privateKey: string,
-    publicKey: string,
+    publicKeyEncoded: string,
     keyphrase: string,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ): string {
-    const u160 = getSingleSigUInt160(publicKey);
-    // console.log( "programHash: ", programHash );
-    const address = u160ToAddress(u160);
+    const publicKey = PublicKey.deserializeHex(new StringReader(publicKeyEncoded));
+
+    const address = Address.fromPubKey(publicKey);
     // console.log( "address: ", address );
-    const addressSha256 = CryptoJS.SHA256(address).toString();
-    const addressSha2562 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
-    const addresshash = addressSha2562.slice(0, 8);
+
+    const addresshash = address.getB58Checksum();
     // console.log( "addresshash: ", addresshash );
     // Scrypt
     const derived = Scrypt.hashSync(
@@ -281,21 +273,20 @@ export function decryptWithEcb(
  *
  * @param encryptedKey Original encrypted key
  * @param decryptedKey Decrypted key with decrypt
- * @param publicKey Public key from decrypted key
+ * @param publicKeyEncoded Public key from decrypted key
  */
-export function checkEcbDecrypted(encryptedKey: string, decryptedKey: string, publicKey: string): void {
+export function checkEcbDecrypted(encryptedKey: string, decryptedKey: string, publicKeyEncoded: string): void {
     const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
     // console.log( "assembled: ", assembled );
     const addressHash = assembled.substr(6, 8);
-    // console.log( "addressHash: ", addressHash );
+
+    const publicKey = PublicKey.deserializeHex(new StringReader(publicKeyEncoded));
+
     // Address
-    const u160 = getSingleSigUInt160(publicKey);
-    const address = u160ToAddress(u160);
+    const address = Address.fromPubKey(publicKey);
     // console.log('address', address)
     // AddressHash
-    const addressSha256 = CryptoJS.SHA256(address).toString();
-    const addressSha2562 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(addressSha256)).toString();
-    const addressHashNew = addressSha2562.slice(0, 8);
+    const addressHashNew = address.getB58Checksum();
 
     if (addressHashNew !== addressHash) {
         // tslint:disable-next-line:no-console

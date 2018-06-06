@@ -21,11 +21,7 @@ import { BigNumber } from 'bignumber.js';
 import { Account } from '../src/account';
 import Fixed64 from '../src/common/fixed64';
 import { HTTP_REST_PORT, ONT_NETWORK, REST_API, TEST_NODE, TEST_ONT_URL } from '../src/consts';
-import { getSingleSigUInt160 } from '../src/core';
-import * as core from '../src/core';
-import { CurveLabel, KeyParameters, KeyType, PrivateKey } from '../src/crypto';
-import { Address } from '../src/crypto';
-import { addressToU160, u160ToAddress } from '../src/helpers';
+import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey } from '../src/crypto';
 import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
@@ -126,7 +122,7 @@ const testClaimOng = () => {
 
     // let pri = new PrivateKey('c62bbce37fc96c90e2eea6de474b0031e560ef3630d2f6efe275f16f85ed1543')
     // let address = 'TA9VgmPJcok9cBBLwcLqwhRAfD45vtWa5i'
-    // let hexAddress = addressToU160(address)
+    // let hexAddress = new Address(address).toBase58()
     // let from = hexAddress
     // let to = from
     // let to = accountFrom.hexAddress
@@ -134,19 +130,19 @@ const testClaimOng = () => {
     const tx = makeClaimOngTx(new Address(hexAddress), new Address(hexAddress), '10000', new Address(hexAddress), gasPrice, gasLimit);
     signTransaction(tx, pri);
     const restClient = new RestClient();
-    restClient.sendRawTransaction(tx.serialize()).then( res => {
+    restClient.sendRawTransaction(tx.serialize()).then( (res) => {
         console.log(res.Result);
         const txhash = res.Result;
-        restClient.getSmartCodeEvent(txhash).then(resp => {
-            console.log('resp: ' + JSON.stringify(resp))
-        })
+        restClient.getSmartCodeEvent(txhash).then((resp) => {
+            console.log('resp: ' + JSON.stringify(resp));
+        });
 
         setTimeout( () => {
-            restClient.getSmartCodeEvent(txhash).then(respon => {
+            restClient.getSmartCodeEvent(txhash).then((respon) => {
                 console.log('respon: ' + JSON.stringify(respon));
-            })
+            });
         }, 6000);
-    })
+    });
     // tslint:disable:no-console
     console.log(tx.serialize());
     const param = buildTxParam(tx);
@@ -192,7 +188,7 @@ const testAccountTransfer = () => {
 };
 
 // testTransferTx();
-const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
+const add = new Address('01716379e393d1a540615e022ede47b97e0577c6').toBase58();
 // testGetBalance(accountFrom.address, '');
 
 testClaimOng();

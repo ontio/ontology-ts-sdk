@@ -23,7 +23,6 @@ import { Identity } from '../src/identity';
 import { buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
 import * as utils from '../src/utils';
 import { Account } from './../src/account';
-import * as core from './../src/core';
 import { signTransaction } from './../src/transaction/transactionBuilder';
 
 describe('test identity', () => {
@@ -42,7 +41,7 @@ describe('test identity', () => {
     test('test create', () => {
         identity = Identity.create(privateKey, '123456', 'mickey');
         const ontid = identity.ontid;
-        checksum = core.getChecksumFromOntid(ontid);
+        checksum = Address.fromOntid(ontid).getB58Checksum();
         encryptedPrivateKey = identity.controls[0].encryptedKey;
         identityDataStr = identity.toJson();
         expect(identityDataStr).toBeDefined();
@@ -57,7 +56,7 @@ describe('test identity', () => {
             ontid = 'did:ont:TA9WVH2J7nCksYjvzhs3eWjaUFAE3Tr8at',
             password = '111111';
         try {
-            a = Identity.importIdentity('mickey', encrypt, '111111', core.getChecksumFromOntid(ontid));
+            a = Identity.importIdentity('mickey', encrypt, '111111', Address.fromOntid(ontid).getB58Checksum());
         } catch (err) {
             console.log(err);
         }

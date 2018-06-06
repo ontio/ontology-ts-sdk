@@ -18,8 +18,6 @@
 import * as bip39 from 'bip39';
 import * as CryptoJS from 'crypto-js';
 import { Account } from '../src/account';
-import { sha256, u160ToAddress } from '../src/core';
-import * as core from '../src/core';
 import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src/crypto';
 import { ERROR_CODE } from '../src/error';
 import { utils } from '../src/index';
@@ -32,7 +30,7 @@ describe('test scrypt', () => {
         // const privateKey = PrivateKey.random();
         const privateKey = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07');
         const publicKey = privateKey.getPublicKey().serializeHex();
-        const address = Address.addressFromPubKey(privateKey.getPublicKey());
+        const address = Address.fromPubKey(privateKey.getPublicKey());
         // tslint:disable-next-line:no-console
         console.log('add: ' + address.toBase58());
 
@@ -49,7 +47,7 @@ describe('test scrypt', () => {
 
         // console.log('encrypt : '+ encrypt)
 
-        // const checksum = core.getChecksumFromAddress(address)
+        // const checksum = address.getB58Checksum();
 
         // const decrypt = scrypt.decrypt(encrypt, '123456', checksum)
         // expect(decrypt).toEqual(privateKey.key)
@@ -76,7 +74,7 @@ describe('test scrypt', () => {
         const pri2 = PrivateKey.random();
         const enc2 = pri2.encrypt('111111', params);
         const pub = pri2.getPublicKey();
-        const address = Address.addressFromPubKey(pub);
+        const address = Address.fromPubKey(pub);
         // tslint:disable:no-console
         console.log('address: ' + address.toBase58());
         // tslint:disable-next-line:no-console
@@ -110,10 +108,10 @@ describe('test scrypt', () => {
         const mnemonicHex = utils.str2hexstr(mnemonic);
         // generate privateKey
         const password = '123456';
-        const privateKey = core.generatePrivatekeyFromMnemonic(mnemonic);
+        const privateKey = PrivateKey.generateFromMnemonic(mnemonic);
         const account = Account.create(privateKey, password, '');
         const encMne = scrypt.encrypt(
-            '2ab720ff80fcdd31a769925476c26120a879e235182594fbb57b67c0743558d7', account.publicKey, password);
+            mnemonicHex, account.publicKey, password);
         const decMneHex = scrypt.decrypt(encMne, '123456', account.address);
         console.log('address: ' + account.address.toBase58());
         console.log('privateKey: ' + privateKey.key);
@@ -142,11 +140,11 @@ describe('test scrypt', () => {
     });
 
     test('test_ecb', () => {
-        const enc = '6PYQ7rDg88jaG6DSVeu2syq8iFtRo3ka6MvnYg7fS1M2DZC3S9FsrWjjZM';
+        const enc = '6PYNHtaZ5aNhq8JXhnhMg9qtyfdauGLqftxDz1o6RiSTPWYhHTAFkiVXKR';
         const dec = scrypt.decryptWithEcb(enc, '123456');
         const decPri = new PrivateKey(dec);
         const decPub = decPri.getPublicKey();
-        scrypt.checkEcbDecrypted(enc, dec, decPub.key);
+        scrypt.checkEcbDecrypted(enc, dec, decPub.serializeHex());
     });
 
 });
