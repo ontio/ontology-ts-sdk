@@ -12,10 +12,6 @@ let common = {
         use: ['babel-loader', 'ts-loader'],
         exclude: /node_modules/
       },
-      {
-        test: /\.node$/,
-        use: 'node-loader'
-      }
     ]
   },
   plugins: [
