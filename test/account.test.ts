@@ -1,3 +1,4 @@
+import { Address, PublicKey } from '../src/crypto';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -41,6 +42,9 @@ describe('test account', () => {
         console.log('address: ' + account.address.toBase58());
         console.log('privateKey: ' + privateKey);
         console.log('addressU160: ' + account.address.toHexString());
+
+        const pub = '120202d3d048aca7bdee582a611d0b8acc45642950dc6167aee63abbdcd1a5781c6319';
+        console.log('Address: ' + Address.fromPubKey(new PublicKey(pub)).toBase58());
     });
     test('test import account with correct password', () => {
         let a;

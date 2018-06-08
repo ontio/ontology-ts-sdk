@@ -97,9 +97,12 @@ pk2 = new PublicKey('035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0
 
 const pri3 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
 const account3 = Account.create(pri3, '123456', '');
+console.log('pk3:' + pri3.getPublicKey().serializeHex())
 
 const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
 const account4 = Account.create(pri4, '123456', '');
+console.log('pk4:' + pri4.getPublicKey().serializeHex())
+
 
 const pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
 const account5 = Account.create(pri5, '123456', '');
@@ -448,7 +451,7 @@ const testCommitTx = () => {
 
 // testGetAttribut()
 
-testDDOTx();
+// testDDOTx();
 
 // testVerifyOntidClaim()
 

@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+import { createCipheriv, createDecipheriv } from 'browserify-aes';
 import * as Bs58check from 'bs58check';
 import * as CryptoJS from 'crypto-js';
 import * as Scrypt from 'js-scrypt';
@@ -293,4 +294,61 @@ export function checkEcbDecrypted(encryptedKey: string, decryptedKey: string, pu
         console.log('keyphrase error.');
         throw ERROR_CODE.Decrypto_ERROR;
     }
+}
+
+export function encryptWithGcm(
+    privateKey: string,
+    address: string,
+    salt: string,
+    keyphrase: string,
+    scryptParams: ScryptParams = DEFAULT_SCRYPT
+) {
+    const derived = Scrypt.hashSync(
+        Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
+        Buffer.from(salt, 'hex'),
+        scryptParams
+    );
+
+    const derived1 = derived.slice(0, 12);
+    const derived2 = derived.slice(32);
+    const key = derived2;
+    const iv = derived1;
+    const aad = new Buffer(address, 'hex');
+    const cipher = createCipheriv('aes-256-gcm', key, iv);
+    cipher.setAAD(aad);
+    let ciphertext = cipher.update(privateKey, 'utf8', 'hex');
+    ciphertext += cipher.final('hex');
+    const authTag = cipher.getAuthTag().toString('hex');
+    return {
+        ciphertext,
+        authTag
+    };
+}
+
+export function decryptWithGcm(
+    ciphertext: string,
+    authTag: string,
+    address: string,
+    salt: string,
+    keyphrase: string,
+    scryptParams: ScryptParams = DEFAULT_SCRYPT
+) {
+    const derived = Scrypt.hashSync(
+        Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
+        Buffer.from(salt, 'hex'),
+        scryptParams
+    );
+
+    const derived1 = derived.slice(0, 12);
+    const derived2 = derived.slice(32);
+    const key = derived2;
+    const iv = derived1;
+    const aad = new Buffer(address, 'hex');
+    const auth = new Buffer(authTag, 'hex');
+    const decipher = createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAAD(aad);
+    decipher.setAuthTag(auth);
+    let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
 }

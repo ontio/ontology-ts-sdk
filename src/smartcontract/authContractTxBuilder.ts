@@ -18,20 +18,12 @@
 */
 
 import { Address } from '../crypto';
-import { ERROR_CODE } from '../error';
 import { makeInvokeTransaction } from '../transaction/transactionBuilder';
-import { hex2VarBytes, num2hexstring, num2VarInt, str2hexstr, str2VarBytes } from '../utils';
+import { hex2VarBytes, num2hexstring, num2VarInt, str2hexstr, str2VarBytes, varifyPositiveInt } from '../utils';
 import { Transaction } from './../transaction/transaction';
 import { VmType } from './../transaction/vmcode';
 
 export const AUTH_CONTRACT = 'ff00000000000000000000000000000000000006';
-
-function varifyPositiveInt(v: number) {
-    if (!/^[1-9]\d*$/.test(v.toString())) {
-        throw ERROR_CODE.INVALID_PARAMS;
-    }
-    return;
-}
 
 export function makeInitContractAdminTx(
     adminOntId: string,

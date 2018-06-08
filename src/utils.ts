@@ -20,6 +20,7 @@ import * as bip39 from 'bip39';
 import * as cryptoJS from 'crypto-js';
 import * as secureRandom from 'secure-random';
 import { WEBVIEW_SCHEME } from './consts';
+import { ERROR_CODE } from './error';
 
 export function hexstring2ab(str: string): number[] {
     const result = [];
@@ -265,6 +266,14 @@ export class StringReader {
     readUint32() {
         return parseInt(reverseHex(this.read(4)), 16);
     }
+
+    readInt() {
+        return parseInt(reverseHex(this.read(4)), 16);
+    }
+
+    readLong() {
+        return parseInt(reverseHex(this.read(8)), 16);
+    }
 }
 
 export class EventEmitter {
@@ -371,4 +380,11 @@ export function generateMnemonic(size: number = 16): string {
 
 export function parseMnemonic(str: string) {
     return bip39.mnemonicToEntropy(str);
+}
+
+export function varifyPositiveInt(v: number) {
+    if (!/^[1-9]\d*$/.test(v.toString())) {
+        throw ERROR_CODE.INVALID_PARAMS;
+    }
+    return;
 }

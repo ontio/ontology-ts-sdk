@@ -98,6 +98,10 @@ const testGetBalance = (address, addressName) => {
 // 1202023cd636327150065fb4d3b354bd48ace5e402904f6f28f39f2fe22cd642986d9c
 // c62bbce37fc96c90e2eea6de474b0031e560ef3630d2f6efe275f16f85ed1543
 
+const userPri = new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67317f');
+const userPk = userPri.getPublicKey();
+const userAddr = Address.fromPubKey(userPk);
+
 const testGetUnclaimedOng = (address) => {
     const restClient = new RestClient();
     restClient.getAllowance('ong', new Address(ONT_CONTRACT), address).then( (res) => {
@@ -114,8 +118,8 @@ const testQueryAllowance = (from, to) => {
 };
 
 const testClaimOng = () => {
-    const pri = accountFrom.privateKey;
-    const hexAddress = accountFrom.hexAddress;
+    const pri = userPri;
+    const hexAddress = userAddr;
     console.log(hexAddress);
     const gasPrice = '0';
     const gasLimit = '30000';
@@ -127,7 +131,7 @@ const testClaimOng = () => {
     // let to = from
     // let to = accountFrom.hexAddress
     // tslint:disable-next-line:max-line-length
-    const tx = makeClaimOngTx(new Address(hexAddress), new Address(hexAddress), '10000', new Address(hexAddress), gasPrice, gasLimit);
+    const tx = makeClaimOngTx(hexAddress, hexAddress, '10000000', hexAddress, gasPrice, gasLimit);
     signTransaction(tx, pri);
     const restClient = new RestClient();
     restClient.sendRawTransaction(tx.serialize()).then( (res) => {
@@ -188,13 +192,15 @@ const testAccountTransfer = () => {
 };
 
 // testTransferTx();
-const add = new Address('01716379e393d1a540615e022ede47b97e0577c6').toBase58();
-// testGetBalance(accountFrom.address, '');
+// const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
+testGetBalance(userAddr.toBase58(), '');
 
-testClaimOng();
+// testClaimOng();
 
 // testTransferFromMany()
 
 // testTransferToMany()
 
-// testGetUnclaimedOng(new Address(accountFrom.hexAddress));
+// testGetUnclaimedOng(userAddr);
+
+// testQueryAllowance();

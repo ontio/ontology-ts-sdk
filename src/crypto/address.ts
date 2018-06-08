@@ -20,7 +20,7 @@ import * as cryptoJS from 'crypto-js';
 import { ADDR_VERSION } from '../consts';
 import { ERROR_CODE } from '../error';
 import { VmType } from '../transaction/vmcode';
-import { ab2hexstring, hash160, hex2VarBytes, hexstring2ab, num2hexstring, sha256 } from '../utils';
+import { ab2hexstring, hash160, hex2VarBytes, hexstring2ab, num2hexstring, sha256, StringReader } from '../utils';
 import { PublicKey } from './PublicKey';
 
 /**
@@ -36,6 +36,9 @@ import { PublicKey } from './PublicKey';
  * toBase58() or toHexString() according to requirements.
  */
 export class Address {
+    static deserialize(sr: StringReader): Address {
+        return new Address(sr.read(20));
+    }
     /**
      * Generates public key based address.
      *
