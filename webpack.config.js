@@ -11,11 +11,17 @@ let common = {
         test: /\.tsx?$/,
         use: ['babel-loader', 'ts-loader'],
         exclude: /node_modules/
+      },
+      {
+        test: /\.node$/,
+        use: 'node-loader'
       }
     ]
   },
   plugins: [
-    new CleanWebpackPlugin(['lib']),
+    new CleanWebpackPlugin(['lib'], {
+      exclude: ['test.html']
+    }),
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js']

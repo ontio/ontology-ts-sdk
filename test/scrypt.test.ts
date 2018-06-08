@@ -147,4 +147,18 @@ describe('test scrypt', () => {
         scrypt.checkEcbDecrypted(enc, dec, decPub.serializeHex());
     });
 
+    test('test_gcm', () => {
+        const salt = ab2hexstring(core.generateRandomArray(16));
+        const pri = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07');
+        const pub = pri.getPublicKey();
+        const address = Address.fromPubKey(pub);
+
+        const enc = scrypt.encryptWithGcm(pri.key, address.toHexString(), salt, '123456');
+        console.log('enc: ' + JSON.stringify(enc));
+
+        const dec = scrypt.decryptWithGcm(enc.ciphertext, enc.authTag, address.toHexString(), salt,  '123456');
+        console.log('dec: ' + dec);
+        expect(dec).toEqual(pri.key);
+    });
+
 });
