@@ -19,12 +19,13 @@ import { Address  } from '../crypto';
 import AbiInfo from '../smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
 import abiJson from '../smartcontract/data/attestClaim';
-import { makeInvokeTransaction } from '../transaction/transactionBuilder';
-import { VmType } from '../transaction/vmcode';
+import { buildNativeContractParam, makeInvokeTransaction } from '../transaction/transactionBuilder';
 import { str2hexstr } from '../utils';
 import { Transaction } from './../transaction/transaction';
 
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
+const contractAddress = new Address(abiInfo.getHash());
+/* TODO : Test */
 
 /**
  * Attests the claim.
@@ -57,7 +58,8 @@ export function buildCommitRecordTx(claimId: string, issuer: string, subject: st
     f.setParamsValue(p1, p2);
 
     let tx = new Transaction();
-    tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gasPrice, gasLimit, payer);
+    const args = buildNativeContractParam(f.parameters);
+    tx = makeInvokeTransaction(f.name, args, contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -84,8 +86,8 @@ export function buildRevokeRecordTx(claimId: string, revokerOntid: string,
     const p1 = new Parameter(name1, type1, str2hexstr(claimId));
     const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, revokerOntid);
     f.setParamsValue(p1, p2);
-
-    return makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM, gasPrice, gasLimit, payer);
+    const args = buildNativeContractParam([p1, p2]);
+    return makeInvokeTransaction(f.name, args, contractAddress, gasPrice, gasLimit, payer);
 }
 
 /**
@@ -101,7 +103,7 @@ export function buildGetRecordStatusTx(claimId: string) {
 
     const p1 = new Parameter(name1, type1, str2hexstr(claimId));
     f.setParamsValue(p1);
-
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NEOVM);
+    const args = buildNativeContractParam([p1]);
+    const tx = makeInvokeTransaction(f.name, args, contractAddress);
     return tx;
 }

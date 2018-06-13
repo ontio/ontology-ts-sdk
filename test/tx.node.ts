@@ -40,6 +40,7 @@ import { ab2hexstring, hexstr2str, str2hexstr, StringReader } from '../src/utils
 import { Account } from './../src/account';
 import { buildCommitRecordTx, buildGetRecordStatusTx, buildRevokeRecordTx } from './../src/smartcontract/attestClaimTxBuilder';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
+import { State } from '../src/smartcontract/token';
 
 const gasPrice = '0';
 const gasLimit = '30000';
@@ -77,27 +78,16 @@ abiInfo = AbiInfo.parseJson(JSON.stringify(json2));
 privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
 const account = Account.create(privateKey, '123456', '');
 publicKey = privateKey.getPublicKey();
-pkId = '';
+ontid = 'did:ont:AUG62qrHboRc4oNn8SvJ31ha6BkwLPKvvG';
 
 const pri2 = new PrivateKey('cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406');
 const account2 = Account.create(pri2, '123456', '');
 const pub2 = pri2.getPublicKey();
-// let publicKey2 = privateKey.getPublicKey()
-
-// console.log('pk false: '+ publicKey)
-// console.log('pk true: ' + publicKey2)
-
-// privateKey = 'cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406'
-// ontid = '6469643a6f6e743a626f626162636465636465666768c'
-// ontid = Address.generateOntid(privateKey.getPublicKey())
-ontid = 'did:ont:TC7ZkUjbiN6yKaAT3hw5VzqLq18Xu8cZJW';
-pk2 = new PublicKey('035096277bd28ee25aad489a83ca91cfda1f59f2668f95869e3f7de0af0f07fc5c');
-
-// recovery = ab2hexstring(utils.generateRandomArray(20))
+const ontid2 = 'did:ont:ALnvzTMkbanffAKzQwxJ3EGoBqYuR6WqcG';
 
 const pri3 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
 const account3 = Account.create(pri3, '123456', '');
-console.log('pk3:' + pri3.getPublicKey().serializeHex())
+console.log('pk3:' + pri3.getPublicKey().serializeHex());
 
 const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
 const account4 = Account.create(pri4, '123456', '');
@@ -119,8 +109,8 @@ const recoveryAddress = Address.fromMultiPubKeys(2, [pri3.getPublicKey(), pri4.g
 // ontid = str2hexstr(identity.ontid)
 
 // tslint:disable:no-console
-ontid = Address.generateOntid(publicKey);
-console.log('ontid: ' + ontid);
+// ontid = Address.generateOntid(publicKey);
+// console.log('ontid: ' + ontid);
 
 // tslint:disable-next-line:no-shadowed-variable
 export const sendTx = (param, callback = null) => {
@@ -175,10 +165,10 @@ const callback = function(res, socket) {
 };
 
 const testDDOTx = () => {
-    console.log('account4 recovery: ' + account4.address.toHexString());
+    console.log('account4 recovery: ' + account4.address.serialize());
     // tslint:disable-next-line:no-shadowed-variable
     // const ontid = 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ';
-    const tx = buildGetDDOTx(ontid);
+    const tx = buildGetDDOTx('did:ont:AZhX7Ctcb9vrVpmvZ2CZVGEmeq4K9656DD');
     // tx.payer = account.address
 
     // let param = buildTxParam(tx, true)
@@ -279,9 +269,10 @@ const testAddAttribute = () => {
     attr.key = claimId;
     attr.type = type;
     attr.value = value;
-    const tx = buildAddAttributeTx(ontid, [attr], publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
-    signTransaction(tx, privateKey);
+    const did = ontid2;
+    const tx = buildAddAttributeTx(did, [attr], pub2, gasPrice, gasLimit);
+    tx.payer = account2.address;
+    signTransaction(tx, pri2);
 
     const param = buildTxParam(tx);
     console.log('param: ' + JSON.stringify(param));
@@ -333,8 +324,7 @@ const testGetAttribut = () => {
 } */
 
 const testGetPublicKeyState = () => {
-    const tx = buildGetPublicKeyStateTx(ontid, 3);
-    tx.payer = account.address;
+    const tx = buildGetPublicKeyStateTx(ontid, 1);
     const param = buildRestfulParam(tx);
     console.log('tx serialized: ' + tx.serialize());
     const url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true);
@@ -347,7 +337,8 @@ const testGetPublicKeyState = () => {
 };
 
 const testAddPK = () => {
-    const tx = buildAddControlKeyTx(ontid, pk2, publicKey, account.address, gasPrice, gasLimit);
+    const tx = buildAddControlKeyTx(ontid, pk2, publicKey, gasPrice, gasLimit);
+    tx.payer = account.address;
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
     console.log('add pk param: ' + param);
@@ -370,7 +361,8 @@ const testGetPublicKeys = () => {
 };
 
 const testRemovePK = () => {
-    const tx = buildRemoveControlKeyTx(ontid, pk2, publicKey, account.address, gasPrice, gasLimit);
+    const tx = buildRemoveControlKeyTx(ontid, pk2, publicKey, gasPrice, gasLimit);
+    tx.payer = account.address;
     signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
     console.log('remove pk param: ' + param);
@@ -405,7 +397,7 @@ const testAddmnRecovery = () => {
 const testChangemnRecovery = () => {
     const tx = buildChangeRecoveryTx(ontid, account4.address, recoveryAddress, gasPrice, gasLimit);
     tx.payer = recoveryAddress;
-    console.log('recoveryAddres: ' + recoveryAddress.toHexString());
+    console.log('recoveryAddres: ' + recoveryAddress.serialize());
     signTx(tx, [ [pri3, pri4] ]);
     const param = buildTxParam(tx);
     console.log('change recovery param: ' + param);
@@ -451,7 +443,7 @@ const testCommitTx = () => {
 
 // testGetAttribut()
 
-// testDDOTx();
+testDDOTx();
 
 // testVerifyOntidClaim()
 

@@ -78,7 +78,7 @@ const txSender = new TxSender(TEST_ONT_URL.SOCKET_URL);
 
 const testDeployCodeTx = (code, vmType = VmType.NEOVM) => {
 
-    const tx = makeDeployCodeTransaction(code, vmType, 'name', '1.0', 'alice', 'testmail', 'desc', true, '0', '30000');
+    const tx = makeDeployCodeTransaction(code, 'name', '1.0', 'alice', 'testmail', 'desc', true, '0', '30000');
     tx.payer = account.address;
     signTransaction(tx, privateKey);
 
@@ -119,7 +119,7 @@ const testDeployCodeTx = (code, vmType = VmType.NEOVM) => {
 };
 
 const getContract = (avmCode, vmType= VmType.NEOVM) => {
-    const codeHash = Address.fromContract(avmCode, vmType).toHexString();
+    const codeHash = Address.fromVmCode(avmCode).toHexString();
     console.log('codeHash: ' + codeHash);
     const url = `${TEST_ONT_URL.REST_URL}/api/v1/contract/${codeHash}`;
     console.log('url : ' + url);

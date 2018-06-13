@@ -28,33 +28,19 @@ import { TransactionAttribute } from './txAttribute';
 import { TxSignature } from './txSignature';
 
 export enum TxType  {
-    BookKeeping     = 0x00,
-    IssueAsset      = 0x01,
     BookKeeper      = 0x02,
     Claim           = 0x03,
-    PrivacyPayload  = 0x20,
-    RegisterAsset   = 0x40,
-    TransferAsset   = 0x80,
-    Record          = 0x81,
     Deploy          = 0xd0,
     Invoke          = 0xd1,
-    DataFile        = 0x12,
     Enrollment      = 0x04,
-Vote            = 0x05
+    Vote            = 0x05
 }
 
 export const TxName = {
-    BookKeeping: 'BookKeeping',
-    IssueAsset: 'IssueAsset',
     BookKeeper: 'BookKeeper',
     Claim: 'Claim',
-    PrivacyPayload: 'PrivacyPayload',
-    RegisterAsset: 'RegisterAsset',
-    TransferAsset: 'TransferAsset',
-    Record: 'Record',
     Deploy: 'Deploy',
     Invoke: 'Invoke',
-    DataFile: 'DataFile',
     Enrollment: 'Enrollment',
     Vote: 'Vote'
 };
@@ -77,7 +63,7 @@ export class Fee {
     serialize(): string {
         let result = '';
         result += this.amount.serialize();
-        result += this.payer.toHexString();
+        result += this.payer.serialize();
         return result;
     }
 }
@@ -174,7 +160,7 @@ export class Transaction {
         result += this.nonce;
         result += this.gasPrice.serialize();
         result += this.gasLimit.serialize();
-        result += this.payer.toHexString();
+        result += this.payer.serialize();
         result += this.payload.serialize();
 
         // serialize transaction attributes
@@ -186,7 +172,7 @@ export class Transaction {
         // result += num2hexstring(this.fee.length)
         // for (let i=0 ; i< this.fee.length; i++) {
         //     result += this.fee[i].amount.serialize()
-        //     result += this.fee[i].payer.toHexString()
+        //     result += this.fee[i].payer.serialize()
         // }
 
         // if(this.networkFee) {

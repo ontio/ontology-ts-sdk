@@ -16,7 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const ADDR_VERSION = '41';
+// export const ADDR_VERSION = '41';
+export const ADDR_VERSION = '17';
 
 export const DEFAULT_SCRYPT = {
     cost: 4096, // 除以2时间减半
@@ -42,10 +43,10 @@ export const DEFAULT_ALGORITHM = {
 
 export const DEFAULT_SM2_ID = '1234567812345678';
 
-export const TEST_NODE = 'polaris1.ont.io'; // 0.8
+export const TEST_NODE = 'polaris1.ont.io'; // 0.9
 // export const TEST_NODE = '139.219.129.26'; // 0.81
-// export const TEST_NODE = '192.168.50.73'
 // export const TEST_NODE = '192.168.50.74';
+// export const TEST_NODE = '127.0.0.1';
 
 // export const TEST_NODE = '54.222.182.88'
 export const MAIN_NODE = '54.222.182.88';
@@ -92,3 +93,5 @@ export const TOKEN_TYPE = {
 };
 
 export const DEFAULT_GAS_LIMIT = 30000;
+
+export const NATIVE_INVOKE_NAME = 'Ontology.Native.Invoke';

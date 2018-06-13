@@ -26,6 +26,8 @@ export class ControlData {
 
     id: string;
     encryptedKey: PrivateKey;
+    address: Address;
+    salt: string;
 
     constructor(id?: string, encryptedKey?: PrivateKey) {
         if (id !== undefined) {
@@ -40,7 +42,9 @@ export class ControlData {
     toJson(): object {
         return {
             id: this.id,
-            ...this.encryptedKey.serializeJson()
+            ...this.encryptedKey.serializeJson(),
+            address: this.address.toBase58(),
+            salt: this.salt
         };
     }
 }
@@ -50,12 +54,14 @@ export class Identity {
         label: string,
         encryptedPrivateKey: PrivateKey,
         password: string,
-        checksum: string | Address,
+        address: Address,
+        saltBase64: string,
         params?: ScryptParams
     ): Identity {
         // create identity
         const identity = new Identity();
-        const privateKey = encryptedPrivateKey.decrypt(password, checksum, params);
+        const salt = Buffer.from(saltBase64, 'base64').toString('hex');
+        const privateKey = encryptedPrivateKey.decrypt(password, address, saltBase64, params);
         if (!label) {
             label = ab2hexstring (generateRandomArray(4));
         }
@@ -72,49 +78,31 @@ export class Identity {
         // start from 1
         control.id = '1';
         control.encryptedKey = encryptedPrivateKey;
+        control.salt = salt;
+        control.address = Address.fromOntid(identity.ontid);
 
         identity.controls.push(control);
-
-        // check ontid on chain
-        /* return checkOntid(identity.ontid).then((res:any)=>{
-            let result
-            if(res == ERROR_CODE.SUCCESS) {
-                result = identity
-            } else {
-                result = null
-            }
-            return {
-                error : res,
-                result : result,
-                desc : ''
-            }
-        }, (error:any) => {
-            return {
-                error : ERROR_CODE.NETWORK_ERROR,
-                result : null,
-                desc : error
-            }
-        }) */
 
         return identity;
     }
 
-    static create(privateKey: PrivateKey, keyphrase: string, label: string) {
+    static create(privateKey: PrivateKey, keyphrase: string, label: string, params?: ScryptParams) {
         const identity = new Identity();
         identity.ontid = '';
         identity.label = label;
         identity.lock = false;
 
-        const encryptedPrivateKey = privateKey.encrypt(keyphrase);
-
-        // start from 1
-        const control = new ControlData('1', encryptedPrivateKey);
-        identity.controls.push(control);
-
         // ontid
         const publicKey = privateKey.getPublicKey();
         identity.ontid = Address.generateOntid(publicKey);
-
+        const address = Address.fromOntid(identity.ontid);
+        const salt = ab2hexstring(generateRandomArray(16));
+        const encryptedPrivateKey = privateKey.encrypt(keyphrase, address, salt, params);
+        // start from 1
+        const control = new ControlData('1', encryptedPrivateKey);
+        control.salt = Buffer.from(salt, 'hex').toString('base64');
+        control.address = address;
+        identity.controls.push(control);
         // TODO register ontid
         // 调用方处理register和监听结果
         return identity;

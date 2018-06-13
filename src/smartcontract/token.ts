@@ -15,9 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import Fixed64 from '../common/fixed64';
+import { BigNumber } from 'bignumber.js';
+import BigInt from '../common/bigInt';
 import { Address } from '../crypto/address';
-import { hex2VarBytes, hexstr2str, num2hexstring, num2VarInt, str2VarBytes, StringReader } from '../utils';
+import { hex2VarBytes, hexstr2str, num2hexstring, str2VarBytes, StringReader } from '../utils';
+import { ERROR_CODE } from './../error';
 
 export class Transfers {
     static deserialize(sr: StringReader) {
@@ -88,19 +90,14 @@ export class TokenTransfer {
 
 export class State {
     static deserialize(sr: StringReader) {
-        const s = new State();
         // const version = sr.read(1);
-        const from = sr.read(20);
-        const to   = sr.read(20);
+        const from = new Address(sr.readNextBytes());
+        const to   = new Address(sr.readNextBytes());
         // const value = (new BigNumber(sr.readNextBytes(), 16)).toString();
         // const value = sr.read(8);
-        const value = sr.readNextLen().toString();
+        const value = BigInt.fromHexstr(sr.readNextBytes()).value;
 
-        // s.version = version;
-        s.from = new Address(from);
-        s.to   = new Address(to);
-        s.value = new Fixed64(value);
-        return s;
+        return new State(from, to, value.toString());
     }
 
     // byte
@@ -108,19 +105,25 @@ export class State {
     // 20 bytes address
     from: Address;
     to: Address;
-    value: Fixed64;
+    value: string;
 
-    constructor() {
-        // this.version = '00'
+    constructor(from: Address, to: Address, value: string) {
+        const bi = new BigNumber(value);
+        if (!bi.isInteger() || bi.isNegative()) {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        this.from = from;
+        this.to = to;
+        this.value = value;
     }
 
     serialize() {
         let result = '';
         // result += this.version
-        result += this.from.toHexString();
-        result += this.to.toHexString();
-        // result += this.value.serialize();
-        result += num2VarInt(parseInt(this.value.value, 10));
+        result += hex2VarBytes(this.from.serialize());
+        result += hex2VarBytes(this.to.serialize());
+        const bi = new BigInt(this.value).toHexstr();
+        result += hex2VarBytes(bi);
         return result;
     }
 }
@@ -129,12 +132,10 @@ export class Contract {
     static deserialize(sr: StringReader) {
         const c = new Contract();
         const version = sr.read(1);
-        const code = sr.readNextBytes();
-        const address = sr.read(20);
+        const address = Address.deserialize(sr);
         const method = sr.readNextBytes();
         const args = sr.readNextBytes();
         c.version = version;
-        c.code = code;
         c.address = address;
         c.method = hexstr2str(method);
         c.args = args;
@@ -144,11 +145,8 @@ export class Contract {
     // byte
     version: string;
 
-    // TODO
-    code: string = '00';
-
     // 20 bytes
-    address: string;
+    address: Address;
 
     method: string;
 
@@ -163,10 +161,7 @@ export class Contract {
         let result = '';
         result += this.version;
 
-        // result += hex2VarBytes(this.code);
-        result += this.code;
-
-        result += this.address;
+        result += this.address.serialize();
 
         result += str2VarBytes(this.method);
 
@@ -179,12 +174,11 @@ export class Contract {
 export class TransferFrom {
     static deserialize(sr: StringReader): TransferFrom {
         // const version = sr.read(1);
-        const sender = new Address(sr.read(20));
-        const from = new Address(sr.read(20));
-        const to = new Address(sr.read(20));
-        // const value = (new BigNumber(sr.readNextBytes(), 16)).toString();
-        const value = sr.readNextLen().toString();
-        const tf = new TransferFrom(sender, from, to, value);
+        const sender = new Address(sr.readNextBytes());
+        const from = new Address(sr.readNextBytes());
+        const to = new Address(sr.readNextBytes());
+        const value = BigInt.fromHexstr(sr.readNextBytes()).value;
+        const tf = new TransferFrom(sender, from, to, value.toString());
         return tf;
     }
 
@@ -196,23 +190,27 @@ export class TransferFrom {
 
     to: Address;
 
-    value: Fixed64;
+    value: string;
 
     constructor(sender: Address, from: Address, to: Address, value: string) {
+        const bi = new BigNumber(value);
+        if (!bi.isInteger() || !bi.isNegative()) {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
         this.sender = sender;
         this.from = from;
         this.to = to;
-        this.value = new Fixed64(value);
+        this.value = value;
     }
 
     serialize(): string {
         let result = '';
         // result += this.version
-        result += this.sender.toHexString();
-        result += this.from.toHexString();
-        result += this.to.toHexString();
-        // result += this.value.serialize();
-        result += num2VarInt(parseInt(this.value.value, 10));
+        result += hex2VarBytes(this.sender.serialize());
+        result += hex2VarBytes(this.from.serialize());
+        result += hex2VarBytes(this.to.serialize());
+        const biHex = new BigInt(this.value).toHexstr();
+        result += hex2VarBytes(biHex);
         return result;
     }
 }

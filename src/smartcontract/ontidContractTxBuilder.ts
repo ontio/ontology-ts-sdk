@@ -16,16 +16,29 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { Address, PublicKey } from '../crypto';
-import AbiInfo from '../smartcontract/abi/abiInfo';
-import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
-import abiJson from '../smartcontract/data/idContract.abi';
 import { DDOAttribute } from '../transaction/ddo';
 import { Transaction } from '../transaction/transaction';
-import { makeInvokeTransaction } from '../transaction/transactionBuilder';
-import { VmType } from '../transaction/vmcode';
+import { makeNativeContractTx } from '../transaction/transactionBuilder';
 import { num2hexstring, str2hexstr } from '../utils';
+import { buildNativeCodeScript } from './abi/nativeParamsBuilder';
+import Struct from './abi/struct';
 
-const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
+export const ONTID_CONTRACT = '0000000000000000000000000000000000000003';
+
+const ONTID_METHOD  = {
+    regIDWithPublicKey: 'regIDWithPublicKey',
+    regIDWithAttributes: 'regIDWithAttributes',
+    addAttributes: 'addAttributes',
+    removeAttribute: 'removeAttribute',
+    getAttributes: 'getAttributes',
+    getDDO: 'getDDO',
+    addKey: 'addKey',
+    removeKey: 'removeKey',
+    getPublicKeys: 'getPublicKeys',
+    addRecovery: 'addRecovery',
+    changeRecovery: 'changeRecovery',
+    getKeyState: 'getKeyState'
+};
 
 /**
  * Registers Identity.
@@ -39,33 +52,34 @@ const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
  */
 export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
                                      gasPrice: string, gasLimit: string): Transaction {
-    const f = abiInfo.getFunction('regIDWithPublicKey');
+    const method = ONTID_METHOD.regIDWithPublicKey;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
+    // // tslint:disable-next-line:no-console
+    // console.log('Register ', ontid);
 
-    // tslint:disable-next-line:no-console
-    console.log('Register ', ontid);
+    // const name1 = f.parameters[0].getName();
+    // const type1 = ParameterType.ByteArray;
 
-    const name1 = f.parameters[0].getName();
-    const type1 = ParameterType.ByteArray;
+    // const name2 = f.parameters[1].getName();
+    // const type2 = ParameterType.ByteArray;
 
-    const name2 = f.parameters[1].getName();
-    const type2 = ParameterType.ByteArray;
+    // const p1 = new Parameter(name1, type1, ontid);
+    // const p2 = new Parameter(name2, type2, publicKey.serializeHex());
+    // f.setParamsValue(p1, p2);
 
-    const p1 = new Parameter(name1, type1, ontid);
-    const p2 = new Parameter(name2, type2, publicKey.serializeHex());
-    f.setParamsValue(p1, p2);
+    const struct = Struct.add(ontid, publicKey.serializeHex());
+    const list = [struct];
+    const params = buildNativeCodeScript(list);
 
-    const tx = makeInvokeTransaction(
-        f.name,
-        f.parameters,
-        abiInfo.hash,
-        VmType.NativeVM,
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit,
-        Address.fromPubKey(publicKey)
+        gasLimit
     );
 
     return tx;
@@ -87,30 +101,35 @@ export function buildRegIdWithAttributes(
     gasPrice: string,
     gasLimit: string
 ) {
-    const f = abiInfo.getFunction('regIDWithAttributes');
-
+    const method = ONTID_METHOD.regIDWithAttributes;
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    let attrs = '';
+    // let attrs = '';
+    // for (const a of attributes) {
+    //     attrs += a.serialize();
+    // }
+
+    // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
+    // const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, publicKey.serializeHex());
+    // const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, attrs);
+    // f.setParamsValue(p1, p2, p3);
+    const attrLen = attributes.length;
+    const struct = Struct.add(ontid, publicKey.serializeHex(), attrLen);
     for (const a of attributes) {
-        attrs += a.serialize();
+        const key = str2hexstr(a.key);
+        const type = str2hexstr(a.type);
+        const value = str2hexstr(a.value);
+        struct.list.push(key, type, value);
     }
-
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, publicKey.serializeHex());
-    const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, attrs);
-    f.setParamsValue(p1, p2, p3);
-
-    const tx = makeInvokeTransaction(
-        f.name,
-        f.parameters,
-        abiInfo.getHash(),
-        VmType.NativeVM,
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit,
-        Address.fromPubKey(publicKey)
+        gasLimit
     );
 
     return tx;
@@ -127,30 +146,33 @@ export function buildRegIdWithAttributes(
  */
 export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], publicKey: PublicKey,
                                     gasPrice: string, gasLimit: string) {
-    const f = abiInfo.getFunction('addAttributes');
+    const method = ONTID_METHOD.addAttributes;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    let attrs = '';
+    // let attrs = '';
+    // for (const a of attributes) {
+    //     attrs += a.serialize();
+    // }
+
+    const struct = Struct.add(ontid, attributes.length);
     for (const a of attributes) {
-        attrs += a.serialize();
+        const key = str2hexstr(a.key);
+        const type = str2hexstr(a.type);
+        const value = str2hexstr(a.value);
+        struct.list.push(key, type, value);
     }
+    struct.list.push(publicKey.serializeHex());
+    const params = buildNativeCodeScript([struct]);
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, attrs);
-    const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex());
-    f.setParamsValue(p1, p2, p3);
-
-    const tx = makeInvokeTransaction(
-        f.name,
-        f.parameters,
-        abiInfo.getHash(),
-        VmType.NativeVM,
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit,
-        Address.fromPubKey(publicKey)
+        gasLimit
     );
     return tx;
 }
@@ -167,25 +189,25 @@ export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], p
  */
 export function buildRemoveAttributeTx(ontid: string, key: string, publicKey: PublicKey,
                                        gasPrice: string, gasLimit: string) {
-    const f = abiInfo.getFunction('removeAttribute');
+    const method = ONTID_METHOD.removeAttribute;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, key);
-    const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex());
-    f.setParamsValue(p1, p2, p3);
+    // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
+    // const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, key);
+    // const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex());
+    // f.setParamsValue(p1, p2, p3);
 
-    const tx = makeInvokeTransaction(
-        f.name,
-        f.parameters,
-        abiInfo.getHash(),
-        VmType.NativeVM,
+    const struct = Struct.add(ontid, str2hexstr(key), publicKey.serializeHex());
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit,
-        Address.fromPubKey(publicKey)
+        gasLimit
     );
     return tx;
 }
@@ -196,16 +218,18 @@ export function buildRemoveAttributeTx(ontid: string, key: string, publicKey: Pu
  * @param ontid User's ONT ID
  */
 export function buildGetAttributesTx(ontid: string) {
-    const f = abiInfo.getFunction('getAttributes');
+    const method = ONTID_METHOD.getAttributes;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    f.setParamsValue(p1);
+    // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
+    // f.setParamsValue(p1);
+    const struct = Struct.add(ontid);
+    const params = buildNativeCodeScript([struct]);
 
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM);
+    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
     return tx;
 }
 
@@ -215,16 +239,16 @@ export function buildGetAttributesTx(ontid: string) {
  * @param ontid User's ONT ID
  */
 export function buildGetDDOTx(ontid: string) {
-    const f = abiInfo.getFunction('getDDO');
-
+    const method = ONTID_METHOD.getDDO;
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    f.setParamsValue(p1);
-
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM);
+    // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
+    // f.setParamsValue(p1);
+    const struct = Struct.add(ontid);
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
     return tx;
 }
 /**
@@ -237,31 +261,30 @@ export function buildGetDDOTx(ontid: string) {
  * @param gasLimit Gas limit
  */
 export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  userKey: PublicKey | Address,
-                                     payer: Address, gasPrice: string, gasLimit: string) {
-    const f = abiInfo.getFunction('addKey');
+                                     gasPrice: string, gasLimit: string) {
+    const method = ONTID_METHOD.addKey;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, newPk.serializeHex());
+    const p1 = ontid;
+    const p2 = newPk.serializeHex();
     let p3;
     if (userKey instanceof PublicKey) {
-        p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, userKey.serializeHex());
+        p3 = userKey.serializeHex();
     } else if (userKey instanceof Address) {
-        p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, userKey.toHexString());
+        p3 = userKey.serialize();
     }
-    f.setParamsValue(p1, p2, p3);
 
-    const tx = makeInvokeTransaction(
-        f.name,
-        f.parameters,
-        abiInfo.getHash(),
-        VmType.NativeVM,
+    const struct = Struct.add(p1, p2, p3);
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit,
-        payer
+        gasLimit
     );
 
     return tx;
@@ -277,31 +300,31 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  userKey: 
  * @param gasLimit Gas limit
  */
 export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey, sender: PublicKey | Address,
-                                        payer: Address, gasPrice: string, gasLimit: string) {
-    const f = abiInfo.getFunction('removeKey');
+                                        gasPrice: string, gasLimit: string) {
+    const method = ONTID_METHOD.removeKey;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, pk2Remove.serializeHex());
+    const p1 = ontid;
+    const p2 = pk2Remove.serializeHex();
     let p3;
     if (sender instanceof PublicKey) {
-        p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender.serializeHex());
+        p3 = sender.serializeHex();
     } else if (sender instanceof Address) {
-        p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, sender.toHexString());
+        p3 = sender.serialize();
     }
-    f.setParamsValue(p1, p2, p3);
 
-    const tx = makeInvokeTransaction(
-        f.name,
-        f.parameters,
-        abiInfo.getHash(),
-        VmType.NativeVM,
+    const struct = Struct.add(p1, p2, p3);
+    const params = buildNativeCodeScript([struct]);
+
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit,
-        payer
+        gasLimit
     );
     return tx;
 }
@@ -312,16 +335,15 @@ export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey, sen
  * @param ontid User's ONT ID
  */
 export function buildGetPublicKeysTx(ontid: string) {
-    const f = abiInfo.getFunction('getPublicKeys');
+    const method = ONTID_METHOD.getPublicKeys;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
+    const struct = Struct.add(ontid);
+    const params = buildNativeCodeScript([struct]);
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    f.setParamsValue(p1);
-
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM);
+    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
     return tx;
 }
 
@@ -336,18 +358,18 @@ export function buildGetPublicKeysTx(ontid: string) {
  */
 export function buildAddRecoveryTx(ontid: string, recovery: Address,
                                    publicKey: PublicKey, gasPrice: string, gasLimit: string) {
-    const f = abiInfo.getFunction('addRecovery');
+    const method = ONTID_METHOD.addRecovery;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, recovery);
-    const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex());
-    f.setParamsValue(p1, p2, p3);
-
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM, gasPrice, gasLimit);
+    const p1 = ontid;
+    const p2 = recovery;
+    const p3 = publicKey.serializeHex();
+    const struct = Struct.add(p1, p2, p3);
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT), gasPrice, gasLimit);
     return tx;
 }
 
@@ -364,18 +386,19 @@ export function buildAddRecoveryTx(ontid: string, recovery: Address,
  */
 export function buildChangeRecoveryTx(ontid: string, newrecovery: Address,
                                       oldrecovery: Address, gasPrice: string, gasLimit: string) {
-    const f = abiInfo.getFunction('changeRecovery');
+    const method = ONTID_METHOD.changeRecovery;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, newrecovery);
-    const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, oldrecovery);
-    f.setParamsValue(p1, p2, p3);
+    const p1 = ontid;
+    const p2 = newrecovery;
+    const p3 = oldrecovery;
+    const struct = Struct.add(p1, p2, p3);
+    const params = buildNativeCodeScript([struct]);
 
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM,
+    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT),
     gasPrice, gasLimit, oldrecovery);
     return tx;
 }
@@ -387,7 +410,7 @@ export function buildChangeRecoveryTx(ontid: string, newrecovery: Address,
  * @param pkId User's public key Id
  */
 export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
-    const f = abiInfo.getFunction('getKeyState');
+    const method = ONTID_METHOD.getKeyState;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
@@ -401,10 +424,9 @@ export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
     // tslint:disable-next-line:no-console
     console.log('index: ' + index);
 
-    const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    const p2 = new Parameter(f.parameters[1].getName(), ParameterType.Int, index);
-    f.setParamsValue(p1, p2);
+    const struct = Struct.add(ontid, pkId);
+    const params = buildNativeCodeScript([struct]);
 
-    const tx = makeInvokeTransaction(f.name, f.parameters, abiInfo.getHash(), VmType.NativeVM);
+    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
     return tx;
 }

@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { StringReader } from '../../utils';
-import { VmCode } from '../vmcode';
+import { hex2VarBytes, StringReader } from '../../utils';
 import Payload from './payload';
 
 export default class InvokeCode extends Payload {
@@ -28,7 +27,8 @@ export default class InvokeCode extends Payload {
      */
 
     // gasLimit : Fixed64
-    code: VmCode;
+    // code: VmCode;
+    code: string;
 
     constructor() {
         super();
@@ -94,7 +94,8 @@ export default class InvokeCode extends Payload {
         // if(this.gasLimit) {
         //     result += this.gasLimit.serialize()
         // }
-        result += this.code.serialize();
+        // result += this.code.serialize();
+        result += hex2VarBytes(this.code);
         return result;
     }
 
@@ -133,7 +134,8 @@ export default class InvokeCode extends Payload {
 
     deserialize(sr: StringReader) {
         // let gasLimit = Fixed64.deserialize(sr);
-        const code = VmCode.deserialize(sr);
+        // const code = VmCode.deserialize(sr);
+        const code = sr.readNextBytes();
         // this.gasLimit = gasLimit;
         this.code = code;
         return this;

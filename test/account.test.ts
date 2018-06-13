@@ -41,7 +41,7 @@ describe('test account', () => {
         // tslint:disable:no-console
         console.log('address: ' + account.address.toBase58());
         console.log('privateKey: ' + privateKey);
-        console.log('addressU160: ' + account.address.toHexString());
+        console.log('addressU160: ' + account.address.serialize());
 
         const pub = '120202d3d048aca7bdee582a611d0b8acc45642950dc6167aee63abbdcd1a5781c6319';
         console.log('Address: ' + Address.fromPubKey(new PublicKey(pub)).toBase58());

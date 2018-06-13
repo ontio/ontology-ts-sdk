@@ -17,6 +17,7 @@
  */
 import * as bip39 from 'bip39';
 import * as CryptoJS from 'crypto-js';
+import * as secureRandom from 'secure-random';
 import { Account } from '../src/account';
 import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src/crypto';
 import { ERROR_CODE } from '../src/error';
@@ -25,8 +26,9 @@ import * as scrypt from '../src/scrypt';
 import { ab2hexstring, str2hexstr } from '../src/utils';
 import { PublicKey } from './../src/crypto/PublicKey';
 
+
 describe('test scrypt', () => {
-    it('test encrypt and decrypt', () => {
+    test('test_encryptCtr', () => {
         // const privateKey = PrivateKey.random();
         const privateKey = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07');
         const publicKey = privateKey.getPublicKey().serializeHex();
@@ -104,16 +106,17 @@ describe('test scrypt', () => {
         // expect(decMneStr).toEqual(mnemonic);
 
         // console.log(bip39.entropyToMnemonic('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07'))
+        const salt = ab2hexstring(secureRandom(16));
         const mnemonic = 'doll remember harbor resource desert curious fatigue nature arrest fix nation rhythm';
         const mnemonicHex = utils.str2hexstr(mnemonic);
         // generate privateKey
         const password = '123456';
         const privateKey = PrivateKey.generateFromMnemonic(mnemonic);
-        const account = Account.create(privateKey, password, '');
-        const encMne = scrypt.encrypt(
-            mnemonicHex, account.publicKey, password);
-        const decMneHex = scrypt.decrypt(encMne, '123456', account.address);
-        console.log('address: ' + account.address.toBase58());
+        const pub = privateKey.getPublicKey();
+        const address = Address.fromPubKey(pub);
+        const encMne = scrypt.encryptWithGcm(
+            mnemonicHex, address, salt, password);
+        const decMneHex = scrypt.decryptWithGcm(encMne, address, salt, '123456');
         console.log('privateKey: ' + privateKey.key);
         console.log('encMne: ' + encMne);
 
@@ -148,17 +151,34 @@ describe('test scrypt', () => {
     });
 
     test('test_gcm', () => {
-        const salt = ab2hexstring(core.generateRandomArray(16));
-        const pri = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07');
-        const pub = pri.getPublicKey();
-        const address = Address.fromPubKey(pub);
+        // const salt = ab2hexstring(secureRandom(16));
+        // const pri = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07');
+        // const pub = pri.getPublicKey();
+        // const address = Address.fromPubKey(pub);
 
-        const enc = scrypt.encryptWithGcm(pri.key, address.toHexString(), salt, '123456');
-        console.log('enc: ' + JSON.stringify(enc));
+        // const enc = scrypt.encryptWithGcm(pri.key, address, salt, '123456');
+        // console.log('enc: ' + JSON.stringify(enc));
 
-        const dec = scrypt.decryptWithGcm(enc.ciphertext, enc.authTag, address.toHexString(), salt,  '123456');
-        console.log('dec: ' + dec);
-        expect(dec).toEqual(pri.key);
+        // const dec = scrypt.decryptWithGcm(enc, address, salt,  '123456');
+        // console.log('dec: ' + dec);
+        // expect(dec).toEqual(pri.key);
+        const params = {
+            cost: 16384,
+            blockSize: 8,
+            parallel: 8,
+            size: 64
+        };
+        const saltBase64 = '+AX/Aa8VXp0h74PZySZ9RA==';
+        const salt = Buffer.from(saltBase64, 'base64').toString('hex');
+        console.log('salt: ' + salt);
+        const address = new Address('APrfMuKrAQB5sSb5GF8tx96ickZQJjCvwG');
+        const key = '+TDw5opWl5HfGEWUpxblVa5BqVKF2962DoCwi1GYidwWMKvOj7mqaUVx3k/utGLx';
+        const dec = scrypt.decryptWithGcm(key, address, salt, '1', params);
+        console.log('hex ' + salt);
+        console.log('dec ' + dec);
+
+
+
     });
 
 });

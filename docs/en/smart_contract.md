@@ -69,7 +69,7 @@ axios.post(url, param).then((res:any)=> {
 
 //query the contract from blockchain.
 const getContract = (avmCode, vmType=VmType.NEOVM) => {
-    const codeHash = Address.fromContract(avmCode,vmType).toHexString()
+    const codeHash = Address.fromVmCode(avmCode,vmType).serialize()
     let url = `${TEST_ONT_URL.REST_URL}/api/v1/contract/${codeHash}`
     console.log('url : '+ url)
     axios.get(url).then((res)=>{

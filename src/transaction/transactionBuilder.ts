@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+import BigInt from '../common/bigInt';
 import Fixed64 from '../common/fixed64';
-import { REST_API } from '../consts';
+import { NATIVE_INVOKE_NAME, REST_API } from '../consts';
 import { Address, PrivateKey, SignatureScheme } from '../crypto';
 import { Parameter,  ParameterType } from '../smartcontract/abi/parameter';
 import { Contract } from '../smartcontract/token';
@@ -24,8 +25,6 @@ import {
     hex2VarBytes,
     hexstr2str,
     num2hexstring,
-    num2VarInt,
-    reverseHex,
     str2hexstr
 } from '../utils';
 import opcode from './opcode';
@@ -33,7 +32,6 @@ import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { Transaction, TxType } from './transaction';
 import { TxSignature } from './txSignature';
-import { VmCode, VmType } from './vmcode';
 
 // const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
@@ -106,9 +104,9 @@ export const signTx = (tx: Transaction, privateKeys2D: PrivateKey[][], schemas2D
 export const pushBool = (param: boolean) => {
     let result = '';
     if (param) {
-        result += opcode.PUSHT;
+        result += num2hexstring(opcode.PUSHT);
     } else {
-        result += opcode.PUSHF;
+        result += num2hexstring(opcode.PUSHF);
     }
     return result;
 };
@@ -116,14 +114,15 @@ export const pushBool = (param: boolean) => {
 export const pushInt = (param: number) => {
     let result = '';
     if (param === -1) {
-        result += opcode.PUSHM1;
+        result += num2hexstring(opcode.PUSHM1);
     } else if (param === 0) {
-        result += opcode.PUSH0;
+        result += num2hexstring(opcode.PUSH0);
     } else if (param > 0 && param < 16) {
         const num = opcode.PUSH1 - 1 + param;
         result += num2hexstring(num);
     } else {
-        result += num2VarInt(param);
+        const biHex = new BigInt(param.toString()).toHexstr();
+        result = pushHexString(biHex);
     }
 
     return result;
@@ -252,14 +251,21 @@ export const buildWasmContractParam = (params: Parameter[]) => {
 export const buildNativeContractParam = (params: Parameter[]) => {
     let result = '';
 
-    for ( const p of params) {
+    for (let i = params.length - 1; i >= 0; i--) {
+        const p = params[i];
         const type = p.getType();
         switch (type) {
         case ParameterType.ByteArray:
-            result += hex2VarBytes(p.value);
+            result += pushHexString(p.value);
             break;
         case ParameterType.Int:
-            result += p.value;
+            result += pushInt(p.value);
+            break;
+        case ParameterType.Long:
+            result += pushInt(p.value);
+            break;
+        case ParameterType.Boolean:
+            result += pushBool(p.value);
         default:
             break;
         }
@@ -268,103 +274,60 @@ export const buildNativeContractParam = (params: Parameter[]) => {
     return result;
 };
 
-export const makeInvokeCode = (
+export function makeNativeContractTx(
     funcName: string,
-    params: Parameter[] | string,
-    codeHash: string,
-    vmType: VmType = VmType.NEOVM
-) => {
-    const invokeCode = new InvokeCode();
-    const vmCode = new VmCode();
-    const funcNameHex = str2hexstr(funcName);
-
-    if (vmType === VmType.NEOVM) {
-        let args = '';
-        if (typeof(params) === 'string') {
-            args = params;
-        } else {
-            args = buildSmartContractParam(funcNameHex, params);
-        }
-        const contract = new Contract();
-        contract.address = codeHash;
-        contract.args = args;
-        contract.method = '';
-        let code = contract.serialize();
-        code = num2hexstring(opcode.APPCALL) + code;
-
-        vmCode.code = code;
-        vmCode.vmType = vmType;
-
-    } else if (vmType === VmType.WASMVM) {
-        let args = '';
-        if (typeof (params) === 'string') {
-            args = params;
-        } else {
-            args = buildWasmContractParam(params);
-        }
-        const contract = new Contract();
-        contract.version = '01';
-        contract.address = codeHash;
-        contract.method = funcName;
-        contract.args = args;
-        const code = contract.serialize();
-
-        vmCode.code = code;
-        vmCode.vmType = vmType;
-
-    } else if (vmType === VmType.NativeVM) {
-        let args = '';
-        if (typeof (params) === 'string') {
-            args = params;
-        } else {
-            args = buildNativeContractParam(params);
-        }
-        const contract = new Contract();
-        contract.address = codeHash;
-        contract.args = args;
-        contract.method = funcName;
-        const code = contract.serialize();
-        vmCode.code = code;
-        vmCode.vmType = vmType;
+    params: string,
+    contractAddr: Address,
+    gasPrice?: string,
+    gasLimit?: string,
+    payer?: Address
+) {
+    let code = '';
+    code += params;
+    code += pushHexString(str2hexstr(funcName));
+    code += pushHexString(contractAddr.serialize());
+    code += pushInt(0);
+    code += num2hexstring(opcode.SYSCALL);
+    code += pushHexString(str2hexstr(NATIVE_INVOKE_NAME));
+    const payload = new InvokeCode();
+    payload.code = code;
+    const tx = new Transaction();
+    tx.type = TxType.Invoke;
+    tx.payload = payload;
+    if (gasLimit) {
+        tx.gasLimit = new Fixed64(gasLimit);
     }
-
-    invokeCode.code = vmCode;
-    return invokeCode;
-};
+    if (gasPrice) {
+        tx.gasPrice = new Fixed64(gasPrice);
+    }
+    if (payer) {
+        tx.payer = payer;
+    }
+    return tx;
+}
 
 export const makeInvokeTransaction = (
     funcName: string,
-    parameters: Parameter[] | string,
-    scriptHash: string,
-    vmType: VmType = VmType.NEOVM,
+    args: string,
+    contractAddr: Address,
     gasPrice?: string,
     gasLimit?: string,
     payer?: Address
 ) => {
     const tx = new Transaction();
     tx.type = TxType.Invoke;
-    tx.version = 0x00;
 
-    // let scriptHash = abiInfo.getHash()
-    if (scriptHash.substr(0, 2) === '0x') {
-        scriptHash = scriptHash.substring(2);
-        scriptHash = reverseHex(scriptHash);
-    }
+    const contract = new Contract();
+    contract.address = contractAddr;
+    contract.args = args;
+    contract.method = funcName;
+    let code = contract.serialize();
+    code = num2hexstring(opcode.APPCALL) + code;
 
-    // tslint:disable-next-line:no-console
-    console.log('codehash: ' + scriptHash);
-
-    const payload = makeInvokeCode(funcName, parameters, scriptHash, vmType);
-
+    const payload = new InvokeCode();
+    payload.code = code;
     tx.payload = payload;
 
-    // gas
-    // if (DEFAULT_GAS_LIMIT === Number(0)) {
-    //     tx.gasPrice = new Fixed64();
-    // } else {
-    //     const price = new BigNumber(gas).multipliedBy(1e9).dividedBy(new BigNumber(DEFAULT_GAS_LIMIT)).toString();
-    //     tx.gasPrice = new Fixed64(price);
-    // }
     if (gasLimit) {
         tx.gasLimit = new Fixed64(gasLimit);
     }
@@ -379,7 +342,6 @@ export const makeInvokeTransaction = (
 
 export function makeDeployCodeTransaction(
     code: string,
-    vmType: VmType = VmType.NEOVM,
     name: string= '',
     codeVersion: string= '1.0',
     author: string= '',
@@ -387,10 +349,11 @@ export function makeDeployCodeTransaction(
     desp: string= '', needStorage: boolean= true, gasPrice: string, gasLimit: string, payer?: Address) {
     const dc = new DeployCode();
     dc.author = author;
-    const vmCode = new VmCode();
-    vmCode.code = code;
-    vmCode.vmType = vmType;
-    dc.code = vmCode;
+    // const vmCode = new VmCode();
+    // vmCode.code = code;
+    // vmCode.vmType = vmType;
+    // dc.code = vmCode;
+    dc.code = code;
     dc.version = codeVersion;
     dc.description = desp;
     dc.email = email;

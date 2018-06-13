@@ -68,7 +68,7 @@ axios.post(url, param).then((res:any)=> {
 
 //从链上查询合约
 const getContract = (avmCode, vmType=VmType.NEOVM) => {
-    const codeHash = Address.fromContract(avmCode,vmType).toHexString()
+    const codeHash = Address.fromVmCode(avmCode,vmType).serialize()
     let url = `${TEST_ONT_URL.REST_URL}/api/v1/contract/${codeHash}`
     console.log('url : '+ url)
     axios.get(url).then((res)=>{

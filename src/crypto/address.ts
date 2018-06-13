@@ -19,8 +19,9 @@ import * as base58 from 'bs58';
 import * as cryptoJS from 'crypto-js';
 import { ADDR_VERSION } from '../consts';
 import { ERROR_CODE } from '../error';
-import { VmType } from '../transaction/vmcode';
+import { programFromPubKey } from '../transaction/program';
 import { ab2hexstring, hash160, hex2VarBytes, hexstring2ab, num2hexstring, sha256, StringReader } from '../utils';
+import { reverseHex } from './../utils';
 import { PublicKey } from './PublicKey';
 
 /**
@@ -33,7 +34,7 @@ import { PublicKey } from './PublicKey';
  * 4. ONT ID based
  *
  * The value is stored as base58 or hex encoded, therefore always use
- * toBase58() or toHexString() according to requirements.
+ * toBase58() or serialize() according to requirements.
  */
 export class Address {
     static deserialize(sr: StringReader): Address {
@@ -45,8 +46,8 @@ export class Address {
      * @param publicKey Public key to use
      */
     static fromPubKey(publicKey: PublicKey): Address {
-        let programHash = hash160(publicKey.serializeHex());
-        programHash = '01' + programHash.substring(2);
+        const program = programFromPubKey(publicKey);
+        const programHash = hash160(program);
         return new Address(programHash);
     }
 
@@ -62,12 +63,11 @@ export class Address {
     /**
      * Generates address from smart contract code.
      *
-     * @param avmCode Hex encoded smart contract code
-     * @param vmType Type of VM
+     * @param vmCode Hex encoded smart contract code
      */
-    static fromContract(avmCode: string, vmType: VmType = VmType.NEOVM): Address {
-        let programHash = hash160(avmCode);
-        programHash = num2hexstring(vmType) + programHash.substring(2);
+    static fromVmCode(vmCode: string): Address {
+        const programHash = hash160(vmCode);
+        // programHash = num2hexstring(vmType) + programHash.substring(2);
         return new Address(programHash);
     }
 
@@ -139,6 +139,16 @@ export class Address {
      * Gets Hex encoded representation of the address.
      */
     toHexString() {
+        let val;
+        if (this.value.length === 40) {
+            val = this.value;
+        } else {
+            val = base58ToHex(this.value);
+        }
+        return reverseHex(val);
+    }
+
+    serialize() {
         if (this.value.length === 40) {
             return this.value;
         } else {
