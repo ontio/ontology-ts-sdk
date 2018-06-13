@@ -402,6 +402,10 @@ export function varifyPositiveInt(v: number) {
     return;
 }
 
+/**
+ * For test, may remove in the futrue.
+ * @param publicKey
+ */
 export function getEncodedPublicKey(publicKey: string) {
     const publicKeyArray = hexstring2ab(publicKey);
     if (publicKeyArray[64] % 2 === 1) {
@@ -411,6 +415,10 @@ export function getEncodedPublicKey(publicKey: string) {
     }
 }
 
+/**
+ * For test, may remove in the futrue.
+ * @param publicKey
+ */
 export function getUnencodedPublicKey(publicKey: string) {
     const keyPair = curve.keyFromPublic(publicKey, 'hex');
     return keyPair.getPublic().encode('hex');

@@ -70,11 +70,11 @@ describe('test EeventEmitter', () => {
         // tslint:disable-next-line:max-line-length
         const pkUnencoded = '0495799b976fb31e4620732592c542446d95a3f0c632bebf2506acff99f4c73f641cfb4c6e415da69f07afd529e14f6b90a274e66172b5b53069b8cc5aaacbd61d';
         const pk1 = getUnencodedPublicKey(pkUnencoded);
-        const addr1 = Address.fromPubKey(new PublicKey(pk1)).toBase58();
-        console.log('addr1 ' + addr1);
-
+        
         console.log('pk1: ' + pk1);
         const pk2 = getEncodedPublicKey(pkUnencoded);
         console.log('pk2: ' + pk2);
+        const addr1 = Address.fromPubKey(new PublicKey(pk2)).toBase58();
+        console.log('addr1 ' + addr1);
     })
 });

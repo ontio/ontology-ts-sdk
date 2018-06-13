@@ -19,10 +19,12 @@ import * as base58 from 'bs58';
 import * as cryptoJS from 'crypto-js';
 import { ADDR_VERSION } from '../consts';
 import { ERROR_CODE } from '../error';
-import { programFromPubKey } from '../transaction/program';
+import { programFromPubKey, pushNum } from '../transaction/program';
 import { ab2hexstring, hash160, hex2VarBytes, hexstring2ab, num2hexstring, sha256, StringReader } from '../utils';
 import { reverseHex } from './../utils';
 import { PublicKey } from './PublicKey';
+import { pushHexString } from '../transaction/transactionBuilder';
+import opcode from '../transaction/opcode';
 
 /**
  * Representation of Address.
@@ -47,6 +49,7 @@ export class Address {
      */
     static fromPubKey(publicKey: PublicKey): Address {
         const program = programFromPubKey(publicKey);
+        // const program = publicKey.key + num2hexstring(opcode.CHECKSIG);
         const programHash = hash160(program);
         return new Address(programHash);
     }
@@ -90,14 +93,13 @@ export class Address {
         const pkHexStrs = publicKeys.map((p) => p.serializeHex());
         pkHexStrs.sort();
         let result = '';
-        result += num2hexstring(n);
-        result += num2hexstring(m);
+        result += pushNum(m);
         for (const s of pkHexStrs) {
-            result += hex2VarBytes(s);
+            result += pushHexString(s);
         }
-        let programHash = hash160(result);
-
-        programHash = '02' + programHash.substr(2);
+        result += pushNum(n);
+        result += num2hexstring(opcode.CHECKMULTISIG);
+        const programHash = hash160(result);
         return new Address(programHash);
     }
 

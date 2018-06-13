@@ -81,6 +81,7 @@ const  testTransferTx = () => {
     const tx = makeTransferTx('ONT', accountFrom.address,
         new Address('AWc6N2Yawk12Jt14F7sjGGos4nFc8UztVe'), 10000, gasPrice, gasLimit);
     signTransaction(tx, accountFrom.privateKey);
+    console.log('sigs: ' + JSON.stringify(tx.sigs));
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress,
     // '01716379e393d1a540615e022ede47b97e0577c6', value,
     // accountFrom.privateKey)
@@ -226,7 +227,7 @@ const testQueryBalance = (asset, address:Address) => {
 };
 
 
-// testTransferTx();
+testTransferTx();
 
 // const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
 // testGetBalance('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL', '');
@@ -242,6 +243,6 @@ const from = new Address('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL');
 
 // testQueryAllowance(from, from);
 const address = new Address('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL');
-testQueryBalance('ong', address);
+// testQueryBalance('ong', address);
 
 // console.log('add: ' + new Address('TAsW5tthjNBX4FG6ifGMTAswCBdB2YWGaG').serialize());

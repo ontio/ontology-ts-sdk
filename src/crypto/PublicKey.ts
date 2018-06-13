@@ -69,9 +69,17 @@ export class PublicKey extends Key {
      */
     serializeHex(): string {
         let result = '';
-        result += num2hexstring(this.algorithm.hex);
-        result += num2hexstring(this.parameters.curve.hex);
-        result += this.key;
+        switch (this.algorithm) {
+        case KeyType.ECDSA:
+            result += this.key;
+            break;
+        case KeyType.EDDSA:
+        case KeyType.SM2:
+            result += num2hexstring(this.algorithm.hex);
+            result += num2hexstring(this.parameters.curve.hex);
+            result += this.key;
+            break;
+        }
         return result;
     }
 

@@ -87,10 +87,14 @@ const ontid2 = 'did:ont:ALnvzTMkbanffAKzQwxJ3EGoBqYuR6WqcG';
 
 const pri3 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
 const account3 = Account.create(pri3, '123456', '');
+const pub3 = pri3.getPublicKey();
+const ontid3 = Address.generateOntid(pub3);
 console.log('pk3:' + pri3.getPublicKey().serializeHex());
 
 const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
 const account4 = Account.create(pri4, '123456', '');
+const pub4 = pri4.getPublicKey();
+const ontid4 = Address.generateOntid(pub4);
 console.log('pk4:' + pri4.getPublicKey().serializeHex())
 
 
@@ -168,7 +172,7 @@ const testDDOTx = () => {
     console.log('account4 recovery: ' + account4.address.serialize());
     // tslint:disable-next-line:no-shadowed-variable
     // const ontid = 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ';
-    const tx = buildGetDDOTx('did:ont:AZhX7Ctcb9vrVpmvZ2CZVGEmeq4K9656DD');
+    const tx = buildGetDDOTx(ontid3);
     // tx.payer = account.address
 
     // let param = buildTxParam(tx, true)
@@ -209,9 +213,9 @@ const parseDDO = (result) => {
 const testRegisterOntid = () => {
     // tslint:disable-next-line:no-shadowed-variable
     const publicKey = privateKey.getPublicKey();
-    const tx = buildRegisterOntidTx(ontid, publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
-    signTransaction(tx, privateKey);
+    const tx = buildRegisterOntidTx(ontid3, pub3, gasPrice, gasLimit);
+    tx.payer = account3.address;
+    signTransaction(tx, pri3);
     const serialized = tx.serialize();
     console.log('tx serialized: ' + serialized);
 
