@@ -15,8 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { createCipheriv, createDecipheriv } from 'browserify-aes';
 import * as Bs58check from 'bs58check';
+import { createCipheriv, createDecipheriv } from 'crypto';
 import * as CryptoJS from 'crypto-js';
 import * as Scrypt from 'js-scrypt';
 import { DEFAULT_SCRYPT, OEP_FLAG, OEP_HEADER } from './consts';
@@ -358,6 +358,11 @@ export function decryptWithGcm(
     decipher.setAAD(aad);
     decipher.setAuthTag(authTag);
     let decrypted = decipher.update(ciphertext).toString('hex');
-    decrypted += decipher.final().toString('hex');
+
+    try {
+        decrypted += decipher.final().toString('hex');
+    } catch (err) {
+        throw ERROR_CODE.Decrypto_ERROR;
+    }
     return decrypted;
 }

@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as secureRandom from 'secure-random';
-import { Address, PrivateKey, SignatureScheme } from './crypto';
+import { Address, PrivateKey } from './crypto';
 import { ScryptParams } from './scrypt';
-import { ab2hexstring, generateRandomArray } from './utils';
+import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
 export class Account {
     static importAccount(
@@ -45,18 +44,26 @@ export class Account {
 
         const publicKey = privateKey.getPublicKey();
         account.publicKey = publicKey.key;
-        account.signatureScheme = privateKey.algorithm.defaultSchema.label;
 
         account.address = Address.fromPubKey(publicKey);
 
         return account;
     }
 
+    /**
+     * Creates Account object encrypting specified private key.
+     *
+     * The account does not need to be registered on blockchain.
+     *
+     * @param privateKey Private key associated with the identity
+     * @param password Password use to encrypt the private key
+     * @param label Custom label
+     * @param params Optional scrypt params
+     */
     static create(
         privateKey: PrivateKey,
         password: string,
         label?: string,
-        signatureScheme?: SignatureScheme,
         params?: ScryptParams
     ): Account {
         const account = new Account();
@@ -67,12 +74,7 @@ export class Account {
         account.lock = false;
         account.isDefault = false;
 
-        if (signatureScheme) {
-            account.signatureScheme = signatureScheme.label;
-        } else {
-            account.signatureScheme = privateKey.algorithm.defaultSchema.label;
-        }
-        const salt = ab2hexstring(secureRandom(16));
+        const salt = randomBytes(16);
         const publicKey = privateKey.getPublicKey();
         const address = Address.fromPubKey(publicKey);
         account.publicKey = publicKey.serializeHex();
@@ -100,7 +102,6 @@ export class Account {
         account.lock = obj.lock;
         account.isDefault = obj.isDefault;
         account.publicKey = obj.publicKey;
-        account.signatureScheme = obj.SignatureScheme;
         account.salt = obj.salt;
         account.encryptedKey = PrivateKey.deserializeJson({
             algorithm: obj.algorithm,
@@ -123,7 +124,6 @@ export class Account {
     salt: string;
 
     publicKey: string;
-    signatureScheme: string;
     isDefault: boolean;
 
     toJson(): string {
@@ -146,7 +146,6 @@ export class Account {
             'key': this.encryptedKey.key,
             'enc-alg': this['enc-alg'],
             'salt': this.salt,
-            'signatureScheme': this.signatureScheme,
             'isDefault': this.isDefault,
             'publicKey': this.publicKey,
             'extra': this.extra

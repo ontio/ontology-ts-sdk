@@ -16,19 +16,38 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Account } from '../src/account';
 import { Claim, RevocationType } from '../src/claim/claim';
-import { KeyType, PrivateKey, Signature } from '../src/crypto';
+import { PrivateKey } from '../src/crypto';
+import { WebsocketClient } from '../src/network/websocket/websocketClient';
+import { buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test claim', () => {
     const restUrl = 'http://polaris1.ont.io:20334';
-    const publicKeyId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-1';
+    const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
+    const publicKeyId = ontid + '#keys-1';
     const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const publicKey = privateKey.getPublicKey();
+    const account = Account.create(privateKey, '123456', '');
+
+    /**
+     * Registers new ONT ID to create transaction with Events and new block
+     */
+    beforeAll(async () => {
+        const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
+        tx.payer = account.address;
+        signTransaction(tx, privateKey);
+
+        const client = new WebsocketClient();
+        await client.sendRawTransaction(tx.serialize(), false, true);
+    }, 10000);
 
     test('test serialization', () => {
         const claim = new Claim({
             messageId: '1',
-            issuer: 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w',
-            subject: 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w',
+            issuer: ontid,
+            subject: ontid,
             issuedAt: 1525800823
         }, undefined, false);
         claim.version = '0.7.0';
@@ -61,8 +80,8 @@ describe('test claim', () => {
         const msg = Claim.deserialize(serialized);
 
         expect(msg.metadata.messageId).toEqual('1');
-        expect(msg.metadata.issuer).toEqual('did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w');
-        expect(msg.metadata.subject).toEqual('did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w');
+        expect(msg.metadata.issuer).toEqual(ontid);
+        expect(msg.metadata.subject).toEqual(ontid);
         expect(msg.metadata.issuedAt).toEqual(1525800823);
         expect(msg.signature).toBeUndefined();
         expect(msg.version).toEqual('0.7.0');
@@ -77,8 +96,8 @@ describe('test claim', () => {
     test('test signature', async () => {
         const claim = new Claim({
             messageId: '1',
-            issuer: 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w',
-            subject: 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w',
+            issuer: ontid,
+            subject: ontid,
             issuedAt: 1525800823
         }, undefined, false);
         claim.version = '0.7.0';

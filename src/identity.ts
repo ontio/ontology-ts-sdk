@@ -17,7 +17,7 @@
 */
 import { Address, JsonKey, PrivateKey } from './crypto';
 import { ScryptParams } from './scrypt';
-import { ab2hexstring, generateRandomArray } from './utils';
+import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
 export class ControlData {
     static fromJson(json: any): ControlData {
@@ -62,7 +62,7 @@ export class Identity {
         // create identity
         const identity = new Identity();
         const salt = Buffer.from(saltBase64, 'base64').toString('hex');
-        const privateKey = encryptedPrivateKey.decrypt(password, address, saltBase64, params);
+        const privateKey = encryptedPrivateKey.decrypt(password, address, salt, params);
         if (!label) {
             label = ab2hexstring (generateRandomArray(4));
         }
@@ -87,6 +87,16 @@ export class Identity {
         return identity;
     }
 
+    /**
+     * Creates Identity object encrypting specified private key.
+     *
+     * The identity is not registered on the blockchain. Caller needs to register it.
+     *
+     * @param privateKey Private key associated with the identity
+     * @param keyphrase Password use to encrypt the private key
+     * @param label Custom label
+     * @param params Optional scrypt params
+     */
     static create(privateKey: PrivateKey, keyphrase: string, label: string, params?: ScryptParams) {
         const identity = new Identity();
         identity.ontid = '';
@@ -97,15 +107,14 @@ export class Identity {
         const publicKey = privateKey.getPublicKey();
         identity.ontid = Address.generateOntid(publicKey);
         const address = Address.fromOntid(identity.ontid);
-        const salt = ab2hexstring(generateRandomArray(16));
+        const salt = randomBytes(16);
         const encryptedPrivateKey = privateKey.encrypt(keyphrase, address, salt, params);
         // start from 1
         const control = new ControlData('1', encryptedPrivateKey);
         control.salt = Buffer.from(salt, 'hex').toString('base64');
         control.address = address;
         identity.controls.push(control);
-        // TODO register ontid
-        // 调用方处理register和监听结果
+
         return identity;
     }
 
