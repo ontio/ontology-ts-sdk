@@ -26,26 +26,30 @@ import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
 import { makeClaimOngTx, makeQueryAllowanceTx, makeTransferFromManyTx, makeTransferToMany,
-    makeTransferTx, ONG_CONTRACT, ONT_CONTRACT
+    makeTransferTx, ONG_CONTRACT, ONT_CONTRACT, makeQueryBalanceTx
 } from '../src/smartcontract/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/token';
 import { Transaction } from '../src/transaction/transaction';
 import { buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
-import { ab2hexstring, StringReader } from '../src/utils';
+import { ab2hexstring, StringReader, generateRandomArray } from '../src/utils';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
+import { PublicKey } from '../src/crypto/PublicKey';
+
 const txSender = new TxSender(TEST_ONT_URL.SOCKET_URL);
+
+const pri = new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67318f');
+const pub = pri.getPublicKey();
+const addr = Address.fromPubKey(pub);
+console.log('addr : ' + addr.toBase58());
 
 const accountFrom = {
     // testnet
     // hexAddress: '018f0dcf09ec2f0040e6e8d7e54635dba40f7d63',
     // address: 'TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE',
     // privateKey: '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3'
-
-    // local
-    hexAddress: '013c7fd22a239be26196629ec9f4185c18ddc9f7',
-    address: 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG',
-    privateKey: new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67318f')
+    privateKey: new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67318f'),
+    address: new Address('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL')
     // address: 'TA98LCZuzins3mUPfDyNRirpQ4YoeRNBan',
     // privateKey: '6248eefef096ec2eebdff7179a59cc36b5c632720e40fb7e9770dc11024543be'
 };
@@ -55,12 +59,28 @@ const accAddress = 'TA5KvS6o9puusWQeiyWDezDWgi5NvKQotf';
 const accHexAddress = '012845c2ed3b508d135066dba00f850a82b192fd';
 
 const  testTransferTx = () => {
+    const params = {
+        cost: 16384,
+        blockSize: 8,
+        parallel: 8,
+        size: 64
+    };
+    // const encPri = new PrivateKey('nLbO4KNV8GyO4Ihoj5qCobBczOsTvVWk1QqQ4zsu3aUmNyYxmga4cHgf0MJ3gM6M');
+    // const password = '123456';
+    // const pk = PublicKey.deserializeHex(
+    //     new StringReader('12020213b91af30cba992aa24b232237af1093396dff9f252c3855dcf7129c517883f3'));
+    // const addr = Address.fromPubKey(pk);
+    // console.log('pk: ' + JSON.stringify(pk));
+    // console.log('addr: ' + addr.toBase58());
+    // const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
+    // const salt = Buffer.from('aCLRjtYznvxaxte3qrHDNw==', 'base64').toString('hex');
+    // const pri = encPri.decrypt(password, address, salt, params);
 
     const gasLimit = '300000';
     const gasPrice = '0';
-    const tx = makeTransferTx('ONT', new Address(accountFrom.address),
-        new Address('TA5KvS6o9puusWQeiyWDezDWgi5NvKQotf'), '10', gasPrice, gasLimit);
-    // signTransaction(tx, accountFrom.privateKey);
+    const tx = makeTransferTx('ONT', accountFrom.address,
+        new Address('AWc6N2Yawk12Jt14F7sjGGos4nFc8UztVe'), 10000, gasPrice, gasLimit);
+    signTransaction(tx, accountFrom.privateKey);
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress,
     // '01716379e393d1a540615e022ede47b97e0577c6', value,
     // accountFrom.privateKey)
@@ -118,28 +138,34 @@ const testQueryAllowance = (from, to) => {
 };
 
 const testClaimOng = () => {
-    const pri = userPri;
-    const hexAddress = userAddr;
-    console.log(hexAddress);
+    // const pri = userPri;
+    // const hexAddress = userAddr;
+    // console.log(hexAddress);
     const gasPrice = '0';
     const gasLimit = '30000';
 
-    // let pri = new PrivateKey('c62bbce37fc96c90e2eea6de474b0031e560ef3630d2f6efe275f16f85ed1543')
-    // let address = 'TA9VgmPJcok9cBBLwcLqwhRAfD45vtWa5i'
-    // let hexAddress = new Address(address).toBase58()
-    // let from = hexAddress
-    // let to = from
-    // let to = accountFrom.hexAddress
-    // tslint:disable-next-line:max-line-length
-    const tx = makeClaimOngTx(hexAddress, hexAddress, '10000000', hexAddress, gasPrice, gasLimit);
+    const params = {
+        cost: 16384,
+        blockSize: 8,
+        parallel: 8,
+        size: 64
+    };
+    const encPri = new PrivateKey('nLbO4KNV8GyO4Ihoj5qCobBczOsTvVWk1QqQ4zsu3aUmNyYxmga4cHgf0MJ3gM6M');
+    const password = '123456';
+    const pk = PublicKey.deserializeHex(
+        new StringReader('12020213b91af30cba992aa24b232237af1093396dff9f252c3855dcf7129c517883f3'));
+    const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
+    const salt = Buffer.from('aCLRjtYznvxaxte3qrHDNw==', 'base64').toString('hex');
+    const pri = encPri.decrypt(password, address, salt, params);
+    const tx = makeClaimOngTx(address, address, 10000, address, gasPrice, gasLimit);
     signTransaction(tx, pri);
     const restClient = new RestClient();
     restClient.sendRawTransaction(tx.serialize()).then( (res) => {
         console.log(res.Result);
         const txhash = res.Result;
-        restClient.getSmartCodeEvent(txhash).then((resp) => {
-            console.log('resp: ' + JSON.stringify(resp));
-        });
+        // restClient.getSmartCodeEvent(txhash).then((resp) => {
+        //     console.log('resp: ' + JSON.stringify(resp));
+        // });
 
         setTimeout( () => {
             restClient.getSmartCodeEvent(txhash).then((respon) => {
@@ -163,6 +189,7 @@ const address2 = new Address('TA5KvS6o9puusWQeiyWDezDWgi5NvKQotf');
 
 const pri3 = new PrivateKey('a53213c27eb1de0796b9d0b44c96e7e30228f1466d8657c47b471a4700777c0c');
 const address3 = new Address('01716379e393d1a540615e022ede47b97e0577c6');
+console.log('pk: ' + pri3.getPublicKey().serializeHex());
 
 const testTransferFromMany = () => {
 
@@ -186,14 +213,23 @@ const testTransferToMany = () => {
     txSender.sendTxWithSocket(param, callback);
 };
 
-const testAccountTransfer = () => {
-    const account = Account.create(accountFrom.privateKey, '123456', 'test');
+const testQueryBalance = (asset, address:Address) => {
+    // const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
 
+    const tx = makeQueryBalanceTx(asset, address);
+    const restClient = new RestClient();
+    restClient.sendRawTransaction(tx.serialize(), true).then((res) => {
+        console.log('res: ' + JSON.stringify(res));
+        const value = parseInt(res.Result.Result, 16);
+        console.log('queryBalance result: ' + value);
+    });
 };
 
+
 // testTransferTx();
+
 // const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
-testGetBalance(userAddr.toBase58(), '');
+// testGetBalance('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL', '');
 
 // testClaimOng();
 
@@ -201,6 +237,11 @@ testGetBalance(userAddr.toBase58(), '');
 
 // testTransferToMany()
 
-// testGetUnclaimedOng(userAddr);
+const from = new Address('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL');
+// testGetUnclaimedOng(from);
 
-// testQueryAllowance();
+// testQueryAllowance(from, from);
+const address = new Address('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL');
+testQueryBalance('ong', address);
+
+// console.log('add: ' + new Address('TAsW5tthjNBX4FG6ifGMTAswCBdB2YWGaG').serialize());

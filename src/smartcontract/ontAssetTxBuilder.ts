@@ -1,4 +1,3 @@
-
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -17,29 +16,29 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { BigNumber } from 'bignumber.js';
-import Fixed64 from '../common/fixed64';
 import { TOKEN_TYPE } from '../consts';
 import { Address } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { Transaction } from '../transaction/transaction';
-import { VmType } from '../transaction/vmcode';
-import { makeInvokeTransaction } from './../transaction/transactionBuilder';
-import { State, TransferFrom, Transfers } from './token';
+import { hex2VarBytes } from '../utils';
+import { makeNativeContractTx } from './../transaction/transactionBuilder';
+import { buildNativeCodeScript } from './abi/nativeParamsBuilder';
+import Struct from './abi/struct';
 
-export const ONT_CONTRACT = 'ff00000000000000000000000000000000000001';
-export const ONG_CONTRACT = 'ff00000000000000000000000000000000000002';
+export const ONT_CONTRACT = '0000000000000000000000000000000000000001';
+export const ONG_CONTRACT = '0000000000000000000000000000000000000002';
 
 export function getTokenContract(tokenType: string) {
     if (tokenType === TOKEN_TYPE.ONT) {
-        return ONT_CONTRACT;
+        return new Address(ONT_CONTRACT);
     } else if (tokenType === TOKEN_TYPE.ONG) {
-        return ONG_CONTRACT;
+        return new Address(ONG_CONTRACT);
     } else {
         throw new Error('Error token type.');
     }
 }
 
-export function verifyAmount(amount: string) {
+export function verifyAmount(amount: number | string) {
     const value = new BigNumber(amount);
 
     if (!value.isInteger() || value <= new BigNumber(0)) {
@@ -59,31 +58,22 @@ export function makeTransferTx(
     tokenType: string,
     from: Address,
     to: Address,
-    amount: string,
+    amount: number | string,
     gasPrice: string,
     gasLimit: string
 ): Transaction {
+    amount = Number(amount);
     verifyAmount(amount);
-
-    const state = new State();
-    state.from = from;
-    state.to = to;
-
-    // let valueToSend: string;
-    // if (tokenType === 'ONT') {
-    //     valueToSend = new BigNumber(amount).toString();
-    // } else {
-    //     // multi 10^9 to keep precision for ong transfer
-    //     valueToSend = new BigNumber(amount).multipliedBy(1e9).toString();
-    // }
-
-    state.value = new Fixed64(amount);
-    const transfer = new Transfers();
-    transfer.states = [state];
-
-    const params = transfer.serialize();
+    // const state = new State(from, to, amount);
+    // const transfer = new Transfers();
+    // transfer.states = [state];
+    // const params = transfer.serialize();
+    const struct = Struct.add(from, to, amount);
+    const list = [];
+    list.push([struct]);
     const contract = getTokenContract(tokenType);
-    const tx = makeInvokeTransaction('transfer', params, contract, VmType.NativeVM, gasPrice, gasLimit);
+    const params = buildNativeCodeScript(list);
+    const tx = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit);
     tx.payer = from;
     return tx;
 }
@@ -96,7 +86,7 @@ export function makeTransferTx(
  * @param to receiver's address
  * @param amounts
  */
-export function makeTransferFromManyTx(
+/* export function makeTransferFromManyTx(
     tokenType: string,
     from: Address[],
     to: Address,
@@ -110,11 +100,8 @@ export function makeTransferFromManyTx(
         throw new Error('Params error.');
     }
     for (let i = 0; i < from.length; i++) {
-        const s = new State();
-        s.from = from[i];
-        s.to = to;
         verifyAmount(amounts[i]);
-        s.value = new Fixed64(amounts[i]);
+        const s = new State(from[i], to, amounts[i]);
         states[i] = s;
     }
 
@@ -123,10 +110,10 @@ export function makeTransferFromManyTx(
 
     const contract = getTokenContract(tokenType);
     const params = transfers.serialize();
-    const tx = makeInvokeTransaction('transfer', params, contract, VmType.NativeVM, gasPrice, gasLimit);
+    const tx = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit);
     tx.payer = from[0];
     return tx;
-}
+} */
 
 /**
  * transfer from one sender to multiple receivers
@@ -135,7 +122,7 @@ export function makeTransferFromManyTx(
  * @param to
  * @param amounts
  */
-export function makeTransferToMany(
+/* export function makeTransferToMany(
     tokenType: string,
     from: Address,
     to: Address[],
@@ -150,12 +137,8 @@ export function makeTransferToMany(
     }
 
     for (let i = 0; i < to.length; i++) {
-        const s = new State();
-        s.from = from;
-        s.to = to[i];
-
         verifyAmount(amounts[i]);
-        s.value = new Fixed64(amounts[i]);
+        const s = new State(from, to[i], amounts[i]);
         states[i] = s;
     }
 
@@ -164,10 +147,10 @@ export function makeTransferToMany(
 
     const contract = getTokenContract(tokenType);
     const params = transfers.serialize();
-    const tx = makeInvokeTransaction('transfer', params, contract, VmType.NativeVM, gasPrice, gasLimit);
+    const tx = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit);
     tx.payer = from;
     return tx;
-}
+} */
 
 /**
  * claim ong from sender's address and send to receiver's address
@@ -175,14 +158,17 @@ export function makeTransferToMany(
  * @param to receiver's address
  * @param amount
  */
-export function makeClaimOngTx(from: Address, to: Address, amount: string, payer: Address,
+export function makeClaimOngTx(from: Address, to: Address, amount: number | string, payer: Address,
                                gasPrice: string, gasLimit: string): Transaction {
+    amount = Number(amount);
     verifyAmount(amount);
 
-    const tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, amount);
-
-    const params = tf.serialize();
-    const tx = makeInvokeTransaction('transferFrom', params, ONG_CONTRACT, VmType.NativeVM, gasPrice, gasLimit);
+    // const tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, amount);
+    // const params = tf.serialize();
+    const list = [];
+    list.push(Struct.add(from, new Address(ONT_CONTRACT), to, amount));
+    const args = buildNativeCodeScript(list);
+    const tx = makeNativeContractTx('transferFrom', args, new Address(ONG_CONTRACT) , gasPrice, gasLimit);
     tx.payer = payer;
     return tx;
 }
@@ -192,15 +178,38 @@ export function makeQueryAllowanceTx(asset: string, from: Address, to: Address):
     if (asset !== 'ont' && asset !== 'ong') {
         throw ERROR_CODE.INVALID_PARAMS;
     }
-    let params = '';
-    params += from.toHexString();
-    params += to.toHexString();
+
     let contract = '';
     if (asset === 'ong') {
         contract = ONG_CONTRACT;
     } else {
         contract = ONT_CONTRACT;
     }
-    const tx = makeInvokeTransaction('allowance', params, contract, VmType.NativeVM, '0', '0');
+    const list = [];
+    const struct = Struct.add(from, to);
+    list.push(struct);
+    const params = buildNativeCodeScript(list);
+    const tx = makeNativeContractTx('allowance', params, new Address(contract), '0', '0');
+    return tx;
+}
+
+/**
+ * The result is hex decimal
+ * @param asset Token type,ont or ong
+ * @param address
+ */
+export function makeQueryBalanceTx(asset: string,  address: Address): Transaction {
+    asset = asset.toLowerCase();
+    if (asset !== 'ont' && asset !== 'ong') {
+        throw ERROR_CODE.INVALID_PARAMS;
+    }
+    let contract = '';
+    if (asset === 'ong') {
+        contract = ONG_CONTRACT;
+    } else {
+        contract = ONT_CONTRACT;
+    }
+    const params = hex2VarBytes(address.serialize());
+    const tx = makeNativeContractTx('balanceOf', params, new Address(contract), '0', '0');
     return tx;
 }

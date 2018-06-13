@@ -23,7 +23,7 @@ import { sm2 } from 'sm.js';
 import * as wif from 'wif';
 import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID } from '../consts';
 import { ERROR_CODE } from '../error';
-import { checkDecrypted, decrypt, encrypt, ScryptParams } from '../scrypt';
+import { decryptWithGcm, encryptWithGcm, ScryptParams } from '../scrypt';
 import { ab2hexstring, hexstring2ab, str2hexstr } from '../utils';
 import { Address } from './address';
 import { JsonKey, Key, KeyParameters } from './Key';
@@ -142,13 +142,15 @@ export class PrivateKey extends Key {
      * Decrypts encrypted private key with supplied password.
      *
      * @param keyphrase Password to decrypt with
-     * @param checksum 4 bytes checksum or address in base58 format
+     * @param address For aad in decryption
+     * @param 16 secure random bytes
      * @param params Optional Scrypt params
      */
-    decrypt(keyphrase: string, checksum: string | Address, params?: ScryptParams): PrivateKey {
-        const decrypted = decrypt(this.key, keyphrase, checksum, params);
+    decrypt(keyphrase: string, address: Address, salt: string, params?: ScryptParams): PrivateKey {
+        // const decrypted = decrypt(this.key, keyphrase, checksum, params);
+        const decrypted = decryptWithGcm(this.key, address, salt, keyphrase, params);
         const decryptedKey = new PrivateKey(decrypted, this.algorithm, this.parameters);
-        checkDecrypted(checksum, decryptedKey.getPublicKey().serializeHex());
+        // checkDecrypted(checksum, decryptedKey.getPublicKey().serializeHex());
 
         return decryptedKey;
     }
@@ -157,10 +159,13 @@ export class PrivateKey extends Key {
      * Encrypts private key with supplied password.
      *
      * @param keyphrase Password to encrypt with
+     * @param address For aad in encryption
+     * @param salt 16 secure random bytes
      * @param params Optional Scrypt params
      */
-    encrypt(keyphrase: string, params?: ScryptParams): PrivateKey {
-        const encrypted = encrypt(this.key, this.getPublicKey().serializeHex(), keyphrase, params);
+    encrypt(keyphrase: string, address: Address, salt: string, params?: ScryptParams): PrivateKey {
+        // const encrypted = encrypt(this.key, this.getPublicKey().serializeHex(), keyphrase, params);
+        const encrypted = encryptWithGcm(this.key, address, salt, keyphrase, params);
         return new PrivateKey(encrypted, this.algorithm, this.parameters);
     }
 

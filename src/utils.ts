@@ -21,7 +21,8 @@ import * as cryptoJS from 'crypto-js';
 import * as secureRandom from 'secure-random';
 import { WEBVIEW_SCHEME } from './consts';
 import { ERROR_CODE } from './error';
-
+import { ec as EC } from 'elliptic';
+const curve = new EC('p256');
 export function hexstring2ab(str: string): number[] {
     const result = [];
 
@@ -214,6 +215,14 @@ export class StringReader {
         return out;
     }
 
+    unreadBytes(bytes: number) {
+        if ( (this.pos - bytes * 2) < 0 ) {
+            throw new Error('Can not unread too many bytes.');
+        }
+        this.pos -= bytes * 2;
+        return;
+    }
+
     /**
      * Reads string terminated by NULL.
      */
@@ -256,6 +265,10 @@ export class StringReader {
         }
 
         return len;
+    }
+
+    readUint8() {
+        return parseInt(reverseHex(this.read(1)), 16);
     }
 
     /* read 2 bytes as uint16 in littleEndian */
@@ -387,4 +400,18 @@ export function varifyPositiveInt(v: number) {
         throw ERROR_CODE.INVALID_PARAMS;
     }
     return;
+}
+
+export function getEncodedPublicKey(publicKey: string) {
+    const publicKeyArray = hexstring2ab(publicKey);
+    if (publicKeyArray[64] % 2 === 1) {
+        return '03' + ab2hexstring(publicKeyArray.slice(1, 33));
+    } else {
+        return '02' + ab2hexstring(publicKeyArray.slice(1, 33));
+    }
+}
+
+export function getUnencodedPublicKey(publicKey: string) {
+    const keyPair = curve.keyFromPublic(publicKey, 'hex');
+    return keyPair.getPublic().encode('hex');
 }

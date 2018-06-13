@@ -54,6 +54,7 @@ enum OPCODE {
     APPCALL = 0x67,
     SYSCALL = 0x68,
     TAILCALL = 0x69,
+    DUPFROMALTSTACK = 0x6A,
 
     // Stack
     TOALTSTACK = 0x6B, // Puts the input onto the top of the alt stack. Removes it from the main stack.
@@ -130,13 +131,25 @@ enum OPCODE {
     CHECKMULTISIG = 0xAE, // For each signature and public key pair CHECKSIG is executed. If more public keys than signatures are listed some key/sig pairs can fail. All signatures need to match a public key. If all signatures are valid 1 is returned 0 otherwise. Due to a bug one extra unused value is removed from the stack.
 
     // Array
-    ARRAYSIZE = 0xC0,
-    PACK = 0xC1,
-    UNPACK = 0xC2,
-    PICKITEM = 0xC3,
-    SETITEM = 0xC4,
-    NEWARRAY = 0xC5,
-    CLONE = 0xC6
+	// tslint:disable:indent
+    ARRAYSIZE  = 0xC0,
+	PACK       = 0xC1,
+	UNPACK     = 0xC2,
+	PICKITEM   = 0xC3,
+	SETITEM    = 0xC4,
+	NEWARRAY   = 0xC5,
+	NEWSTRUCT  = 0xC6,
+	NEWMAP     = 0xC7,
+	APPEND     = 0xC8,
+	REVERSE    = 0xC9,
+	REMOVE     = 0xCA,
+	HASKEY     = 0xCB,
+	KEYS       = 0xCC,
+	VALUES     = 0xCD,
+
+	// Exception
+	THROW = 0xF0,
+	THROWIFNOT = 0xF1
 }
 
 export default OPCODE;

@@ -298,7 +298,7 @@ export function checkEcbDecrypted(encryptedKey: string, decryptedKey: string, pu
 
 export function encryptWithGcm(
     privateKey: string,
-    address: string,
+    address: Address,
     salt: string,
     keyphrase: string,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
@@ -313,26 +313,35 @@ export function encryptWithGcm(
     const derived2 = derived.slice(32);
     const key = derived2;
     const iv = derived1;
-    const aad = new Buffer(address, 'hex');
+    const aad = new Buffer(address.toBase58());
     const cipher = createCipheriv('aes-256-gcm', key, iv);
     cipher.setAAD(aad);
-    let ciphertext = cipher.update(privateKey, 'utf8', 'hex');
-    ciphertext += cipher.final('hex');
-    const authTag = cipher.getAuthTag().toString('hex');
-    return {
-        ciphertext,
-        authTag
-    };
+    const plainText = Buffer.from(privateKey, 'hex');
+    let ciphertext = cipher.update(plainText);
+    // ciphertext += cipher.final();
+    const final = cipher.final();
+    const authTag = cipher.getAuthTag();
+    ciphertext = Buffer.concat([ciphertext, final]);
+
+    const result = Buffer.concat([ciphertext, authTag]);
+    return result.toString('base64');
 }
 
 export function decryptWithGcm(
-    ciphertext: string,
-    authTag: string,
-    address: string,
+    // ciphertext: string,
+    // authTag: string,
+    encrypted: string,
+    address: Address,
     salt: string,
     keyphrase: string,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ) {
+    if (salt.length !== 32) {
+        throw ERROR_CODE.INVALID_PARAMS;
+    }
+    const result = Buffer.from(encrypted, 'base64');
+    const ciphertext = result.slice(0, result.length - 16);
+    const authTag = result.slice(result.length - 16);
     const derived = Scrypt.hashSync(
         Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
         Buffer.from(salt, 'hex'),
@@ -343,12 +352,12 @@ export function decryptWithGcm(
     const derived2 = derived.slice(32);
     const key = derived2;
     const iv = derived1;
-    const aad = new Buffer(address, 'hex');
-    const auth = new Buffer(authTag, 'hex');
+    const aad = new Buffer(address.toBase58());
+    // const auth = new Buffer(authTag, 'hex');
     const decipher = createDecipheriv('aes-256-gcm', key, iv);
     decipher.setAAD(aad);
-    decipher.setAuthTag(auth);
-    let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
+    decipher.setAuthTag(authTag);
+    let decrypted = decipher.update(ciphertext).toString('hex');
+    decrypted += decipher.final().toString('hex');
     return decrypted;
 }

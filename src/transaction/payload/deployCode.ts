@@ -17,16 +17,17 @@
  */
 import {
     bool2VarByte,
+    hex2VarBytes,
     hexstr2str,
     str2VarBytes,
     StringReader
 } from '../../utils';
-import { VmCode } from '../vmcode';
 import Payload from './payload';
 
 export default class DeployCode extends Payload {
     // hex string
-    code: VmCode;
+    // code: VmCode;
+    code: string;
 
     needStorage: boolean;
     name: string;
@@ -38,7 +39,8 @@ export default class DeployCode extends Payload {
     serialize(): string {
         let result = '';
 
-        result += this.code.serialize();
+        // result += this.code.serialize();
+        result += hex2VarBytes(this.code);
 
         result += bool2VarByte(this.needStorage);
 
@@ -57,7 +59,8 @@ export default class DeployCode extends Payload {
 
     deserialize(sr: StringReader): void {
 
-        const code = VmCode.deserialize(sr);
+        // const code = VmCode.deserialize(sr);
+        const code = sr.readNextBytes();
         this.code = code;
 
         const boolValue = sr.read(1);

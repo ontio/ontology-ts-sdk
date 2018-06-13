@@ -19,11 +19,13 @@ import { Address } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { RestClient, Transaction } from '../index';
 import { makeInvokeTransaction } from '../transaction/transactionBuilder';
-import { VmType } from '../transaction/vmcode';
 import { hex2VarBytes, hexstr2str, num2hexstring, num2VarInt,
     str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../utils';
 
 export const GOVERNANCE_CONTRACT = 'ff00000000000000000000000000000000000007';
+const contractAddress = new Address(GOVERNANCE_CONTRACT);
+
+/* TODO: Test */
 
 // tslint:disable:no-console
 
@@ -56,12 +58,12 @@ export function makeRegisterCandidateTx(
     let params = '';
     params += str2VarBytes(peerPubKey);
     console.log('pk: ' + peerPubKey + ' pkByts: ' + params);
-    params += userAddr.toHexString();
+    params += userAddr.serialize();
     params += num2VarInt(initPos);
     params += hex2VarBytes(ontid);
     params += num2hexstring(keyNo, 8, true);
-    return makeInvokeTransaction('registerCandidate', params, GOVERNANCE_CONTRACT,
-                                    VmType.NativeVM, gasPrice, gasLimit, payer);
+    return makeInvokeTransaction('registerCandidate', params, contractAddress,
+                                     gasPrice, gasLimit, payer);
 }
 
 export function makeApproveCandidateTx(
@@ -72,8 +74,8 @@ export function makeApproveCandidateTx(
 ): Transaction {
     let params = '';
     params += str2VarBytes(peerPubKey);
-    return makeInvokeTransaction('approveCandidate', params, GOVERNANCE_CONTRACT,
-                                    VmType.NativeVM, gasPrice, gasLimit, payer);
+    return makeInvokeTransaction('approveCandidate', params, contractAddress,
+                                     gasPrice, gasLimit, payer);
 }
 
 export function makeRejectCandidateTx(
@@ -84,8 +86,8 @@ export function makeRejectCandidateTx(
 ): Transaction {
     let params = '';
     params += str2VarBytes(peerPubKey);
-    return makeInvokeTransaction('rejectCandidate', params, GOVERNANCE_CONTRACT,
-        VmType.NativeVM, gasPrice, gasLimit, payer);
+    return makeInvokeTransaction('rejectCandidate', params, contractAddress,
+        gasPrice, gasLimit, payer);
 }
 
 /**
@@ -110,7 +112,7 @@ export function makeVoteForPeerTx(
         throw ERROR_CODE.INVALID_PARAMS;
     }
     let params = '';
-    params += userAddr.toHexString();
+    params += userAddr.serialize();
     params += num2VarInt(peerPubKeys.length);
     for (const p of peerPubKeys) {
         params += str2VarBytes(p);
@@ -121,8 +123,8 @@ export function makeVoteForPeerTx(
         params += num2VarInt(n);
     }
     console.log('params: ' + params);
-    return makeInvokeTransaction('voteForPeer', params, GOVERNANCE_CONTRACT,
-        VmType.NativeVM, gasPrice, gasLimit, payer);
+    return makeInvokeTransaction('voteForPeer', params, contractAddress,
+       gasPrice, gasLimit, payer);
 }
 
 /**
@@ -146,7 +148,7 @@ export function makeUnvoteForPeerTx(
         throw ERROR_CODE.INVALID_PARAMS;
     }
     let params = '';
-    params += userAddr.toHexString();
+    params += userAddr.serialize();
     params += num2VarInt(peerPubKeys.length);
     for (const p of peerPubKeys) {
         params += str2VarBytes(p);
@@ -156,8 +158,8 @@ export function makeUnvoteForPeerTx(
         varifyPositiveInt(n);
         params += num2VarInt(n);
     }
-    return makeInvokeTransaction('unVoteForPeer', params, GOVERNANCE_CONTRACT,
-        VmType.NativeVM, gasPrice, gasLimit, payer);
+    return makeInvokeTransaction('unVoteForPeer', params, contractAddress,
+         gasPrice, gasLimit, payer);
 }
 
 /**
@@ -178,7 +180,7 @@ export function makeWithdrawTx(
         throw ERROR_CODE.INVALID_PARAMS;
     }
     let params = '';
-    params += userAddr.toHexString();
+    params += userAddr.serialize();
     params += num2VarInt(peerPubKeys.length);
     for (const p of peerPubKeys) {
         params += str2VarBytes(p);
@@ -188,8 +190,8 @@ export function makeWithdrawTx(
         varifyPositiveInt(w);
         params += num2VarInt(w);
     }
-    return makeInvokeTransaction('withdraw', params, GOVERNANCE_CONTRACT,
-        VmType.NativeVM, gasPrice, gasLimit, payer);
+    return makeInvokeTransaction('withdraw', params, contractAddress,
+        gasPrice, gasLimit, payer);
 }
 
 export async function getPeerPoolMap(url?: string) {
@@ -257,7 +259,7 @@ class PeerPoolItem {
         let result = '';
         result += num2hexstring(this.index, 4, true);
         result += str2VarBytes(this.peerPubkey);
-        result += this.address.toHexString();
+        result += this.address.serialize();
         result += num2hexstring(this.status);
         result += num2hexstring(this.initPos, 8, true);
         result += num2hexstring(this.totalPos, 8, true);

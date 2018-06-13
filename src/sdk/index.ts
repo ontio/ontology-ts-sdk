@@ -43,7 +43,8 @@ import {
     sendRawTxRestfulUrl,
     signTransaction
 } from '../transaction/transactionBuilder';
-import { generateMnemonic, hexstr2str, now, sendBackResult2Native, sha256, str2hexstr } from '../utils';
+import { generateMnemonic,
+    hexstr2str, now, sendBackResult2Native, str2hexstr } from '../utils';
 import { Wallet } from '../wallet';
 
 // tslint:disable:no-unused-expression
@@ -89,8 +90,7 @@ export class SDK {
     static getDecryptError(err: any) {
         return {
             error: ERROR_CODE.Decrypto_ERROR,
-            result: '',
-            desc: err.message || ''
+            result: ''
         };
     }
 
@@ -112,7 +112,6 @@ export class SDK {
         let obj: any = {
             error: 0,
             result: walletDataStr,
-            desc: '',
             tx : ''
         };
 
@@ -138,8 +137,7 @@ export class SDK {
             } else {
                 const errResult = {
                     error: ERROR_CODE.PreExec_ERROR,
-                    result: '',
-                    desc: res.Result
+                    result: ''
                 };
 
                 if (callback) {
@@ -160,21 +158,20 @@ export class SDK {
     }
 
     static importIdentityWithWallet(
-        walletDataStr: string,
         label: string,
         encryptedPrivateKey: string,
         password: string,
-        checksum: string,
+        address: string,
+        salt: string,
         callback?: string
     ) {
         let obj: any;
         let identity = new Identity();
-        const wallet = Wallet.parseJson(walletDataStr);
-
         try {
             // TODO check ontid
             const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-            identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, checksum);
+            const addr = new Address(address);
+            identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, addr, salt);
         } catch (err) {
             obj  = this.getDecryptError(err);
 
@@ -183,12 +180,9 @@ export class SDK {
             }
             return obj;
         }
-        wallet.addIdentity(identity);
-        const walletStr = wallet.toJson();
         obj = {
             error : ERROR_CODE.SUCCESS,
-            result : walletStr,
-            desc : ''
+            result : identity.toJson()
         };
         // check ontid on chain
         const tx = buildGetDDOTx(identity.ontid);
@@ -227,7 +221,8 @@ export class SDK {
         label: string,
         encryptedPrivateKey: string,
         password: string,
-        checksum: string,
+        address: string,
+        salt: string,
         callback?: string
     ) {
         let identity = new Identity();
@@ -235,15 +230,15 @@ export class SDK {
         let obj: any;
         try {
             const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-            identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, checksum);
+            const addr = new Address(address);
+            identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, addr, salt);
             const wallet = Wallet.create(identity.label);
             wallet.defaultOntid = identity.ontid;
             wallet.addIdentity(identity);
             const walletStr = wallet.toJson();
             obj = {
                 error: ERROR_CODE.SUCCESS,
-                result: walletStr,
-                desc: ''
+                result: walletStr
             };
             // check ontid on chain
             const tx = buildGetDDOTx(identity.ontid);
@@ -257,7 +252,6 @@ export class SDK {
                 } else {
                     obj.error = ERROR_CODE.UNKNOWN_ONTID;
                     obj.result = '';
-                    obj.desc = res.data.Result;
                 }
                 // clear privateKey and password
                 password = '';
@@ -292,7 +286,6 @@ export class SDK {
         let obj: any = {
             error: ERROR_CODE.SUCCESS,
             result,
-            desc: '',
             tx : ''
         };
         // register ontid
@@ -300,6 +293,8 @@ export class SDK {
         const tx = buildRegisterOntidTx(identity.ontid, publicKey, gasPrice, gasLimit);
         tx.payer = new Address(payer);
         signTransaction(tx, privateKey);
+        password = '';
+        privateKey.key = '';
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             // preExec success, send real request
@@ -317,8 +312,7 @@ export class SDK {
             } else {
                 const errResult = {
                     error: ERROR_CODE.PreExec_ERROR,
-                    result: '',
-                    desc: res.Result
+                    result: ''
                 };
 
                 if (callback) {
@@ -340,18 +334,18 @@ export class SDK {
 
     static createAccount(label: string, password: string, callback?: string) {
         // generate mnemnic
-        const mnemonic = generateMnemonic();
+        let mnemonic = generateMnemonic();
 
         const mnemonicHex = str2hexstr(mnemonic);
-
         const privateKey = PrivateKey.generateFromMnemonic(mnemonic);
         const account = Account.create(privateKey, password, label);
-        const mnemonicEnc = scrypt.encrypt(mnemonicHex, account.publicKey, password);
+        const addr = account.address;
+        const salt = Buffer.from(account.salt, 'base58').toString('hex');
+        const mnemonicEnc = scrypt.encryptWithGcm(mnemonicHex, addr, salt, password);
         const result = account.toJson();
         const obj = {
             error : ERROR_CODE.SUCCESS,
             result,
-            desc : '',
             mnemonicEnc
         };
 
@@ -361,43 +355,39 @@ export class SDK {
         // clear privateKey and password
         privateKey.key = '';
         password = '';
+        mnemonic = '';
         return obj;
     }
 
     static decryptMnemonicEnc(mnemonicEnc: string,
-                              passwordHash: string, password: string, address: string, callback: string) {
+                              address: string, salt: string, password: string, callback: string) {
         let obj;
-        if (sha256(password) !== passwordHash) {
-            obj = {
-                error: ERROR_CODE.INVALID_PARAMS,
-                result: ''
-            };
-        } else {
-            const decMneHex = scrypt.decrypt(mnemonicEnc, password, new Address(address));
-            const decMne = hexstr2str(decMneHex);
-            obj = {
-                error: ERROR_CODE.SUCCESS,
-                result: decMne
-            };
-        }
+        const addr = new Address(address);
+        const saltHex = Buffer.from(salt, 'base58').toString('hex');
+        const decMneHex = scrypt.decryptWithGcm(mnemonicEnc, addr, saltHex, password);
+        const decMne = hexstr2str(decMneHex);
+        obj = {
+            error: ERROR_CODE.SUCCESS,
+            result: decMne
+        };
         // tslint:disable-next-line:no-unused-expression
         callback && sendBackResult2Native(JSON.stringify(obj), callback);
         return obj;
     }
 
     static importAccountWithWallet(
-        walletDataStr: string,
         label: string,
         encryptedPrivateKey: string,
+        address: string,
+        salt: string,
         password: string,
-        checksum: string,
         callback?: string
     ) {
-        const wallet = Wallet.parseJson(walletDataStr);
         let account = new Account();
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         try {
-            account = Account.importAccount(label, encryptedPrivateKeyObj, password, checksum);
+            const addr = new Address(address);
+            account = Account.importAccount(label, encryptedPrivateKeyObj, password, addr, salt);
         } catch (err) {
             const result = this.getDecryptError(err);
             if (callback) {
@@ -405,12 +395,9 @@ export class SDK {
             }
             return result;
         }
-        wallet.addAccount(account);
-        const walletStr = wallet.toJson();
         const obj = {
             error: ERROR_CODE.SUCCESS,
-            result: walletStr,
-            desc: ''
+            result: account.toJson()
         };
 
         if (callback) {
@@ -427,14 +414,17 @@ export class SDK {
         ontid: string,
         encryptedPrivateKey: string,
         password: string,
+        address: string,
+        salt: string,
         callback?: string
     )  {
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`;
-        const checksum = Address.fromOntid(ontid).getB58Checksum();
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
+            const addr = new Address(address);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
         } catch (err) {
             const result = this.getDecryptError(err);
 
@@ -457,8 +447,7 @@ export class SDK {
         claim.sign(restUrl, publicKeyId, privateKey);
         const obj = {
             error : 0,
-            result : claim,
-            desc : ''
+            result : claim
         };
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);
@@ -472,21 +461,16 @@ export class SDK {
     static decryptEncryptedPrivateKey(
         encryptedPrivateKey: string,
         password: string,
-        checksum: string,
+        address: string,
+        salt: string,
         callback?: string
     ) {
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        let check;
-        if (checksum.length === 8) {
-            check = checksum;
-        } else if (checksum.length === 40 || checksum.length === 34) {
-            check = new Address(checksum);
-        } else {
-            throw ERROR_CODE.INVALID_PARAMS;
-        }
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password, check);
+            const addr = new Address(address);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
         } catch (err) {
             const result = this.getDecryptError(err);
 
@@ -497,8 +481,7 @@ export class SDK {
         }
         const obj = {
             error : 0,
-            result : privateKey.key,
-            desc : ''
+            result : privateKey.key
         };
 
         if (callback) {
@@ -517,6 +500,8 @@ export class SDK {
         subject: string,
         encryptedPrivateKey: string,
         password: string,
+        address: string,
+        salt: string,
         payer: string,
         gasPrice: string,
         gasLimit: string,
@@ -524,9 +509,10 @@ export class SDK {
     ) {
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        const checksum = Address.fromOntid(subject).getB58Checksum();
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
+            const addr = new Address(address);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
         } catch (err) {
             const result = this.getDecryptError(err);
 
@@ -601,22 +587,17 @@ export class SDK {
         content: string,
         encryptedPrivateKey: string,
         password: string,
-        checksum: string,
+        address: string,
+        salt: string,
         callback?: string
     ): PgpSignature | object {
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        let check: string | Address;
-        if (checksum.length === 8) {
-            check = checksum;
-        } else if (checksum.length === 40 || checksum.length === 34) {
-            check = new Address(checksum);
-        } else {
-            throw ERROR_CODE.INVALID_PARAMS;
-        }
         let result;
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password, check);
+            const addr = new Address(address);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
         } catch (err) {
             result = this.getDecryptError(err);
 
@@ -684,6 +665,7 @@ export class SDK {
         value: string,
         encryptedPrivateKey: string,
         password: string,
+        salt: string,
         gasPrice: string,
         gasLimit: string,
         payer: string,
@@ -698,8 +680,7 @@ export class SDK {
         } catch (err) {
             const result = {
                 error : ERROR_CODE.INVALID_PARAMS,
-                result : '',
-                desc : 'Illegal adderss'
+                result : ''
             };
 
             if (callback) {
@@ -710,9 +691,10 @@ export class SDK {
 
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        const checksum = fromAddress.getB58Checksum();
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
+            const addr = new Address(from);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
         } catch (err) {
             const result = this.getDecryptError(err);
             if (callback) {
@@ -734,44 +716,6 @@ export class SDK {
         privateKey.key = '';
         password = '';
         return result;
-        // const param = buildRestfulParam(tx);
-        // const request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`;
-        // return axios.post(request, param).then( (res: any) => {
-        //     // tslint:disable-next-line:no-console
-        //     console.log('transfer response: ' + JSON.stringify(res.data));
-        //     if (res.data.Error === 0) {
-        //         const obj = {
-        //             error : 0,
-        //             result : '',
-        //             desc : 'Send transfer success.'
-        //         };
-
-        //         if (callback) {
-        //             sendBackResult2Native(JSON.stringify(obj), callback);
-        //         }
-        //         return obj;
-        //     } else {
-        //         const obj = {
-        //             error: res.data.Error,
-        //             result: '',
-        //             desc: 'Send transfer failed.'
-        //         };
-
-        //         if (callback) {
-        //             sendBackResult2Native(JSON.stringify(obj), callback);
-        //         }
-        //         return obj;
-        //     }
-        // }).catch( (err: any) => {
-        //     const obj = {
-        //         error: ERROR_CODE.NETWORK_ERROR,
-        //         result: ''
-        //     };
-
-        //     if (callback) {
-        //         sendBackResult2Native(JSON.stringify(obj), callback);
-        //     }
-        // });
     }
 
     static claimOng(
@@ -779,6 +723,7 @@ export class SDK {
         value: string,
         encryptedPrivateKey: string,
         password: string,
+        salt: string,
         gasPrice: string,
         gasLimit: string,
         payer: string,
@@ -791,8 +736,7 @@ export class SDK {
         } catch (err) {
             const result = {
                 error: ERROR_CODE.INVALID_PARAMS,
-                result: '',
-                desc: 'Illegal adderss'
+                result: ''
             };
 
             if (callback) {
@@ -803,9 +747,9 @@ export class SDK {
 
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        const checksum = addressObj.getB58Checksum();
         try {
-            privateKey = encryptedPrivateKeyObj.decrypt(password, checksum);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addressObj, saltHex);
         } catch (err) {
             const result = this.getDecryptError(err);
             if (callback) {
@@ -830,7 +774,6 @@ export class SDK {
 
     static exportIdentityToQrcode(identityDataStr: string, callback: string) {
         const obj = Identity.parseJson(identityDataStr);
-        const checksum = Address.fromOntid(obj.ontid).getB58Checksum();
         const result = {
             type : 'I',
             label : obj.label,
@@ -842,7 +785,8 @@ export class SDK {
                 dkLen : 64
             },
             key : obj.controls[0].encryptedKey.key,
-            prefix : checksum,
+            salt : obj.controls[0].salt,
+            adderss: obj.controls[0].address.toBase58(),
             parameters : {
                 curve : 'secp256r1'
             }
@@ -856,9 +800,10 @@ export class SDK {
 
     static exportIdentityToKeystring(identityDataStr: string, callback: string) {
         const obj = Identity.parseJson(identityDataStr);
-        const checksum = Address.fromOntid(obj.ontid).getB58Checksum();
+        const address = obj.controls[0].address.toBase58();
+        const salt = obj.controls[0].salt;
         const key = obj.controls[0].encryptedKey.key;
-        const result = checksum + key;
+        const result = salt + address + key;
 
         if (callback) {
             sendBackResult2Native(JSON.stringify(result), callback);
@@ -868,7 +813,6 @@ export class SDK {
 
     static exportAccountToQrcode(accountDataStr: string, callback: string) {
         const obj = Account.parseJson(accountDataStr);
-        const checksum = obj.address.getB58Checksum();
         const result = {
             type: 'A',
             label: obj.label,
@@ -880,7 +824,8 @@ export class SDK {
                 dkLen: 64
             },
             key: obj.encryptedKey.key,
-            prefix: checksum,
+            salt: obj.salt,
+            address: obj.address.toBase58(),
             parameters: {
                 curve: 'secp256r1'
             }
@@ -894,9 +839,10 @@ export class SDK {
 
     static exportAccountToKeystring(accountDataStr: string, callback: string) {
         const obj = Account.parseJson(accountDataStr);
-        const checksum = obj.address.getB58Checksum();
+        const salt = obj.salt;
+        const address = obj.address.toBase58();
         const key = obj.encryptedKey.key;
-        const result = checksum + key;
+        const result = salt + address + key;
 
         if (callback) {
             sendBackResult2Native(JSON.stringify(result), callback);
@@ -905,7 +851,8 @@ export class SDK {
     }
 
     static importAccountMnemonic(mnemonic: string, password: string, callback: string) {
-        if (!mnemonic || mnemonic.split(' ').length !== 12) {
+        mnemonic = mnemonic.trim();
+        if (!bip39.validateMnemonic(mnemonic)) {
             // tslint:disable-next-line:no-shadowed-variable
             const obj = {
                 error: ERROR_CODE.INVALID_PARAMS,
@@ -922,9 +869,7 @@ export class SDK {
         const result = account.toJson();
         const obj = {
             error: ERROR_CODE.SUCCESS,
-            result,
-            desc: '',
-            mnemonic
+            result
         };
 
         if (callback) {
@@ -933,10 +878,12 @@ export class SDK {
         // clear privateKey and password
         privateKey.key = '';
         password = '';
+        mnemonic = '';
         return obj;
     }
 
-    static exportWifPrivakeKey(encryptedKey: string, password: string, address: string, callback: string) {
+    static exportWifPrivakeKey(encryptedKey: string, password: string,
+                               address: string, salt: string, callback: string) {
         if (address.length !== 34 && address.length !== 40) {
             const obj = {
                 error: ERROR_CODE.INVALID_PARAMS,
@@ -946,8 +893,10 @@ export class SDK {
             return obj;
         }
         const encrypt = new PrivateKey(encryptedKey);
-        const privateKey = encrypt.decrypt(password, new Address(address));
-        const wif = privateKey.serializeWIF();
+        const addr = new Address(address);
+        const saltHex = Buffer.from(salt, 'base64').toString('hex');
+        const privateKey = encrypt.decrypt(password, addr, saltHex);
+        let wif = privateKey.serializeWIF();
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: wif
@@ -955,6 +904,7 @@ export class SDK {
         callback && sendBackResult2Native(JSON.stringify(result), callback);
         // clear privateKey and password
         privateKey.key = '';
+        wif = '';
         password = '';
         return result;
     }
@@ -1038,12 +988,13 @@ export class SDK {
                     parallel: keyStoreObj.scrypt.r || 8,
                     size: keyStoreObj.scrypt.dkLen || 64
                 };
+                const addr = new Address(keyStoreObj.address);
+                const saltHex = Buffer.from(keyStoreObj.salt, 'base64').toString('hex');
                 account = Account.importAccount(
-                    keyStoreObj.label, encryptedPrivateKeyObj, password, keyStoreObj.prefix, params);
+                    keyStoreObj.label, encryptedPrivateKeyObj, password, addr, saltHex, params);
                 const obj = {
                     error: ERROR_CODE.SUCCESS,
-                    result: account.toJson(),
-                    desc: ''
+                    result: account.toJson()
                 };
                 if (callback) {
                     sendBackResult2Native(JSON.stringify(obj), callback);
@@ -1075,8 +1026,7 @@ export class SDK {
         }).catch((err) => {
             const result = {
                 error: err.Error,
-                result: '',
-                desc: err
+                result: ''
             };
             if (callback) {
                 sendBackResult2Native(JSON.stringify(result), callback);
@@ -1099,8 +1049,7 @@ export class SDK {
         }).catch((err) => {
             const result = {
                 error: err.Error,
-                result: '',
-                desc: err
+                result: ''
             };
             if (callback) {
                 sendBackResult2Native(JSON.stringify(result), callback);

@@ -21,9 +21,11 @@ import { Address } from '../crypto';
 import { makeInvokeTransaction } from '../transaction/transactionBuilder';
 import { hex2VarBytes, num2hexstring, num2VarInt, str2hexstr, str2VarBytes, varifyPositiveInt } from '../utils';
 import { Transaction } from './../transaction/transaction';
-import { VmType } from './../transaction/vmcode';
 
 export const AUTH_CONTRACT = 'ff00000000000000000000000000000000000006';
+const contractAddress = new Address(AUTH_CONTRACT);
+
+/* TODO : Test */
 
 export function makeInitContractAdminTx(
     adminOntId: string,
@@ -34,8 +36,8 @@ export function makeInitContractAdminTx(
         adminOntId = str2hexstr(adminOntId);
     }
     const params = hex2VarBytes(adminOntId);
-    const tx = makeInvokeTransaction('initContractAdmin', params, AUTH_CONTRACT,
-                                    VmType.NativeVM, gasPrice, gasLimit, payer);
+    const tx = makeInvokeTransaction('initContractAdmin', params, contractAddress,
+                                     gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -65,7 +67,7 @@ export function makeTransferAuthTx(
     params += hex2VarBytes(newAdminOntid);
     params += num2hexstring(keyNo, 4, true);
 
-    const tx = makeInvokeTransaction('transfer', params, AUTH_CONTRACT, VmType.NativeVM, gasPrice, gasLimit, payer);
+    const tx = makeInvokeTransaction('transfer', params, contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -97,7 +99,7 @@ export function makeVerifyTokenTx(
     params += hex2VarBytes(callerOntId);
     params += str2VarBytes(funcName);
     params += num2hexstring(keyNo, 4, true);
-    const tx = makeInvokeTransaction('verifyToken', params, AUTH_CONTRACT, VmType.NativeVM, gasPrice, gasLimit, payer);
+    const tx = makeInvokeTransaction('verifyToken', params, contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -136,7 +138,7 @@ export function makeAssignFuncsToRoleTx(
     }
     params += num2hexstring(keyNo, 4, true);
     const tx = makeInvokeTransaction('assignFuncsToRole', params,
-                                    AUTH_CONTRACT, VmType.NativeVM, gasPrice, gasLimit, payer);
+                                    contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -179,7 +181,7 @@ export function makeAssignOntIdsToRoleTx(
     }
     params += num2hexstring(keyNo, 4, true);
     const tx = makeInvokeTransaction('assignOntIDsToRole', params,
-        AUTH_CONTRACT, VmType.NativeVM, gasPrice, gasLimit, payer);
+        contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -225,7 +227,7 @@ export function makeDelegateRoleTx(
     params += num2hexstring(level, 4, true);
     params += num2hexstring(keyNo, 4, true);
     const tx = makeInvokeTransaction('delegate', params,
-        AUTH_CONTRACT, VmType.NativeVM, gasPrice, gasLimit, payer);
+        contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -264,6 +266,6 @@ export function makeWithdrawRoleTx(
     params += str2VarBytes(role);
     params += num2hexstring(keyNo, 4, true);
     const tx = makeInvokeTransaction('withdraw', params,
-        AUTH_CONTRACT, VmType.NativeVM, gasPrice, gasLimit, payer);
+        contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }

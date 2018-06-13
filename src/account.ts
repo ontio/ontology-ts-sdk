@@ -15,32 +15,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+import * as secureRandom from 'secure-random';
 import { Address, PrivateKey, SignatureScheme } from './crypto';
 import { ScryptParams } from './scrypt';
-import { ab2hexstring, generateRandomArray, sha256 } from './utils';
+import { ab2hexstring, generateRandomArray } from './utils';
 
 export class Account {
     static importAccount(
         label: string ,
         encryptedPrivateKey: PrivateKey,
         password: string,
-        checksum: string | Address,
+        address: Address,
+        saltBase64: string,
         params?: ScryptParams
     ): Account {
         const account = new Account();
-        const privateKey = encryptedPrivateKey.decrypt(password, checksum, params);
-        // let contract = {
-        //     script: '',
-        //     parameters: [],
-        //     deployed: false
-        // }
+        const salt = Buffer.from(saltBase64, 'base64').toString('hex');
+        const privateKey = encryptedPrivateKey.decrypt(password, address, salt, params);
+
         if (!label) {
             label = ab2hexstring(generateRandomArray(4));
         }
         account.label = label;
         account.lock = false;
         account.isDefault = false;
-        account.passwordHash = sha256(password);
+        account.salt = saltBase64;
 
         account.encryptedKey = encryptedPrivateKey;
 
@@ -57,7 +56,8 @@ export class Account {
         privateKey: PrivateKey,
         password: string,
         label?: string,
-        signatureScheme?: SignatureScheme
+        signatureScheme?: SignatureScheme,
+        params?: ScryptParams
     ): Account {
         const account = new Account();
         if (!label) {
@@ -65,7 +65,6 @@ export class Account {
         }
         account.label = label;
         account.lock = false;
-        account.passwordHash = sha256(password);
         account.isDefault = false;
 
         if (signatureScheme) {
@@ -73,12 +72,13 @@ export class Account {
         } else {
             account.signatureScheme = privateKey.algorithm.defaultSchema.label;
         }
-
-        account.encryptedKey = privateKey.encrypt(password);
+        const salt = ab2hexstring(secureRandom(16));
         const publicKey = privateKey.getPublicKey();
+        const address = Address.fromPubKey(publicKey);
         account.publicKey = publicKey.serializeHex();
-        account.address = Address.fromPubKey(publicKey);
-
+        account.address = address;
+        account.encryptedKey = privateKey.encrypt(password, address, salt, params);
+        account.salt = Buffer.from(salt, 'hex').toString('base64');
         return account;
     }
 
@@ -99,10 +99,9 @@ export class Account {
         account.label = obj.label;
         account.lock = obj.lock;
         account.isDefault = obj.isDefault;
-        account.passwordHash = obj.passwordHash;
         account.publicKey = obj.publicKey;
         account.signatureScheme = obj.SignatureScheme;
-
+        account.salt = obj.salt;
         account.encryptedKey = PrivateKey.deserializeJson({
             algorithm: obj.algorithm,
             parameters: obj.parameters,
@@ -120,9 +119,9 @@ export class Account {
     extra: null;
 
     // to compatible with cli wallet
-    'enc-alg': string = 'aes-256-ctr';
-    hash: string = 'sha256';
-    passwordHash: string;
+    'enc-alg': string = 'aes-256-gcm';
+    salt: string;
+
     publicKey: string;
     signatureScheme: string;
     isDefault: boolean;
@@ -146,8 +145,7 @@ export class Account {
             'parameters': this.encryptedKey.parameters.serializeJson(),
             'key': this.encryptedKey.key,
             'enc-alg': this['enc-alg'],
-            'hash': this.hash,
-            'passwordHash': this.passwordHash,
+            'salt': this.salt,
             'signatureScheme': this.signatureScheme,
             'isDefault': this.isDefault,
             'publicKey': this.publicKey,
