@@ -340,7 +340,7 @@ export class SDK {
         const privateKey = PrivateKey.generateFromMnemonic(mnemonic);
         const account = Account.create(privateKey, password, label);
         const addr = account.address;
-        const salt = Buffer.from(account.salt, 'base58').toString('hex');
+        const salt = Buffer.from(account.salt, 'base64').toString('hex');
         const mnemonicEnc = scrypt.encryptWithGcm(mnemonicHex, addr, salt, password);
         const result = account.toJson();
         const obj = {
@@ -363,7 +363,7 @@ export class SDK {
                               address: string, salt: string, password: string, callback: string) {
         let obj;
         const addr = new Address(address);
-        const saltHex = Buffer.from(salt, 'base58').toString('hex');
+        const saltHex = Buffer.from(salt, 'base64').toString('hex');
         const decMneHex = scrypt.decryptWithGcm(mnemonicEnc, addr, saltHex, password);
         const decMne = hexstr2str(decMneHex);
         obj = {
