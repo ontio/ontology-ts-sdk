@@ -19,12 +19,12 @@ import * as base58 from 'bs58';
 import * as cryptoJS from 'crypto-js';
 import { ADDR_VERSION } from '../consts';
 import { ERROR_CODE } from '../error';
+import opcode from '../transaction/opcode';
 import { programFromPubKey, pushNum } from '../transaction/program';
-import { ab2hexstring, hash160, hex2VarBytes, hexstring2ab, num2hexstring, sha256, StringReader } from '../utils';
+import { pushHexString } from '../transaction/scriptBuilder';
+import { ab2hexstring, hash160, hexstring2ab, num2hexstring, sha256, StringReader } from '../utils';
 import { reverseHex } from './../utils';
 import { PublicKey } from './PublicKey';
-import { pushHexString } from '../transaction/transactionBuilder';
-import opcode from '../transaction/opcode';
 
 /**
  * Representation of Address.

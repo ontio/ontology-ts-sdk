@@ -20,7 +20,7 @@
 import { Address } from '../../crypto/address';
 import opcode from '../../transaction/opcode';
 import { hex2VarBytes, num2hexstring, str2VarBytes } from '../../utils';
-import { pushBool, pushHexString, pushInt } from './../../transaction/transactionBuilder';
+import { pushBool, pushHexString, pushInt } from './../../transaction/scriptBuilder';
 import { Parameter, ParameterType } from './parameter';
 import Struct from './struct';
 

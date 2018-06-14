@@ -15,14 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import BigInt from '../common/bigInt';
 import Fixed64 from '../common/fixed64';
 import { NATIVE_INVOKE_NAME, REST_API } from '../consts';
 import { Address, PrivateKey, SignatureScheme } from '../crypto';
-import { Parameter,  ParameterType } from '../smartcontract/abi/parameter';
 import { Contract } from '../smartcontract/token';
 import {
-    hex2VarBytes,
     hexstr2str,
     num2hexstring,
     str2hexstr
@@ -30,9 +27,9 @@ import {
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
+import { pushHexString, pushInt } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 import { TxSignature } from './txSignature';
-
 // const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
 // tslint:disable-next-line:variable-name
@@ -99,179 +96,6 @@ export const signTx = (tx: Transaction, privateKeys2D: PrivateKey[][], schemas2D
         const signature = TxSignature.create(hash, privateKeys, schemas);
         tx.sigs.push(signature);
     }
-};
-
-export const pushBool = (param: boolean) => {
-    let result = '';
-    if (param) {
-        result += num2hexstring(opcode.PUSHT);
-    } else {
-        result += num2hexstring(opcode.PUSHF);
-    }
-    return result;
-};
-
-export const pushInt = (param: number) => {
-    let result = '';
-    if (param === -1) {
-        result += num2hexstring(opcode.PUSHM1);
-    } else if (param === 0) {
-        result += num2hexstring(opcode.PUSH0);
-    } else if (param > 0 && param < 16) {
-        const num = opcode.PUSH1 - 1 + param;
-        result += num2hexstring(num);
-    } else {
-        const biHex = new BigInt(param.toString()).toHexstr();
-        result = pushHexString(biHex);
-    }
-
-    return result;
-};
-
-export const pushHexString = (param: string) => {
-    let result = '';
-    const len = param.length / 2;
-    if (len < opcode.PUSHBYTES75) {
-        result += num2hexstring(len);
-    } else if (len < 0x100) {
-        result += num2hexstring(opcode.PUSHDATA1);
-        result += num2hexstring(len);
-    } else if (len < 0x10000) {
-        result += num2hexstring(opcode.PUSHDATA2);
-        result += num2hexstring(len, 2, true);
-    } else {
-        result += num2hexstring(opcode.PUSHDATA4);
-        result += num2hexstring(len, 4, true);
-    }
-    result += param;
-    return result;
-};
-
-// params is like [param1, param2...]
-export const buildSmartContractParam = (functionName: string, params: Parameter[]) => {
-    let result = '';
-    for (let i = params.length - 1; i > -1; i--) {
-        const type = params[i].getType();
-        switch (type) {
-        case ParameterType.Boolean:
-            result += pushBool(params[i].getValue());
-            break;
-
-        case ParameterType.Number:
-            result += pushInt(params[i].getValue());
-            break;
-
-        case ParameterType.String:
-            const value = str2hexstr(params[i].getValue());
-            result += pushHexString(value);
-            break;
-
-        case ParameterType.ByteArray:
-            result += pushHexString(params[i].getValue());
-            break;
-
-        /* case "[object Object]":
-            let temp = []
-            let keys = Object.keys(params[i])
-            for(let k of keys) {
-                temp.push( params[i][k])
-            }
-            result += buildSmartContractParam(temp)
-            break; */
-        default:
-            throw new Error('Unsupported param type: ' + params[i]);
-        }
-    }
-    // to work with vm
-    if (params.length === 0) {
-        result += '00';
-        params.length = 1;
-    }
-    const paramsLen = num2hexstring(params.length + 0x50);
-    result += paramsLen;
-
-    const paramsEnd = 'c1';
-    result += paramsEnd;
-
-    result += hex2VarBytes(functionName);
-
-    return result;
-};
-
-export const buildWasmContractParam = (params: Parameter[]) => {
-    const pList = [];
-
-    for (const p of params) {
-        const type = p.getType();
-        let o;
-
-        switch (type) {
-        case ParameterType.String:
-            o = {
-                type: 'string',
-                value: p.getValue()
-            };
-            break;
-        case ParameterType.Int:
-            o = {
-                type : 'int',
-                value : p.getValue().toString()
-            };
-            break;
-        case ParameterType.Long:
-            o = {
-                type : 'int64',
-                value : p.getValue()
-            };
-            break;
-        case ParameterType.IntArray:
-            o = {
-                type : 'int_array',
-                value : p.getValue()
-            };
-            break;
-        case ParameterType.LongArray:
-            o = {
-                type : 'int_array',
-                value : p.getValue()
-            };
-            break;
-        default:
-            break;
-        }
-        pList.push(o);
-    }
-
-    const result = {
-        Params: pList
-    };
-    return str2hexstr(JSON.stringify(result));
-};
-
-export const buildNativeContractParam = (params: Parameter[]) => {
-    let result = '';
-
-    for (let i = params.length - 1; i >= 0; i--) {
-        const p = params[i];
-        const type = p.getType();
-        switch (type) {
-        case ParameterType.ByteArray:
-            result += pushHexString(p.value);
-            break;
-        case ParameterType.Int:
-            result += pushInt(p.value);
-            break;
-        case ParameterType.Long:
-            result += pushInt(p.value);
-            break;
-        case ParameterType.Boolean:
-            result += pushBool(p.value);
-        default:
-            break;
-        }
-    }
-
-    return result;
 };
 
 export function makeNativeContractTx(
