@@ -19,7 +19,8 @@ import { Address  } from '../crypto';
 import AbiInfo from '../smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
 import abiJson from '../smartcontract/data/attestClaim';
-import { buildNativeContractParam, makeInvokeTransaction } from '../transaction/transactionBuilder';
+import { buildNativeContractParam } from '../transaction/scriptBuilder';
+import { makeInvokeTransaction } from '../transaction/transactionBuilder';
 import { str2hexstr } from '../utils';
 import { Transaction } from './../transaction/transaction';
 

@@ -34,16 +34,23 @@ export class PublicKey extends Key {
      * @param length Byte length of the serialized object
      *
      */
-    static deserializeHex(sr: StringReader, length: number = 35): PublicKey {
-        const algorithmHex = parseInt(sr.read(1), 16);
-        const curveHex = parseInt(sr.read(1), 16);
-        const pk = sr.read(length - 2);
+    static deserializeHex(sr: StringReader, length: number = 33): PublicKey {
+        if (length === 33) { // ECDSA
+            const algorithm = KeyType.ECDSA;
+            const curve = CurveLabel.SECP256R1;
+            const pk = sr.read(33);
+            return new PublicKey(pk, algorithm, new KeyParameters(curve));
+        } else {
+            const algorithmHex = parseInt(sr.read(1), 16);
+            const curveHex = parseInt(sr.read(1), 16);
+            const pk = sr.read(length - 2);
 
-        return new PublicKey(
-            pk,
-            KeyType.fromHex(algorithmHex),
-            new KeyParameters(CurveLabel.fromHex(curveHex))
-        );
+            return new PublicKey(
+                pk,
+                KeyType.fromHex(algorithmHex),
+                new KeyParameters(CurveLabel.fromHex(curveHex))
+            );
+        }
     }
 
     /**

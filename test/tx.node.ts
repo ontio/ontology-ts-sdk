@@ -100,6 +100,8 @@ console.log('pk4:' + pri4.getPublicKey().serializeHex())
 
 const pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
 const account5 = Account.create(pri5, '123456', '');
+const pub5 = pri5.getPublicKey();
+const ontid5 = Address.generateOntid(pub5);
 
 const recoveryAddress = Address.fromMultiPubKeys(2, [pri3.getPublicKey(), pri4.getPublicKey()]);
 
@@ -172,7 +174,7 @@ const testDDOTx = () => {
     console.log('account4 recovery: ' + account4.address.serialize());
     // tslint:disable-next-line:no-shadowed-variable
     // const ontid = 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ';
-    const tx = buildGetDDOTx(ontid3);
+    const tx = buildGetDDOTx(ontid5);
     // tx.payer = account.address
 
     // let param = buildTxParam(tx, true)
@@ -213,9 +215,9 @@ const parseDDO = (result) => {
 const testRegisterOntid = () => {
     // tslint:disable-next-line:no-shadowed-variable
     const publicKey = privateKey.getPublicKey();
-    const tx = buildRegisterOntidTx(ontid3, pub3, gasPrice, gasLimit);
-    tx.payer = account3.address;
-    signTransaction(tx, pri3);
+    const tx = buildRegisterOntidTx(ontid5, pub5, gasPrice, gasLimit);
+    tx.payer = account5.address;
+    signTransaction(tx, pri5);
     const serialized = tx.serialize();
     console.log('tx serialized: ' + serialized);
 

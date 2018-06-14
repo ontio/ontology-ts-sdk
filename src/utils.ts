@@ -18,10 +18,10 @@
 import axios from 'axios';
 import * as bip39 from 'bip39';
 import * as cryptoJS from 'crypto-js';
+import { ec as EC } from 'elliptic';
 import * as secureRandom from 'secure-random';
 import { WEBVIEW_SCHEME } from './consts';
 import { ERROR_CODE } from './error';
-import { ec as EC } from 'elliptic';
 const curve = new EC('p256');
 export function hexstring2ab(str: string): number[] {
     const result = [];
