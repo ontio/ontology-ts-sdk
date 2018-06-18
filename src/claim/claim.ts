@@ -199,7 +199,7 @@ export class Claim extends Message {
         const tx = buildGetRecordStatusTx(claimId);
 
         const response = await client.sendRawTransaction(tx.serialize(), true);
-        // console.log('resp:', response);
+        console.log('resp:', response);
         const result = GetStatusResponse.deserialize(response);
 
         return result.status === Status.ATTESTED && result.attesterId === attesterId;

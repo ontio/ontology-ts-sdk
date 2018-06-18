@@ -25,6 +25,5 @@ declare module 'bn.js';
 declare module 'secure-random';
 declare module 'sm.js';
 declare module 'bs58check';
-declare module 'js-scrypt';
 declare module 'wif';
 declare module 'bip39';
