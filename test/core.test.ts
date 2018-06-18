@@ -17,11 +17,11 @@
  */
 import * as bip39 from 'bip39';
 import { Claim, Metadata } from '../src/claim';
-import { CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
+import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
 import * as utils from '../src/utils';
 import { Signature } from './../src/crypto/Signature';
 import { SignatureScheme } from './../src/crypto/SignatureScheme';
-import { sha256, StringReader } from './../src/utils';
+import { randomBytes, sha256, StringReader } from './../src/utils';
 // tslint:disable : no-console
 describe('test core', () => {
 
@@ -54,7 +54,8 @@ describe('test core', () => {
     test('encrypt private key', () => {
         // tslint:disable-next-line:no-shadowed-variable
         const privateKey = new PrivateKey('b02304dcb35bc9a055147f07b2a3291db4ac52f664ec38b436470c98db4200d9');
-        const encrypt = privateKey.encrypt('123456');
+        const address = Address.fromPubKey(privateKey.getPublicKey());
+        const encrypt = privateKey.encrypt('123456', address, randomBytes(16));
         console.log('encrypt: ' + encrypt.key);
     });
 

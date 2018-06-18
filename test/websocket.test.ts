@@ -1,3 +1,4 @@
+import { Account } from '../src/account';
 import { TEST_ONT_URL } from '../src/consts';
 import { Address, PrivateKey } from '../src/crypto';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
@@ -10,7 +11,7 @@ describe('test websocket', () => {
     // tslint:disable-next-line:one-variable-per-declaration
     const codeHash = 'ff00000000000000000000000000000000000003';
     const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-    const address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
+    const address = 'AXmQDzzvpEtPkNwBEFsREzApTTDZFW6frD';
 
     let txHash: string;
     let blockHash: string;
@@ -19,11 +20,14 @@ describe('test websocket', () => {
     const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
     const publicKey = privateKey.getPublicKey();
 
+    const account = Account.create(privateKey, '123456', '');
+
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
+        tx.payer = account.address;
         signTransaction(tx, privateKey);
 
         const result = await client.sendRawTransaction(tx.serialize(), false, true);

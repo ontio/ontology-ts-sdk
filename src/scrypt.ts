@@ -15,21 +15,47 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { createCipheriv, createDecipheriv } from 'browserify-aes';
 import * as Bs58check from 'bs58check';
+import { createCipheriv, createDecipheriv } from 'crypto';
 import * as CryptoJS from 'crypto-js';
-import * as Scrypt from 'js-scrypt';
+import * as asyncScrypt from 'scrypt-async';
 import { DEFAULT_SCRYPT, OEP_FLAG, OEP_HEADER } from './consts';
 import { Address } from './crypto/address';
 import { PublicKey } from './crypto/PublicKey';
 import { ERROR_CODE } from './error';
-import { ab2hexstring, hexXor, StringReader } from './utils';
+import { ab2hexstring, hexstring2ab, hexXor, StringReader } from './utils';
 
 export interface ScryptParams {
     cost: number;
     blockSize: number;
     parallel: number;
     size: number;
+}
+
+/**
+ * Synchronious call to scrypt-async-js.
+ *
+ * @param keyphrase Keyphrase to use
+ * @param addressHash Hex encoded address
+ * @param params Scrypt params
+ */
+function scrypt(keyphrase: string, addressHash: string, params: ScryptParams) {
+    let derived: number[] = [];
+
+    asyncScrypt(
+        keyphrase.normalize('NFC'),
+        hexstring2ab(addressHash),
+        {
+            N: params.cost,
+            r: params.blockSize,
+            p: params.parallel,
+            dkLen: params.size
+        },
+        (result: string | number[]) => {
+            derived = result as number[];
+        }
+    );
+    return new Buffer(derived);
 }
 
 export function encrypt(
@@ -52,12 +78,7 @@ export function encrypt(
     // console.log( "addresshash: ", addresshash );
 
     // Scrypt
-    const derived = Scrypt.hashSync(
-        Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
-        Buffer.from(addresshash, 'hex'),
-        scryptParams
-    ).toString('hex');
-
+    const derived = scrypt(keyphrase, addresshash, scryptParams).toString('hex');
     const derived1 = derived.slice(0, 32);
     const derived2 = derived.slice(64);
     const iv = CryptoJS.enc.Hex.parse(derived1);
@@ -118,11 +139,7 @@ export function decrypt(
     // console.log( "encrypted: ", encrypted );
 
     // Scrypt
-    const derived = Scrypt.hashSync(
-        Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
-        Buffer.from(salt, 'hex'),
-        scryptParams
-    ).toString('hex');
+    const derived = scrypt(keyphrase, salt, scryptParams).toString('hex');
     const derived1 = derived.slice(0, 32);
     const derived2 = derived.slice(64);
     // console.log('decrypt derived: ' + derived)
@@ -212,10 +229,7 @@ export function encryptWithEcb(
     const addresshash = address.getB58Checksum();
     // console.log( "addresshash: ", addresshash );
     // Scrypt
-    const derived = Scrypt.hashSync(
-        Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
-        Buffer.from(addresshash, 'hex'),
-        scryptParams).toString('hex');
+    const derived = scrypt(keyphrase, addresshash, scryptParams).toString('hex');
     const derived1 = derived.slice(0, 64);
     const derived2 = derived.slice(64);
 
@@ -244,10 +258,7 @@ export function decryptWithEcb(
     const encrypted = assembled.substr(-64);
     // console.log( "encrypted: ", encrypted );
     // Scrypt
-    const derived = Scrypt.hashSync(
-        Buffer.from(keyphrase.normalize('NFC'),
-        'utf8'), Buffer.from(addressHash, 'hex'),
-        scryptParams).toString('hex');
+    const derived = scrypt(keyphrase, addressHash, scryptParams).toString('hex');
     const derived1 = derived.slice(0, 64);
     const derived2 = derived.slice(64);
 
@@ -303,12 +314,7 @@ export function encryptWithGcm(
     keyphrase: string,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ) {
-    const derived = Scrypt.hashSync(
-        Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
-        Buffer.from(salt, 'hex'),
-        scryptParams
-    );
-
+    const derived = scrypt(keyphrase, salt, scryptParams);
     const derived1 = derived.slice(0, 12);
     const derived2 = derived.slice(32);
     const key = derived2;
@@ -342,12 +348,7 @@ export function decryptWithGcm(
     const result = Buffer.from(encrypted, 'base64');
     const ciphertext = result.slice(0, result.length - 16);
     const authTag = result.slice(result.length - 16);
-    const derived = Scrypt.hashSync(
-        Buffer.from(keyphrase.normalize('NFC'), 'utf8'),
-        Buffer.from(salt, 'hex'),
-        scryptParams
-    );
-
+    const derived = scrypt(keyphrase, salt, scryptParams);
     const derived1 = derived.slice(0, 12);
     const derived2 = derived.slice(32);
     const key = derived2;
@@ -358,6 +359,11 @@ export function decryptWithGcm(
     decipher.setAAD(aad);
     decipher.setAuthTag(authTag);
     let decrypted = decipher.update(ciphertext).toString('hex');
-    decrypted += decipher.final().toString('hex');
+
+    try {
+        decrypted += decipher.final().toString('hex');
+    } catch (err) {
+        throw ERROR_CODE.Decrypto_ERROR;
+    }
     return decrypted;
 }

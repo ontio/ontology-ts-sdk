@@ -49,7 +49,7 @@ describe('test account', () => {
     test('test import account with correct password', () => {
         let a;
         try {
-            a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address);
+            a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address, account.salt);
 
         } catch (err) {
             console.log(err);
@@ -61,7 +61,7 @@ describe('test account', () => {
 
     test('test import  with incorrect password', () => {
         try {
-            const a = Account.importAccount('mickey', encryptedPrivateKey, '1234567', account.address);
+            const a = Account.importAccount('mickey', encryptedPrivateKey, '1234567', account.address, account.salt);
         } catch (err) {
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR);
         }

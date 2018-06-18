@@ -16,7 +16,6 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { generateOntid } from '../src/core';
 import { Address, PrivateKey } from '../src/crypto';
 import { PublicKey } from '../src/crypto/PublicKey';
 import { makeAssignFuncsToRoleTx, makeAssignOntIdsToRoleTx } from '../src/smartcontract/authContractTxBuilder';
@@ -48,16 +47,18 @@ const params = {
     parallel: 8,
     size: 64
 };
+
+// TODO: change to private key encoded with AES-GCM
 const adminEncPri = new PrivateKey('ET5m04btJ/bhRvSomqfqSY05M1mlmePU74mY+yvpIjY=');
 const adminAddress = new Address('TA4nUbnjX5UGVxkumhfndc7wyemrxdMtn8');
-const adminPri = adminEncPri.decrypt('111111', adminAddress, params);
+const adminPri = adminEncPri.decrypt('111111', adminAddress, '', params);
 const adminPk = adminPri.getPublicKey();
-const adminOntid = generateOntid(adminPk.serializeHex());
+const adminOntid = Address.generateOntid(adminPk);
 
 const userPri = new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67317f');
 const userPk = userPri.getPublicKey();
 const userAddr = Address.fromPubKey(userPk);
-const userId = generateOntid(userPk.serializeHex());
+const userId = Address.generateOntid(userPk);
 
 const role = 'Role';
 const func = 'registerCandidate';

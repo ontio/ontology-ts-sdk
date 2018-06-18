@@ -32,7 +32,7 @@ describe('test identity', () => {
         identityDataStr: string,
         identity: Identity,
         encryptedPrivateKey: PrivateKey,
-        checksum: string;
+        address: Address;
 
     beforeAll(() => {
         privateKey = PrivateKey.random();
@@ -40,8 +40,7 @@ describe('test identity', () => {
 
     test('test create', () => {
         identity = Identity.create(privateKey, '123456', 'mickey');
-        const ontid = identity.ontid;
-        checksum = Address.fromOntid(ontid).getB58Checksum();
+        address = identity.controls[0].address;
         encryptedPrivateKey = identity.controls[0].encryptedKey;
         identityDataStr = identity.toJson();
         expect(identityDataStr).toBeDefined();
@@ -51,12 +50,9 @@ describe('test identity', () => {
         // tslint:disable:no-console
         console.log('encryptedkey: ' + encryptedPrivateKey.key);
         let a: Identity;
-        // tslint:disable-next-line:one-variable-per-declaration
-        const encrypt = new PrivateKey('Eg3FtGvUSbSb8S4JNYG1vxPcwTJBgMVhBkPuinA0F6A='),
-            ontid = 'did:ont:TA9WVH2J7nCksYjvzhs3eWjaUFAE3Tr8at',
-            password = '111111';
+
         try {
-            a = Identity.importIdentity('mickey', encrypt, '111111', Address.fromOntid(ontid).getB58Checksum());
+            a = Identity.importIdentity('mickey', encryptedPrivateKey, '123456', address, identity.controls[0].salt);
         } catch (err) {
             console.log(err);
         }
@@ -65,7 +61,7 @@ describe('test identity', () => {
 
     test('test import with incorrect password', () => {
         try {
-            const a = Identity.importIdentity('', encryptedPrivateKey, '123457', checksum);
+            const a = Identity.importIdentity('', encryptedPrivateKey, '123457', address, identity.controls[0].salt);
         } catch (err) {
             console.log(err);
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR);

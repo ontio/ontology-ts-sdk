@@ -386,6 +386,15 @@ export function generateRandomArray(len: number): ArrayBuffer {
     return secureRandom(len);
 }
 
+/**
+ * Generates random ArrayBuffer of specified length encoded as hex string
+ *
+ * @param len Length of the array to generate
+ */
+export function randomBytes(len: number) {
+    return ab2hexstring(generateRandomArray(len));
+}
+
 export function generateMnemonic(size: number = 16): string {
     const random = ab2hexstring(generateRandomArray(size));
     return bip39.entropyToMnemonic(random);

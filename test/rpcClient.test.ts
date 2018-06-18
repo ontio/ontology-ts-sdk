@@ -1,3 +1,4 @@
+import { Account } from '../src/account';
 import { PrivateKey } from '../src/crypto';
 import { Address } from '../src/crypto/address';
 import RpcClient from '../src/network/rpc/rpcClient';
@@ -11,7 +12,7 @@ describe('test rpc client', () => {
 
     const codeHash = 'ff00000000000000000000000000000000000003';
     const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-    const address = 'TA5k9pH3HopmscvgQYx8ptfCAPuj9u2HxG';
+    const address = 'AXmQDzzvpEtPkNwBEFsREzApTTDZFW6frD';
 
     let txHash: string;
     let blockHash: string;
@@ -20,11 +21,14 @@ describe('test rpc client', () => {
     const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
     const publicKey = privateKey.getPublicKey();
 
+    const account = Account.create(privateKey, '123456', '');
+
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
+        tx.payer = account.address;
         signTransaction(tx, privateKey);
 
         const client = new WebsocketClient();
@@ -90,7 +94,7 @@ describe('test rpc client', () => {
     });
 
     test('test getBalance', async () => {
-        const res = await rpcClient.getBalance(new Address('TA5kdiHgtYP2x781hw8JbvNxxUujPiBobY'));
+        const res = await rpcClient.getBalance(new Address(address));
         console.log(res);
         expect(res.desc).toEqual('SUCCESS');
     });
