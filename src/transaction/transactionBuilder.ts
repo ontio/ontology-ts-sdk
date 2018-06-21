@@ -18,18 +18,17 @@
 import Fixed64 from '../common/fixed64';
 import { NATIVE_INVOKE_NAME, REST_API } from '../consts';
 import { Address, PrivateKey, SignatureScheme } from '../crypto';
-import { Contract } from '../smartcontract/token';
 import {
-    hexstr2str,
     num2hexstring,
     str2hexstr
 } from '../utils';
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
-import { pushHexString, pushInt } from './scriptBuilder';
+import { pushHexString, pushInt, buildSmartContractParam } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 import { TxSignature } from './txSignature';
+import { Parameter } from '../smartcontract/abi/parameter';
 // const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
 // tslint:disable-next-line:variable-name
@@ -132,7 +131,7 @@ export function makeNativeContractTx(
 
 export const makeInvokeTransaction = (
     funcName: string,
-    args: string,
+    params: Parameter[],
     contractAddr: Address,
     gasPrice?: string,
     gasLimit?: string,
@@ -141,12 +140,12 @@ export const makeInvokeTransaction = (
     const tx = new Transaction();
     tx.type = TxType.Invoke;
 
-    const contract = new Contract();
-    contract.address = contractAddr;
-    contract.args = args;
-    contract.method = funcName;
-    let code = contract.serialize();
-    code = num2hexstring(opcode.APPCALL) + code;
+    const args = buildSmartContractParam(funcName, params);
+
+    let code = args + num2hexstring(opcode.APPCALL);
+    // code += contractAddr.serialize();
+    code += contractAddr.toHexString();
+
 
     const payload = new InvokeCode();
     payload.code = code;
@@ -246,52 +245,4 @@ export function sendRawTxRestfulUrl(url: string, preExec: boolean = false) {
     }
 
     return restUrl;
-}
-
-/* {
-    "Action": "Notify",
-        "Desc": "SUCCESS",
-            "Error": 0,
-                "Result": {
-        "Container": "ea02f7d3c828c79c65c198e016554d6c8ea7a7502dc164d649afe2c0059aa2b1",
-            "CodeHash": "8665eebe481029ea4e1fcf32aad2edbbf1728beb",
-                "State": [{
-                    "Value": [{
-                        "Value": "417474726962757465"
-                    }, {
-                        "Value": "757064617465"
-                    }, {
-                        "Value": "6469643a6f6e743a5452616a31684377615135336264525450635a78596950415a364d61376a6351564b"
-                    }, {
-                        "Value": "436c616d3a74776974746572"
-                    }]
-                }],
-                    "BlockHeight": 37566
-    },
-    "Version": "1.0.0"
-} */
-
-// const enum EventType {
-//     Attribute = 'Attribute',
-//     Register = 'Register',
-//     PublicKey = 'PublicKey'
-// }
-
-/**
- * @deprecated Use NotifyEvent.deserialize() instead.
- */
-export function parseEventNotify(res: any)  {
-    // parse state
-    for (const r of res.Result) {
-        const states = r.States;
-        const parsedStates = [];
-
-        if (states && states.length > 0) {
-            for (const s of states) {
-                parsedStates.push(hexstr2str(s));
-            }
-        }
-        r.States = parsedStates;
-    }
-    return res;
 }

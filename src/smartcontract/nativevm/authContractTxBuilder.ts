@@ -17,12 +17,14 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Address } from '../crypto';
-import { makeInvokeTransaction } from '../transaction/transactionBuilder';
-import { hex2VarBytes, num2hexstring, num2VarInt, str2hexstr, str2VarBytes, varifyPositiveInt } from '../utils';
-import { Transaction } from './../transaction/transaction';
+import { Address } from '../../crypto';
+import { makeNativeContractTx } from '../../transaction/transactionBuilder';
+import { hex2VarBytes, str2hexstr, varifyPositiveInt } from '../../utils';
+import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
+import Struct from '../abi/struct';
+import { Transaction } from './../../transaction/transaction';
 
-export const AUTH_CONTRACT = 'ff00000000000000000000000000000000000006';
+export const AUTH_CONTRACT = '0000000000000000000000000000000000000006';
 const contractAddress = new Address(AUTH_CONTRACT);
 
 /* TODO : Test */
@@ -36,7 +38,7 @@ export function makeInitContractAdminTx(
         adminOntId = str2hexstr(adminOntId);
     }
     const params = hex2VarBytes(adminOntId);
-    const tx = makeInvokeTransaction('initContractAdmin', params, contractAddress,
+    const tx = makeNativeContractTx('initContractAdmin', params, contractAddress,
                                      gasPrice, gasLimit, payer);
     return tx;
 }
@@ -51,7 +53,7 @@ export function makeInitContractAdminTx(
  * @param gasLimit
  */
 export function makeTransferAuthTx(
-    contractAddr: string,
+    contractAddr: Address,
     newAdminOntid: string,
     keyNo: number,
     payer: Address,
@@ -62,12 +64,12 @@ export function makeTransferAuthTx(
     if (newAdminOntid.substr(0, 3) === 'did') {
         newAdminOntid = str2hexstr(newAdminOntid);
     }
-    let params = '';
-    params += hex2VarBytes(contractAddr);
-    params += hex2VarBytes(newAdminOntid);
-    params += num2hexstring(keyNo, 4, true);
+    const struct = new Struct();
+    struct.add(contractAddress.serialize(), newAdminOntid, keyNo);
+    const list = [struct];
+    const params = buildNativeCodeScript(list);
 
-    const tx = makeInvokeTransaction('transfer', params, contractAddress, gasPrice, gasLimit, payer);
+    const tx = makeNativeContractTx('transfer', params, contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -82,7 +84,7 @@ export function makeTransferAuthTx(
  * @param gasLimit
  */
 export function makeVerifyTokenTx(
-    contractAddr: string,
+    contractAddr: Address,
     callerOntId: string,
     funcName: string,
     keyNo: number,
@@ -94,12 +96,11 @@ export function makeVerifyTokenTx(
     if (callerOntId.substr(0, 3) === 'did') {
         callerOntId = str2hexstr(callerOntId);
     }
-    let params = '';
-    params += hex2VarBytes(contractAddr);
-    params += hex2VarBytes(callerOntId);
-    params += str2VarBytes(funcName);
-    params += num2hexstring(keyNo, 4, true);
-    const tx = makeInvokeTransaction('verifyToken', params, contractAddress, gasPrice, gasLimit, payer);
+    const struct = new Struct();
+    struct.add(contractAddr.serialize(), callerOntId, str2hexstr(funcName), keyNo);
+    const params = buildNativeCodeScript([struct]);
+
+    const tx = makeNativeContractTx('verifyToken', params, contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -115,7 +116,7 @@ export function makeVerifyTokenTx(
  * @param gasLimit
  */
 export function makeAssignFuncsToRoleTx(
-    contractAddr: string,
+    contractAddr: Address,
     adminOntId: string,
     role: string,
     funcNames: string[],
@@ -128,16 +129,14 @@ export function makeAssignFuncsToRoleTx(
     if (adminOntId.substr(0, 3) === 'did') {
         adminOntId = str2hexstr(adminOntId);
     }
-    let params = '';
-    params += hex2VarBytes(contractAddr);
-    params += hex2VarBytes(adminOntId);
-    params += str2VarBytes(role);
-    params += num2VarInt(funcNames.length);
+    const struct = new Struct();
+    struct.add(contractAddr.serialize(), adminOntId, str2hexstr(role), funcNames.length);
     for (const f of funcNames) {
-        params += str2VarBytes(f);
+        struct.add(str2hexstr(f));
     }
-    params += num2hexstring(keyNo, 4, true);
-    const tx = makeInvokeTransaction('assignFuncsToRole', params,
+    struct.add(keyNo);
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx('assignFuncsToRole', params,
                                     contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
@@ -154,7 +153,7 @@ export function makeAssignFuncsToRoleTx(
  * @param gasLimit
  */
 export function makeAssignOntIdsToRoleTx(
-    contractAddr: string,
+    contractAddr: Address,
     adminOntId: string,
     role: string,
     ontIds: string[],
@@ -167,20 +166,18 @@ export function makeAssignOntIdsToRoleTx(
     if (adminOntId.substr(0, 3) === 'did') {
         adminOntId = str2hexstr(adminOntId);
     }
-    let params = '';
-    params += hex2VarBytes(contractAddr);
-    params += hex2VarBytes(adminOntId);
-    params += str2VarBytes(role);
-    params += num2VarInt(ontIds.length);
+    const struct = new Struct();
+    struct.add(contractAddr.serialize(), adminOntId, str2hexstr(role), ontIds.length);
     for (const i of ontIds) {
         if (i.substr(0, 3) === 'did') {
-            params += str2VarBytes(i);
+            struct.add(str2hexstr(i));
         } else {
-            params += hex2VarBytes(i);
+            struct.add(i)
         }
     }
-    params += num2hexstring(keyNo, 4, true);
-    const tx = makeInvokeTransaction('assignOntIDsToRole', params,
+    struct.add(keyNo);
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx('assignOntIDsToRole', params,
         contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
@@ -199,7 +196,7 @@ export function makeAssignOntIdsToRoleTx(
  * @param gasLimit
  */
 export function makeDelegateRoleTx(
-    contractAddr: string,
+    contractAddr: Address,
     from: string,
     to: string,
     role: string,
@@ -218,15 +215,10 @@ export function makeDelegateRoleTx(
     if (to.substr(0, 3) === 'did') {
         to = str2hexstr(to);
     }
-    let params = '';
-    params += hex2VarBytes(contractAddr);
-    params += hex2VarBytes(from);
-    params += hex2VarBytes(to);
-    params += str2VarBytes(role);
-    params += num2hexstring(period, 4, true);
-    params += num2hexstring(level, 4, true);
-    params += num2hexstring(keyNo, 4, true);
-    const tx = makeInvokeTransaction('delegate', params,
+    const struct = new Struct();
+    struct.add(contractAddr.serialize(), from, to, str2hexstr(role), period, level, keyNo);
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx('delegate', params,
         contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }
@@ -243,7 +235,7 @@ export function makeDelegateRoleTx(
  * @param gasLimit
  */
 export function makeWithdrawRoleTx(
-    contractAddr: string,
+    contractAddr: Address,
     initiator: string,
     delegate: string,
     role: string,
@@ -259,13 +251,11 @@ export function makeWithdrawRoleTx(
     if (delegate.substr(0, 3) === 'did') {
         delegate = str2hexstr(delegate);
     }
-    let params = '';
-    params += hex2VarBytes(contractAddr);
-    params += hex2VarBytes(initiator);
-    params += hex2VarBytes(delegate);
-    params += str2VarBytes(role);
-    params += num2hexstring(keyNo, 4, true);
-    const tx = makeInvokeTransaction('withdraw', params,
+    const struct = new Struct();
+    struct.add(contractAddr.serialize(), initiator, delegate, str2hexstr(role), keyNo);
+    const params = buildNativeCodeScript([struct]) ;
+    
+    const tx = makeNativeContractTx('withdraw', params,
         contractAddress, gasPrice, gasLimit, payer);
     return tx;
 }

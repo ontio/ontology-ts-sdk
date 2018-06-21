@@ -21,7 +21,8 @@ import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
 export class ControlData {
     static fromJson(json: any): ControlData {
-        return new ControlData(json.id, PrivateKey.deserializeJson(json as JsonKey));
+        return new ControlData(json.id, PrivateKey.deserializeJson(json as JsonKey),
+        new Address(json.address), json.salt);
     }
 
     id: string;
@@ -29,14 +30,11 @@ export class ControlData {
     address: Address;
     salt: string;
 
-    constructor(id?: string, encryptedKey?: PrivateKey) {
-        if (id !== undefined) {
-            this.id = id;
-        }
-
-        if (encryptedKey !== undefined) {
-            this.encryptedKey = encryptedKey;
-        }
+    constructor(id: string, encryptedKey: PrivateKey, address: Address, salt: string) {
+        this.id = id;
+        this.encryptedKey = encryptedKey;
+        this.address = address;
+        this.salt = salt;
     }
 
     toJson(): object {
@@ -74,13 +72,7 @@ export class Identity {
         identity.lock = false;
 
         // control
-        const control = new ControlData();
-
-        // start from 1
-        control.id = '1';
-        control.encryptedKey = encryptedPrivateKey;
-        control.salt = salt;
-        control.address = Address.fromOntid(identity.ontid);
+        const control = new ControlData('1', encryptedPrivateKey, Address.fromOntid(identity.ontid), salt);
 
         identity.controls.push(control);
 
@@ -110,9 +102,8 @@ export class Identity {
         const salt = randomBytes(16);
         const encryptedPrivateKey = privateKey.encrypt(keyphrase, address, salt, params);
         // start from 1
-        const control = new ControlData('1', encryptedPrivateKey);
-        control.salt = Buffer.from(salt, 'hex').toString('base64');
-        control.address = address;
+        const saltBase64 = Buffer.from(salt, 'hex').toString('base64');
+        const control = new ControlData('1', encryptedPrivateKey, address, saltBase64);
         identity.controls.push(control);
 
         return identity;

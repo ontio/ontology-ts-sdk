@@ -432,3 +432,7 @@ export function getUnencodedPublicKey(publicKey: string) {
     const keyPair = curve.keyFromPublic(publicKey, 'hex');
     return keyPair.getPublic().encode('hex');
 }
+
+export function isBase64(str: string): boolean {
+    return Buffer.from(str, 'base64').toString('base64') === str;
+}

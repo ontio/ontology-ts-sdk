@@ -16,14 +16,14 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { BigNumber } from 'bignumber.js';
-import { TOKEN_TYPE } from '../consts';
-import { Address } from '../crypto';
-import { ERROR_CODE } from '../error';
-import { Transaction } from '../transaction/transaction';
-import { hex2VarBytes } from '../utils';
-import { makeNativeContractTx } from './../transaction/transactionBuilder';
-import { buildNativeCodeScript } from './abi/nativeParamsBuilder';
-import Struct from './abi/struct';
+import { TOKEN_TYPE } from '../../consts';
+import { Address } from '../../crypto';
+import { ERROR_CODE } from '../../error';
+import { Transaction } from '../../transaction/transaction';
+import { hex2VarBytes } from '../../utils';
+import { makeNativeContractTx } from './../../transaction/transactionBuilder';
+import { buildNativeCodeScript } from './../abi/nativeVmParamsBuilder';
+import Struct from './../abi/struct';
 
 export const ONT_CONTRACT = '0000000000000000000000000000000000000001';
 export const ONG_CONTRACT = '0000000000000000000000000000000000000002';
@@ -64,11 +64,8 @@ export function makeTransferTx(
 ): Transaction {
     amount = Number(amount);
     verifyAmount(amount);
-    // const state = new State(from, to, amount);
-    // const transfer = new Transfers();
-    // transfer.states = [state];
-    // const params = transfer.serialize();
-    const struct = Struct.add(from, to, amount);
+    const struct = new Struct();
+    struct.add(from, to, amount);
     const list = [];
     list.push([struct]);
     const contract = getTokenContract(tokenType);
@@ -166,7 +163,9 @@ export function makeClaimOngTx(from: Address, to: Address, amount: number | stri
     // const tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, amount);
     // const params = tf.serialize();
     const list = [];
-    list.push(Struct.add(from, new Address(ONT_CONTRACT), to, amount));
+    const struct = new Struct();
+    struct.add(from, new Address(ONT_CONTRACT), to, amount)
+    list.push(struct);
     const args = buildNativeCodeScript(list);
     const tx = makeNativeContractTx('transferFrom', args, new Address(ONG_CONTRACT) , gasPrice, gasLimit);
     tx.payer = payer;
@@ -186,7 +185,8 @@ export function makeQueryAllowanceTx(asset: string, from: Address, to: Address):
         contract = ONT_CONTRACT;
     }
     const list = [];
-    const struct = Struct.add(from, to);
+    const struct = new Struct();
+    struct.add(from, to);
     list.push(struct);
     const params = buildNativeCodeScript(list);
     const tx = makeNativeContractTx('allowance', params, new Address(contract), '0', '0');

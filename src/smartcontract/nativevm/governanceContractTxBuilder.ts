@@ -15,14 +15,17 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { Address } from '../crypto';
-import { ERROR_CODE } from '../error';
-import { RestClient, Transaction } from '../index';
-import { makeInvokeTransaction } from '../transaction/transactionBuilder';
-import { hex2VarBytes, hexstr2str, num2hexstring, num2VarInt,
-    str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../utils';
+import { Address } from '../../crypto';
+import { ERROR_CODE } from '../../error';
+import RestClient from '../../network/rest/restClient';
+import { Transaction } from '../../transaction/transaction';
+import { makeNativeContractTx } from '../../transaction/transactionBuilder';
+import { hex2VarBytes, hexstr2str, num2hexstring,
+    str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../../utils';
+import Struct from '../abi/struct';
+import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 
-export const GOVERNANCE_CONTRACT = 'ff00000000000000000000000000000000000007';
+export const GOVERNANCE_CONTRACT = '0000000000000000000000000000000000000007';
 const contractAddress = new Address(GOVERNANCE_CONTRACT);
 
 /* TODO: Test */
@@ -54,15 +57,11 @@ export function makeRegisterCandidateTx(
     varifyPositiveInt(initPos);
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
-    }
-    let params = '';
-    params += str2VarBytes(peerPubKey);
-    console.log('pk: ' + peerPubKey + ' pkByts: ' + params);
-    params += userAddr.serialize();
-    params += num2VarInt(initPos);
-    params += hex2VarBytes(ontid);
-    params += num2hexstring(keyNo, 8, true);
-    return makeInvokeTransaction('registerCandidate', params, contractAddress,
+    }    
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubKey), userAddr.serialize(), initPos, ontid, keyNo);
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('registerCandidate', params, contractAddress,
                                      gasPrice, gasLimit, payer);
 }
 
@@ -72,9 +71,10 @@ export function makeApproveCandidateTx(
     gasPrice: string,
     gasLimit: string
 ): Transaction {
-    let params = '';
-    params += str2VarBytes(peerPubKey);
-    return makeInvokeTransaction('approveCandidate', params, contractAddress,
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubKey));
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('approveCandidate', params, contractAddress,
                                      gasPrice, gasLimit, payer);
 }
 
@@ -84,9 +84,10 @@ export function makeRejectCandidateTx(
     gasPrice: string,
     gasLimit: string
 ): Transaction {
-    let params = '';
-    params += str2VarBytes(peerPubKey);
-    return makeInvokeTransaction('rejectCandidate', params, contractAddress,
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubKey));
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('rejectCandidate', params, contractAddress,
         gasPrice, gasLimit, payer);
 }
 
@@ -111,19 +112,19 @@ export function makeVoteForPeerTx(
     if (peerPubKeys.length !== posList.length) {
         throw ERROR_CODE.INVALID_PARAMS;
     }
-    let params = '';
-    params += userAddr.serialize();
-    params += num2VarInt(peerPubKeys.length);
+    const struct = new Struct();
+    struct.add(userAddr.serialize())
+    struct.add(peerPubKeys.length);
     for (const p of peerPubKeys) {
-        params += str2VarBytes(p);
+        struct.add(str2hexstr(p));
     }
-    params += num2VarInt(posList.length);
+    struct.add(posList.length);
     for (const n of posList) {
-        varifyPositiveInt(n);
-        params += num2VarInt(n);
+        struct.add(n)
     }
+    const params = buildNativeCodeScript([struct]);
     console.log('params: ' + params);
-    return makeInvokeTransaction('voteForPeer', params, contractAddress,
+    return makeNativeContractTx('voteForPeer', params, contractAddress,
        gasPrice, gasLimit, payer);
 }
 
@@ -147,18 +148,18 @@ export function makeUnvoteForPeerTx(
     if (peerPubKeys.length !== posList.length) {
         throw ERROR_CODE.INVALID_PARAMS;
     }
-    let params = '';
-    params += userAddr.serialize();
-    params += num2VarInt(peerPubKeys.length);
+    const struct = new Struct();
+    struct.add(userAddr.serialize());
+    struct.add(peerPubKeys.length);
     for (const p of peerPubKeys) {
-        params += str2VarBytes(p);
+        struct.add(str2hexstr(p));
     }
-    params += num2VarInt(posList.length);
+    struct.add(posList.length)
     for (const n of posList) {
-        varifyPositiveInt(n);
-        params += num2VarInt(n);
+        struct.add(n);
     }
-    return makeInvokeTransaction('unVoteForPeer', params, contractAddress,
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('unVoteForPeer', params, contractAddress,
          gasPrice, gasLimit, payer);
 }
 
@@ -179,24 +180,24 @@ export function makeWithdrawTx(
     if (peerPubKeys.length !== withdrawList.length) {
         throw ERROR_CODE.INVALID_PARAMS;
     }
-    let params = '';
-    params += userAddr.serialize();
-    params += num2VarInt(peerPubKeys.length);
+    const struct = new Struct();
+    struct.add(userAddr.serialize());
+    struct.add(peerPubKeys.length);
     for (const p of peerPubKeys) {
-        params += str2VarBytes(p);
+        struct.add(str2hexstr(p));
     }
-    params += num2VarInt(withdrawList.length);
+    struct.add(withdrawList.length);
     for (const w of withdrawList) {
-        varifyPositiveInt(w);
-        params += num2VarInt(w);
+        struct.add(w);
     }
-    return makeInvokeTransaction('withdraw', params, contractAddress,
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('withdraw', params, contractAddress,
         gasPrice, gasLimit, payer);
 }
 
 export async function getPeerPoolMap(url?: string) {
     const restClient = new RestClient(url);
-    const codeHash = GOVERNANCE_CONTRACT;
+    const codeHash = contractAddress.toHexString();
     const key = str2hexstr('governanceView');
     const viewRes = await restClient.getStorage(codeHash, key);
     const view = viewRes.Result;

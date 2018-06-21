@@ -15,13 +15,13 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { Address, PublicKey } from '../crypto';
-import { DDOAttribute } from '../transaction/ddo';
-import { Transaction } from '../transaction/transaction';
-import { makeNativeContractTx } from '../transaction/transactionBuilder';
-import { num2hexstring, str2hexstr } from '../utils';
-import { buildNativeCodeScript } from './abi/nativeParamsBuilder';
-import Struct from './abi/struct';
+import { Address, PublicKey } from '../../crypto';
+import { DDOAttribute } from '../../transaction/ddo';
+import { Transaction } from '../../transaction/transaction';
+import { makeNativeContractTx } from '../../transaction/transactionBuilder';
+import { num2hexstring, str2hexstr } from '../../utils';
+import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
+import Struct from '../abi/struct';
 
 export const ONTID_CONTRACT = '0000000000000000000000000000000000000003';
 
@@ -69,8 +69,8 @@ export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
     // const p1 = new Parameter(name1, type1, ontid);
     // const p2 = new Parameter(name2, type2, publicKey.serializeHex());
     // f.setParamsValue(p1, p2);
-
-    const struct = Struct.add(ontid, publicKey.serializeHex());
+    const struct = new Struct();
+    struct.add(ontid, publicKey.serializeHex());
     const list = [struct];
     const params = buildNativeCodeScript(list);
 
@@ -116,12 +116,13 @@ export function buildRegIdWithAttributes(
     // const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, attrs);
     // f.setParamsValue(p1, p2, p3);
     const attrLen = attributes.length;
-    const struct = Struct.add(ontid, publicKey.serializeHex(), attrLen);
+    const struct = new Struct();    
+    struct.add(ontid, publicKey.serializeHex(), attrLen);
     for (const a of attributes) {
         const key = str2hexstr(a.key);
         const type = str2hexstr(a.type);
         const value = str2hexstr(a.value);
-        struct.list.push(key, type, value);
+        struct.add(key, type, value);
     }
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(
@@ -156,13 +157,13 @@ export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], p
     // for (const a of attributes) {
     //     attrs += a.serialize();
     // }
-
-    const struct = Struct.add(ontid, attributes.length);
+    const struct = new Struct();
+    struct.add(ontid, attributes.length);
     for (const a of attributes) {
         const key = str2hexstr(a.key);
         const type = str2hexstr(a.type);
         const value = str2hexstr(a.value);
-        struct.list.push(key, type, value);
+        struct.add(key, type, value);
     }
     struct.list.push(publicKey.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -199,8 +200,8 @@ export function buildRemoveAttributeTx(ontid: string, key: string, publicKey: Pu
     // const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, key);
     // const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex());
     // f.setParamsValue(p1, p2, p3);
-
-    const struct = Struct.add(ontid, str2hexstr(key), publicKey.serializeHex());
+    const struct = new Struct();
+    struct.add(ontid, str2hexstr(key), publicKey.serializeHex());
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(
         method,
@@ -226,7 +227,8 @@ export function buildGetAttributesTx(ontid: string) {
 
     // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
     // f.setParamsValue(p1);
-    const struct = Struct.add(ontid);
+    const struct = new Struct();    
+    struct.add(ontid);
     const params = buildNativeCodeScript([struct]);
 
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
@@ -246,7 +248,8 @@ export function buildGetDDOTx(ontid: string) {
 
     // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
     // f.setParamsValue(p1);
-    const struct = Struct.add(ontid);
+    const struct = new Struct();    
+    struct.add(ontid);
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
     return tx;
@@ -276,8 +279,8 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  userKey: 
     } else if (userKey instanceof Address) {
         p3 = userKey.serialize();
     }
-
-    const struct = Struct.add(p1, p2, p3);
+    const struct = new Struct();
+    struct.add(p1, p2, p3);
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(
         method,
@@ -315,8 +318,8 @@ export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey, sen
     } else if (sender instanceof Address) {
         p3 = sender.serialize();
     }
-
-    const struct = Struct.add(p1, p2, p3);
+    const struct = new Struct();
+    struct.add(p1, p2, p3);
     const params = buildNativeCodeScript([struct]);
 
     const tx = makeNativeContractTx(
@@ -340,7 +343,8 @@ export function buildGetPublicKeysTx(ontid: string) {
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
-    const struct = Struct.add(ontid);
+    const struct = new Struct();    
+    struct.add(ontid);
     const params = buildNativeCodeScript([struct]);
 
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
@@ -367,7 +371,8 @@ export function buildAddRecoveryTx(ontid: string, recovery: Address,
     const p1 = ontid;
     const p2 = recovery;
     const p3 = publicKey.serializeHex();
-    const struct = Struct.add(p1, p2, p3);
+    const struct = new Struct();    
+    struct.add(p1, p2, p3);
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT), gasPrice, gasLimit);
     return tx;
@@ -395,7 +400,8 @@ export function buildChangeRecoveryTx(ontid: string, newrecovery: Address,
     const p1 = ontid;
     const p2 = newrecovery;
     const p3 = oldrecovery;
-    const struct = Struct.add(p1, p2, p3);
+    const struct = new Struct();    
+    struct.add(p1, p2, p3);
     const params = buildNativeCodeScript([struct]);
 
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT),
@@ -424,7 +430,8 @@ export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
     // tslint:disable-next-line:no-console
     console.log('index: ' + index);
 
-    const struct = Struct.add(ontid, pkId);
+    const struct = new Struct();    
+    struct.add(ontid, pkId);
     const params = buildNativeCodeScript([struct]);
 
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));

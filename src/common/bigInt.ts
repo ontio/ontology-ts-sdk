@@ -21,6 +21,7 @@ import { ERROR_CODE } from './../error';
 import { reverseHex } from './../utils';
 
 /* big positive integer based on BigNumber */
+const SIZE = 8;
 export default class BigInt {
     static fromHexstr(hex: string): BigInt {
         hex = reverseHex(hex);
@@ -41,8 +42,8 @@ export default class BigInt {
     toHexstr(): string {
         const bi = new BigNumber(this.value);
         let hex = bi.toString(16);
-        if (hex.length % 2 !== 0) {
-            hex = '0' + hex;
+        if (hex.length % 2 !== 0 || hex.length < 16) {
+            hex = ('0'.repeat(SIZE * 2) + hex).substring(hex.length);
         }
         hex = reverseHex(hex);
         return hex;

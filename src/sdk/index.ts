@@ -35,8 +35,9 @@ import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
 import RestClient from '../network/rest/restClient';
 import * as scrypt from '../scrypt';
-import { makeClaimOngTx, makeTransferTx, ONT_CONTRACT } from '../smartcontract/ontAssetTxBuilder';
-import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/ontidContractTxBuilder';
+import { makeClaimOngTx, makeTransferTx, ONT_CONTRACT } from '../smartcontract/nativevm/ontAssetTxBuilder';
+import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx
+} from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { DDOAttribute } from '../transaction/ddo';
 import {
     buildRestfulParam,
@@ -255,6 +256,9 @@ export class SDK {
                 }
                 // clear privateKey and password
                 password = '';
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(obj), callback);
+                }
                 return obj;
             }).catch((err) => {
                 obj = {
@@ -399,6 +403,11 @@ export class SDK {
             error: ERROR_CODE.SUCCESS,
             result: account.toJson()
         };
+        //add address check
+        if (address !== account.address.toBase58()) {
+            obj.error = ERROR_CODE.INVALID_ADDR,
+            obj.result = '';
+        }
 
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);
@@ -465,12 +474,11 @@ export class SDK {
         salt: string,
         callback?: string
     ) {
-        let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         try {
             const addr = new Address(address);
             const saltHex = Buffer.from(salt, 'base64').toString('hex');
-            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+            encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
         } catch (err) {
             const result = this.getDecryptError(err);
 
@@ -481,14 +489,12 @@ export class SDK {
         }
         const obj = {
             error : 0,
-            result : privateKey.key
+            result : ''
         };
-
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);
         }
         // clear privateKey and password
-        privateKey.key = '';
         password = '';
         return obj;
     }
@@ -786,7 +792,7 @@ export class SDK {
             },
             key : obj.controls[0].encryptedKey.key,
             salt : obj.controls[0].salt,
-            adderss: obj.controls[0].address.toBase58(),
+            address: obj.controls[0].address.toBase58(),
             parameters : {
                 curve : 'secp256r1'
             }

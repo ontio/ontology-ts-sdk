@@ -16,10 +16,10 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { BigNumber } from 'bignumber.js';
-import BigInt from '../common/bigInt';
-import { Address } from '../crypto/address';
-import { hex2VarBytes, hexstr2str, num2hexstring, str2VarBytes, StringReader } from '../utils';
-import { ERROR_CODE } from './../error';
+import BigInt from '../../common/bigInt';
+import { Address } from '../../crypto/address';
+import { ERROR_CODE } from '../../error';
+import { hex2VarBytes, hexstr2str, num2hexstring, str2VarBytes, StringReader } from '../../utils';
 
 export class Transfers {
     static deserialize(sr: StringReader) {

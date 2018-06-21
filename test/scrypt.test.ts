@@ -23,7 +23,7 @@ import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src
 import { ERROR_CODE } from '../src/error';
 import { utils } from '../src/index';
 import * as scrypt from '../src/scrypt';
-import { ab2hexstring, str2hexstr } from '../src/utils';
+import { ab2hexstring, str2hexstr, isBase64 } from '../src/utils';
 import { PublicKey } from './../src/crypto/PublicKey';
 
 
@@ -168,17 +168,38 @@ describe('test scrypt', () => {
             parallel: 8,
             size: 64
         };
-        const saltBase64 = '+AX/Aa8VXp0h74PZySZ9RA==';
-        const salt = Buffer.from(saltBase64, 'base64').toString('hex');
+        const saltBase64 = 'q0uJFA3mLo0g0VMH9r1fFA==';
+        const salt = Buffer.from(saltBase64, 'base64').toString('base64');
+
         console.log('salt: ' + salt);
-        const address = new Address('APrfMuKrAQB5sSb5GF8tx96ickZQJjCvwG');
-        const key = '+TDw5opWl5HfGEWUpxblVa5BqVKF2962DoCwi1GYidwWMKvOj7mqaUVx3k/utGLx';
-        const dec = scrypt.decryptWithGcm(key, address, salt, '1', params);
-        console.log('hex ' + salt);
-        console.log('dec ' + dec);
+        // const address = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
+        // const key = 'S5Y5DnUF4YB+pMBswO/NEQcguBwoBXjL/N9179rvahvYSfYD7EgNYjmro0vI3L6y';
+        // const dec = scrypt.decryptWithGcm(key, address, salt, '123456', params);
+        // console.log('hex ' + salt);
+        // console.log('dec ' + dec);
 
 
 
     });
+
+    test('test_isBase64', () => {
+        const salt = 'q0uJFA3mLo0g0VMH9r1fFA==';
+        expect(isBase64(salt)).toBeTruthy();
+        const str = '123';
+        expect(isBase64(str)).toBeFalsy();
+    })
+
+    test('test_scrypt', () => {
+        const pri = new PrivateKey('6717c0df45159d5b5ef383521e5d8ed8857a02cdbbfdefeeeb624f9418b0895e');
+        // const key = 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd'
+        const salt = Buffer.from('sJwpxe1zDsBt9hI2iA2zKQ==', 'base64').toString('hex')
+        const address = new Address('AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU')
+        const encrypt = pri.encrypt('11111111', address, salt);
+        console.log('encrypt: ' + encrypt)
+
+        // const key = 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd'
+        // const decrypt = scrypt.decryptWithGcm(key, address, salt, '11111111');
+        // console.log('decrypt: ' + decrypt);
+    })
 
 });

@@ -17,16 +17,13 @@
 */
 
 export default class Struct {
-    static add(...args: any[]): Struct {
-        const struct = new Struct();
+    add(...args: any[]) {
         for (const a of args) {
-            struct.list.push(a);
+            this.list.push(a);
         }
-        return struct;
     }
     list: any[];
     constructor() {
         this.list = [];
     }
-
 }
