@@ -26,7 +26,7 @@ export function pushOpCode(op: opcode): string {
 }
 
 export function pushPubKey(pk: PublicKey): string {
-    const pkStr = pk.serializeHex();
+    const pkStr = pk.serializeHex();   
     return pushBytes(pkStr);
 }
 

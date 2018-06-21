@@ -29,11 +29,12 @@ import { SDK } from './sdk/index';
 import AbiFunction from './smartcontract/abi/abiFunction';
 import AbiInfo from './smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from './smartcontract/abi/parameter';
-import * as OntAssetTxBuilder from './smartcontract/ontAssetTxBuilder';
-import * as OntidContract from './smartcontract/ontidContractTxBuilder';
-import * as Token from './smartcontract/token';
+import * as OntAssetTxBuilder from './smartcontract/nativevm/ontAssetTxBuilder';
+import * as OntidContract from './smartcontract/nativevm/ontidContractTxBuilder';
+import * as Token from './smartcontract/nativevm/token';
 import { DDO, DDOAttribute } from './transaction/ddo';
 import { Transaction } from './transaction/transaction';
+import { TxSignature } from './transaction/txSignature';
 import * as TransactionBuilder from './transaction/transactionBuilder';
 import * as utils from './utils';
 import { Wallet } from './wallet';
@@ -45,6 +46,7 @@ class ONT {
     DDO: any;
     DDOAttribute: any;
     Transaction: any;
+    TxSignature: any;
     TransactionBuilder: any;
     OntAssetTxBuilder: any;
     Parameter: any;
@@ -69,6 +71,7 @@ class ONT {
         this.DDO = DDO;
         this.DDOAttribute = DDOAttribute;
         this.Transaction = Transaction;
+        this.TxSignature = TxSignature;
         this.TransactionBuilder = TransactionBuilder;
         this.OntAssetTxBuilder = OntAssetTxBuilder;
         this.Parameter = Parameter;
@@ -113,6 +116,7 @@ export {
     DDO,
     DDOAttribute,
     Transaction,
+    TxSignature,
     Parameter,
     ParameterType,
     AbiFunction,

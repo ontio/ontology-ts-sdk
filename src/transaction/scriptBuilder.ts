@@ -1,6 +1,6 @@
 import BigInt from '../common/bigInt';
 import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
-import { hex2VarBytes, num2hexstring, str2hexstr } from '../utils';
+import { num2hexstring, str2hexstr } from '../utils';
 import opcode from './opcode';
 
 export const pushBool = (param: boolean) => {
@@ -84,18 +84,11 @@ export const buildSmartContractParam = (functionName: string, params: Parameter[
             throw new Error('Unsupported param type: ' + params[i]);
         }
     }
-    // to work with vm
-    if (params.length === 0) {
-        result += '00';
-        params.length = 1;
-    }
-    const paramsLen = num2hexstring(params.length + 0x50);
-    result += paramsLen;
 
-    const paramsEnd = 'c1';
-    result += paramsEnd;
+    result += pushInt(params.length);
+    result += num2hexstring(opcode.PACK);
 
-    result += hex2VarBytes(functionName);
+    result += pushHexString(str2hexstr(functionName));
 
     return result;
 };
@@ -150,28 +143,3 @@ export const buildWasmContractParam = (params: Parameter[]) => {
     return str2hexstr(JSON.stringify(result));
 };
 
-export const buildNativeContractParam = (params: Parameter[]) => {
-    let result = '';
-
-    for (let i = params.length - 1; i >= 0; i--) {
-        const p = params[i];
-        const type = p.getType();
-        switch (type) {
-        case ParameterType.ByteArray:
-            result += pushHexString(p.value);
-            break;
-        case ParameterType.Int:
-            result += pushInt(p.value);
-            break;
-        case ParameterType.Long:
-            result += pushInt(p.value);
-            break;
-        case ParameterType.Boolean:
-            result += pushBool(p.value);
-        default:
-            break;
-        }
-    }
-
-    return result;
-};

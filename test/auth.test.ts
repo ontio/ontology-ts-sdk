@@ -25,7 +25,8 @@ import { makeAssignFuncsToRoleTx,
     makeAssignOntIdsToRoleTx,
     makeDelegateRoleTx,
     makeInitContractAdminTx,
-    makeTransferAuthTx, makeVerifyTokenTx, makeWithdrawRoleTx } from './../src/smartcontract/authContractTxBuilder';
+    makeTransferAuthTx, makeVerifyTokenTx, makeWithdrawRoleTx
+} from './../src/smartcontract/nativevm/authContractTxBuilder';
 
 const targetContract = '806256c36653d4091a3511d308aac5c414b2a444';
 
@@ -58,7 +59,7 @@ const func1 = 'Func1';
 const func2 = 'Func2';
 
 // tslint:disable:no-console
-const txSender = new TxSender('ws://127.0.0.1:20335');
+const txSender = new TxSender();
 const callback = (err, res, socket) => {
     if (err) {
         console.log(err);
@@ -136,7 +137,7 @@ const testVerifyToken = (id, func, address, privateKey) => {
     const param = buildTxParam(tx);
     txSender.sendTxWithSocket(param, callback);
 };
-// testInitContractAdmin();
+testInitContractAdmin();
 
 // testTransferAuth();
 
@@ -144,4 +145,4 @@ const testVerifyToken = (id, func, address, privateKey) => {
 
 // testDelegateWithdraw();
 
-testVerifyToken(ontid, func1, address, privateKey);
+// testVerifyToken(ontid, func1, address, privateKey);

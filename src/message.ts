@@ -20,7 +20,7 @@ import * as b64 from 'base64-url';
 import * as uuid from 'uuid';
 import { PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from './crypto';
 import RestClient from './network/rest/restClient';
-import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/ontidContractTxBuilder';
+import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/nativevm/ontidContractTxBuilder';
 import { DDO } from './transaction/ddo';
 import { now } from './utils';
 

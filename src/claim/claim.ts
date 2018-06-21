@@ -25,9 +25,9 @@ import {
     buildCommitRecordTx,
     buildGetRecordStatusTx,
     buildRevokeRecordTx
-} from '../smartcontract/attestClaimTxBuilder';
+} from '../smartcontract/neovm/attestClaimTxBuilder';
 import { signTransaction } from '../transaction/transactionBuilder';
-import { hexstr2str } from '../utils';
+import { hexstr2str, StringReader } from '../utils';
 import { AttestNotifyEvent } from './attestNotifyEvent';
 import { ClaimProof } from './claimProof';
 
@@ -150,7 +150,7 @@ export class Claim extends Message {
         const tx = buildCommitRecordTx(claimId, attesterId, subjectId, gasPrice, gasLimit, payer);
         signTransaction(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
-
+        console.log(response);
         const event = AttestNotifyEvent.deserialize(response);
         return event.Result[0].States[0] === 'Push';
     }
@@ -202,7 +202,7 @@ export class Claim extends Message {
         console.log('resp:', response);
         const result = GetStatusResponse.deserialize(response);
 
-        return result.status === Status.ATTESTED && result.attesterId === attesterId;
+        return result.status === Status.ATTESTED && result.issuerId === attesterId;
     }
 
     protected payloadToJSON(): any {
@@ -260,7 +260,7 @@ export class Claim extends Message {
 /**
  * Helper class for deserializing GetStatus response.
  */
-class GetStatusResponse {
+ export class GetStatusResponse {
     static deserialize(r: any): GetStatusResponse {
         const response = new GetStatusResponse();
 
@@ -268,27 +268,38 @@ class GetStatusResponse {
             response.status = Status.NOTFOUND;
             return response;
         }
-
-        const decoded = hexstr2str(r.Result.Result);
-        const data = decoded.split('#');
-
-        if (data.length !== 3) {
-            throw new Error('Failed to decode response.');
+        const sr = new StringReader(r.Result.Result);
+        sr.read(1); // data type
+        sr.readNextLen(); // data length
+        sr.read(1); // data type
+        const claimId = hexstr2str(sr.readNextBytes());
+        sr.read(1); // data type
+        const issuerId = hexstr2str(sr.readNextBytes());
+        sr.read(1); // data type
+        const subjectId = hexstr2str(sr.readNextBytes());
+        sr.read(1); // data type
+        let status = sr.readNextBytes();
+        response.claimId = claimId;
+        response.issuerId = issuerId;
+        response.subjectId = subjectId;
+        if (!status) {// status is revoked
+            status = '00';
         }
-
-        response.status = data[0] as Status;
-        response.attesterId = data[1];
-        response.time = data[2];
+        response.status =  status as Status;
         return response;
     }
 
+    claimId: string;
+    issuerId: string;
+    subjectId: string;
     status: Status;
-    attesterId: string;
-    time: string;
+    // status: Status;
+    // attesterId: string;
+    // time: string;
 }
 
-enum Status {
-    REVOKED = '0',
-    ATTESTED = '1',
+export enum Status {
+    REVOKED = '00',
+    ATTESTED = '01',
     NOTFOUND = '-1'
 }

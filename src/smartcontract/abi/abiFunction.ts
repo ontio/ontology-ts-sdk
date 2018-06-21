@@ -40,7 +40,7 @@ export default class AbiFunction {
         return null;
     }
 
-    setParamsValue(...args: any[]): void {
+    setParamsValue(...args: Parameter[]): void {
         for (let i = 0, len = args.length; i < len; i++) {
             // tslint:disable-next-line:prefer-for-of
             for (let j = 0 ; j < this.parameters.length; j++) {

@@ -58,7 +58,8 @@ function scrypt(keyphrase: string, addressHash: string, params: ScryptParams) {
     return new Buffer(derived);
 }
 
-export function encrypt(
+
+export function encryptWithCtr(
     privateKey: string,
     publicKeyEncoded: string,
     keyphrase: string,
@@ -111,7 +112,7 @@ export function encrypt(
  * @param keyphrase user's password to encrypt private key
  * @param saltOrAddress 4 hex encoded bytes salt or Address object
  */
-export function decrypt(
+export function decryptWithCtr(
     encryptedKey: string,
     keyphrase: string,
     saltOrAddress: string | Address,
@@ -174,7 +175,7 @@ export function decrypt(
  * @param saltOrAddress 4 hex encoded bytes salt or Address object
  * @param publicKeyEncoded Public key from decrypted key
  */
-export function checkDecrypted(saltOrAddress: string | Address, publicKeyEncoded: string): void {
+export function checkCtrDecrypted(saltOrAddress: string | Address, publicKeyEncoded: string): void {
     // const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
     // let assembled = Buffer.from(encryptedKey, 'base64').toString('hex')
 

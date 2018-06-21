@@ -18,8 +18,8 @@
 
 // tslint:disable:max-line-length
 import axios from 'axios';
-import { TEST_ONT_URL } from '../src/consts';
 import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
+import { TEST_ONT_URL } from '../src/consts';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { RestClient } from '../src/index';
@@ -28,19 +28,23 @@ import AbiFunction from '../src/smartcontract/abi/abiFunction';
 import AbiInfo from '../src/smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../src/smartcontract/abi/parameter';
 import json2 from '../src/smartcontract/data/idContract.abi';
-import { buildAddAttributeTx, buildAddControlKeyTx, buildAddRecoveryTx, buildChangeRecoveryTx, buildGetAttributesTx, buildGetDDOTx, buildGetPublicKeyStateTx, buildGetPublicKeysTx, buildRegIdWithAttributes, buildRegisterOntidTx, buildRemoveAttributeTx, buildRemoveControlKeyTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildAddAttributeTx, buildAddControlKeyTx, buildAddRecoveryTx,
+    buildChangeRecoveryTx, buildGetAttributesTx, buildGetDDOTx, buildGetPublicKeyStateTx,
+    buildGetPublicKeysTx, buildRegIdWithAttributes, buildRegisterOntidTx, buildRemoveAttributeTx, buildRemoveControlKeyTx
+} from '../src/smartcontract/nativevm/ontidContractTxBuilder';
+import { State } from '../src/smartcontract/nativevm/token';
+import { buildCommitRecordTx, buildGetRecordStatusTx, buildRevokeRecordTx } from '../src/smartcontract/neovm/attestClaimTxBuilder';
 import { DDO, DDOAttribute, PublicKeyWithId } from '../src/transaction/ddo';
 import InvokeCode from '../src/transaction/payload/invokeCode';
 import { Transaction } from '../src/transaction/transaction';
-import { buildRestfulParam , buildRpcParam,
-    buildTxParam, makeInvokeTransaction, parseEventNotify, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder';
+import { addSign , buildRestfulParam,
+    buildRpcParam, buildTxParam, makeInvokeTransaction, sendRawTxRestfulUrl } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
 import { VmType } from '../src/transaction/vmcode';
 import { ab2hexstring, hexstr2str, str2hexstr, StringReader } from '../src/utils';
 import { Account } from './../src/account';
-import { buildCommitRecordTx, buildGetRecordStatusTx, buildRevokeRecordTx } from './../src/smartcontract/attestClaimTxBuilder';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
-import { State } from '../src/smartcontract/token';
+import { GetStatusResponse } from '../src/claim/claim';
 
 const gasPrice = '0';
 const gasLimit = '30000';
@@ -95,8 +99,7 @@ const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b47
 const account4 = Account.create(pri4, '123456', '');
 const pub4 = pri4.getPublicKey();
 const ontid4 = Address.generateOntid(pub4);
-console.log('pk4:' + pri4.getPublicKey().serializeHex())
-
+console.log('pk4:' + pri4.getPublicKey().serializeHex());
 
 const pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
 const account5 = Account.create(pri5, '123456', '');
@@ -138,14 +141,15 @@ export const sendTx = (param, callback = null) => {
         }
         console.log('response for send tx: ' + JSON.stringify(res));
         if (callback) {
-            if (res.Result && res.Action !== 'sendrawtransaction') {
-                callback(event.data);
+            if (res.Result.Result) {
+                const cr = callback(res);
+                console.log(cr)
                 socket.close();
             }
         }
         if (res.Action === 'Notify') {
             // let result = parseEventNotify(res)
-            console.log(' event notify: ' + JSON.stringify(res));
+            console.log('event notify: ' + JSON.stringify(res));
             socket.close();
         }
         // socket.close()
@@ -174,29 +178,20 @@ const testDDOTx = () => {
     console.log('account4 recovery: ' + account4.address.serialize());
     // tslint:disable-next-line:no-shadowed-variable
     // const ontid = 'did:ont:TA8z22MRYHcFRKJznJWWGFz5brXBsmMTJZ';
-    const tx = buildGetDDOTx(ontid5);
+    const tx = buildGetDDOTx('did:ont:ALLMUZaAiqpez9YCRJadpD8pw1LpLWXBvu');
     // tx.payer = account.address
 
     // let param = buildTxParam(tx, true)
-
-    console.log('ontid1: ' + ontid);
-
-    // txSender.sendTxWithSocket(param, callback)
-
-    const param = buildRestfulParam(tx);
-    console.log('param: ' + JSON.stringify(param));
-    const url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true);
-    console.log(url);
-    axios.post(url, param).then((res) => {
-        console.log(res.data);
-        if (res.data.Result) {
-            const ddo = DDO.deserialize(res.data.Result.Result);
+    const restClient = new RestClient();
+    restClient.sendRawTransaction(tx.serialize(), true).then((res) => {
+        console.log(res);
+        if (res.Result.Result) {
+            const ddo = DDO.deserialize(res.Result.Result);
             console.log('ddo: ' + JSON.stringify(ddo));
         }
     }).catch((err) => {
         console.log(err);
     });
-
 };
 
 // const testDDOByRpc = () => {
@@ -275,39 +270,32 @@ const testAddAttribute = () => {
     attr.key = claimId;
     attr.type = type;
     attr.value = value;
-    const did = ontid2;
-    const tx = buildAddAttributeTx(did, [attr], pub2, gasPrice, gasLimit);
+    const did = ontid5;
+    const tx = buildAddAttributeTx(did, [attr], pub5, gasPrice, gasLimit);
     tx.payer = account2.address;
     signTransaction(tx, pri2);
-
+    addSign(tx, pri5);
     const param = buildTxParam(tx);
     console.log('param: ' + JSON.stringify(param));
     sendTx(param);
-    // let param = buildRestfulParam(tx)
-    // console.log('param: '+JSON.stringify(param))
-
-    // axios.post(TEST_ONT_URL.sendRawTxByRestful, param).then((res)=>{
-    //     console.log(res.data)
-    // }).catch(err => {
-    //     console.log(err)
-    // })
 };
 
 const testRemoveAttribute = () => {
     const claimId = 'claim:b5a87bea92d52525b6eba3b670595cf8b9cbb51e972f5cbff499d48677ddee8a';
-    const key = str2hexstr(claimId);
-    // let key = str2hexstr('Claim:twitter')
+    // const key = str2hexstr(claimId);
+    // let key = str2hexstr('Claim:twitter');
+    let key = claimId;
 
     console.log('removeAttr key: ' + key);
-    const tx = buildRemoveAttributeTx(ontid, key, publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
-    signTransaction(tx, privateKey);
+    const tx = buildRemoveAttributeTx(ontid, claimId, pub5, gasPrice, gasLimit);
+    tx.payer = account5.address;
+    signTransaction(tx, pri5);
     const param = buildTxParam(tx);
     sendTx(param);
 };
 
-const testGetAttribut = () => {
-    const tx = buildGetAttributesTx('did:ont:TA7j42nDdZSyUBdYhWoxnnE5nUdLyiPoK3');
+const testGetAttributs = () => {
+    const tx = buildGetAttributesTx(ontid5);
     tx.payer = account.address;
     const restClient = new RestClient();
     restClient.sendRawTransaction(tx.serialize(), true).then((res) => {
@@ -330,7 +318,7 @@ const testGetAttribut = () => {
 } */
 
 const testGetPublicKeyState = () => {
-    const tx = buildGetPublicKeyStateTx(ontid, 1);
+    const tx = buildGetPublicKeyStateTx(ontid5, 2);
     const param = buildRestfulParam(tx);
     console.log('tx serialized: ' + tx.serialize());
     const url = sendRawTxRestfulUrl(TEST_ONT_URL.REST_URL, true);
@@ -343,18 +331,18 @@ const testGetPublicKeyState = () => {
 };
 
 const testAddPK = () => {
-    const tx = buildAddControlKeyTx(ontid, pk2, publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
-    signTransaction(tx, privateKey);
+    const tx = buildAddControlKeyTx(ontid5, pub4, pub5, gasPrice, gasLimit);
+    tx.payer = account5.address;
+    signTransaction(tx, pri5);
     const param = buildTxParam(tx);
     console.log('add pk param: ' + param);
     sendTx(param);
 };
 
 const testGetPublicKeys = () => {
-    const tx = buildGetPublicKeysTx(ontid);
-    tx.payer = account.address;
-    signTransaction(tx, privateKey);
+    const tx = buildGetPublicKeysTx(ontid5);
+    // tx.payer = account.address;
+    // signTransaction(tx, privateKey);
     // let param = buildTxParam(tx)
     // sendTx(param)
     const param = buildRestfulParam(tx);
@@ -362,40 +350,40 @@ const testGetPublicKeys = () => {
     axios.post(url, param).then((res) => {
         console.log(res.data);
         const r = PublicKeyWithId.deserialize(res.data.Result.Result);
-        console.log(r);
+        console.log('pkWithId: ' + JSON.stringify(r));
     });
 };
 
 const testRemovePK = () => {
-    const tx = buildRemoveControlKeyTx(ontid, pk2, publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
-    signTransaction(tx, privateKey);
+    const tx = buildRemoveControlKeyTx(ontid, pub4, pub5, gasPrice, gasLimit);
+    tx.payer = account5.address;
+    signTransaction(tx, pri5);
     const param = buildTxParam(tx);
     console.log('remove pk param: ' + param);
     sendTx(param);
 };
 
 const testAddRecovery = () => {
-    const tx = buildAddRecoveryTx(ontid, account5.address, publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
-    signTransaction(tx, privateKey);
+    const tx = buildAddRecoveryTx(ontid5, account3.address, pub5, gasPrice, gasLimit);
+    tx.payer = account5.address;
+    signTransaction(tx, pri5);
     const param = buildTxParam(tx);
     sendTx(param);
 };
 
 const testChangeRecovery = () => {
-    const tx = buildChangeRecoveryTx(ontid, account3.address, account5.address, gasPrice, gasLimit);
-    tx.payer = account5.address;
-    signTransaction(tx, pri5);
+    const tx = buildChangeRecoveryTx(ontid5, account2.address, account3.address, gasPrice, gasLimit);
+    tx.payer = account3.address;
+    signTransaction(tx, pri3);
     const param = buildTxParam(tx);
     console.log('change recovery param: ' + param);
     sendTx(param);
 };
 
 const testAddmnRecovery = () => {
-    const tx = buildAddRecoveryTx(ontid, recoveryAddress, publicKey, gasPrice, gasLimit);
-    tx.payer = account.address;
-    signTransaction(tx, privateKey);
+    const tx = buildAddRecoveryTx(ontid5, recoveryAddress, pub5, gasPrice, gasLimit);
+    tx.payer = account5.address;
+    signTransaction(tx, pri5);
     const param = buildTxParam(tx);
     sendTx(param);
 };
@@ -410,54 +398,62 @@ const testChangemnRecovery = () => {
     sendTx(param);
 };
 
-const testInvokeWasmContract = () => {
-    const codeHash = '9007be541a1aef3d566aa219a74ef16e71644715';
-    const params = [new Parameter('p1', ParameterType.Int, 20), new Parameter('p2', ParameterType.Int, 30)];
-    const funcName = 'add';
-    const tx = makeInvokeTransaction(funcName, params, codeHash, VmType.WASMVM, '0');
-    // let txParam = tx.serialize()
-    // console.log('wasm param:' + txParam)
-    // let restClient = new RestClient()
-    // restClient.sendRawTransaction(txParam).then( res => {
-    //     console.log(res)
+// const testInvokeWasmContract = () => {
+//     const codeHash = '9007be541a1aef3d566aa219a74ef16e71644715';
+//     const params = [new Parameter('p1', ParameterType.Int, 20), new Parameter('p2', ParameterType.Int, 30)];
+//     const funcName = 'add';
+//     const tx = makeInvokeTransaction(funcName, params, codeHash, VmType.WASMVM, '0');
+//     // let txParam = tx.serialize()
+//     // console.log('wasm param:' + txParam)
+//     // let restClient = new RestClient()
+//     // restClient.sendRawTransaction(txParam).then( res => {
+//     //     console.log(res)
 
-    // })
-    const param = buildTxParam(tx);
-    console.log(param);
-    sendTx(param);
-};
+//     // })
+//     const param = buildTxParam(tx);
+//     console.log(param);
+//     sendTx(param);
+// };
 
 const testCommitTx = () => {
-    const issuer = Address.generateOntid(pri3.getPublicKey());
-    const sub = Address.generateOntid(pri4.getPublicKey());
-    const claimId = str2hexstr('claimId:123456');
-    const tx = buildCommitRecordTx(claimId, issuer, sub, gasPrice, gasLimit, account3.address);
-    signTransaction(tx, pri3);
+    const issuer = ontid;
+    const sub = ontid2;
+    const claimId = 'claimId:1234567';
+    const tx = buildCommitRecordTx(claimId, issuer, sub, gasPrice, gasLimit, account.address);
+    signTransaction(tx, privateKey);
     const param = buildTxParam(tx);
     sendTx(param);
 };
 
+const testGetRecordStatus = () => {
+    const claimId = 'claimId:1234567';
+    const tx = buildGetRecordStatusTx(claimId);
+    const param = buildTxParam(tx, true);
+    sendTx(param, GetStatusResponse.deserialize);
+};
+
+const testRevokeStatus = () => {
+    const claimId = 'claimId:1234567';
+    const tx = buildRevokeRecordTx(claimId, ontid, gasPrice, gasLimit, account.address);
+    signTransaction(tx, privateKey);
+    const param = buildTxParam(tx);
+    sendTx(param);
+};
 // uncomment one line to test one tx each time.
 
-// testRegisterOntid()
+testRegisterOntid()
 
 // testRegIdWithAttributes()
 
-// testAddAttribute()
+// testAddAttribute();
 
 // testRemoveAttribute()
 
-// testGetAttribut()
+// testGetAttributs()
 
-testDDOTx();
-
-// testVerifyOntidClaim()
-
-// testDDOByRpc()
+// testDDOTx();
 
 // testGetPublicKeys()
-
-// testCheckOntid()
 
 // testAddPK()
 
@@ -471,9 +467,7 @@ testDDOTx();
 
 // testChangemnRecovery()
 
-// testGetPublicKeyId()
-
-// testGetPublicKeyState()
+// testGetPublicKeyState();
 
 // let txHash = '82c17d7430140a1f3863b8f6f03db07bbdfbdb7da22ffdb2358a1d2e185f8bf3'
 // core.getMerkleProof(txHash).then( res => {
@@ -487,3 +481,8 @@ testDDOTx();
 // testRecordGetTx()
 
 // testCommitTx()
+
+// testGetRecordStatus();
+
+// testRevokeStatus();
+

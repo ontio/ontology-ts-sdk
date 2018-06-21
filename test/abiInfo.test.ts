@@ -54,7 +54,7 @@ describe('test AbiInfo', () => {
     });
 
     test('test make invokecode tx', () => {
-        tx = makeInvokeTransaction( f.name, f.parameters, a.getHash(), VmType.NEOVM, '0');
+        tx = makeInvokeTransaction( f.name, f.parameters, new Address(a.getHash()), '0');
         // tslint:disable-next-line:no-console
         console.log(tx);
 

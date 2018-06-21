@@ -25,20 +25,21 @@ import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey } from '../src/
 import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
-import { makeClaimOngTx, makeQueryAllowanceTx, makeTransferFromManyTx, makeTransferToMany,
+import { makeClaimOngTx, makeQueryAllowanceTx,
     makeTransferTx, ONG_CONTRACT, ONT_CONTRACT, makeQueryBalanceTx
-} from '../src/smartcontract/ontAssetTxBuilder';
-import { State } from '../src/smartcontract/token';
+} from '../src/smartcontract/nativevm/ontAssetTxBuilder';
+import { State } from '../src/smartcontract/nativevm/token';
 import { Transaction } from '../src/transaction/transaction';
 import { buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
-import { ab2hexstring, StringReader, generateRandomArray } from '../src/utils';
+import { ab2hexstring, StringReader, generateRandomArray, num2hexstring } from '../src/utils';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
 import { PublicKey } from '../src/crypto/PublicKey';
+import BigInt from '../src/common/bigInt';
 
 const txSender = new TxSender(TEST_ONT_URL.SOCKET_URL);
 
-const pri = new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67318f');
+const pri = new PrivateKey('75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf');
 const pub = pri.getPublicKey();
 const addr = Address.fromPubKey(pub);
 console.log('addr : ' + addr.toBase58());
@@ -48,8 +49,8 @@ const accountFrom = {
     // hexAddress: '018f0dcf09ec2f0040e6e8d7e54635dba40f7d63',
     // address: 'TA7T3p6ikRG5s2pAaehUH2XvRCCzvsFmwE',
     // privateKey: '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3'
-    privateKey: new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c1952a6286b67318f'),
-    address: new Address('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL')
+    privateKey: new PrivateKey('75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf'),
+    address: new Address('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve')
     // address: 'TA98LCZuzins3mUPfDyNRirpQ4YoeRNBan',
     // privateKey: '6248eefef096ec2eebdff7179a59cc36b5c632720e40fb7e9770dc11024543be'
 };
@@ -65,21 +66,21 @@ const  testTransferTx = () => {
         parallel: 8,
         size: 64
     };
-    // const encPri = new PrivateKey('nLbO4KNV8GyO4Ihoj5qCobBczOsTvVWk1QqQ4zsu3aUmNyYxmga4cHgf0MJ3gM6M');
+    // const encPri = new PrivateKey('S5Y5DnUF4YB+pMBswO/NEQcguBwoBXjL/N9179rvahvYSfYD7EgNYjmro0vI3L6y');
     // const password = '123456';
     // const pk = PublicKey.deserializeHex(
-    //     new StringReader('12020213b91af30cba992aa24b232237af1093396dff9f252c3855dcf7129c517883f3'));
+    //     new StringReader('03001c6455aa8e209a5c8cd63b32a8b321b2b3d6c0153159c64fba73ec8363827d'));
     // const addr = Address.fromPubKey(pk);
     // console.log('pk: ' + JSON.stringify(pk));
     // console.log('addr: ' + addr.toBase58());
-    // const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
-    // const salt = Buffer.from('aCLRjtYznvxaxte3qrHDNw==', 'base64').toString('hex');
+    // const address = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
+    // const salt = Buffer.from('q0uJFA3mLo0g0VMH9r1fFA==', 'base64').toString('hex');
     // const pri = encPri.decrypt(password, address, salt, params);
 
     const gasLimit = '300000';
     const gasPrice = '0';
-    const tx = makeTransferTx('ONT', accountFrom.address,
-        new Address('AWc6N2Yawk12Jt14F7sjGGos4nFc8UztVe'), 10000, gasPrice, gasLimit);
+    const tx = makeTransferTx('ONG', accountFrom.address,
+        new Address('AZ7iBezpZByGvUmXXdhfvLXM6cnQgXMiR7'), 101*1e9, gasPrice, gasLimit);
     signTransaction(tx, accountFrom.privateKey);
     console.log('sigs: ' + JSON.stringify(tx.sigs));
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress,
@@ -192,27 +193,27 @@ const pri3 = new PrivateKey('a53213c27eb1de0796b9d0b44c96e7e30228f1466d8657c47b4
 const address3 = new Address('01716379e393d1a540615e022ede47b97e0577c6');
 console.log('pk: ' + pri3.getPublicKey().serializeHex());
 
-const testTransferFromMany = () => {
+// const testTransferFromMany = () => {
 
-    const tx = makeTransferFromManyTx('ONT', [address1, address2], address3, ['100', '200'], '0', '30000');
-    const pris = [ [pri1], [pri2]];
-    signTx(tx, pris);
-    const param = buildTxParam(tx);
-    const callback = (err, res, socket) => {
-        console.log('res : ' + JSON.stringify(res));
-    };
-    txSender.sendTxWithSocket(param, callback);
-};
+//     const tx = makeTransferFromManyTx('ONT', [address1, address2], address3, ['100', '200'], '0', '30000');
+//     const pris = [ [pri1], [pri2]];
+//     signTx(tx, pris);
+//     const param = buildTxParam(tx);
+//     const callback = (err, res, socket) => {
+//         console.log('res : ' + JSON.stringify(res));
+//     };
+//     txSender.sendTxWithSocket(param, callback);
+// };
 
-const testTransferToMany = () => {
-    const tx = makeTransferToMany('ONT', address1, [address2, address3], ['100', '200'], '0', '30000');
-    signTransaction(tx, pri1);
-    const param = buildTxParam(tx);
-    const callback = (err, res, socket) => {
-        console.log('res : ' + JSON.stringify(res));
-    };
-    txSender.sendTxWithSocket(param, callback);
-};
+// const testTransferToMany = () => {
+//     const tx = makeTransferToMany('ONT', address1, [address2, address3], ['100', '200'], '0', '30000');
+//     signTransaction(tx, pri1);
+//     const param = buildTxParam(tx);
+//     const callback = (err, res, socket) => {
+//         console.log('res : ' + JSON.stringify(res));
+//     };
+//     txSender.sendTxWithSocket(param, callback);
+// };
 
 const testQueryBalance = (asset, address:Address) => {
     // const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
@@ -227,10 +228,10 @@ const testQueryBalance = (asset, address:Address) => {
 };
 
 
-testTransferTx();
+// testTransferTx();
 
 // const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
-// testGetBalance('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL', '');
+testGetBalance('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve', '');
 
 // testClaimOng();
 
