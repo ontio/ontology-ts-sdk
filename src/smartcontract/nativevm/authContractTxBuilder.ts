@@ -172,7 +172,7 @@ export function makeAssignOntIdsToRoleTx(
         if (i.substr(0, 3) === 'did') {
             struct.add(str2hexstr(i));
         } else {
-            struct.add(i)
+            struct.add(i);
         }
     }
     struct.add(keyNo);
@@ -254,7 +254,7 @@ export function makeWithdrawRoleTx(
     const struct = new Struct();
     struct.add(contractAddr.serialize(), initiator, delegate, str2hexstr(role), keyNo);
     const params = buildNativeCodeScript([struct]) ;
-    
+
     const tx = makeNativeContractTx('withdraw', params,
         contractAddress, gasPrice, gasLimit, payer);
     return tx;

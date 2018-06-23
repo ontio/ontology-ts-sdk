@@ -142,4 +142,3 @@ export const buildWasmContractParam = (params: Parameter[]) => {
     };
     return str2hexstr(JSON.stringify(result));
 };
-

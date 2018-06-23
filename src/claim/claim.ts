@@ -150,6 +150,8 @@ export class Claim extends Message {
         const tx = buildCommitRecordTx(claimId, attesterId, subjectId, gasPrice, gasLimit, payer);
         signTransaction(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
+
+        // tslint:disable-next-line:no-console
         console.log(response);
         const event = AttestNotifyEvent.deserialize(response);
         return event.Result[0].States[0] === 'Push';
@@ -199,6 +201,8 @@ export class Claim extends Message {
         const tx = buildGetRecordStatusTx(claimId);
 
         const response = await client.sendRawTransaction(tx.serialize(), true);
+
+        // tslint:disable-next-line:no-console
         console.log('resp:', response);
         const result = GetStatusResponse.deserialize(response);
 
@@ -260,7 +264,7 @@ export class Claim extends Message {
 /**
  * Helper class for deserializing GetStatus response.
  */
- export class GetStatusResponse {
+export class GetStatusResponse {
     static deserialize(r: any): GetStatusResponse {
         const response = new GetStatusResponse();
 

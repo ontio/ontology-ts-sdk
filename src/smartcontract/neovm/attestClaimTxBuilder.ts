@@ -16,7 +16,6 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 import { Address  } from '../../crypto';
 import AbiInfo from '../../smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../../smartcontract/abi/parameter';

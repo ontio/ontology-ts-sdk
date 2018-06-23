@@ -18,6 +18,7 @@
 import Fixed64 from '../common/fixed64';
 import { NATIVE_INVOKE_NAME, REST_API } from '../consts';
 import { Address, PrivateKey, SignatureScheme } from '../crypto';
+import { Parameter } from '../smartcontract/abi/parameter';
 import {
     num2hexstring,
     str2hexstr
@@ -25,10 +26,9 @@ import {
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
-import { pushHexString, pushInt, buildSmartContractParam } from './scriptBuilder';
+import { buildSmartContractParam, pushHexString, pushInt } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 import { TxSignature } from './txSignature';
-import { Parameter } from '../smartcontract/abi/parameter';
 // const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
 // tslint:disable-next-line:variable-name
@@ -145,7 +145,6 @@ export const makeInvokeTransaction = (
     let code = args + num2hexstring(opcode.APPCALL);
     // code += contractAddr.serialize();
     code += contractAddr.toHexString();
-
 
     const payload = new InvokeCode();
     payload.code = code;

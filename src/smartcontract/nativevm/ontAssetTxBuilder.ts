@@ -164,7 +164,7 @@ export function makeClaimOngTx(from: Address, to: Address, amount: number | stri
     // const params = tf.serialize();
     const list = [];
     const struct = new Struct();
-    struct.add(from, new Address(ONT_CONTRACT), to, amount)
+    struct.add(from, new Address(ONT_CONTRACT), to, amount);
     list.push(struct);
     const args = buildNativeCodeScript(list);
     const tx = makeNativeContractTx('transferFrom', args, new Address(ONG_CONTRACT) , gasPrice, gasLimit);

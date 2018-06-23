@@ -17,13 +17,14 @@
 */
 
 export default class Struct {
+    list: any[];
+
+    constructor() {
+        this.list = [];
+    }
     add(...args: any[]) {
         for (const a of args) {
             this.list.push(a);
         }
-    }
-    list: any[];
-    constructor() {
-        this.list = [];
     }
 }

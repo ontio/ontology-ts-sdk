@@ -58,7 +58,6 @@ function scrypt(keyphrase: string, addressHash: string, params: ScryptParams) {
     return new Buffer(derived);
 }
 
-
 export function encryptWithCtr(
     privateKey: string,
     publicKeyEncoded: string,
