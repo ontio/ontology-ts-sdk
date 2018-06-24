@@ -23,7 +23,8 @@ describe('test merkle proofs', () => {
      */
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontId, publicKey, '0', '30000');
-        signTransaction(tx, privateKey);
+        tx.payer = account.address;
+        await signTransaction(tx, privateKey);
 
         const client = new WebsocketClient();
         const result = await client.sendRawTransaction(tx.serialize(), false, true);

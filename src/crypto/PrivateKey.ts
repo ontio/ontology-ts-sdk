@@ -26,7 +26,7 @@ import { ERROR_CODE } from '../error';
 import { decryptWithGcm, encryptWithGcm, ScryptParams } from '../scrypt';
 import { ab2hexstring, hexstring2ab, isBase64, str2hexstr } from '../utils';
 import { Address } from './address';
-import { JsonKey, Key, KeyParameters } from './Key';
+import { Key, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
 import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
@@ -51,20 +51,6 @@ export class PrivateKey extends Key {
         }
 
         return new PrivateKey(ab2hexstring(secureRandom(32)), keyType, parameters);
-    }
-
-    /**
-     * Creates PrivateKey from Json representation.
-     *
-     * @param json Json private key representation
-     *
-     */
-    static deserializeJson(json: JsonKey): PrivateKey {
-        return new PrivateKey(
-        json.key,
-        KeyType.fromLabel(json.algorithm),
-        KeyParameters.deserializeJson(json.parameters)
-        );
     }
 
     /**
@@ -107,7 +93,7 @@ export class PrivateKey extends Key {
      * @param schema Signing schema to use
      * @param publicKeyId Id of public key
      */
-    sign(msg: string, schema?: SignatureScheme, publicKeyId?: string): Signature {
+    async sign(msg: string, schema?: SignatureScheme, publicKeyId?: string): Promise<Signature> {
         if (schema === undefined) {
             schema = this.algorithm.defaultSchema;
         }

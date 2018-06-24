@@ -4,7 +4,7 @@ import { Address } from '../src/crypto/address';
 import { Identity } from '../src/identity';
 import RestClient from '../src/network/rest/restClient';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console
@@ -30,7 +30,7 @@ describe('test restClient', () => {
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
         tx.payer = account.address;
-        signTransaction(tx, privateKey);
+        await signTransaction(tx, privateKey);
 
         const client = new WebsocketClient();
         const result = await client.sendRawTransaction(tx.serialize(), false, true);

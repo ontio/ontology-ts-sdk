@@ -44,7 +44,7 @@ describe('test claim', () => {
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
         tx.payer = account.address;
-        signTransaction(tx, privateKey);
+        await signTransaction(tx, privateKey);
 
         const client = new WebsocketClient();
         await client.sendRawTransaction(tx.serialize(), false, true);

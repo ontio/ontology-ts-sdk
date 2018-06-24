@@ -18,13 +18,13 @@
 
 import { Address, PrivateKey } from '../src/crypto';
 import { PublicKey } from '../src/crypto/PublicKey';
-import { makeAssignFuncsToRoleTx, makeAssignOntIdsToRoleTx } from '../src/smartcontract/authContractTxBuilder';
+import { makeAssignFuncsToRoleTx, makeAssignOntIdsToRoleTx } from '../src/smartcontract/nativevm/authContractTxBuilder';
 import { getPeerPoolMap,
     GOVERNANCE_CONTRACT, makeApproveCandidateTx, makeRegisterCandidateTx,
     makeUnvoteForPeerTx, makeVoteForPeerTx, makeWithdrawTx
-} from '../src/smartcontract/governanceContractTxBuilder';
-import { makeTransferTx } from '../src/smartcontract/ontAssetTxBuilder';
-import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+} from '../src/smartcontract/nativevm/governanceContractTxBuilder';
+import { makeTransferTx } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { addSign, buildTxParam, signTransaction } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
 
@@ -117,7 +117,7 @@ const registerOntid = () => {
 };
 
 const assignFuncToRole = () => {
-    const tx = makeAssignFuncsToRoleTx(GOVERNANCE_CONTRACT,
+    const tx = makeAssignFuncsToRoleTx(new Address(GOVERNANCE_CONTRACT),
         adminOntid, role, [func], 1, adminAddress, gasPrice, gasLimit);
     signTransaction(tx, adminPri);
     const param = buildTxParam(tx);
@@ -125,7 +125,7 @@ const assignFuncToRole = () => {
 };
 
 const assignRoleToId = () => {
-    const tx2 = makeAssignOntIdsToRoleTx(GOVERNANCE_CONTRACT,
+    const tx2 = makeAssignOntIdsToRoleTx(new Address(GOVERNANCE_CONTRACT),
         adminOntid, role, [userId], 1, adminAddress, gasPrice, gasLimit);
     signTransaction(tx2, adminPri);
     const param2 = buildTxParam(tx2);

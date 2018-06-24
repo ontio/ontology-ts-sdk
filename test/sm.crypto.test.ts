@@ -32,14 +32,14 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         expect(hash).toEqual('55e12e91650d2fec56ec74e1d3e4ddbfce2ef3a65890c2a19ecf88a307e76a23');
     });
 
-    test('test SM2 sign and verify', () => {
+    test('test SM2 sign and verify', async () => {
         const msg = 'test';
         const encoded = str2hexstr(msg);
 
         const pk = 'ab80a7ad086249c01e65c4d9bb6ce18de259dcfc218cd49f2455c539e9112ca3';
         const privateKey = new PrivateKey(pk, KeyType.SM2, new KeyParameters(CurveLabel.SM2P256V1));
 
-        const signature = privateKey.sign(encoded, SignatureScheme.SM2withSM3);
+        const signature = await privateKey.sign(encoded, SignatureScheme.SM2withSM3);
         // tslint:disable-next-line:no-console
         console.log('signature', signature.value);
 

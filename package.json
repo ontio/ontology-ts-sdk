@@ -51,6 +51,7 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^4.15.0",
     "axios": "^0.17.1",
     "babel-polyfill": "^6.26.0",
     "base-x": "^3.0.3",

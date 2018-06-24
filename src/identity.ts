@@ -16,13 +16,14 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { Address, JsonKey, PrivateKey } from './crypto';
+import { deserializeFromJson } from './crypto/PrivateKeyFactory';
 import { ScryptParams } from './scrypt';
 import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
 export class ControlData {
     static fromJson(json: any): ControlData {
-        return new ControlData(json.id, PrivateKey.deserializeJson(json as JsonKey),
-        new Address(json.address), json.salt);
+        const privateKey = deserializeFromJson(json as JsonKey);
+        return new ControlData(json.id, privateKey, new Address(json.address), json.salt);
     }
 
     id: string;
@@ -138,7 +139,7 @@ export class Identity {
 
     addControl(control: ControlData) {
         for (const c of this.controls) {
-            if (c.encryptedKey.key === control.encryptedKey.key) {
+            if (c.address.toBase58() === control.address.toBase58()) {
                 return;
             }
         }

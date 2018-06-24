@@ -59,13 +59,13 @@ describe('test core', () => {
         console.log('encrypt: ' + encrypt.key);
     });
 
-    test('sign and verify', () => {
+    test('sign and verify', async () => {
         // tslint:disable-next-line:no-shadowed-variable
         const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
         const data = 'helloworld';
         const msg = utils.str2hexstr('helloworld');
         console.log('msg: ' + msg);
-        const signed = privateKey.sign(msg);
+        const signed = await privateKey.sign(msg);
         console.log('signed: ' + signed.serializeHex());
         console.log('base64: ' + new Buffer(signed.serializeHex(), 'hex').toString('base64'));
         const pk = privateKey.getPublicKey();

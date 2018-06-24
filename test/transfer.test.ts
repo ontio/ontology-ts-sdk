@@ -118,7 +118,7 @@ const testTransferFromMultiSignAddress = () => {
     txSender.sendTxWithSocket(param, callback);
 };
 
-const  testTransferTx = () => {
+const  testTransferTx = async () => {
     // const params = {
     //     cost: 16384,
     //     blockSize: 8,
@@ -140,7 +140,7 @@ const  testTransferTx = () => {
     const gasPrice = '0';
     const tx = makeTransferTx('ONT', new Address('ATk57i8rMXFSBpHAdX3UQ4TNe48BBrfCoc'),
         new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP'), 100, gasPrice, gasLimit);
-    signTransaction(tx, sm2Pri, SignatureScheme.SM2withSM3);
+    await signTransaction(tx, sm2Pri, SignatureScheme.SM2withSM3);
     // signTransaction(tx, pri);
     console.log('sigs: ' + JSON.stringify(tx.sigs));
     // const signTest = sm2Pri.sign(str2hexstr('test'), SignatureScheme.SM2withSM3).serializeHex();

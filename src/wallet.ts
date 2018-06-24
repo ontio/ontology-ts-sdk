@@ -100,7 +100,7 @@ export class Wallet {
 
     addAccount(account: Account): void {
         for (const ac of this.accounts) {
-            if (ac.encryptedKey.key === account.encryptedKey.key) {
+            if (ac.address.toBase58() === account.address.toBase58()) {
                 return;
             }
         }

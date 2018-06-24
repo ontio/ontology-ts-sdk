@@ -3,7 +3,7 @@ import { TEST_ONT_URL } from '../src/consts';
 import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test websocket', () => {
@@ -29,7 +29,7 @@ describe('test websocket', () => {
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
         tx.payer = account.address;
-        signTransaction(tx, privateKey);
+        await signTransaction(tx, privateKey);
 
         const result = await client.sendRawTransaction(tx.serialize(), false, true);
         txHash = result.Result.TxHash;

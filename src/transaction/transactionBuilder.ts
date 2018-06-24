@@ -51,10 +51,10 @@ export const Default_params = {
  * @param privateKey Private key to sign with
  * @param schema Signature Schema to use
  */
-export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
+export const signTransaction = async (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
     const hash = tx.getHash();
 
-    const signature = TxSignature.create(hash, privateKey, schema);
+    const signature = await TxSignature.create(hash, privateKey, schema);
 
     tx.sigs = [signature];
 };
@@ -69,9 +69,9 @@ export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?
  * @param privateKey Private key to sign with
  * @param schema Signature Schema to use
  */
-export const addSign = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
+export const addSign = async (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
     const hash = tx.getHash();
-    const signature = TxSignature.create(hash, privateKey, schema);
+    const signature = await TxSignature.create(hash, privateKey, schema);
 
     tx.sigs.push(signature);
 };
@@ -88,8 +88,8 @@ export const addSign = (tx: Transaction, privateKey: PrivateKey, schema?: Signat
  * @param privateKey Private key to sign the tx.
  * @param scheme Signature scheme to use
  */
-export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
-                       privateKey: PrivateKey, scheme?: SignatureScheme) => {
+export const signTx = async (tx: Transaction, M: number, pubKeys: PublicKey[],
+                             privateKey: PrivateKey, scheme?: SignatureScheme) => {
 
     if (tx.sigs.length === 0) {
         tx.sigs = [];
@@ -103,7 +103,7 @@ export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
                 if (tx.sigs[i].sigData.length + 1 > pubKeys.length) {
                     throw new Error('Too many sigData');
                 }
-                const signData = privateKey.sign(tx.getHash(), scheme).serializeHex();
+                const signData = (await privateKey.sign(tx.getHash(), scheme)).serializeHex();
                 tx.sigs[i].sigData.push(signData);
                 return;
             }
@@ -112,7 +112,7 @@ export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
     const sig = new TxSignature();
     sig.M = M;
     sig.pubKeys = pubKeys;
-    sig.sigData = [privateKey.sign(tx.getHash(), scheme).serializeHex()];
+    sig.sigData = [(await privateKey.sign(tx.getHash(), scheme)).serializeHex()];
     tx.sigs.push(sig);
 };
 

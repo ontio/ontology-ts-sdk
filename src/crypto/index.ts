@@ -19,6 +19,7 @@
 export { Address } from './address';
 export { KeyType } from './KeyType';
 export { CurveLabel } from './CurveLabel';
+export { LedgerKey } from './LedgerKey';
 export { SignatureScheme } from './SignatureScheme';
 export { KeyParameters, JsonKeyParameters, JsonKey } from './Key';
 export { PrivateKey } from './PrivateKey';

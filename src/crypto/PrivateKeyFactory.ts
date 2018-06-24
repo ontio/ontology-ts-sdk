@@ -16,15 +16,27 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { JsonKey, KeyParameters } from './Key';
+import { KeyType } from './KeyType';
+import { LedgerKey } from './LedgerKey';
+import { PrivateKey } from './PrivateKey';
+
 /**
- * Dummy declarations for modues which does not have Typescript definitions.
- * This is the preffered way instead of using require.
+ * Creates PrivateKey from Json representation.
+ *
+ * @param json Json private key representation
+ *
  */
-declare module 'elliptic';
-declare module 'bn.js';
-declare module 'secure-random';
-declare module 'sm.js';
-declare module 'bs58check';
-declare module 'wif';
-declare module 'bip39';
-declare module '@ledgerhq/hw-transport-node-hid';
+export function deserializeFromJson(json: JsonKey): PrivateKey {
+    if (json.external != null && json.external.type === 'LEDGER') {
+        return new LedgerKey(json.external.index, json.external.pKey);
+    } else if (json.key != null) {
+        return new PrivateKey(
+            json.key,
+            KeyType.fromLabel(json.algorithm),
+            KeyParameters.deserializeJson(json.parameters)
+        );
+    } else {
+        throw new Error('Unsupported Key type.');
+    }
+}

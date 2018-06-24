@@ -24,6 +24,7 @@ import json from '../src/smartcontract/data/idContract.abi';
 import { Transaction } from '../src/transaction/transaction';
 import { VmType } from './../src/transaction/vmcode';
 
+import { Address } from '../src/crypto';
 import { makeInvokeTransaction } from '../src/transaction/transactionBuilder';
 import { str2hexstr } from '../src/utils';
 
