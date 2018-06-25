@@ -17,14 +17,28 @@
  */
 export enum ParameterType  {
     Boolean = 'Boolean',
-    Number  = 'Number',
-    String  = 'String',
+    Integer = 'Integer',
     ByteArray = 'ByteArray',
+    Interface = 'Interface',
+    Array = 'Array',
+    Struct = 'Struct',
+    Map = 'Map',
+    String  = 'String',
     Int = 'Int',
     Long = 'Long',
     IntArray = 'IntArray',
     LongArray = 'LongArray',
     Address = 'Address'
+}
+
+export enum ParameterTypeVal {
+    ByteArray = 0x00,
+    Boolean = 0x01,
+    Integer = 0x02,
+    Interface = 0x40,
+    Array = 0x80,
+    Struct = 0x81,
+    Map = 0x82
 }
 
 export class Parameter {

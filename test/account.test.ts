@@ -37,6 +37,7 @@ describe('test account', () => {
         account = Account.create(privateKey, '123456', 'mickey');
         encryptedPrivateKey = account.encryptedKey;
         accountDataStr = account.toJson();
+        console.log('account: ' + accountDataStr);
         expect(accountDataStr).toBeDefined();
         // tslint:disable:no-console
         console.log('address: ' + account.address.toBase58());
@@ -79,15 +80,17 @@ describe('test account', () => {
     })
 
     test('test_for', () => {
-        const str = 'abcdefghijklmnopqrstuvwxyz'
-        const upStr = str.toUpperCase();
-        const toStr = str + upStr;
-        const pri1 = '6717c0df45159d5b5ef383521e5d8ed8857a02cdbbfdefeeeb624f9418b0895';
-        for (let i = 0; i < 52; i++) {
-            let pri2 = pri1 + toStr.substr(i, 1);
-            console.log('alpha: ' + toStr.substr(i, 1))
-            const account = Account.create(new PrivateKey(pri2), '11111111');
-            console.log('address: ' + account.address.toBase58());
+        for (let i = 0; i < 5000; i++) {
+            const pri = PrivateKey.random();
+            const account = Account.create(pri, '11111111', '');
+            const enc = account.encryptedKey;
+            const decrypt = enc.decrypt('11111111', account.address, account.salt)
+            if (decrypt.key !== pri.key) {
+                console.log('pri: ' + pri.key);
+                console.log('addr: ' + account.address.toBase58());
+                console.log('salt: ' + account.salt);                                
+                throw new Error('Algorithm failed!')
+            }
         }
     })
 });

@@ -45,7 +45,7 @@ import {
     signTransaction
 } from '../transaction/transactionBuilder';
 import { generateMnemonic,
-    hexstr2str, now, sendBackResult2Native, str2hexstr } from '../utils';
+    hexstr2str, now, sendBackResult2Native, str2hexstr, isBase64 } from '../utils';
 import { Wallet } from '../wallet';
 
 // tslint:disable:no-unused-expression
@@ -95,10 +95,17 @@ export class SDK {
         };
     }
 
+    static transformPassword(password: string) {
+        if (isBase64(password)) {
+            return Buffer.from(password, 'base64').toString();
+        }
+        return password;
+    }
+
     static createWallet(name: string,
                         password: string, payer: string, gasPrice: string, gasLimit: string, callback?: string) {
         const wallet = Wallet.create(name);
-
+        password = this.transformPassword(password);
         const privateKey = PrivateKey.random();
         const identity = Identity.create(privateKey, password, name);
 
@@ -172,6 +179,7 @@ export class SDK {
             // TODO check ontid
             const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
             const addr = new Address(address);
+            password = this.transformPassword(password);            
             identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, addr, salt);
         } catch (err) {
             obj  = this.getDecryptError(err);
@@ -230,6 +238,7 @@ export class SDK {
         let error = {};
         let obj: any;
         try {
+            password = this.transformPassword(password);            
             const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
             const addr = new Address(address);
             identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, addr, salt);
@@ -285,6 +294,7 @@ export class SDK {
     static createIdentity(label: string, password: string, payer: string,
                           gasPrice: string, gasLimit: string, callback?: string) {
         const privateKey = PrivateKey.random();
+        password = this.transformPassword(password);
         const identity = Identity.create(privateKey, password, label);
         const result = identity.toJson();
         let obj: any = {
@@ -339,7 +349,7 @@ export class SDK {
     static createAccount(label: string, password: string, callback?: string) {
         // generate mnemnic
         let mnemonic = generateMnemonic();
-
+        password = this.transformPassword(password);
         const mnemonicHex = str2hexstr(mnemonic);
         const privateKey = PrivateKey.generateFromMnemonic(mnemonic);
         const account = Account.create(privateKey, password, label);
@@ -366,6 +376,7 @@ export class SDK {
     static decryptMnemonicEnc(mnemonicEnc: string,
                               address: string, salt: string, password: string, callback: string) {
         let obj;
+        password = this.transformPassword(password);
         const addr = new Address(address);
         const saltHex = Buffer.from(salt, 'base64').toString('hex');
         const decMneHex = scrypt.decryptWithGcm(mnemonicEnc, addr, saltHex, password);
@@ -388,6 +399,7 @@ export class SDK {
         callback?: string
     ) {
         let account = new Account();
+        password = this.transformPassword(password);
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         try {
             const addr = new Address(address);
@@ -428,6 +440,7 @@ export class SDK {
         callback?: string
     )  {
         let privateKey: PrivateKey;
+        password = this.transformPassword(password);
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`;
         try {
@@ -474,6 +487,7 @@ export class SDK {
         salt: string,
         callback?: string
     ) {
+        password = this.transformPassword(password);
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         try {
             const addr = new Address(address);
@@ -514,6 +528,7 @@ export class SDK {
         callback ?: string
     ) {
         let privateKey: PrivateKey;
+        password = this.transformPassword(password);
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         try {
             const addr = new Address(address);
@@ -598,6 +613,7 @@ export class SDK {
         callback?: string
     ): PgpSignature | object {
         let privateKey: PrivateKey;
+        password = this.transformPassword(password);
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         let result;
         try {
@@ -679,7 +695,7 @@ export class SDK {
 
         let fromAddress: Address;
         let toAddress: Address;
-
+        password = this.transformPassword(password);
         try {
             fromAddress = new Address(from);
             toAddress = new Address(to);
@@ -736,6 +752,7 @@ export class SDK {
         callback: string
     ) {
         let addressObj: Address;
+        password = this.transformPassword(password);
         try {
             addressObj = new Address(address);
 
@@ -856,8 +873,9 @@ export class SDK {
         return result;
     }
 
-    static importAccountMnemonic(mnemonic: string, password: string, callback: string) {
+    static importAccountMnemonic(label: string, mnemonic: string, password: string, callback: string) {
         mnemonic = mnemonic.trim();
+        password = this.transformPassword(password);
         if (!bip39.validateMnemonic(mnemonic)) {
             // tslint:disable-next-line:no-shadowed-variable
             const obj = {
@@ -871,7 +889,7 @@ export class SDK {
         const seed = bip39.mnemonicToSeedHex(mnemonic);
         const pri = seed.substr(0, 64);
         const privateKey = new PrivateKey(pri);
-        const account = Account.create(privateKey, password);
+        const account = Account.create(privateKey, password, label);
         const result = account.toJson();
         const obj = {
             error: ERROR_CODE.SUCCESS,
@@ -898,6 +916,7 @@ export class SDK {
             callback && sendBackResult2Native(JSON.stringify(obj), callback);
             return obj;
         }
+        password = this.transformPassword(password);
         const encrypt = new PrivateKey(encryptedKey);
         const addr = new Address(address);
         const saltHex = Buffer.from(salt, 'base64').toString('hex');
@@ -915,8 +934,9 @@ export class SDK {
         return result;
     }
 
-    static importAccountWithWif(wif: string, password: string, callback: string) {
+    static importAccountWithWif(label: string, wif: string, password: string, callback: string) {
         let privateKey;
+        password = this.transformPassword(password);
         try {
             privateKey = PrivateKey.deserializeWIF(wif);
         } catch (err) {
@@ -927,7 +947,7 @@ export class SDK {
             callback && sendBackResult2Native(JSON.stringify(obj), callback);
             return obj;
         }
-        const account = Account.create(privateKey, password);
+        const account = Account.create(privateKey, password, label);
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: account.toJson()
@@ -939,8 +959,9 @@ export class SDK {
         return result;
     }
 
-    static importAccountWithPrivateKey(privateKey: string, password: string, callback: string) {
+    static importAccountWithPrivateKey(label: string, privateKey: string, password: string, callback: string) {
         privateKey = privateKey.trim();
+        password = this.transformPassword(password);
         if (!privateKey || privateKey.length !== 64) {
             const obj = {
                 error: ERROR_CODE.INVALID_PARAMS,
@@ -950,7 +971,7 @@ export class SDK {
             return obj;
         }
         const pri = new PrivateKey(privateKey);
-        const account = Account.create(pri, password);
+        const account = Account.create(pri, password, label);
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: account.toJson()
@@ -967,6 +988,7 @@ export class SDK {
      */
     static importAccountWithKeystore(keystore: string, password: string, callback: string) {
         let keyStoreObj;
+        password = this.transformPassword(password);
         try {
             keyStoreObj = JSON.parse(keystore);
         } catch (err) {

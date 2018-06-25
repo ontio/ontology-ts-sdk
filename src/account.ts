@@ -148,7 +148,7 @@ export class Account {
             'salt': this.salt,
             'isDefault': this.isDefault,
             'publicKey': this.publicKey,
-            'extra': this.extra
+            'signatureScheme': this.encryptedKey.algorithm.defaultSchema.label
         };
         return obj;
     }

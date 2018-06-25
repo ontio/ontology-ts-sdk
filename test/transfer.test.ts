@@ -32,7 +32,7 @@ import { State } from '../src/smartcontract/nativevm/token';
 import { Transaction } from '../src/transaction/transaction';
 import { buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
-import { ab2hexstring, StringReader, generateRandomArray, num2hexstring } from '../src/utils';
+import { ab2hexstring, StringReader, generateRandomArray, num2hexstring, isBase64 } from '../src/utils';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
 import { PublicKey } from '../src/crypto/PublicKey';
 import BigInt from '../src/common/bigInt';
@@ -79,8 +79,8 @@ const  testTransferTx = () => {
 
     const gasLimit = '300000';
     const gasPrice = '0';
-    const tx = makeTransferTx('ONG', accountFrom.address,
-        new Address('AZ7iBezpZByGvUmXXdhfvLXM6cnQgXMiR7'), 101*1e9, gasPrice, gasLimit);
+    const tx = makeTransferTx('ONT', accountFrom.address,
+        new Address('AVyJymgtEYAjw76QnvoEKhL8567oiVkGme'), 1000, gasPrice, gasLimit);
     signTransaction(tx, accountFrom.privateKey);
     console.log('sigs: ' + JSON.stringify(tx.sigs));
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress,
@@ -146,19 +146,19 @@ const testClaimOng = () => {
     const gasPrice = '0';
     const gasLimit = '30000';
 
-    const params = {
-        cost: 16384,
-        blockSize: 8,
-        parallel: 8,
-        size: 64
-    };
-    const encPri = new PrivateKey('nLbO4KNV8GyO4Ihoj5qCobBczOsTvVWk1QqQ4zsu3aUmNyYxmga4cHgf0MJ3gM6M');
-    const password = '123456';
-    const pk = PublicKey.deserializeHex(
-        new StringReader('12020213b91af30cba992aa24b232237af1093396dff9f252c3855dcf7129c517883f3'));
-    const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
-    const salt = Buffer.from('aCLRjtYznvxaxte3qrHDNw==', 'base64').toString('hex');
-    const pri = encPri.decrypt(password, address, salt, params);
+    // const params = {
+    //     cost: 16384,
+    //     blockSize: 8,
+    //     parallel: 8,
+    //     size: 64
+    // };
+    // const encPri = new PrivateKey('nLbO4KNV8GyO4Ihoj5qCobBczOsTvVWk1QqQ4zsu3aUmNyYxmga4cHgf0MJ3gM6M');
+    // const password = '123456';
+    // const pk = PublicKey.deserializeHex(
+    //     new StringReader('12020213b91af30cba992aa24b232237af1093396dff9f252c3855dcf7129c517883f3'));
+    // const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
+    // const salt = Buffer.from('aCLRjtYznvxaxte3qrHDNw==', 'base64').toString('hex');
+    // const pri = encPri.decrypt(password, address, salt, params);
     const tx = makeClaimOngTx(address, address, 10000, address, gasPrice, gasLimit);
     signTransaction(tx, pri);
     const restClient = new RestClient();
@@ -231,7 +231,7 @@ const testQueryBalance = (asset, address:Address) => {
 // testTransferTx();
 
 // const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
-testGetBalance('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve', '');
+testGetBalance('AVyJymgtEYAjw76QnvoEKhL8567oiVkGme', '');
 
 // testClaimOng();
 
@@ -247,3 +247,7 @@ const address = new Address('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL');
 // testQueryBalance('ong', address);
 
 // console.log('add: ' + new Address('TAsW5tthjNBX4FG6ifGMTAswCBdB2YWGaG').serialize());
+
+const pass = 'XFxcXFxcXFw=';
+const t = Buffer.from(pass, 'base64').toString();
+console.log(t)
