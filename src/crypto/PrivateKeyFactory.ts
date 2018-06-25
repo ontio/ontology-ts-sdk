@@ -18,7 +18,7 @@
 
 import { JsonKey, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
-import { LedgerKey } from './LedgerKey';
+import { LedgerKey } from './ledger/ledgerKey';
 import { PrivateKey } from './PrivateKey';
 
 /**

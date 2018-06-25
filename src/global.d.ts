@@ -28,3 +28,4 @@ declare module 'bs58check';
 declare module 'wif';
 declare module 'bip39';
 declare module '@ledgerhq/hw-transport-node-hid';
+declare module '@ledgerhq/hw-transport-u2f';

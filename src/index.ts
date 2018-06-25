@@ -20,7 +20,7 @@ import { Account } from './account';
 import { Claim } from './claim';
 import * as CONST from './consts';
 import * as Crypto from './crypto';
-import * as Ledger from './crypto/ledger/ledgerProxy';
+import * as Ledger from './crypto/ledger';
 import { Identity } from './identity';
 import RestClient from './network/rest/restClient';
 import RpcClient from './network/rpc/rpcClient';

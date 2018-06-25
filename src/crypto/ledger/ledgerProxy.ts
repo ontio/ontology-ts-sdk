@@ -16,17 +16,19 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { StringReader } from '../../utils';
-import { LedgerTransport } from './LedgerTransport';
+import { LedgerTransport } from './ledgerTransport';
 
 /**
  * Detects if Ledger is installed, connected and NEO app is running.
+ *
  */
 export async function isLedgerSupported() {
     try {
-        const transport = await LedgerTransport.open();
-        await transport.close();
+        await getPublicKey(0);
         return true;
     } catch (e) {
+        // tslint:disable-next-line:no-console
+        console.log(e);
         return false;
     }
 }
@@ -53,8 +55,10 @@ export async function getPublicKey(index: number) {
 
 /**
  * Computes ECDSA signature of the data from Ledger using index.
+ *
+ * @param transportType Type of transport (HID - Node.JS/Electron, U2F - Browser)
  */
-export async function computesSignature(data: string, index: number): Promise<string> {
+export async function computesSignature(index: number, data: string): Promise<string> {
     const transport = await LedgerTransport.open();
 
     try {

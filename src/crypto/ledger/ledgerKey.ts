@@ -15,16 +15,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { ScryptParams } from '../scrypt';
-import { Address } from './address';
-import { CurveLabel } from './CurveLabel';
-import { JsonKey, KeyParameters } from './Key';
-import { KeyType } from './KeyType';
-import { computesSignature, getPublicKey } from './ledger/ledgerProxy';
-import { PrivateKey } from './PrivateKey';
-import { PublicKey } from './PublicKey';
-import { Signature } from './Signature';
-import { SignatureScheme } from './SignatureScheme';
+import { ScryptParams } from '../../scrypt';
+import { Address } from '../address';
+import { CurveLabel } from '../CurveLabel';
+import { JsonKey, KeyParameters } from '../Key';
+import { KeyType } from '../KeyType';
+import { computesSignature, getPublicKey } from '../ledger/ledgerProxy';
+import { PrivateKey } from '../PrivateKey';
+import { PublicKey } from '../PublicKey';
+import { Signature } from '../Signature';
+import { SignatureScheme } from '../SignatureScheme';
 
 /**
  * Private Key implementation delegating signing and public key derivation to Ledger HW.
@@ -69,7 +69,7 @@ export class LedgerKey extends PrivateKey {
             throw new Error('Signature schema does not match key type.');
         }
 
-        const signed = await computesSignature(msg, this.index);
+        const signed = await computesSignature(this.index, msg);
 
         return new Signature(schema, signed, publicKeyId);
     }

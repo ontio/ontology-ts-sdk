@@ -15,7 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import LedgerNode from '@ledgerhq/hw-transport-node-hid';
+
+import LedgerNodeHid from '@ledgerhq/hw-transport-node-hid';
+import LedgerNodeU2f from '@ledgerhq/hw-transport-u2f';
+
+const isBrowser = typeof window !== 'undefined'
+    && ({}).toString.call(window) === '[object Window]';
 
 /**
  * Low level interface to Ledger HW NEO application.
@@ -28,6 +33,17 @@ export class LedgerTransport {
      * Otherwise the new one might fail.
      */
     static async open() {
+        let LedgerNode;
+        let scrambleKey;
+
+        if (isBrowser) {
+            LedgerNode = LedgerNodeU2f;
+            scrambleKey = 'ONT';
+        } else {
+            LedgerNode = LedgerNodeHid;
+            scrambleKey = null;
+        }
+
         const supported = await LedgerNode.isSupported();
         if (!supported) {
             throw new Error('Your computer does not support the ledger!');
@@ -40,6 +56,9 @@ export class LedgerTransport {
 
         const transport = new LedgerTransport();
         transport.delegate = await LedgerNode.open(paths[0]);
+        transport.delegate.setDebugMode(true);
+        transport.delegate.setScrambleKey(scrambleKey);
+        transport.delegate.setExchangeTimeout(5000);
         return transport;
     }
 

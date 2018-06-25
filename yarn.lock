@@ -23,6 +23,13 @@
     "@ledgerhq/hw-transport" "^4.15.0"
     node-hid "^0.7.2"
 
+"@ledgerhq/hw-transport-u2f@^4.15.0":
+  version "4.15.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-u2f/-/hw-transport-u2f-4.15.0.tgz#642f754522f1ee0f95c8cf3e7b71e56fbc6267d5"
+  dependencies:
+    "@ledgerhq/hw-transport" "^4.15.0"
+    u2f-api "0.2.7"
+
 "@ledgerhq/hw-transport@^4.15.0":
   version "4.15.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-4.15.0.tgz#ec99436c2662e70fb6f9c72f7bb5d1f3a051c4e3"
@@ -6064,6 +6071,10 @@ typeforce@^1.6.1:
 typescript@^2.8.3:
   version "2.8.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.8.3.tgz#5d817f9b6f31bb871835f4edf0089f21abe6c170"
+
+u2f-api@0.2.7:
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/u2f-api/-/u2f-api-0.2.7.tgz#17bf196b242f6bf72353d9858e6a7566cc192720"
 
 uglify-es@^3.3.4:
   version "3.3.9"
