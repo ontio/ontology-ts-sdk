@@ -116,7 +116,7 @@ export function buildRegIdWithAttributes(
     // const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, attrs);
     // f.setParamsValue(p1, p2, p3);
     const attrLen = attributes.length;
-    const struct = new Struct();    
+    const struct = new Struct();
     struct.add(ontid, publicKey.serializeHex(), attrLen);
     for (const a of attributes) {
         const key = str2hexstr(a.key);
@@ -227,7 +227,7 @@ export function buildGetAttributesTx(ontid: string) {
 
     // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
     // f.setParamsValue(p1);
-    const struct = new Struct();    
+    const struct = new Struct();
     struct.add(ontid);
     const params = buildNativeCodeScript([struct]);
 
@@ -248,7 +248,7 @@ export function buildGetDDOTx(ontid: string) {
 
     // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
     // f.setParamsValue(p1);
-    const struct = new Struct();    
+    const struct = new Struct();
     struct.add(ontid);
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
@@ -343,7 +343,7 @@ export function buildGetPublicKeysTx(ontid: string) {
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
-    const struct = new Struct();    
+    const struct = new Struct();
     struct.add(ontid);
     const params = buildNativeCodeScript([struct]);
 
@@ -371,7 +371,7 @@ export function buildAddRecoveryTx(ontid: string, recovery: Address,
     const p1 = ontid;
     const p2 = recovery;
     const p3 = publicKey.serializeHex();
-    const struct = new Struct();    
+    const struct = new Struct();
     struct.add(p1, p2, p3);
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT), gasPrice, gasLimit);
@@ -400,7 +400,7 @@ export function buildChangeRecoveryTx(ontid: string, newrecovery: Address,
     const p1 = ontid;
     const p2 = newrecovery;
     const p3 = oldrecovery;
-    const struct = new Struct();    
+    const struct = new Struct();
     struct.add(p1, p2, p3);
     const params = buildNativeCodeScript([struct]);
 
@@ -430,7 +430,7 @@ export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
     // tslint:disable-next-line:no-console
     console.log('index: ' + index);
 
-    const struct = new Struct();    
+    const struct = new Struct();
     struct.add(ontid, pkId);
     const params = buildNativeCodeScript([struct]);
 

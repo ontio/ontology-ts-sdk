@@ -24,7 +24,7 @@ export enum ParameterType  {
     Long = 'Long',
     IntArray = 'IntArray',
     LongArray = 'LongArray',
-    Address = 'Address',
+    Address = 'Address'
 }
 
 export class Parameter {

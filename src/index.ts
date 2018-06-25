@@ -34,8 +34,8 @@ import * as OntidContract from './smartcontract/nativevm/ontidContractTxBuilder'
 import * as Token from './smartcontract/nativevm/token';
 import { DDO, DDOAttribute } from './transaction/ddo';
 import { Transaction } from './transaction/transaction';
-import { TxSignature } from './transaction/txSignature';
 import * as TransactionBuilder from './transaction/transactionBuilder';
+import { TxSignature } from './transaction/txSignature';
 import * as utils from './utils';
 import { Wallet } from './wallet';
 

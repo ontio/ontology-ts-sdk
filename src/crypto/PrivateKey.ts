@@ -24,7 +24,7 @@ import * as wif from 'wif';
 import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID } from '../consts';
 import { ERROR_CODE } from '../error';
 import { decryptWithGcm, encryptWithGcm, ScryptParams } from '../scrypt';
-import { ab2hexstring, hexstring2ab, str2hexstr, isBase64 } from '../utils';
+import { ab2hexstring, hexstring2ab, isBase64, str2hexstr } from '../utils';
 import { Address } from './address';
 import { JsonKey, Key, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
@@ -167,7 +167,7 @@ export class PrivateKey extends Key {
      * @param params Optional Scrypt params
      */
     encrypt(keyphrase: string, address: Address, salt: string, params?: ScryptParams): PrivateKey {
-        //add address check
+        // add address check
         const publicKey = this.getPublicKey();
         const addr = Address.fromPubKey(publicKey).toBase58();
         if (addr !== address.toBase58()) {

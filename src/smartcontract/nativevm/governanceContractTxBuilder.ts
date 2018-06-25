@@ -22,8 +22,8 @@ import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionBuilder';
 import { hex2VarBytes, hexstr2str, num2hexstring,
     str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../../utils';
-import Struct from '../abi/struct';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
+import Struct from '../abi/struct';
 
 export const GOVERNANCE_CONTRACT = '0000000000000000000000000000000000000007';
 const contractAddress = new Address(GOVERNANCE_CONTRACT);
@@ -57,7 +57,7 @@ export function makeRegisterCandidateTx(
     varifyPositiveInt(initPos);
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
-    }    
+    }
     const struct = new Struct();
     struct.add(str2hexstr(peerPubKey), userAddr.serialize(), initPos, ontid, keyNo);
     const params = buildNativeCodeScript([struct]);
@@ -113,14 +113,14 @@ export function makeVoteForPeerTx(
         throw ERROR_CODE.INVALID_PARAMS;
     }
     const struct = new Struct();
-    struct.add(userAddr.serialize())
+    struct.add(userAddr.serialize());
     struct.add(peerPubKeys.length);
     for (const p of peerPubKeys) {
         struct.add(str2hexstr(p));
     }
     struct.add(posList.length);
     for (const n of posList) {
-        struct.add(n)
+        struct.add(n);
     }
     const params = buildNativeCodeScript([struct]);
     console.log('params: ' + params);
@@ -154,7 +154,7 @@ export function makeUnvoteForPeerTx(
     for (const p of peerPubKeys) {
         struct.add(str2hexstr(p));
     }
-    struct.add(posList.length)
+    struct.add(posList.length);
     for (const n of posList) {
         struct.add(n);
     }

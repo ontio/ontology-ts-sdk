@@ -403,7 +403,7 @@ export class SDK {
             error: ERROR_CODE.SUCCESS,
             result: account.toJson()
         };
-        //add address check
+        // add address check
         if (address !== account.address.toBase58()) {
             obj.error = ERROR_CODE.INVALID_ADDR,
             obj.result = '';
