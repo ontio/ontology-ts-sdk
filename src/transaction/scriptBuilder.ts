@@ -17,11 +17,11 @@
  */
 
 import BigInt from '../common/bigInt';
+import { ERROR_CODE } from '../error';
 import { Parameter, ParameterType, ParameterTypeVal } from '../smartcontract/abi/parameter';
+import Struct from '../smartcontract/abi/struct';
 import { num2hexstring, str2hexstr } from '../utils';
 import opcode from './opcode';
-import { ERROR_CODE } from '../error';
-import Struct from '../smartcontract/abi/struct';
 
 export const pushBool = (param: boolean) => {
     let result = '';
@@ -72,9 +72,9 @@ export const pushHexString = (param: string) => {
 export const getStructBytes = (val: Struct) => {
     let result = '';
     result += num2hexstring(ParameterTypeVal.Array);
-    result += pushInt(val.list.length);//val is array-like
+    result += pushInt(val.list.length); // val is array-like
     for (const v of val.list) {
-        if (typeof v === 'string') {//consider as hex string
+        if (typeof v === 'string') {// consider as hex string
             result += num2hexstring(ParameterTypeVal.ByteArray);
             result += pushHexString(v);
         } else if (typeof v === 'number') {
@@ -85,7 +85,7 @@ export const getStructBytes = (val: Struct) => {
         }
     }
     return result;
-}
+};
 
 export const getMapBytes = (val: Map<string, Parameter>) => {
     let result = '';
@@ -94,7 +94,7 @@ export const getMapBytes = (val: Map<string, Parameter>) => {
     for (const k of val.keys()) {
         result += num2hexstring(ParameterTypeVal.ByteArray);
         result += pushHexString(str2hexstr(k));
-        const p = val.get(k)
+        const p = val.get(k);
         if (p && p.getType() === ParameterType.ByteArray) {
             result += num2hexstring(ParameterTypeVal.ByteArray);
             result += pushHexString(p.getValue());
@@ -112,7 +112,7 @@ export const getMapBytes = (val: Map<string, Parameter>) => {
         }
     }
     return result;
-}
+};
 
 // params is like [param1, param2...]
 export const buildSmartContractParam = (functionName: string, params: Parameter[]) => {
@@ -141,7 +141,7 @@ export const buildSmartContractParam = (functionName: string, params: Parameter[
             const mapBytes = getMapBytes(params[i].getValue());
             result += pushHexString(mapBytes);
             break;
-        
+
         case ParameterType.Struct:
             const structBytes = getStructBytes(params[i].getValue());
             result += pushHexString(structBytes);

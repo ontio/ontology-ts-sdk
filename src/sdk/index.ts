@@ -45,7 +45,7 @@ import {
     signTransaction
 } from '../transaction/transactionBuilder';
 import { generateMnemonic,
-    hexstr2str, now, sendBackResult2Native, str2hexstr, isBase64 } from '../utils';
+    hexstr2str, isBase64, now, sendBackResult2Native, str2hexstr } from '../utils';
 import { Wallet } from '../wallet';
 
 // tslint:disable:no-unused-expression
@@ -179,7 +179,7 @@ export class SDK {
             // TODO check ontid
             const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
             const addr = new Address(address);
-            password = this.transformPassword(password);            
+            password = this.transformPassword(password);
             identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, addr, salt);
         } catch (err) {
             obj  = this.getDecryptError(err);
@@ -238,7 +238,7 @@ export class SDK {
         let error = {};
         let obj: any;
         try {
-            password = this.transformPassword(password);            
+            password = this.transformPassword(password);
             const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
             const addr = new Address(address);
             identity = Identity.importIdentity(label, encryptedPrivateKeyObj, password, addr, salt);
