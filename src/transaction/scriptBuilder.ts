@@ -1,7 +1,27 @@
+/*
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import BigInt from '../common/bigInt';
-import { Parameter, ParameterType } from '../smartcontract/abi/parameter';
+import { Parameter, ParameterType, ParameterTypeVal } from '../smartcontract/abi/parameter';
 import { num2hexstring, str2hexstr } from '../utils';
 import opcode from './opcode';
+import { ERROR_CODE } from '../error';
+import Struct from '../smartcontract/abi/struct';
 
 export const pushBool = (param: boolean) => {
     let result = '';
@@ -49,6 +69,51 @@ export const pushHexString = (param: string) => {
     return result;
 };
 
+export const getStructBytes = (val: Struct) => {
+    let result = '';
+    result += num2hexstring(ParameterTypeVal.Array);
+    result += pushInt(val.list.length);//val is array-like
+    for (const v of val.list) {
+        if (typeof v === 'string') {//consider as hex string
+            result += num2hexstring(ParameterTypeVal.ByteArray);
+            result += pushHexString(v);
+        } else if (typeof v === 'number') {
+            result += num2hexstring(ParameterTypeVal.Integer);
+            result += pushInt(v);
+        } else {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+    }
+    return result;
+}
+
+export const getMapBytes = (val: Map<string, Parameter>) => {
+    let result = '';
+    result += num2hexstring(ParameterTypeVal.Map);
+    result += pushInt(val.size);
+    for (const k of val.keys()) {
+        result += num2hexstring(ParameterTypeVal.ByteArray);
+        result += pushHexString(str2hexstr(k));
+        const p = val.get(k)
+        if (p && p.getType() === ParameterType.ByteArray) {
+            result += num2hexstring(ParameterTypeVal.ByteArray);
+            result += pushHexString(p.getValue());
+        } else if (p && p.getType() === ParameterType.String) {
+            result += num2hexstring(ParameterTypeVal.ByteArray);
+            result += pushHexString(str2hexstr(p.getValue()));
+        } else if (p && p.getType() === ParameterType.Integer) {
+            result += num2hexstring(ParameterTypeVal.Integer);
+            result += pushInt(p.getValue());
+        } else if (p && p.getType() === ParameterType.Long) {
+            result += num2hexstring(ParameterTypeVal.Integer);
+            result += pushInt(p.getValue());
+        } else {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+    }
+    return result;
+}
+
 // params is like [param1, param2...]
 export const buildSmartContractParam = (functionName: string, params: Parameter[]) => {
     let result = '';
@@ -59,7 +124,7 @@ export const buildSmartContractParam = (functionName: string, params: Parameter[
             result += pushBool(params[i].getValue());
             break;
 
-        case ParameterType.Number:
+        case ParameterType.Integer:
             result += pushInt(params[i].getValue());
             break;
 
@@ -72,14 +137,15 @@ export const buildSmartContractParam = (functionName: string, params: Parameter[
             result += pushHexString(params[i].getValue());
             break;
 
-            /* case "[object Object]":
-                let temp = []
-                let keys = Object.keys(params[i])
-                for(let k of keys) {
-                    temp.push( params[i][k])
-                }
-                result += buildSmartContractParam(temp)
-                break; */
+        case ParameterType.Map:
+            const mapBytes = getMapBytes(params[i].getValue());
+            result += pushHexString(mapBytes);
+            break;
+        
+        case ParameterType.Struct:
+            const structBytes = getStructBytes(params[i].getValue());
+            result += pushHexString(structBytes);
+            break;
         default:
             throw new Error('Unsupported param type: ' + params[i]);
         }

@@ -1,8 +1,3 @@
-import BigInt from '../common/bigInt';
-import { PublicKey } from '../crypto/PublicKey';
-import { num2hexstring, StringReader } from './../utils';
-import opcode from './opcode';
-
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -20,6 +15,11 @@ import opcode from './opcode';
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+import BigInt from '../common/bigInt';
+import { PublicKey } from '../crypto/PublicKey';
+import { num2hexstring, StringReader } from './../utils';
+import opcode from './opcode';
 
 export function pushOpCode(op: opcode): string {
     return num2hexstring(op);
