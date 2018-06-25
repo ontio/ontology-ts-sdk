@@ -49,7 +49,7 @@ export class LedgerTransport {
      * Closes the transport connection to the Ledger HW.
      */
     async close() {
-        this.delegate.close();
+        await this.delegate.close();
     }
 
     /**

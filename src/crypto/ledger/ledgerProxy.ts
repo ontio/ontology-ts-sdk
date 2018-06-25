@@ -19,6 +19,19 @@ import { StringReader } from '../../utils';
 import { LedgerTransport } from './LedgerTransport';
 
 /**
+ * Detects if Ledger is installed, connected and NEO app is running.
+ */
+export async function isLedgerSupported() {
+    try {
+        const transport = await LedgerTransport.open();
+        await transport.close();
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
  * Retrieves the public key corresponding to BIP44 index.
  *
  * @param index Index of the public key
@@ -34,7 +47,7 @@ export async function getPublicKey(index: number) {
     } catch (err) {
         throw evalTransportError(err);
     } finally {
-        transport.close();
+        await transport.close();
     }
 }
 
@@ -74,7 +87,7 @@ export async function computesSignature(data: string, index: number): Promise<st
     } catch (err) {
         throw evalTransportError(err);
     } finally {
-        transport.close();
+        await transport.close();
     }
 }
 
