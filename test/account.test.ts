@@ -1,23 +1,23 @@
-import { Address, PublicKey } from '../src/crypto';
 /*
- * Copyright (C) 2018 The ontology Authors
- * This file is part of The ontology library.
- *
- * The ontology is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The ontology is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2018 The ontology Authors
+* This file is part of The ontology library.
+*
+* The ontology is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* The ontology is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 import { Account } from '../src/account';
+import { Address, PublicKey } from '../src/crypto';
 import { PrivateKey } from '../src/crypto';
 import { ERROR_CODE } from '../src/error';
 import * as utils from '../src/utils';
@@ -37,6 +37,7 @@ describe('test account', () => {
         account = Account.create(privateKey, '123456', 'mickey');
         encryptedPrivateKey = account.encryptedKey;
         accountDataStr = account.toJson();
+        // tslint:disable-next-line:no-console
         console.log('account: ' + accountDataStr);
         expect(accountDataStr).toBeDefined();
         // tslint:disable:no-console
@@ -70,27 +71,29 @@ describe('test account', () => {
     });
 
     test('test_keystore', () => {
-        const keystore = { "type": "A", "label": "巴德", "algorithm": "ECDSA", "scrypt": { "n": 4096, "p": 8, "r": 8, "dkLen": 64 }, "key": "dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd", "salt": "sJwpxe1zDsBt9hI2iA2zKQ==", "address": "AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU", "parameters": { "curve": "secp256r1" } }
+        // tslint:disable-next-line:max-line-length
+        const keystore = { type: 'A', label: '巴德', algorithm: 'ECDSA', scrypt: { n: 4096, p: 8, r: 8, dkLen: 64 }, key: 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd', salt: 'sJwpxe1zDsBt9hI2iA2zKQ==', address: 'AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU', parameters: { curve: 'secp256r1' } };
         const enc = new PrivateKey(keystore.key);
         const addr1 = new Address(keystore.address);
-        const pri = enc.decrypt('11111111',  addr1, keystore.salt)
+        const pri = enc.decrypt('11111111',  addr1, keystore.salt);
         const pub = pri.getPublicKey();
         const addr2 = Address.fromPubKey(pub);
         expect(addr2.toBase58()).toEqual(keystore.address);
-    })
+    });
 
     test('test_for', () => {
         for (let i = 0; i < 5000; i++) {
             const pri = PrivateKey.random();
+            // tslint:disable-next-line:no-shadowed-variable
             const account = Account.create(pri, '11111111', '');
             const enc = account.encryptedKey;
-            const decrypt = enc.decrypt('11111111', account.address, account.salt)
+            const decrypt = enc.decrypt('11111111', account.address, account.salt);
             if (decrypt.key !== pri.key) {
                 console.log('pri: ' + pri.key);
                 console.log('addr: ' + account.address.toBase58());
-                console.log('salt: ' + account.salt);                                
-                throw new Error('Algorithm failed!')
+                console.log('salt: ' + account.salt);
+                throw new Error('Algorithm failed!');
             }
         }
-    })
+    });
 });

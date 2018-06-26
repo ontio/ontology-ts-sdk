@@ -1,3 +1,4 @@
+import { num2VarInt } from './../utils';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -71,15 +72,15 @@ export const pushHexString = (param: string) => {
 
 export const getStructBytes = (val: Struct) => {
     let result = '';
-    result += num2hexstring(ParameterTypeVal.Array);
-    result += pushInt(val.list.length); // val is array-like
+    result += num2hexstring(ParameterTypeVal.Struct);
+    result += num2hexstring(val.list.length); // val is array-like
     for (const v of val.list) {
         if (typeof v === 'string') {// consider as hex string
             result += num2hexstring(ParameterTypeVal.ByteArray);
             result += pushHexString(v);
         } else if (typeof v === 'number') {
-            result += num2hexstring(ParameterTypeVal.Integer);
-            result += pushInt(v);
+            result += num2hexstring(ParameterTypeVal.ByteArray);
+            result += pushHexString(num2VarInt(v));
         } else {
             throw ERROR_CODE.INVALID_PARAMS;
         }
@@ -90,7 +91,7 @@ export const getStructBytes = (val: Struct) => {
 export const getMapBytes = (val: Map<string, Parameter>) => {
     let result = '';
     result += num2hexstring(ParameterTypeVal.Map);
-    result += pushInt(val.size);
+    result += num2hexstring(val.size);
     for (const k of val.keys()) {
         result += num2hexstring(ParameterTypeVal.ByteArray);
         result += pushHexString(str2hexstr(k));
@@ -103,10 +104,10 @@ export const getMapBytes = (val: Map<string, Parameter>) => {
             result += pushHexString(str2hexstr(p.getValue()));
         } else if (p && p.getType() === ParameterType.Integer) {
             result += num2hexstring(ParameterTypeVal.Integer);
-            result += pushInt(p.getValue());
+            result += pushHexString(num2VarInt(p.getValue()));
         } else if (p && p.getType() === ParameterType.Long) {
             result += num2hexstring(ParameterTypeVal.Integer);
-            result += pushInt(p.getValue());
+            result += pushHexString(num2VarInt(p.getValue()));
         } else {
             throw ERROR_CODE.INVALID_PARAMS;
         }

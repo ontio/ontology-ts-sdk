@@ -18,8 +18,9 @@
 
 // tslint:disable:max-line-length
 import axios from 'axios';
-import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
+import { GetStatusResponse } from '../src/claim/claim';
 import { TEST_ONT_URL } from '../src/consts';
+import { DEFAULT_ALGORITHM, ONT_NETWORK, TEST_NODE } from '../src/consts';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { RestClient } from '../src/index';
@@ -44,7 +45,6 @@ import { VmType } from '../src/transaction/vmcode';
 import { ab2hexstring, hexstr2str, str2hexstr, StringReader } from '../src/utils';
 import { Account } from './../src/account';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
-import { GetStatusResponse } from '../src/claim/claim';
 
 const gasPrice = '0';
 const gasLimit = '30000';
@@ -59,11 +59,13 @@ const Default_params = {
     Type: '',
     Op: 'exec'
 };
-// tslint:disable-next-line:no-var-requires
+// tslint:disable:no-console
+// tslint:disable:no-var-requires
 const WebSocket = require('ws');
 
 let privateKey: PrivateKey;
 let publicKey: PublicKey;
+// tslint:disable-next-line:prefer-const
 let pk2: PublicKey;
 let ontid: string;
 // tslint:disable:prefer-const
@@ -143,7 +145,7 @@ export const sendTx = (param, callback = null) => {
         if (callback) {
             if (res.Result.Result) {
                 const cr = callback(res);
-                console.log(cr)
+                console.log(cr);
                 socket.close();
             }
         }
@@ -441,7 +443,7 @@ const testRevokeStatus = () => {
 };
 // uncomment one line to test one tx each time.
 
-testRegisterOntid()
+testRegisterOntid();
 
 // testRegIdWithAttributes()
 
@@ -485,4 +487,3 @@ testRegisterOntid()
 // testGetRecordStatus();
 
 // testRevokeStatus();
-

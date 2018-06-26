@@ -22,10 +22,10 @@
 export class CurveLabel {
     static values: CurveLabel[] = [];
 
-    static SECP224R1 = new CurveLabel('secp224r1', 1, 'p224');
-    static SECP256R1 = new CurveLabel('secp256r1', 2, 'p256');
-    static SECP384R1 = new CurveLabel('secp384r1', 3, 'p384');
-    static SECP521R1 = new CurveLabel('secp521r1', 4, 'p521');
+    static SECP224R1 = new CurveLabel('P-224', 1, 'p224');
+    static SECP256R1 = new CurveLabel('P-256', 2, 'p256');
+    static SECP384R1 = new CurveLabel('P-384', 3, 'p384');
+    static SECP521R1 = new CurveLabel('P-521', 4, 'p521');
     static SM2P256V1 = new CurveLabel('sm2p256v1', 20, 'sm2p256v1');
     static ED25519 = new CurveLabel('ed25519', 25, 'ed25519');
 

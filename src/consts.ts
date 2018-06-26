@@ -37,7 +37,7 @@ export const WEBVIEW_SCHEME = 'Ont';
 export const DEFAULT_ALGORITHM = {
     algorithm: 'ECDSA',
     parameters: {
-        curve: 'secp256r1' // also called p256
+        curve: 'P-256' // also called secp256r1
     }
 };
 
