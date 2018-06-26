@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+import * as elliptic from 'elliptic';
 import { ScryptParams } from '../../scrypt';
 import { Address } from '../address';
 import { CurveLabel } from '../CurveLabel';
@@ -47,8 +48,13 @@ export class LedgerKey extends PrivateKey {
     constructor(index: number, pKey: string) {
         super('', KeyType.ECDSA, new KeyParameters(CurveLabel.SECP256R1));
 
+        // compress the public key, otherwise Address.fromPubKey will give wrong results
+        const ec = new elliptic.ec(this.parameters.curve.preset);
+        const keyPair = ec.keyFromPublic(pKey, 'hex');
+        const pKeyCompressed = keyPair.getPublic(true, 'hex');
+
         this.index = index;
-        this.publicKey = new PublicKey(pKey, this.algorithm, this.parameters);
+        this.publicKey = new PublicKey(pKeyCompressed, this.algorithm, this.parameters);
     }
 
     /**
