@@ -34,11 +34,18 @@ export class LedgerKey extends PrivateKey {
     /**
      * Initializes Ledger Key based on the BIP44 index number.
      *
+     * The key is compressed, otherwise Address.fromPubKey will give wrong results.
+     *
      * @param index BIP44 index
      */
     static async create(index: number): Promise<LedgerKey> {
-        const pKey = await getPublicKey(index);
-        return new LedgerKey(index, pKey);
+        const uncompressed = await getPublicKey(index);
+
+        const ec = new elliptic.ec(CurveLabel.SECP256R1.preset);
+        const keyPair = ec.keyFromPublic(uncompressed, 'hex');
+        const compressed = keyPair.getPublic(true, 'hex');
+
+        return new LedgerKey(index, compressed);
     }
 
     private publicKey: PublicKey;   // transient
@@ -48,13 +55,8 @@ export class LedgerKey extends PrivateKey {
     constructor(index: number, pKey: string) {
         super('', KeyType.ECDSA, new KeyParameters(CurveLabel.SECP256R1));
 
-        // compress the public key, otherwise Address.fromPubKey will give wrong results
-        const ec = new elliptic.ec(this.parameters.curve.preset);
-        const keyPair = ec.keyFromPublic(pKey, 'hex');
-        const pKeyCompressed = keyPair.getPublic(true, 'hex');
-
         this.index = index;
-        this.publicKey = new PublicKey(pKeyCompressed, this.algorithm, this.parameters);
+        this.publicKey = new PublicKey(pKey, this.algorithm, this.parameters);
     }
 
     /**
@@ -103,7 +105,7 @@ export class LedgerKey extends PrivateKey {
         return {
             algorithm: this.algorithm.label,
             external: {
-                pKey: this.publicKey,
+                pKey: this.publicKey.key,
                 type: 'LEDGER'
             },
             parameters: this.parameters.serializeJson(),
