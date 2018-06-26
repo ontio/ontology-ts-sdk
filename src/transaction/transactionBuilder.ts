@@ -143,8 +143,8 @@ export const makeInvokeTransaction = (
     const args = buildSmartContractParam(funcName, params);
 
     let code = args + num2hexstring(opcode.APPCALL);
-    // code += contractAddr.serialize();
-    code += contractAddr.toHexString();
+    code += contractAddr.serialize();
+    // code += contractAddr.toHexString();
 
     const payload = new InvokeCode();
     payload.code = code;

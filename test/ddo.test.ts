@@ -27,6 +27,7 @@ const hexstring =
 describe('test ddo', () => {
     test('test ddo deserialize', () => {
         const ddo = DDO.deserialize(hexstring);
+        // tslint:disable-next-line:no-console
         console.log(JSON.stringify(ddo));
     });
 });

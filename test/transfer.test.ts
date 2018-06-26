@@ -19,29 +19,30 @@
 import axios from 'axios';
 import { BigNumber } from 'bignumber.js';
 import { Account } from '../src/account';
+import BigInt from '../src/common/bigInt';
 import Fixed64 from '../src/common/fixed64';
 import { HTTP_REST_PORT, ONT_NETWORK, REST_API, TEST_NODE, TEST_ONT_URL } from '../src/consts';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey } from '../src/crypto';
+import { PublicKey } from '../src/crypto/PublicKey';
 import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
 import { makeClaimOngTx, makeQueryAllowanceTx,
-    makeTransferTx, ONG_CONTRACT, ONT_CONTRACT, makeQueryBalanceTx
+    makeQueryBalanceTx, makeTransferTx, ONG_CONTRACT, ONT_CONTRACT
 } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/nativevm/token';
 import { Transaction } from '../src/transaction/transaction';
 import { buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
-import { ab2hexstring, StringReader, generateRandomArray, num2hexstring, isBase64 } from '../src/utils';
+import { ab2hexstring, generateRandomArray, isBase64, num2hexstring, StringReader } from '../src/utils';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
-import { PublicKey } from '../src/crypto/PublicKey';
-import BigInt from '../src/common/bigInt';
 
 const txSender = new TxSender(TEST_ONT_URL.SOCKET_URL);
 
 const pri = new PrivateKey('75de8489fcb2dcaf2ef3cd607feffde18789de7da129b5e97c81e001793cb7cf');
 const pub = pri.getPublicKey();
 const addr = Address.fromPubKey(pub);
+// tslint:disable-next-line:no-console
 console.log('addr : ' + addr.toBase58());
 
 const accountFrom = {
@@ -55,6 +56,7 @@ const accountFrom = {
     // privateKey: '6248eefef096ec2eebdff7179a59cc36b5c632720e40fb7e9770dc11024543be'
 };
 
+// tslint:disable:no-console
 const accPrivateKey = new PrivateKey('b0d87bf265d8d0fc2b09ee0be50e8df6e3f7103b523abc45ec064f65e1249419');
 const accAddress = 'TA5KvS6o9puusWQeiyWDezDWgi5NvKQotf';
 const accHexAddress = '012845c2ed3b508d135066dba00f850a82b192fd';
@@ -80,7 +82,7 @@ const  testTransferTx = () => {
     const gasLimit = '300000';
     const gasPrice = '0';
     const tx = makeTransferTx('ONT', accountFrom.address,
-        new Address('AVyJymgtEYAjw76QnvoEKhL8567oiVkGme'), 1000, gasPrice, gasLimit);
+        new Address('AGkdyWzBpnwxWNr4a8PGhP69AcwUpXVWvz'), 10, gasPrice, gasLimit);
     signTransaction(tx, accountFrom.privateKey);
     console.log('sigs: ' + JSON.stringify(tx.sigs));
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress,
@@ -88,7 +90,6 @@ const  testTransferTx = () => {
     // accountFrom.privateKey)
     // var tx = makeTransferTransaction('ONT', accHexAddress, accountToHexAddress, value, accPrivateKey)
     const param = buildTxParam(tx);
-    // tslint:disable:no-console
     console.log(tx.serialize());
     const callback = (err, res, socket) => {
         console.log('res : ' + JSON.stringify(res));
@@ -103,6 +104,7 @@ const  testTransferTx = () => {
 
 };
 
+// tslint:disable-next-line:no-shadowed-variable
 const testGetBalance = (address, addressName) => {
     const request = `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.getBalance}/${address}`;
     axios.get(request).then((res) => {
@@ -124,6 +126,7 @@ const userPri = new PrivateKey('70789d4ac31576c61c5d12e38a66de605b18faf2c8d60a2c
 const userPk = userPri.getPublicKey();
 const userAddr = Address.fromPubKey(userPk);
 
+// tslint:disable-next-line:no-shadowed-variable
 const testGetUnclaimedOng = (address) => {
     const restClient = new RestClient();
     restClient.getAllowance('ong', new Address(ONT_CONTRACT), address).then( (res) => {
@@ -131,6 +134,7 @@ const testGetUnclaimedOng = (address) => {
     });
 };
 
+// tslint:disable-next-line:no-shadowed-variable
 const testQueryAllowance = (from, to) => {
     const tx = makeQueryAllowanceTx('ong', from, to);
     const restClient = new RestClient();
@@ -215,7 +219,8 @@ console.log('pk: ' + pri3.getPublicKey().serializeHex());
 //     txSender.sendTxWithSocket(param, callback);
 // };
 
-const testQueryBalance = (asset, address:Address) => {
+// tslint:disable-next-line:no-shadowed-variable
+const testQueryBalance = (asset, address: Address) => {
     // const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
 
     const tx = makeQueryBalanceTx(asset, address);
@@ -227,11 +232,10 @@ const testQueryBalance = (asset, address:Address) => {
     });
 };
 
-
-// testTransferTx();
+testTransferTx();
 
 // const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
-testGetBalance('AVyJymgtEYAjw76QnvoEKhL8567oiVkGme', '');
+// testGetBalance('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve', '');
 
 // testClaimOng();
 
@@ -247,7 +251,3 @@ const address = new Address('AQkGLumU1tnyJBGV1ZUmD229iQf9KRTTDL');
 // testQueryBalance('ong', address);
 
 // console.log('add: ' + new Address('TAsW5tthjNBX4FG6ifGMTAswCBdB2YWGaG').serialize());
-
-const pass = 'XFxcXFxcXFw=';
-const t = Buffer.from(pass, 'base64').toString();
-console.log(t)

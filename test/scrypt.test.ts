@@ -23,9 +23,8 @@ import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src
 import { ERROR_CODE } from '../src/error';
 import { utils } from '../src/index';
 import * as scrypt from '../src/scrypt';
-import { ab2hexstring, str2hexstr, isBase64 } from '../src/utils';
+import { ab2hexstring, isBase64, str2hexstr } from '../src/utils';
 import { PublicKey } from './../src/crypto/PublicKey';
-
 
 describe('test scrypt', () => {
     test('test_encryptCtr', () => {
@@ -178,8 +177,6 @@ describe('test scrypt', () => {
         // console.log('hex ' + salt);
         // console.log('dec ' + dec);
 
-
-
     });
 
     test('test_isBase64', () => {
@@ -187,19 +184,19 @@ describe('test scrypt', () => {
         expect(isBase64(salt)).toBeTruthy();
         const str = '123';
         expect(isBase64(str)).toBeFalsy();
-    })
+    });
 
     test('test_scrypt', () => {
         const pri = new PrivateKey('6717c0df45159d5b5ef383521e5d8ed8857a02cdbbfdefeeeb624f9418b0895e');
         // const key = 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd'
-        const salt = Buffer.from('sJwpxe1zDsBt9hI2iA2zKQ==', 'base64').toString('hex')
-        const address = new Address('AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU')
+        const salt = Buffer.from('sJwpxe1zDsBt9hI2iA2zKQ==', 'base64').toString('hex');
+        const address = new Address('AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU');
         const encrypt = pri.encrypt('11111111', address, salt);
-        console.log('encrypt: ' + encrypt)
+        console.log('encrypt: ' + encrypt);
 
         // const key = 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd'
         // const decrypt = scrypt.decryptWithGcm(key, address, salt, '11111111');
         // console.log('decrypt: ' + decrypt);
-    })
+    });
 
 });
