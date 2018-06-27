@@ -144,7 +144,6 @@ export const makeInvokeTransaction = (
 
     let code = args + num2hexstring(opcode.APPCALL);
     code += contractAddr.serialize();
-    // code += contractAddr.toHexString();
 
     const payload = new InvokeCode();
     payload.code = code;

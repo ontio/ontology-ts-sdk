@@ -21,12 +21,13 @@ import AbiInfo from '../../smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../../smartcontract/abi/parameter';
 
 import { makeInvokeTransaction } from '../../transaction/transactionBuilder';
-import { str2hexstr } from '../../utils';
+import { reverseHex, str2hexstr } from '../../utils';
 import { Transaction } from './../../transaction/transaction';
 
 import abiJson from '../data/attestClaim';
 const abiInfo = AbiInfo.parseJson(JSON.stringify(abiJson));
-const contractAddress = new Address(abiInfo.getHash());
+const contractHash = abiInfo.getHash().replace('0x', '');
+const contractAddress = new Address(reverseHex(contractHash));
 /* TODO : Test */
 
 /**
