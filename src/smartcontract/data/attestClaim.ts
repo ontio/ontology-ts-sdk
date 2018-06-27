@@ -1,5 +1,5 @@
 export default {
-    hash: '88b398df1653ce5721c37841a881a554e24d13d5',
+    hash: '36bb5c053b6b839c8f6b923fe852f91239b9fccc',
     entrypoint: 'Main',
     functions: [{
         name: 'Main',

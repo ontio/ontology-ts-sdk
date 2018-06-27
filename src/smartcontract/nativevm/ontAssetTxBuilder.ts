@@ -155,8 +155,8 @@ export function makeTransferTx(
  * @param to receiver's address
  * @param amount
  */
-export function makeClaimOngTx(from: Address, to: Address, amount: number | string, payer: Address,
-                               gasPrice: string, gasLimit: string): Transaction {
+export function makeWithdrawOngTx(from: Address, to: Address, amount: number | string, payer: Address,
+                                  gasPrice: string, gasLimit: string): Transaction {
     amount = Number(amount);
     verifyAmount(amount);
 

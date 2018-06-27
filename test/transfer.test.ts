@@ -27,8 +27,8 @@ import { PublicKey } from '../src/crypto/PublicKey';
 import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
-import { makeClaimOngTx, makeQueryAllowanceTx,
-    makeQueryBalanceTx, makeTransferTx, ONG_CONTRACT, ONT_CONTRACT
+import { makeQueryAllowanceTx, makeQueryBalanceTx,
+    makeTransferTx, makeWithdrawOngTx, ONG_CONTRACT, ONT_CONTRACT
 } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/nativevm/token';
 import { Transaction } from '../src/transaction/transaction';
@@ -163,7 +163,7 @@ const testClaimOng = () => {
     // const address = new Address('TJuDPBCkzdrLx4jkiZWPhNdEjc8nwK5QTh');
     // const salt = Buffer.from('aCLRjtYznvxaxte3qrHDNw==', 'base64').toString('hex');
     // const pri = encPri.decrypt(password, address, salt, params);
-    const tx = makeClaimOngTx(address, address, 10000, address, gasPrice, gasLimit);
+    const tx = makeWithdrawOngTx(address, address, 10000, address, gasPrice, gasLimit);
     signTransaction(tx, pri);
     const restClient = new RestClient();
     restClient.sendRawTransaction(tx.serialize()).then( (res) => {

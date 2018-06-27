@@ -443,7 +443,7 @@ const testRevokeStatus = () => {
 };
 // uncomment one line to test one tx each time.
 
-testRegisterOntid();
+// testRegisterOntid();
 
 // testRegIdWithAttributes()
 
@@ -482,7 +482,7 @@ testRegisterOntid();
 
 // testRecordGetTx()
 
-// testCommitTx()
+testCommitTx()
 
 // testGetRecordStatus();
 

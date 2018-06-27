@@ -20,7 +20,7 @@ import { Account } from '../src/account';
 import { Claim, RevocationType } from '../src/claim/claim';
 import { PrivateKey } from '../src/crypto';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test claim', () => {

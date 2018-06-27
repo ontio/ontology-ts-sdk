@@ -35,7 +35,7 @@ import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
 import RestClient from '../network/rest/restClient';
 import * as scrypt from '../scrypt';
-import { makeClaimOngTx, makeTransferTx, ONT_CONTRACT } from '../smartcontract/nativevm/ontAssetTxBuilder';
+import { makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT } from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx
 } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { DDOAttribute } from '../transaction/ddo';
@@ -781,7 +781,7 @@ export class SDK {
             return result;
         }
 
-        const tx = makeClaimOngTx(addressObj, addressObj, value, new Address(payer), gasPrice, gasLimit);
+        const tx = makeWithdrawOngTx(addressObj, addressObj, value, new Address(payer), gasPrice, gasLimit);
         signTransaction(tx, privateKey);
         const result = {
             error: ERROR_CODE.SUCCESS,
