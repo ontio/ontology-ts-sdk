@@ -105,6 +105,7 @@ export class LedgerKey extends PrivateKey {
         return {
             algorithm: this.algorithm.label,
             external: {
+                index: this.index,
                 pKey: this.publicKey.key,
                 type: 'LEDGER'
             },
