@@ -48,9 +48,9 @@ export class LedgerKey extends PrivateKey {
         return new LedgerKey(index, compressed);
     }
 
-    private publicKey: PublicKey;   // transient
+    publicKey: PublicKey;   // transient
 
-    private index: number;
+    index: number;
 
     constructor(index: number, pKey: string) {
         super('', KeyType.ECDSA, new KeyParameters(CurveLabel.SECP256R1));
