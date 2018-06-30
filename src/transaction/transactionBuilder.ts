@@ -16,8 +16,10 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import Fixed64 from '../common/fixed64';
-import { NATIVE_INVOKE_NAME, REST_API } from '../consts';
+import { NATIVE_INVOKE_NAME, REST_API, TX_MAX_SIG_SIZE } from '../consts';
 import { Address, PrivateKey, SignatureScheme } from '../crypto';
+import { PublicKey } from '../crypto/PublicKey';
+import { ERROR_CODE } from '../error';
 import { Parameter } from '../smartcontract/abi/parameter';
 import {
     num2hexstring,
@@ -52,7 +54,7 @@ export const Default_params = {
 export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
     const hash = tx.getHash();
 
-    const signature = TxSignature.create(hash, [privateKey], [schema]);
+    const signature = TxSignature.create(hash, privateKey, schema);
 
     tx.sigs = [signature];
 };
@@ -69,8 +71,7 @@ export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?
  */
 export const addSign = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
     const hash = tx.getHash();
-
-    const signature = TxSignature.create(hash, [privateKey], [schema]);
+    const signature = TxSignature.create(hash, privateKey, schema);
 
     tx.sigs.push(signature);
 };
@@ -82,19 +83,37 @@ export const addSign = (tx: Transaction, privateKey: PrivateKey, schema?: Signat
  * If the signature schema is not provided, default schema for Private key type is used.
  *
  * @param tx Transaction to sign
- * @param privateKeys2D 2D array of private keys
- * @param schemas2D 2D array of signature schemas to use
+ * @param M m of the (m ,n) multi sign address threshold
+ * @param pubKeys Array of Public keys of (m,n) multi sign address, the number is n
+ * @param privateKey Private key to sign the tx.
+ * @param scheme Signature scheme to use
  */
-export const signTx = (tx: Transaction, privateKeys2D: PrivateKey[][], schemas2D?: SignatureScheme[][]) => {
-    const hash = tx.getHash();
+export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
+                       privateKey: PrivateKey, scheme?: SignatureScheme) => {
 
-    for (let i = 0; i < privateKeys2D.length; i++) {
-        const privateKeys = privateKeys2D[i];
-        const schemas = schemas2D !== undefined ? schemas2D[i] : undefined;
-
-        const signature = TxSignature.create(hash, privateKeys, schemas);
-        tx.sigs.push(signature);
+    if (tx.sigs.length === 0) {
+        tx.sigs = [];
+    } else {
+        if (tx.sigs.length > TX_MAX_SIG_SIZE || M > pubKeys.length || M <= 0 || pubKeys.length === 0) {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < tx.sigs.length; i++) {
+            if (tx.sigs[i].pubKeys === pubKeys) {
+                if (tx.sigs[i].sigData.length + 1 > pubKeys.length) {
+                    throw new Error('Too many sigData');
+                }
+                const signData = privateKey.sign(tx.getHash(), scheme).serializeHex();
+                tx.sigs[i].sigData.push(signData);
+                return;
+            }
+        }
     }
+    const sig = new TxSignature();
+    sig.M = M;
+    sig.pubKeys = pubKeys;
+    sig.sigData = [privateKey.sign(tx.getHash(), scheme).serializeHex()];
+    tx.sigs.push(sig);
 };
 
 export function makeNativeContractTx(

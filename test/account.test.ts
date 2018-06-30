@@ -1,3 +1,6 @@
+import { BigNumber } from 'bignumber.js';
+import { sm2, SM2KeyPair } from 'sm.js';
+import { KeyType } from './../src/crypto/KeyType';
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -19,6 +22,8 @@
 import { Account } from '../src/account';
 import { Address, PublicKey } from '../src/crypto';
 import { PrivateKey } from '../src/crypto';
+import { CurveLabel } from '../src/crypto/CurveLabel';
+import { KeyParameters } from '../src/crypto/Key';
 import { ERROR_CODE } from '../src/error';
 import * as utils from '../src/utils';
 describe('test account', () => {
@@ -70,6 +75,15 @@ describe('test account', () => {
 
     });
 
+    test('create_sm2', () => {
+        const keyParameter = new KeyParameters(CurveLabel.SM2P256V1);
+        const pri = PrivateKey.random(KeyType.SM2, keyParameter);
+        const acc = Account.create(pri, '123456', 'sm2Account');
+        const accJson = acc.toJsonObj();
+        console.log(accJson);
+        expect(accJson.algorithm).toEqual('SM2');
+    });
+
     test('test_keystore', () => {
         // tslint:disable-next-line:max-line-length
         const keystore = { type: 'A', label: '巴德', algorithm: 'ECDSA', scrypt: { n: 4096, p: 8, r: 8, dkLen: 64 }, key: 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd', salt: 'sJwpxe1zDsBt9hI2iA2zKQ==', address: 'AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU', parameters: { curve: 'secp256r1' } };
@@ -81,19 +95,4 @@ describe('test account', () => {
         expect(addr2.toBase58()).toEqual(keystore.address);
     });
 
-    test('test_for', () => {
-        for (let i = 0; i < 5000; i++) {
-            const pri = PrivateKey.random();
-            // tslint:disable-next-line:no-shadowed-variable
-            const account = Account.create(pri, '11111111', '');
-            const enc = account.encryptedKey;
-            const decrypt = enc.decrypt('11111111', account.address, account.salt);
-            if (decrypt.key !== pri.key) {
-                console.log('pri: ' + pri.key);
-                console.log('addr: ' + account.address.toBase58());
-                console.log('salt: ' + account.salt);
-                throw new Error('Algorithm failed!');
-            }
-        }
-    });
 });

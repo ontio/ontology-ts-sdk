@@ -60,7 +60,8 @@ export function makeTransferTx(
     to: Address,
     amount: number | string,
     gasPrice: string,
-    gasLimit: string
+    gasLimit: string,
+    payer?: Address
 ): Transaction {
     amount = Number(amount);
     verifyAmount(amount);
@@ -71,7 +72,11 @@ export function makeTransferTx(
     const contract = getTokenContract(tokenType);
     const params = buildNativeCodeScript(list);
     const tx = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit);
-    tx.payer = from;
+    if (payer) {
+        tx.payer = payer;
+    } else {
+        tx.payer = from;
+    }
     return tx;
 }
 

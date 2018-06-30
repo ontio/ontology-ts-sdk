@@ -17,13 +17,16 @@
  */
 import * as base58 from 'bs58';
 import * as cryptoJS from 'crypto-js';
+import * as elliptic from 'elliptic';
+import { sm2 } from 'sm.js';
 import { ADDR_VERSION } from '../consts';
 import { ERROR_CODE } from '../error';
 import opcode from '../transaction/opcode';
-import { programFromPubKey, pushNum } from '../transaction/program';
+import { programFromPubKey, pushBigInt } from '../transaction/program';
 import { pushHexString } from '../transaction/scriptBuilder';
 import { ab2hexstring, hash160, hexstring2ab, num2hexstring, sha256, StringReader } from '../utils';
 import { reverseHex } from './../utils';
+import { KeyType } from './KeyType';
 import { PublicKey } from './PublicKey';
 
 /**
@@ -38,6 +41,47 @@ import { PublicKey } from './PublicKey';
  * The value is stored as base58 or hex encoded, therefore always use
  * toBase58() or serialize() according to requirements.
  */
+// The sorting rules is as follows:
+//    1. if keys have different types, then sorted by the KeyType value.
+//    2. else,
+//       2.1. ECDSA or SM2:
+//           2.1.1. if on different curves, then sorted by the curve label.
+//           2.1.2. else if x values are different, then sorted by x.
+//           2.1.3. else sorted by y.
+//       2.2. EdDSA: sorted by the byte sequence directly.
+export function comparePublicKeys(a: PublicKey, b: PublicKey) {
+    if (a.algorithm !== b.algorithm) {
+        return a.algorithm.hex - b.algorithm.hex;
+    }
+    switch (a.algorithm) {
+    case KeyType.ECDSA:
+        const ec = new elliptic.ec(a.parameters.curve.preset);
+        const paKey = ec.keyFromPublic(a.key, 'hex', true);
+        const pbKey = ec.keyFromPublic(b.key, 'hex', true);
+        const pa = paKey.getPublic();
+        const pb = pbKey.getPublic();
+        if (pa.getX() !== pb.getX()) {
+            return pa.getX() - pb.getX();
+        } else {
+            return pa.getY() - pb.getY();
+        }
+    case KeyType.SM2:
+        const pka = new sm2.SM2KeyPair();
+        const pkb = new sm2.SM2KeyPair();
+        pka._pubFromString(a.key);
+        pkb._pubFromString(b.key);
+        if (pka.getX().toString() !== pkb.getX().toString()) {
+            return Number(pka.getX().toString()) -  Number(pkb.getX().toString());
+        } else {
+            return Number(pka.getY().toString()) - Number(pkb.getY().toString());
+        }
+    case KeyType.EDDSA:
+        return Number(a.key) - Number(b.key);
+    default:
+        return 0;
+    }
+}
+
 export class Address {
     static deserialize(sr: StringReader): Address {
         return new Address(sr.read(20));
@@ -90,14 +134,15 @@ export class Address {
             throw ERROR_CODE.INVALID_PARAMS;
         }
 
-        const pkHexStrs = publicKeys.map((p) => p.serializeHex());
-        pkHexStrs.sort();
+        // const pkHexStrs = publicKeys.map((p) => p.serializeHex());
+        // pkHexStrs.sort();
+        publicKeys.sort(comparePublicKeys);
         let result = '';
-        result += pushNum(m);
-        for (const s of pkHexStrs) {
-            result += pushHexString(s);
+        result += pushBigInt(m);
+        for (const s of publicKeys) {
+            result += pushHexString(s.serializeHex());
         }
-        result += pushNum(n);
+        result += pushBigInt(n);
         result += num2hexstring(opcode.CHECKMULTISIG);
         const programHash = hash160(result);
         return new Address(programHash);
