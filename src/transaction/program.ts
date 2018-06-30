@@ -30,6 +30,19 @@ export function pushPubKey(pk: PublicKey): string {
     return pushBytes(pkStr);
 }
 
+export function pushBigInt(num: number): string {
+    if (num === -1) {
+        return num2hexstring(opcode.PUSHM1);
+    }
+    if (num === 0) {
+        return num2hexstring(opcode.PUSH0);
+    }
+    if (num > 0 && num <= 16) {
+        return num2hexstring(opcode.PUSH1 - 1 + num);
+    }
+    return num2hexstring(num, 8, true);
+}
+
 export function pushNum(num: number): string {
     if ( num === 0 ) {
         return pushOpCode(opcode.PUSH0);

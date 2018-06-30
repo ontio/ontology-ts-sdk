@@ -382,23 +382,23 @@ const testChangeRecovery = () => {
     sendTx(param);
 };
 
-const testAddmnRecovery = () => {
-    const tx = buildAddRecoveryTx(ontid5, recoveryAddress, pub5, gasPrice, gasLimit);
-    tx.payer = account5.address;
-    signTransaction(tx, pri5);
-    const param = buildTxParam(tx);
-    sendTx(param);
-};
+// const testAddmnRecovery = () => {
+//     const tx = buildAddRecoveryTx(ontid5, recoveryAddress, pub5, gasPrice, gasLimit);
+//     tx.payer = account5.address;
+//     signTransaction(tx, pri5);
+//     const param = buildTxParam(tx);
+//     sendTx(param);
+// };
 
-const testChangemnRecovery = () => {
-    const tx = buildChangeRecoveryTx(ontid, account4.address, recoveryAddress, gasPrice, gasLimit);
-    tx.payer = recoveryAddress;
-    console.log('recoveryAddres: ' + recoveryAddress.serialize());
-    signTx(tx, [ [pri3, pri4] ]);
-    const param = buildTxParam(tx);
-    console.log('change recovery param: ' + param);
-    sendTx(param);
-};
+// const testChangemnRecovery = () => {
+//     const tx = buildChangeRecoveryTx(ontid, account4.address, recoveryAddress, gasPrice, gasLimit);
+//     tx.payer = recoveryAddress;
+//     console.log('recoveryAddres: ' + recoveryAddress.serialize());
+//     signTx(tx, [ [pri3, pri4] ]);
+//     const param = buildTxParam(tx);
+//     console.log('change recovery param: ' + param);
+//     sendTx(param);
+// };
 
 // const testInvokeWasmContract = () => {
 //     const codeHash = '9007be541a1aef3d566aa219a74ef16e71644715';
@@ -482,7 +482,7 @@ const testRevokeStatus = () => {
 
 // testRecordGetTx()
 
-testCommitTx()
+testCommitTx();
 
 // testGetRecordStatus();
 

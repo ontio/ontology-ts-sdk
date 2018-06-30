@@ -60,29 +60,20 @@ export class TxSignature {
     }
 
     /**
-     * Creates Transaction signature of hash with supplied private keys and schemes.
+     * Creates Transaction signature of hash with supplied private key and scheme.
      *
      * If the signature schemas is not provided, the default schemes for the key types are used.
      *
      * @param hash hash of the transaction
-     * @param privateKeys Private keys to use
-     * @param schemas Signature schemes to use
+     * @param privateKey Private key to use
+     * @param scheme Signature scheme to use
      */
-    static create(hash: string, privateKeys: PrivateKey[], schemas?: Array<SignatureScheme | undefined>) {
+    static create(hash: string, privateKey: PrivateKey, scheme?: SignatureScheme) {
         const signature = new TxSignature();
 
-        signature.M = 0;
-        signature.pubKeys = new Array(privateKeys.length);
-        signature.sigData = new Array(privateKeys.length);
-
-        for (let j = 0; j < privateKeys.length; j++) {
-            const privateKey = privateKeys[j];
-            const schema = schemas !== undefined ? schemas[j] : undefined;
-
-            signature.M++;
-            signature.pubKeys[j] = privateKey.getPublicKey();
-            signature.sigData[j] = privateKey.sign(hash, schema).serializeHex();
-        }
+        signature.M = 1;
+        signature.pubKeys = [privateKey.getPublicKey()];
+        signature.sigData = [privateKey.sign(hash, scheme).serializeHex()];
 
         return signature;
     }

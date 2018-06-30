@@ -95,3 +95,5 @@ export const TOKEN_TYPE = {
 export const DEFAULT_GAS_LIMIT = 30000;
 
 export const NATIVE_INVOKE_NAME = 'Ontology.Native.Invoke';
+
+export const TX_MAX_SIG_SIZE = 16;
