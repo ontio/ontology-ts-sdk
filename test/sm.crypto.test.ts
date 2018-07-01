@@ -44,6 +44,8 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         console.log('signature', signature.value);
 
         const publicKey = privateKey.getPublicKey();
+        // tslint:disable-next-line:no-console
+        console.log('pubkey:', publicKey.serializeHex());
 
         const result = publicKey.verify(encoded, signature);
         expect(result).toBeTruthy();
