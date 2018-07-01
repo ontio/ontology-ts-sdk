@@ -17,8 +17,7 @@
  */
 
 import * as b64 from 'base64-url';
-import { DEFAULT_SM2_ID } from '../consts';
-import { num2hexstring, str2hexstr, StringReader } from '../utils';
+import { num2hexstring, StringReader } from '../utils';
 import { SignatureScheme } from './SignatureScheme';
 
 /**
@@ -55,19 +54,7 @@ export class Signature {
         const sr = new StringReader(data);
         const scheme = parseInt(sr.read(1), 16);
         const sigScheme = SignatureScheme.fromHex(scheme);
-        let value = '';
-        if (sigScheme === SignatureScheme.SM2withSM3) {
-            let i = 0;
-            while (!sr.isEmpty() && parseInt(sr.read(1), 16) !== 0) {
-                i++;
-            }
-            if (sr.isEmpty()) {
-                throw new Error('Invalid params.');
-            }
-            value = data.substr(i * 2);
-        } else {
-            value = data.substr(2);
-        }
+        const value = data.substr(2);
         const sig = new Signature(sigScheme, value);
         return sig;
     }
@@ -95,10 +82,6 @@ export class Signature {
         // return num2hexstring(this.algorithm.hex) + this.value;
         let result = '';
         result += num2hexstring(this.algorithm.hex);
-        if (this.algorithm === SignatureScheme.SM2withSM3) {
-            result += str2hexstr(DEFAULT_SM2_ID);
-            result += num2hexstring(0);
-        }
         result += this.value;
         return result;
 

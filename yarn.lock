@@ -5392,9 +5392,9 @@ slide@^1.1.5:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/slide/-/slide-1.1.6.tgz#56eb027d65b4d2dce6cb2e2d32c4d4afc9e1d707"
 
-sm.js@^0.1.6:
+sm.js@backslash47/sm.js#fix-padding:
   version "0.1.6"
-  resolved "https://registry.yarnpkg.com/sm.js/-/sm.js-0.1.6.tgz#f55bddba3637888efc664190fcef961bf72130d9"
+  resolved "https://codeload.github.com/backslash47/sm.js/tar.gz/923b8c06b7601eedbf2a54bcb32bddcf8230aa5d"
   dependencies:
     bn.js "^4.11.6"
     elliptic "^6.4.0"
