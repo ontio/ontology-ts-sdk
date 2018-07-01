@@ -36,7 +36,7 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         const msg = 'test';
         const encoded = str2hexstr(msg);
 
-        const pk = '24cb29b451a688e73bb34841a6667a6c814ea4746139cc92abd5e0';
+        const pk = 'ab80a7ad086249c01e65c4d9bb6ce18de259dcfc218cd49f2455c539e9112ca3';
         const privateKey = new PrivateKey(pk, KeyType.SM2, new KeyParameters(CurveLabel.SM2P256V1));
 
         const signature = privateKey.sign(encoded, SignatureScheme.SM2withSM3);
@@ -44,6 +44,8 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         console.log('signature', signature);
 
         const publicKey = privateKey.getPublicKey();
+        // tslint:disable-next-line:no-console
+        console.log('pubkey:', publicKey.serializeHex());
 
         const result = publicKey.verify(encoded, signature);
         expect(result).toBeTruthy();
@@ -56,11 +58,11 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         const signature = new Signature(
             SignatureScheme.SM2withSM3,
             // tslint:disable-next-line:max-line-length
-            '3132333435363738313233343536373800739a23d629d9e6c5a17aa03323dfce98b68753ab4715d0d80ef27a6f9d80a6dc80eb7b959d3afc64f41d92edd0df37bfaefcc8e52b9aeb0b2037159f8c1ab9bd'
+            '31323334353637383132333435363738007b77e6efedffa17e04812524535b4937de8c88ee98bc8d8ba216eff52e2927c5bb7be7d30d2019d7ec961e6703f592dfa981b17f8297a628c575d7ce29636b7f'
         );
 
         const publicKey = new PublicKey(
-            '03b8116ad47c29c22ba35d36f7352b667b7f5075c36523998e7e1ff2364e1de186',
+            '031220580679fda524f575ac48b39b9f74cb0a97993df4fac5798b04c702d07a39',
             KeyType.SM2,
             new KeyParameters(CurveLabel.SM2P256V1)
         );
