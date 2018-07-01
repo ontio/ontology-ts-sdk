@@ -1,6 +1,7 @@
 import { Account } from '../src/account';
 import { PrivateKey } from '../src/crypto';
 import { Address } from '../src/crypto/address';
+import { Identity } from '../src/identity';
 import RpcClient from '../src/network/rpc/rpcClient';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
@@ -11,17 +12,17 @@ describe('test rpc client', () => {
     const rpcClient = new RpcClient();
 
     const codeHash = 'ff00000000000000000000000000000000000003';
-    const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-    const address = 'AXmQDzzvpEtPkNwBEFsREzApTTDZFW6frD';
 
     let txHash: string;
     let blockHash: string;
     let height: number;
 
-    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
-
     const account = Account.create(privateKey, '123456', '');
+    const identity = Identity.create(privateKey, '123456', '');
+    const ontid =  identity.ontid;
+    const address = account.address;
 
     /**
      * Registers new ONT ID to create transaction with Events and new block
@@ -94,7 +95,7 @@ describe('test rpc client', () => {
     });
 
     test('test getBalance', async () => {
-        const res = await rpcClient.getBalance(new Address(address));
+        const res = await rpcClient.getBalance(address);
         console.log(res);
         expect(res.desc).toEqual('SUCCESS');
     });

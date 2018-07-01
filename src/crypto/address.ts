@@ -100,7 +100,7 @@ export class Address {
 
     /**
      * Generates identity based address.
-     * @param ontid ONT ID in the form did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w
+     * @param ontid ONT ID in the form did:ont:AXmQDzzvpEtPkNwBEFsREzApTTDZFW6frD
      */
     static fromOntid(ontid: string): Address {
         const address = ontid.substr(8);
