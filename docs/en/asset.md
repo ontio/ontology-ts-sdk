@@ -48,8 +48,6 @@ Wallet is a data storing file of JSON format. In the terms of Ontology, Wallet c
 
 More detail about wallet data specification could be found in [Wallet_File_Specification](./Wallet_File_Specification.md).
 
-----
-
 
 ### 1.1 Create An Wallet
 
@@ -64,13 +62,17 @@ import {Wallet} from 'Ont'
 var wallet = Wallet.create( name )
 ````
 
-----
-
-
-
 #### 2) Create an account and add it to your wallet
 
-Users need to provide **private key, password as well as acccount name** to create an new account. In particular, **the private key** could be generated functions provided by SDK. The algorithm used in account creation would be specified as well. The data structure of algorithm object is shown as follow:
+Users need to provide below parameters:
+
+```privateKey``` A instance of class **PrivateKey**. More info can refer to the [document of PrivateKey](./privateKey.md).
+
+```password```
+
+```label```
+
+```params```
 
 ```
 {
@@ -89,10 +91,6 @@ var account = Account.create( privateKey, password, name );
 var privateKey = Core.generatePrivateKeyStr()
 wallet.addAccount(account)
 ````
-
-----
-
-
 
 ### Account Data Structure。
 

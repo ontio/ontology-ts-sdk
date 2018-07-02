@@ -211,10 +211,15 @@ const parseDDO = (result) => {
 
 const testRegisterOntid = () => {
     // tslint:disable-next-line:no-shadowed-variable
-    const publicKey = privateKey.getPublicKey();
-    const tx = buildRegisterOntidTx(ontid5, pub5, gasPrice, gasLimit);
-    tx.payer = account5.address;
-    signTransaction(tx, pri5);
+    const pri = PrivateKey.random();
+    console.log('pri: ' + pri.key);
+    const id = Identity.create(pri, 'ont_wang3', 'mickey');
+    console.log(id.toJson);
+    const addr = Address.fromOntid(id.ontid);
+    const pub = pri.getPublicKey();
+    const tx = buildRegisterOntidTx(id.ontid, pub, gasPrice, gasLimit);
+    tx.payer = addr;
+    signTransaction(tx, pri);
     const serialized = tx.serialize();
     console.log('tx serialized: ' + serialized);
 
@@ -443,7 +448,7 @@ const testRevokeStatus = () => {
 };
 // uncomment one line to test one tx each time.
 
-// testRegisterOntid();
+testRegisterOntid();
 
 // testRegIdWithAttributes()
 
@@ -482,7 +487,7 @@ const testRevokeStatus = () => {
 
 // testRecordGetTx()
 
-testCommitTx();
+// testCommitTx();
 
 // testGetRecordStatus();
 

@@ -48,8 +48,7 @@ export const TEST_NODE = 'polaris1.ont.io'; // 0.9
 // export const TEST_NODE = '192.168.50.74';
 // export const TEST_NODE = '127.0.0.1';
 
-// export const TEST_NODE = '54.222.182.88'
-export const MAIN_NODE = '54.222.182.88';
+export const MAIN_NODE = 'dappnode1.ont.io';
 
 export const HTTP_REST_PORT = '20334';
 export const HTTP_WS_PORT = '20335';
