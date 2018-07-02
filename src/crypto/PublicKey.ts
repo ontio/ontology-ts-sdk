@@ -64,10 +64,15 @@ export class PublicKey extends Key {
         if (!this.isSchemaSupported(signature.algorithm)) {
             throw new Error('Signature schema does not match key type.');
         }
+
+        let hash: string;
         if (signature.algorithm === SignatureScheme.SM2withSM3) {
-            return this.verifySM2Signature(msg, signature.value);
+            // library sm.js (SM2withSM3) has implemented hashing as part of verification, therefore it is skipped
+            hash = msg;
+        } else {
+            hash = this.computeHash(msg, signature.algorithm);
         }
-        const hash = this.computeHash(msg, signature.algorithm);
+
         return this.verifySignature(hash, signature.value, signature.algorithm);
     }
 
