@@ -17,6 +17,17 @@
  */
 import { StringReader } from '../../utils';
 import { LedgerTransport } from './ledgerTransport';
+import { LedgerTransportNode } from './ledgerTransportNode';
+
+let transportInternal: LedgerTransport = new LedgerTransportNode();
+
+/**
+ * Sets the instance of ledger transport (Node/IFrame)
+ * @param t Ledger transport
+ */
+export function setLedgerTransport(transport: LedgerTransport) {
+    transportInternal = transport;
+}
 
 /**
  * Detects if Ledger is installed, connected and NEO app is running.
@@ -39,17 +50,17 @@ export async function isLedgerSupported() {
  * @param index Index of the public key
  */
 export async function getPublicKey(index: number) {
-    const transport = await LedgerTransport.open();
+    await transportInternal.open();
 
     try {
         const path = BIP44(index);
         const params = { cla: 0x80, ins: 0x04, p1: 0x00, p2: 0x00 };
-        const result = await transport.send(params, path, [VALID_STATUS]);
+        const result = await transportInternal.send(params, path, [VALID_STATUS]);
         return result.substring(0, 130);
     } catch (err) {
         throw evalTransportError(err);
     } finally {
-        await transport.close();
+        await transportInternal.close();
     }
 }
 
@@ -59,7 +70,7 @@ export async function getPublicKey(index: number) {
  * @param transportType Type of transport (HID - Node.JS/Electron, U2F - Browser)
  */
 export async function computesSignature(index: number, data: string): Promise<string> {
-    const transport = await LedgerTransport.open();
+    await transportInternal.open();
 
     try {
         const path = BIP44(index);
@@ -80,7 +91,7 @@ export async function computesSignature(index: number, data: string): Promise<st
                 p2: 0x00
             };
 
-            response = await transport.send(params, chunks[i], [VALID_STATUS]);
+            response = await transportInternal.send(params, chunks[i], [VALID_STATUS]);
         }
 
         if (response === null || response === '9000') {
@@ -91,7 +102,7 @@ export async function computesSignature(index: number, data: string): Promise<st
     } catch (err) {
         throw evalTransportError(err);
     } finally {
-        await transport.close();
+        await transportInternal.close();
     }
 }
 

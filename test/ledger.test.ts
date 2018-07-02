@@ -1,5 +1,6 @@
 import * as CONST from '../src/consts';
-import { Address, CurveLabel, KeyType, LedgerKey, SignatureScheme } from '../src/crypto';
+import { Address, CurveLabel, KeyType, SignatureScheme } from '../src/crypto';
+import { LedgerKey } from '../src/crypto/ledger';
 import * as OntAssetTxBuilder from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import * as utils from '../src/utils';
 
