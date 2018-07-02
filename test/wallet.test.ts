@@ -51,6 +51,10 @@ describe('test wallet', () => {
         const privateKey = PrivateKey.random();
         const ac = Account.create(privateKey, '123456', 'mickey');
         wallet.addAccount(ac);
+        const privateKey2 = PrivateKey.random();
+
+        const identity = Identity.create(privateKey2, '123456', 'mickey');
+        wallet.addIdentity(identity);
         expect(wallet.accounts.length).toEqual(1);
     });
 

@@ -119,12 +119,12 @@ const testTransferFromMultiSignAddress = () => {
 };
 
 const  testTransferTx = () => {
-    const params = {
-        cost: 16384,
-        blockSize: 8,
-        parallel: 8,
-        size: 64
-    };
+    // const params = {
+    //     cost: 16384,
+    //     blockSize: 8,
+    //     parallel: 8,
+    //     size: 64
+    // };
     // const encPri = new PrivateKey('S5Y5DnUF4YB+pMBswO/NEQcguBwoBXjL/N9179rvahvYSfYD7EgNYjmro0vI3L6y');
     // const password = '123456';
     // const pk = PublicKey.deserializeHex(
@@ -133,16 +133,18 @@ const  testTransferTx = () => {
     // const address = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
     // const salt = Buffer.from('q0uJFA3mLo0g0VMH9r1fFA==', 'base64').toString('hex');
     // const pri = encPri.decrypt(password, address, salt, params);
-    const sm2PriEnc = new PrivateKey(sm2Account.key, KeyType.SM2);
+    const sm2PriEnc = new PrivateKey(sm2Account.key, KeyType.SM2, new KeyParameters(CurveLabel.SM2P256V1));
     const sm2Pri = sm2PriEnc.decrypt('123456', new Address(sm2Account.address), sm2Account.salt);
+    console.log('pri: ' + sm2Pri.key);
     const gasLimit = '300000';
     const gasPrice = '0';
     const tx = makeTransferTx('ONT', new Address('ATk57i8rMXFSBpHAdX3UQ4TNe48BBrfCoc'),
-        new Address('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve'), 1000, gasPrice, gasLimit);
+        new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP'), 100, gasPrice, gasLimit);
     signTransaction(tx, sm2Pri, SignatureScheme.SM2withSM3);
+    // signTransaction(tx, pri);
     console.log('sigs: ' + JSON.stringify(tx.sigs));
-    const signTest = sm2Pri.sign(str2hexstr('test'), SignatureScheme.SM2withSM3).serializeHex();
-    console.log('sigTest: ' + signTest);
+    // const signTest = sm2Pri.sign(str2hexstr('test'), SignatureScheme.SM2withSM3).serializeHex();
+    // console.log('sigTest: ' + signTest);
     // var tx = makeTransferTransaction('ONT', accountFrom.hexAddress,
     // '01716379e393d1a540615e022ede47b97e0577c6', value,
     // accountFrom.privateKey)
@@ -208,19 +210,19 @@ const testClaimOng = () => {
     const gasPrice = '0';
     const gasLimit = '30000';
     // const address = accountFrom.address;
-    const params = {
-        cost: 16384,
-        blockSize: 8,
-        parallel: 8,
-        size: 64
-    };
-    const encPri = new PrivateKey('S5Y5DnUF4YB+pMBswO/NEQcguBwoBXjL/N9179rvahvYSfYD7EgNYjmro0vI3L6y');
-    const password = '123456';
-    const pk = PublicKey.deserializeHex(
-        new StringReader('03001c6455aa8e209a5c8cd63b32a8b321b2b3d6c0153159c64fba73ec8363827d'));
-    const address = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
-    const salt = Buffer.from('q0uJFA3mLo0g0VMH9r1fFA==', 'base64').toString('hex');
-    const pri = encPri.decrypt(password, address, salt, params);
+    // const params = {
+    //     cost: 16384,
+    //     blockSize: 8,
+    //     parallel: 8,
+    //     size: 64
+    // };
+    // const encPri = new PrivateKey('S5Y5DnUF4YB+pMBswO/NEQcguBwoBXjL/N9179rvahvYSfYD7EgNYjmro0vI3L6y');
+    // const password = '123456';
+    // const pk = PublicKey.deserializeHex(
+    //     new StringReader('03001c6455aa8e209a5c8cd63b32a8b321b2b3d6c0153159c64fba73ec8363827d'));
+    // const address = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
+    // const salt = Buffer.from('q0uJFA3mLo0g0VMH9r1fFA==', 'base64').toString('hex');
+    // const pri = encPri.decrypt(password, address, salt, params);
     const tx = makeWithdrawOngTx(address, address, 23792995720000, address, gasPrice, gasLimit);
     signTransaction(tx, pri);
     const restClient = new RestClient();
@@ -290,10 +292,10 @@ const testQueryBalance = (asset, address: Address) => {
     });
 };
 
-testTransferTx();
+// testTransferTx();
 
 // const add = u160ToAddress('01716379e393d1a540615e022ede47b97e0577c6');
-// testGetBalance('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP', '');
+testGetBalance('ATk57i8rMXFSBpHAdX3UQ4TNe48BBrfCoc', '');
 
 // testClaimOng();
 

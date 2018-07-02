@@ -115,9 +115,13 @@ export class PrivateKey extends Key {
         if (!this.isSchemaSupported(schema)) {
             throw new Error('Signature schema does not match key type.');
         }
-
-        const hash = this.computeHash(msg, schema);
-        const signed = this.computeSignature(hash, schema);
+        let signed = '';
+        if (schema === SignatureScheme.SM2withSM3) {
+            signed = this.computeSignature(msg, schema);
+        } else {
+            const hash = this.computeHash(msg, schema);
+            signed = this.computeSignature(hash, schema);
+        }
 
         return new Signature(schema, signed, publicKeyId);
     }
