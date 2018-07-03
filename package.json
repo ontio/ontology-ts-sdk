@@ -7,8 +7,8 @@
   "scripts": {
     "test": "jest",
     "lint": "tslint --project ./",
-    "build:dev": "webpack --mode development --display-error-details --progress --color",
-    "build:prod": "webpack --mode production --progress --color"
+    "build:dev": "cross-env NODE_ENV=development webpack --mode development --display-error-details --progress --color",
+    "build:prod": "cross-env NODE_ENV=production webpack --mode production --progress --color"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -40,6 +40,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-3": "^6.24.1",
     "clean-webpack-plugin": "^0.1.19",
+    "cross-env": "^5.2.0",
     "jest": "^23.0.0",
     "ts-jest": "^22.4.6",
     "ts-loader": "^4.3.0",

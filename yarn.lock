@@ -1843,6 +1843,13 @@ create-hmac@^1.1.0, create-hmac@^1.1.2, create-hmac@^1.1.4:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
+cross-env@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/cross-env/-/cross-env-5.2.0.tgz#6ecd4c015d5773e614039ee529076669b9d126f2"
+  dependencies:
+    cross-spawn "^6.0.5"
+    is-windows "^1.0.0"
+
 cross-spawn@^5.0.1:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-5.1.0.tgz#e8bd0efee58fcff6f8f94510a0a554bbfa235449"
@@ -3268,7 +3275,7 @@ is-utf8@^0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/is-utf8/-/is-utf8-0.2.1.tgz#4b0da1442104d1b336340e80797e865cf39f7d72"
 
-is-windows@^1.0.1, is-windows@^1.0.2:
+is-windows@^1.0.0, is-windows@^1.0.1, is-windows@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/is-windows/-/is-windows-1.0.2.tgz#d1850eb9791ecd18e6182ce12a30f396634bb19d"
 
@@ -5532,9 +5539,9 @@ slide@^1.1.5:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/slide/-/slide-1.1.6.tgz#56eb027d65b4d2dce6cb2e2d32c4d4afc9e1d707"
 
-sm.js@backslash47/sm.js#fix-padding:
-  version "0.1.6"
-  resolved "https://codeload.github.com/backslash47/sm.js/tar.gz/923b8c06b7601eedbf2a54bcb32bddcf8230aa5d"
+sm.js@0.1.7:
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/sm.js/-/sm.js-0.1.7.tgz#e2ac81ab2819306c0971675705c5043336ba5548"
   dependencies:
     bn.js "^4.11.6"
     elliptic "^6.4.0"
