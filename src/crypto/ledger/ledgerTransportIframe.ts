@@ -106,7 +106,7 @@ export async function createChannel(forwarderUrl: string, debug: boolean) {
         iframe.addEventListener('load', () => {
             if (debug) {
                 // tslint:disable-next-line:no-console
-                console.error('Load event of Iframe fired.');
+                console.log('Load event of Iframe fired.');
             }
 
             if (iframe == null || iframe.contentWindow == null) {
