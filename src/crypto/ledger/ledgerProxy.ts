@@ -22,7 +22,7 @@ import { LedgerTransportNode } from './ledgerTransportNode';
 let transportInternal: LedgerTransport = new LedgerTransportNode();
 
 /**
- * Sets the instance of ledger transport (Node/IFrame)
+ * Sets the instance of ledger transport (Node/U2F/IFrame).
  * @param t Ledger transport
  */
 export function setLedgerTransport(transport: LedgerTransport) {

@@ -1,12 +1,13 @@
-import LedgerNode from '@ledgerhq/hw-transport-node-hid';
+import LedgerNode from '@ledgerhq/hw-transport-u2f';
 import { LedgerTransport, SendParams } from './ledgerTransport';
 
 /**
- * Standard implementation of Ledger transport using Node.JS HID.
+ * Standard implementation of Ledger transport using Browser U2F protocol.
  *
- * Usable in Node.JS or Electron environment.
+ * The Chrome extension implementing U2F protocol requires the application to be served over HTTPS.
+ * In other cases use LedgerTransportIframe.
  */
-export class LedgerTransportNode implements LedgerTransport {
+export class LedgerTransportU2F implements LedgerTransport {
     private delegate: any;
 
     /**
@@ -28,7 +29,7 @@ export class LedgerTransportNode implements LedgerTransport {
 
         this.delegate = await LedgerNode.open(paths[0]);
         this.delegate.setDebugMode(true);
-        this.delegate.setScrambleKey(null);
+        this.delegate.setScrambleKey('ONT');
         this.delegate.setExchangeTimeout(5000);
     }
 

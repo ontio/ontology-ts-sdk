@@ -17,7 +17,7 @@
  */
 
 /**
- * Low level interface to Ledger HW NEO application.
+ * Low level interface to Ledger HW ONT application.
  */
 export interface LedgerTransport {
     /**

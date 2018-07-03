@@ -2,8 +2,26 @@ import { timeout as timeoutFunc } from 'promise-timeout';
 import { v4 as uuid } from 'uuid';
 import { LedgerTransport, SendParams } from './ledgerTransport';
 
+/**
+ * Alternative implementation of Ledger communication using embedded Iframe from HTTPS location.
+ *
+ * This is needed in case the Application is not server through HTTPS or is a browser extention.
+ */
 export class LedgerTransportIframe implements LedgerTransport {
-    private channel: MessageChannel = new MessageChannel();
+    private debug: boolean;
+    private forwarderUrl: string;
+    private channel: MessageChannel;
+    private iframe: HTMLIFrameElement;
+
+    /**
+     * Creates Iframe transport
+     * @param forwarderUrl HTTPS url of Forwarder
+     * @param debug Enable debug messages
+     */
+    constructor(forwarderUrl: string, debug: boolean = false) {
+        this.forwarderUrl = forwarderUrl;
+        this.debug = debug;
+    }
 
     /**
      * Connects to the Ledger HW and creates transport.
@@ -12,7 +30,10 @@ export class LedgerTransportIframe implements LedgerTransport {
      * Otherwise the new one might fail.
      */
     async open() {
-        this.channel = await createChannel();
+        const [channel, iframe] = await createChannel(this.forwarderUrl, this.debug);
+
+        this.channel = channel;
+        this.iframe = iframe;
         await sendToChannel(this.channel, { id: uuid(), method: 'open' });
     }
 
@@ -21,7 +42,7 @@ export class LedgerTransportIframe implements LedgerTransport {
      */
     async close() {
         await sendToChannel(this.channel, { id: uuid(), method: 'close' });
-        await closeChannel(this.channel);
+        await closeChannel(this.channel, this.iframe);
     }
 
     /**
@@ -56,29 +77,38 @@ export interface ChannelResponse extends ChannelMessage {
     result: string;
 }
 
-export async function createChannel() {
-    const promise = new Promise<MessageChannel>((resolve, reject) => {
+export async function createChannel(forwarderUrl: string, debug: boolean) {
+    const promise = new Promise<[MessageChannel, HTMLIFrameElement]>((resolve, reject) => {
         const channel: MessageChannel = new MessageChannel();
-        const iframe: HTMLIFrameElement | null = document.querySelector('#ledger-forwarder');
-
-        if (iframe == null || iframe.contentWindow == null) {
-            reject('Can not find Ledger forwarder IFrame');
-            return;
-        }
+        const iframe = document.createElement('iframe');
 
         const ready = (message: any) => {
+            if (debug) {
+                // tslint:disable-next-line:no-console
+                console.log('Received ready message from Iframe.', message);
+            }
+
             if (message.data === 'ready') {
                 channel.port1.removeEventListener('message', ready);
-                resolve(channel);
+                resolve([channel, iframe]);
             } else {
-                // tslint:disable-next-line:no-console
-                console.error('First event on iframe port was not "ready"');
+                if (debug) {
+                    // tslint:disable-next-line:no-console
+                    console.error('First event on Iframe port was not "ready"');
+                }
             }
         };
         channel.port1.addEventListener('message', ready);
         channel.port1.start();
 
+        iframe.src = forwarderUrl;
+        iframe.setAttribute('style', 'display:none');
         iframe.addEventListener('load', () => {
+            if (debug) {
+                // tslint:disable-next-line:no-console
+                console.error('Load event of Iframe fired.');
+            }
+
             if (iframe == null || iframe.contentWindow == null) {
                 reject('Can not find Ledger forwarder IFrame.');
                 return;
@@ -86,15 +116,14 @@ export async function createChannel() {
 
             iframe.contentWindow.postMessage('init', '*', [channel.port2]);
         });
+        document.body.appendChild(iframe);
     });
 
     return timeoutFunc(promise, 2000);
 }
 
-export async function closeChannel(channel: MessageChannel) {
+export async function closeChannel(channel: MessageChannel, iframe: HTMLIFrameElement) {
     const promise = new Promise<void>((resolve, reject) => {
-        const iframe: HTMLIFrameElement | null = document.querySelector('#ledger-forwarder');
-
         if (iframe == null || iframe.contentWindow == null) {
             reject('Can not find Ledger forwarder IFrame');
             return;
@@ -102,6 +131,7 @@ export async function closeChannel(channel: MessageChannel) {
 
         iframe.contentWindow.postMessage('close', '*');
         channel.port1.close();
+        document.body.removeChild(iframe);
         resolve();
     });
 
