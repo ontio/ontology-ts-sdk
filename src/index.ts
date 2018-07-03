@@ -20,7 +20,6 @@ import { Account } from './account';
 import { Claim } from './claim';
 import * as CONST from './consts';
 import * as Crypto from './crypto';
-import * as Ledger from './crypto/ledger';
 import { Identity } from './identity';
 import RestClient from './network/rest/restClient';
 import RpcClient from './network/rpc/rpcClient';
@@ -65,7 +64,7 @@ class ONT {
     RpcClient: any;
     WebsocketClient: any;
     Crypto: any;
-    Ledger: any;
+
     constructor() {
         this.Account = Account;
         this.Identity = Identity;
@@ -91,7 +90,6 @@ class ONT {
         this.RpcClient = RpcClient;
         this.WebsocketClient = WebsocketClient;
         this.Crypto = Crypto;
-        this.Ledger = Ledger;
     }
     setNode(url: string) {
         this.CONST.TEST_NODE = url;
@@ -136,6 +134,5 @@ export {
     RestClient,
     RpcClient,
     WebsocketClient,
-    Crypto,
-    Ledger
+    Crypto
 };

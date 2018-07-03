@@ -15,11 +15,53 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 import { JsonKey, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
-import { LedgerKey } from './ledger/ledgerKey';
 import { PrivateKey } from './PrivateKey';
+
+/**
+ * Interface for Key deserializers
+ */
+export abstract class KeyDeserializer {
+    abstract getType(): string;
+    abstract deserialize(json: JsonKey): PrivateKey;
+}
+
+/**
+ * Default private key deserializer.
+ */
+export class DefaultKeyDeserializer extends KeyDeserializer {
+    getType(): string {
+        return '';
+    }
+
+    deserialize(json: JsonKey): PrivateKey {
+        if (json.key != null) {
+            return new PrivateKey(
+                json.key,
+                KeyType.fromLabel(json.algorithm),
+                KeyParameters.deserializeJson(json.parameters)
+            );
+        } else {
+            throw new Error('Unsupported Key type.');
+        }
+    }
+}
+
+/**
+ * Registered key deserializers
+ */
+const keyDeserializers: KeyDeserializer[] = [];
+const defaultKeyDeserializer = new DefaultKeyDeserializer();
+
+/**
+ * Registers new external deserializer for private keys.
+ *
+ * @param deserializer Deserializer instance
+ */
+export function registerKeyDeserializer(deserializer: KeyDeserializer) {
+    keyDeserializers.push(deserializer);
+}
 
 /**
  * Creates PrivateKey from Json representation.
@@ -28,15 +70,15 @@ import { PrivateKey } from './PrivateKey';
  *
  */
 export function deserializeFromJson(json: JsonKey): PrivateKey {
-    if (json.external != null && json.external.type === 'LEDGER') {
-        return new LedgerKey(json.external.index, json.external.pKey);
-    } else if (json.key != null) {
-        return new PrivateKey(
-            json.key,
-            KeyType.fromLabel(json.algorithm),
-            KeyParameters.deserializeJson(json.parameters)
-        );
+    if (json.external == null) {
+        return defaultKeyDeserializer.deserialize(json);
     } else {
+        for (const deserializer of keyDeserializers) {
+            if (deserializer.getType() === json.external.type) {
+                return deserializer.deserialize(json);
+            }
+        }
+
         throw new Error('Unsupported Key type.');
     }
 }

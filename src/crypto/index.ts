@@ -22,5 +22,6 @@ export { CurveLabel } from './CurveLabel';
 export { SignatureScheme } from './SignatureScheme';
 export { KeyParameters, JsonKeyParameters, JsonKey } from './Key';
 export { PrivateKey } from './PrivateKey';
+export { KeyDeserializer, registerKeyDeserializer } from './PrivateKeyFactory';
 export { PublicKey, PublicKeyStatus } from './PublicKey';
 export { Signature, PgpSignature } from './Signature';
