@@ -68,12 +68,31 @@ export class TxSignature {
      * @param privateKey Private key to use
      * @param scheme Signature scheme to use
      */
-    static async create(hash: string, privateKey: PrivateKey, scheme?: SignatureScheme) {
+    static create(hash: string, privateKey: PrivateKey, scheme?: SignatureScheme) {
         const signature = new TxSignature();
 
         signature.M = 1;
         signature.pubKeys = [privateKey.getPublicKey()];
-        signature.sigData = [(await privateKey.sign(hash, scheme)).serializeHex()];
+        signature.sigData = [privateKey.sign(hash, scheme).serializeHex()];
+
+        return signature;
+    }
+
+    /**
+     * Creates Transaction signature of hash with supplied private key and scheme asynchroniously.
+     *
+     * If the signature schemas is not provided, the default schemes for the key types are used.
+     *
+     * @param hash hash of the transaction
+     * @param privateKey Private key to use
+     * @param scheme Signature scheme to use
+     */
+    static async createAsync(hash: string, privateKey: PrivateKey, scheme?: SignatureScheme) {
+        const signature = new TxSignature();
+
+        signature.M = 1;
+        signature.pubKeys = [privateKey.getPublicKey()];
+        signature.sigData = [(await privateKey.signAsync(hash, scheme)).serializeHex()];
 
         return signature;
     }

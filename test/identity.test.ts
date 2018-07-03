@@ -96,7 +96,7 @@ describe('test identity', () => {
         const msg = JSON.stringify(data);
         const pkId = a.ontid + '#key-1';
         console.log('msg: ' + msg);
-        const sig = await pri.sign(msg, undefined, pkId);
+        const sig = pri.sign(msg, undefined, pkId);
         const body = {
             OwnerOntId: a.ontid,
             Signature : sig.serializePgp()

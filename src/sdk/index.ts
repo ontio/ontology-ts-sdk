@@ -102,8 +102,8 @@ export class SDK {
         return password;
     }
 
-    static async createWallet(name: string,
-                              password: string, payer: string, gasPrice: string, gasLimit: string, callback?: string) {
+    static createWallet(name: string,
+                        password: string, payer: string, gasPrice: string, gasLimit: string, callback?: string) {
         const wallet = Wallet.create(name);
         password = this.transformPassword(password);
         const privateKey = PrivateKey.random();
@@ -126,7 +126,7 @@ export class SDK {
         const publicKey = privateKey.getPublicKey();
         const tx = buildRegisterOntidTx(identity.ontid, publicKey, gasPrice, gasLimit);
         tx.payer = new Address(payer);
-        await signTransaction(tx, privateKey);
+        signTransaction(tx, privateKey);
         // clear privateKey and password
         privateKey.key = '';
         password = '';
@@ -291,8 +291,8 @@ export class SDK {
         }
     }
 
-    static async createIdentity(label: string, password: string, payer: string,
-                                gasPrice: string, gasLimit: string, callback?: string) {
+    static createIdentity(label: string, password: string, payer: string,
+                          gasPrice: string, gasLimit: string, callback?: string) {
         const privateKey = PrivateKey.random();
         password = this.transformPassword(password);
         const identity = Identity.create(privateKey, password, label);
@@ -306,7 +306,7 @@ export class SDK {
         const publicKey = privateKey.getPublicKey();
         const tx = buildRegisterOntidTx(identity.ontid, publicKey, gasPrice, gasLimit);
         tx.payer = new Address(payer);
-        await signTransaction(tx, privateKey);
+        signTransaction(tx, privateKey);
         password = '';
         privateKey.key = '';
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
@@ -513,7 +513,7 @@ export class SDK {
         return obj;
     }
 
-    static async getClaim(
+    static getClaim(
         claimId: string,
         context: string,
         issuer: string,
@@ -560,7 +560,7 @@ export class SDK {
         const publicKey = privateKey.getPublicKey();
         const tx = buildAddAttributeTx(subject, [attr], publicKey, gasPrice, gasLimit);
         tx.payer = new Address(payer);
-        await signTransaction(tx, privateKey);
+        signTransaction(tx, privateKey);
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             if (res.Result.Result === '01') {
@@ -604,14 +604,14 @@ export class SDK {
         });
     }
 
-    static async signData(
+    static signData(
         content: string,
         encryptedPrivateKey: string,
         password: string,
         address: string,
         salt: string,
         callback?: string
-    ): Promise<PgpSignature | object> {
+    ): PgpSignature | object {
         let privateKey: PrivateKey;
         password = this.transformPassword(password);
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
@@ -628,7 +628,7 @@ export class SDK {
             }
             return result;
         }
-        const signature = await privateKey.sign(content);
+        const signature = privateKey.sign(content);
         result = signature.serializePgp();
 
         if (callback) {
@@ -680,7 +680,7 @@ export class SDK {
     }
 
     // pls check balance before transfer
-    static async transferAssets(
+    static transferAssets(
         token: string,
         from: string,
         to: string,
@@ -727,7 +727,7 @@ export class SDK {
 
         const tx = makeTransferTx(token, fromAddress, toAddress, value, gasPrice, gasLimit);
         tx.payer = new Address(payer);
-        await signTransaction(tx, privateKey);
+        signTransaction(tx, privateKey);
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: '',
@@ -740,7 +740,7 @@ export class SDK {
         return result;
     }
 
-    static async claimOng(
+    static claimOng(
         address: string,
         value: string,
         encryptedPrivateKey: string,
@@ -782,7 +782,7 @@ export class SDK {
         }
 
         const tx = makeWithdrawOngTx(addressObj, addressObj, value, new Address(payer), gasPrice, gasLimit);
-        await signTransaction(tx, privateKey);
+        signTransaction(tx, privateKey);
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: '',

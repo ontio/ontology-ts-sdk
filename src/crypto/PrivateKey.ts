@@ -89,11 +89,13 @@ export class PrivateKey extends Key {
      *
      * If the signature schema is not provided, the default schema for this key type is used.
      *
+     * This method is not suitable, if external keys (Ledger, TPM, ...) support is required.
+     *
      * @param msg Hex encoded input data
      * @param schema Signing schema to use
      * @param publicKeyId Id of public key
      */
-    async sign(msg: string, schema?: SignatureScheme, publicKeyId?: string): Promise<Signature> {
+    sign(msg: string, schema?: SignatureScheme, publicKeyId?: string): Signature {
         if (schema === undefined) {
             schema = this.algorithm.defaultSchema;
         }
@@ -112,6 +114,21 @@ export class PrivateKey extends Key {
 
         const signed = this.computeSignature(hash, schema);
         return new Signature(schema, signed, publicKeyId);
+    }
+
+    /**
+     * Asynchroniously signs the data with supplied private key using signature schema.
+     *
+     * If the signature schema is not provided, the default schema for this key type is used.
+     *
+     * This method is suitable, if external keys (Ledger, TPM, ...) support is required.
+     *
+     * @param msg Hex encoded input data
+     * @param schema Signing schema to use
+     * @param publicKeyId Id of public key
+     */
+    async signAsync(msg: string, schema?: SignatureScheme, publicKeyId?: string): Promise<Signature> {
+        return this.sign(msg, schema, publicKeyId);
     }
 
     /**
