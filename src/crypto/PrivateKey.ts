@@ -32,7 +32,7 @@ import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
 import { SignatureScheme } from './SignatureScheme';
 // tslint:disable-next-line:no-var-requires
-const HDKey = require('hdkey');
+const HDKey = require('@ont-community/hdkey-secp256r1');
 
 export class PrivateKey extends Key {
   /**
@@ -70,12 +70,9 @@ export class PrivateKey extends Key {
      * Creates PrivateKey from mnemonic according to BIP39 protocol.
      *
      * @param mnemonic Space separated list of words
-     * @param algorithm Algorithm for the key
-     * @param parameters Parameters for the key
      *
      */
-    static generateFromMnemonic(mnemonic: string, derivePath: string = ONT_BIP44_PATH,
-                                algorithm?: KeyType, parameters?: KeyParameters): PrivateKey {
+    static generateFromMnemonic(mnemonic: string, derivePath: string = ONT_BIP44_PATH): PrivateKey {
         if (mnemonic.split(' ').length < 12) {
             throw ERROR_CODE.INVALID_PARAMS;
         }

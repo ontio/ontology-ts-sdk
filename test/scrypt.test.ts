@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as bip39 from 'bip39';
 import * as CryptoJS from 'crypto-js';
 import * as secureRandom from 'secure-random';
 import { Account } from '../src/account';
@@ -25,7 +24,6 @@ import { utils } from '../src/index';
 import * as scrypt from '../src/scrypt';
 import { ab2hexstring, isBase64, str2hexstr } from '../src/utils';
 import { PublicKey } from './../src/crypto/PublicKey';
-const HDKey = require('hdkey');
 
 describe('test scrypt', () => {
     test('test_encryptCtr', () => {
@@ -199,26 +197,4 @@ describe('test scrypt', () => {
         // const decrypt = scrypt.decryptWithGcm(key, address, salt, '11111111');
         // console.log('decrypt: ' + decrypt);
     });
-
-    test('test_24', () => {
-        const mnemonic = 'hill ready family useful detect bacon visit canoe recall circle topple claw sheriff universe robust lounge cluster duty vast excuse weasel grunt junk actor'
-        // const mnemonic = 'rebel cram bubble chat rabbit month sad blood pluck genre want ski';
-        const seed = bip39.mnemonicToSeedHex(mnemonic);
-        const hdkey = HDKey.fromMasterSeed(Buffer.from(seed, 'hex'));
-        console.log('hdkey: ' + JSON.stringify(hdkey.toJSON()));
-        const pri = hdkey.derive("m/44'/60'/0'/0/0");
-        console.log('xpri: ' + pri.privateExtendedKey);
-
-        console.log('pri ' + Buffer.from(pri.privateKey).toString('hex'));
-        console.log('pub ' + Buffer.from(pri.publicKey).toString('hex'));
-        // const key = Buffer.from(pri.privateKey).toString('hex');
-        // const privateKey = new PrivateKey(key);
-        // const account = Account.create(privateKey, '1234', '');
-        // console.log('address: ' + account.address.toBase58());
-
-        const addr = '0xeb69702191b4da758baF4E3Ca96fd8d9fb931dc8';
-    })
-
-
 });
-
