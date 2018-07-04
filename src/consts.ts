@@ -96,3 +96,6 @@ export const DEFAULT_GAS_LIMIT = 30000;
 export const NATIVE_INVOKE_NAME = 'Ontology.Native.Invoke';
 
 export const TX_MAX_SIG_SIZE = 16;
+
+// tslint:disable-next-line:quotemark
+export const ONT_BIP44_PATH = "m/44'/1024'/0'/0/0";

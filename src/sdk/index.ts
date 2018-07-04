@@ -29,7 +29,7 @@ import axios from 'axios';
 import * as bip39 from 'bip39';
 import { Account } from '../account';
 import { Claim } from '../claim/claim';
-import { HTTP_REST_PORT, HTTP_WS_PORT, REST_API, TEST_NODE } from '../consts';
+import { HTTP_REST_PORT, HTTP_WS_PORT, ONT_BIP44_PATH, REST_API, TEST_NODE } from '../consts';
 import { Address, PgpSignature, PrivateKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
@@ -47,6 +47,8 @@ import {
 import { generateMnemonic,
     hexstr2str, isBase64, now, sendBackResult2Native, str2hexstr } from '../utils';
 import { Wallet } from '../wallet';
+// tslint:disable-next-line:no-var-requires
+const HDKey = require('hdkey');
 
 // tslint:disable:no-unused-expression
 // tslint:disable:no-shadowed-variable
@@ -887,8 +889,10 @@ export class SDK {
             return obj;
         }
         const seed = bip39.mnemonicToSeedHex(mnemonic);
-        const pri = seed.substr(0, 64);
-        const privateKey = new PrivateKey(pri);
+        const hdkey = HDKey.fromMasterSeed(Buffer.from(seed, 'hex'));
+        const pri = hdkey.derive(ONT_BIP44_PATH);
+        const key = Buffer.from(pri.privateKey).toString('hex');
+        const privateKey = new PrivateKey(key);
         const account = Account.create(privateKey, password, label);
         const result = account.toJson();
         const obj = {

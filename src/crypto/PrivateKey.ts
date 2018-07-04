@@ -21,7 +21,7 @@ import * as elliptic from 'elliptic';
 import * as secureRandom from 'secure-random';
 import { sm2 } from 'sm.js';
 import * as wif from 'wif';
-import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID } from '../consts';
+import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID, ONT_BIP44_PATH } from '../consts';
 import { ERROR_CODE } from '../error';
 import { decryptWithGcm, encryptWithGcm, ScryptParams } from '../scrypt';
 import { ab2hexstring, hexstring2ab, isBase64, str2hexstr } from '../utils';
@@ -31,6 +31,8 @@ import { KeyType } from './KeyType';
 import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
 import { SignatureScheme } from './SignatureScheme';
+// tslint:disable-next-line:no-var-requires
+const HDKey = require('hdkey');
 
 export class PrivateKey extends Key {
   /**
@@ -72,15 +74,19 @@ export class PrivateKey extends Key {
      * @param parameters Parameters for the key
      *
      */
-    static generateFromMnemonic(mnemonic: string, algorithm?: KeyType, parameters?: KeyParameters): PrivateKey {
-        if (mnemonic.split(' ').length !== 12) {
+    static generateFromMnemonic(mnemonic: string, derivePath: string = ONT_BIP44_PATH,
+                                algorithm?: KeyType, parameters?: KeyParameters): PrivateKey {
+        if (mnemonic.split(' ').length < 12) {
             throw ERROR_CODE.INVALID_PARAMS;
         }
         const seed = bip39.mnemonicToSeedHex(mnemonic);
 
         // generate privateKey
-        const pri = seed.substr(0, 64);
-        const privateKey = new PrivateKey(pri);
+        // const pri = seed.substr(0, 64);
+        const hdkey = HDKey.fromMasterSeed(Buffer.from(seed, 'hex'));
+        const pri = hdkey.derive(derivePath);
+        const key = Buffer.from(pri.privateKey).toString('hex');
+        const privateKey = new PrivateKey(key);
         return privateKey;
     }
 
