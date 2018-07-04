@@ -48,6 +48,10 @@ export class WebsocketSender {
         };
 
         socket.onmessage = (event) => {
+            if (this.debug) {
+                // tslint:disable-next-line:no-console
+                console.log('received: ', event.data);
+            }
             let res: any;
             if (typeof event.data === 'string') {
                 res = JSON.parse(event.data);

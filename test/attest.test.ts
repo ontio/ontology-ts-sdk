@@ -19,16 +19,20 @@
 import * as uuid from 'uuid';
 import { Claim, RevocationType } from '../src/claim/claim';
 import { KeyType, PrivateKey, Signature } from '../src/crypto';
+import { Identity } from '../src/identity';
 import { now } from '../src/utils';
 import { Account } from './../src/account';
 
 describe('test attest claim', () => {
     const sockUrl = 'ws://polaris1.ont.io:20335';
     const restUrl = 'http://polaris1.ont.io:20334';
-    const ontId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-    const publicKeyId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w#keys-1';
-    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
-    const account = Account.create(privateKey, '123456');
+
+    const privateKey = PrivateKey.random();
+    const publicKey = privateKey.getPublicKey();
+    const account = Account.create(privateKey, '123456', '');
+    const identity = Identity.create(privateKey, '123456', '');
+    const ontId =  identity.ontid;
+    const address = account.address;
     const gasPrice = '0';
     const gasLimit = '30000';
 

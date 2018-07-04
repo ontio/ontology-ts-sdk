@@ -1,8 +1,33 @@
 {
-    "presets": [
-        [ "env", {
-            "modules": false
-        }],
-        "stage-3"
-    ]
+    "env": {
+        "development": {
+            "presets": [
+                [
+                    "env",
+                    {
+                        "modules": false,
+                        "targets": {
+                            "chrome": 67
+                        }
+                    }
+                ]
+            ],
+            "plugins": [
+                "transform-object-rest-spread"
+            ]
+        },
+        "production": {
+            "presets": [
+                [
+                    "env",
+                    {
+                        "modules": false
+                    }
+                ]
+            ],
+            "plugins": [
+                "transform-object-rest-spread"
+            ]
+        }
+    }
 }

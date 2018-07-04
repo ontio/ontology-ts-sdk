@@ -26,7 +26,7 @@ import {
     buildGetRecordStatusTx,
     buildRevokeRecordTx
 } from '../smartcontract/neovm/attestClaimTxBuilder';
-import { signTransaction } from '../transaction/transactionBuilder';
+import { signTransactionAsync } from '../transaction/transactionBuilder';
 import { hexstr2str, StringReader } from '../utils';
 import { AttestNotifyEvent } from './attestNotifyEvent';
 import { ClaimProof } from './claimProof';
@@ -148,7 +148,7 @@ export class Claim extends Message {
 
         const client = new WebsocketClient(url);
         const tx = buildCommitRecordTx(claimId, attesterId, subjectId, gasPrice, gasLimit, payer);
-        signTransaction(tx, privateKey);
+        await signTransactionAsync(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
 
         // tslint:disable-next-line:no-console
@@ -177,7 +177,7 @@ export class Claim extends Message {
         }
         const client = new WebsocketClient(url);
         const tx = buildRevokeRecordTx(claimId, attesterId, gasPrice, gasLimit, payer);
-        signTransaction(tx, privateKey);
+        await signTransactionAsync(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
 
         const event = AttestNotifyEvent.deserialize(response);
@@ -263,6 +263,7 @@ export class Claim extends Message {
 
 /**
  * Helper class for deserializing GetStatus response.
+ * fixme: Ontology node changed the response
  */
 export class GetStatusResponse {
     static deserialize(r: any): GetStatusResponse {

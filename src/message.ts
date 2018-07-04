@@ -173,7 +173,7 @@ export abstract class Message {
         }
 
         const msg = this.serializeUnsigned(algorithm, publicKeyId);
-        this.signature = privateKey.sign(msg, algorithm, publicKeyId);
+        this.signature = await privateKey.signAsync(msg, algorithm, publicKeyId);
     }
 
     /**

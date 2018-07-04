@@ -170,7 +170,8 @@ export class Key {
 export interface JsonKey {
     algorithm: string;
     parameters: JsonKeyParameters;
-    key: string;
+    key: string | null;
+    external?: any | null;
 }
 
 /**

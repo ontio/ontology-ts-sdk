@@ -20,7 +20,7 @@ import axios from 'axios';
 import { Address, PrivateKey } from '../src/crypto';
 import { ERROR_CODE } from '../src/error';
 import { Identity } from '../src/identity';
-import { buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import * as utils from '../src/utils';
 import { Account } from './../src/account';
 import { signTransaction } from './../src/transaction/transactionBuilder';

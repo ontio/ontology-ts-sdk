@@ -1,26 +1,27 @@
 import { Account } from '../src/account';
 import { TEST_ONT_URL } from '../src/consts';
 import { Address, PrivateKey } from '../src/crypto';
+import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test websocket', () => {
-    const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, false);
+    const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, true);
 
     // tslint:disable-next-line:one-variable-per-declaration
     const codeHash = 'ff00000000000000000000000000000000000003';
-    const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-    const address = 'AXmQDzzvpEtPkNwBEFsREzApTTDZFW6frD';
 
     let txHash: string;
     let blockHash: string;
     let height: number;
 
-    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
-
     const account = Account.create(privateKey, '123456', '');
+    const identity = Identity.create(privateKey, '123456', '');
+    const ontid =  identity.ontid;
+    const address = account.address;
 
     /**
      * Registers new ONT ID to create transaction with Events and new block
@@ -32,7 +33,7 @@ describe('test websocket', () => {
 
         const result = await client.sendRawTransaction(tx.serialize(), false, true);
         txHash = result.Result.TxHash;
-    }, 10000);
+    }, 5000);
 
     /**
      * Gets current block height to be used by following tests.
@@ -151,7 +152,7 @@ describe('test websocket', () => {
     });
 
     test('test getBalance', async () => {
-        const result = await client.getBalance(new Address(address));
+        const result = await client.getBalance(address);
 
         expect(result.Action).toBe('getbalance');
         expect(result.Desc).toBe('SUCCESS');

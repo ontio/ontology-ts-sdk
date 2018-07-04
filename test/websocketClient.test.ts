@@ -1,7 +1,7 @@
 import { TEST_ONT_URL } from '../src/consts';
 import { Address } from '../src/crypto';
 import * as wsClient from '../src/network/websocket/websocketBuilder';
-import { buildGetDDOTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildGetDDOTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import TxSender from '../src/transaction/txSender';
 
 // tslint:disable:no-console

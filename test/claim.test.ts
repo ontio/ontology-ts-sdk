@@ -19,17 +19,24 @@
 import { Account } from '../src/account';
 import { Claim, RevocationType } from '../src/claim/claim';
 import { PrivateKey } from '../src/crypto';
+import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test claim', () => {
     const restUrl = 'http://polaris1.ont.io:20334';
-    const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-    const publicKeyId = ontid + '#keys-1';
-    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+
+    const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
     const account = Account.create(privateKey, '123456', '');
+    const identity = Identity.create(privateKey, '123456', '');
+    const ontid =  identity.ontid;
+    const address = account.address;
+    const publicKeyId = ontid + '#keys-1';
+
+    let serialized: string;
+    let signed: string;
 
     /**
      * Registers new ONT ID to create transaction with Events and new block
@@ -61,22 +68,12 @@ describe('test claim', () => {
             addr: '8055b362904715fd84536e754868f4c8d27ca3f6'
         };
 
-        expect(claim.serialize()).toEqual('eyJ0eXAiOiJKV1QifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9udDpUR3B' +
-            'vS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x' +
-            '3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR0cHM' +
-            '6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIifSw' +
-            'iY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2ZTc' +
-            '1NDg2OGY0YzhkMjdjYTNmNiJ9fQ');
+        serialized = claim.serialize();
+
+        expect(serialized).toBeDefined();
     });
 
     test('test deserialization', async () => {
-        const serialized = 'eyJ0eXAiOiJKV1QifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9udDpUR3B' +
-            'vS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMWltZ0x' +
-            '3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR0cHM' +
-            '6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIifSw' +
-            'iY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2ZTc' +
-            '1NDg2OGY0YzhkMjdjYTNmNiJ9fQ';
-
         const msg = Claim.deserialize(serialized);
 
         expect(msg.metadata.messageId).toEqual('1');
@@ -113,27 +110,13 @@ describe('test claim', () => {
 
         await claim.sign(restUrl, publicKeyId, privateKey);
 
-        expect(claim.serialize()).toEqual('eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
-            'wb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9ud' +
-            'DpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMW' +
-            'ltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR' +
-            '0cHM6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIi' +
-            'fSwiY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2Z' +
-            'Tc1NDg2OGY0YzhkMjdjYTNmNiJ9fQ.E8dJT8yOonnfb-N9PZt6pgyqGwSCHKW5xu3kF1yZpU6ahPxvhHtAM0oJhnu' +
-            'IoyMINvOvjzcxiVZ1-69UAozy6w');
+        signed = claim.serialize();
+
+        expect(claim.signature).toBeDefined();
     });
 
     test('test verify', async () => {
-        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
-            'wb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9ud' +
-            'DpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMW' +
-            'ltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR' +
-            '0cHM6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIi' +
-            'fSwiY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2Z' +
-            'Tc1NDg2OGY0YzhkMjdjYTNmNiJ9fQ.E8dJT8yOonnfb-N9PZt6pgyqGwSCHKW5xu3kF1yZpU6ahPxvhHtAM0oJhnu' +
-            'IoyMINvOvjzcxiVZ1-69UAozy6w';
-
-        const msg = Claim.deserialize(serialized);
+        const msg = Claim.deserialize(signed);
 
         const result = await msg.verify(restUrl, false);
 
@@ -141,16 +124,7 @@ describe('test claim', () => {
     });
 
     test('test verify with missing attest', async () => {
-        const serialized = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
-            'wb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9ud' +
-            'DpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW5BMW' +
-            'ltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJ2ZXIiOiIwLjcuMCIsIkBjb250ZXh0IjoiaHR' +
-            '0cHM6Ly9leGFtcGxlLmNvbS90ZW1wbGF0ZS92MSIsImNsbSI6eyJOYW1lIjoiQm9iIER5bGFuIiwiQWdlIjoiMjIi' +
-            'fSwiY2xtLXJldiI6eyJ0eXBlIjoiQXR0ZXN0Q29udHJhY3QiLCJhZGRyIjoiODA1NWIzNjI5MDQ3MTVmZDg0NTM2Z' +
-            'Tc1NDg2OGY0YzhkMjdjYTNmNiJ9fQ.E8dJT8yOonnfb-N9PZt6pgyqGwSCHKW5xu3kF1yZpU6ahPxvhHtAM0oJhnu' +
-            'IoyMINvOvjzcxiVZ1-69UAozy6w';
-
-        const msg = Claim.deserialize(serialized);
+        const msg = Claim.deserialize(signed);
 
         const result = await msg.verify(restUrl, true);
 

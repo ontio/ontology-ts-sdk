@@ -64,6 +64,7 @@ class ONT {
     RpcClient: any;
     WebsocketClient: any;
     Crypto: any;
+
     constructor() {
         this.Account = Account;
         this.Identity = Identity;

@@ -1,7 +1,9 @@
+import { Account } from '../src/account';
 import { PrivateKey } from '../src/crypto';
+import { Identity } from '../src/identity';
 import { constructClaimProof, getProofNodes, verifyClaimProof, verifyLeafHashInclusion } from '../src/merkle';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console
@@ -9,15 +11,19 @@ import { signTransaction } from '../src/transaction/transactionBuilder';
 describe('test merkle proofs', () => {
     let txHash: string;
 
-    const ontId = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
+    const account = Account.create(privateKey, '123456', '');
+    const identity = Identity.create(privateKey, '123456', '');
+    const ontId =  identity.ontid;
+    const address = account.address;
 
     /**
      * Registers new ONT ID to create transaction
      */
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontId, publicKey, '0', '30000');
+        tx.payer = account.address;
         signTransaction(tx, privateKey);
 
         const client = new WebsocketClient();

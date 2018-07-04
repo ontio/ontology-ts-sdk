@@ -26,7 +26,7 @@ import { ERROR_CODE } from '../error';
 import { decryptWithGcm, encryptWithGcm, ScryptParams } from '../scrypt';
 import { ab2hexstring, hexstring2ab, isBase64, str2hexstr } from '../utils';
 import { Address } from './address';
-import { JsonKey, Key, KeyParameters } from './Key';
+import { Key, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
 import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
@@ -51,20 +51,6 @@ export class PrivateKey extends Key {
         }
 
         return new PrivateKey(ab2hexstring(secureRandom(32)), keyType, parameters);
-    }
-
-    /**
-     * Creates PrivateKey from Json representation.
-     *
-     * @param json Json private key representation
-     *
-     */
-    static deserializeJson(json: JsonKey): PrivateKey {
-        return new PrivateKey(
-        json.key,
-        KeyType.fromLabel(json.algorithm),
-        KeyParameters.deserializeJson(json.parameters)
-        );
     }
 
     /**
@@ -103,6 +89,8 @@ export class PrivateKey extends Key {
      *
      * If the signature schema is not provided, the default schema for this key type is used.
      *
+     * This method is not suitable, if external keys (Ledger, TPM, ...) support is required.
+     *
      * @param msg Hex encoded input data
      * @param schema Signing schema to use
      * @param publicKeyId Id of public key
@@ -126,6 +114,21 @@ export class PrivateKey extends Key {
 
         const signed = this.computeSignature(hash, schema);
         return new Signature(schema, signed, publicKeyId);
+    }
+
+    /**
+     * Asynchroniously signs the data with supplied private key using signature schema.
+     *
+     * If the signature schema is not provided, the default schema for this key type is used.
+     *
+     * This method is suitable, if external keys (Ledger, TPM, ...) support is required.
+     *
+     * @param msg Hex encoded input data
+     * @param schema Signing schema to use
+     * @param publicKeyId Id of public key
+     */
+    async signAsync(msg: string, schema?: SignatureScheme, publicKeyId?: string): Promise<Signature> {
+        return this.sign(msg, schema, publicKeyId);
     }
 
     /**

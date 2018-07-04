@@ -1,9 +1,10 @@
 import { Account } from '../src/account';
 import { PrivateKey } from '../src/crypto';
 import { Address } from '../src/crypto/address';
+import { Identity } from '../src/identity';
 import RestClient from '../src/network/rest/restClient';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/ontidContractTxBuilder';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console
@@ -11,17 +12,17 @@ describe('test restClient', () => {
     const rest = new RestClient();
 
     const codeHash = 'ff00000000000000000000000000000000000003';
-    const ontid = 'did:ont:TGpoKGo26xmnA1imgLwLvYH2nhWnN62G9w';
-    const address = 'AXmQDzzvpEtPkNwBEFsREzApTTDZFW6frD';
 
     let txHash: string;
     let blockHash: string;
     let height: number;
 
-    const privateKey = new PrivateKey('eaec4e682c93648d24e198da5ef9a9252abd5355c568cd74fba59f98c0b1a8f4');
+    const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
-
     const account = Account.create(privateKey, '123456', '');
+    const identity = Identity.create(privateKey, '123456', '');
+    const ontid =  identity.ontid;
+    const address = account.address;
 
     /**
      * Registers new ONT ID to create transaction with Events and new block
@@ -34,7 +35,7 @@ describe('test restClient', () => {
         const client = new WebsocketClient();
         const result = await client.sendRawTransaction(tx.serialize(), false, true);
         txHash = result.Result.TxHash;
-    }, 10000);
+    }, 5000);
 
     test('test sendRawTransaction', async () => {
         const tx = buildGetDDOTx(ontid);
@@ -108,7 +109,7 @@ describe('test restClient', () => {
     });
 
     test('test getBalance', async () => {
-        const res = await rest.getBalance(new Address(address));
+        const res = await rest.getBalance(address);
         console.log(res);
         expect(res.Result).toBeTruthy();
     });

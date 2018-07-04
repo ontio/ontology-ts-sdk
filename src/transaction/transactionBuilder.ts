@@ -60,6 +60,24 @@ export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?
 };
 
 /**
+ * Signs the transaction object asynchroniously.
+ *
+ * If there is already a signature, the new one will replace existing.
+ * If the signature schema is not provided, default schema for Private key type is used.
+ *
+ * @param tx Transaction to sign
+ * @param privateKey Private key to sign with
+ * @param schema Signature Schema to use
+ */
+export const signTransactionAsync = async (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
+    const hash = tx.getHash();
+
+    const signature = await TxSignature.createAsync(hash, privateKey, schema);
+
+    tx.sigs = [signature];
+};
+
+/**
  * Signs the transaction object.
  *
  * If there is already a signature, the new one will be added to the end.

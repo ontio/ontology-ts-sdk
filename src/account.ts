@@ -16,6 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Address, PrivateKey } from './crypto';
+import { deserializeFromJson } from './crypto/PrivateKeyFactory';
 import { ScryptParams } from './scrypt';
 import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
@@ -103,10 +104,11 @@ export class Account {
         account.isDefault = obj.isDefault;
         account.publicKey = obj.publicKey;
         account.salt = obj.salt;
-        account.encryptedKey = PrivateKey.deserializeJson({
+        account.encryptedKey = deserializeFromJson({
             algorithm: obj.algorithm,
             parameters: obj.parameters,
-            key: obj.key
+            key: obj.key,
+            external: obj.external
         });
         // account.contract = obj.contract
         account.extra = obj.extra;
@@ -141,9 +143,7 @@ export class Account {
             'address': this.address.toBase58(),
             'label': this.label,
             'lock': this.lock,
-            'algorithm': this.encryptedKey.algorithm.label,
-            'parameters': this.encryptedKey.parameters.serializeJson(),
-            'key': this.encryptedKey.key,
+            ...this.encryptedKey.serializeJson(),
             'enc-alg': this['enc-alg'],
             'salt': this.salt,
             'isDefault': this.isDefault,
