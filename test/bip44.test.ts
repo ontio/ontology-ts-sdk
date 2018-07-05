@@ -24,8 +24,7 @@ const HDKey = require('@ont-community/hdkey-secp256r1');
 describe('test bip44', () => {
     test('test_24', () => {
         // tslint:disable-next-line:max-line-length
-        // const mnemonic = 'hill ready family useful detect bacon visit canoe recall circle topple claw sheriff universe robust lounge cluster duty vast excuse weasel grunt junk actor';
-        const mnemonic = 'oval volcano cram scout island web credit park tank improve ski rival';
+        const mnemonic = 'hill ready family useful detect bacon visit canoe recall circle topple claw sheriff universe robust lounge cluster duty vast excuse weasel grunt junk actor';
 
         const seed = bip39.mnemonicToSeedHex(mnemonic);
         console.log('seed:', seed);
