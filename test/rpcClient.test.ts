@@ -11,7 +11,7 @@ import { signTransaction } from '../src/transaction/transactionBuilder';
 describe('test rpc client', () => {
     const rpcClient = new RpcClient();
 
-    const codeHash = 'ff00000000000000000000000000000000000003';
+    const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
 
     let txHash: string;
     let blockHash: string;

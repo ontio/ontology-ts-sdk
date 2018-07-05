@@ -83,16 +83,4 @@ describe('test account', () => {
         console.log(accJson);
         expect(accJson.algorithm).toEqual('SM2');
     });
-
-    test('test_keystore', () => {
-        // tslint:disable-next-line:max-line-length
-        const keystore = { type: 'A', label: '巴德', algorithm: 'ECDSA', scrypt: { n: 4096, p: 8, r: 8, dkLen: 64 }, key: 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd', salt: 'sJwpxe1zDsBt9hI2iA2zKQ==', address: 'AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU', parameters: { curve: 'secp256r1' } };
-        const enc = new PrivateKey(keystore.key);
-        const addr1 = new Address(keystore.address);
-        const pri = enc.decrypt('11111111',  addr1, keystore.salt);
-        const pub = pri.getPublicKey();
-        const addr2 = Address.fromPubKey(pub);
-        expect(addr2.toBase58()).toEqual(keystore.address);
-    });
-
 });

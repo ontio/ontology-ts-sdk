@@ -34,14 +34,16 @@ export class AttestNotifyEvent {
 
         event.Action = e.Action;
         event.Error = e.Error;
-        event.Result = e.Result.map((r: any) => Result.deserialize(r));
+        event.Desc = e.Desc;
+        event.Result = Result.deserialize(e.Result);
 
         return event;
     }
 
-    Action: string;
+    Action: string = 'Notify';
+    Desc: string;
     Error: number;
-    Result: Result[];
+    Result: Result;
 }
 
 /**
@@ -59,12 +61,26 @@ export class Result {
         const result = new Result();
 
         result.TxHash = r.TxHash;
-        result.ContractAddress = r.ContractAddress;
-        result.States = r.States.map((s: any) => hexstr2str(s));
+        result.State = r.State;
+        result.GasConsumed = r.GasConsumed;
+        result.Notify = r.Notify.map((n: any) => {
+            return {
+                ContractAddress: n.ContractAddress,
+                States: n.States.map( (s: any) => typeof s === 'string' ? hexstr2str(s) : s)
+            };
+        });
+        result.Version = r.Version;
         return result;
     }
 
     TxHash: string;
-    ContractAddress: string;
-    States: string[];
+    // State = 1 : smartcontract executation success
+    // State = 0 : smartcontract executation failure
+    State: number;
+    GasConsumed: number;
+    Notify: [{
+        ContractAddress: string;
+        States: any[];
+    }];
+    Version: string;
 }

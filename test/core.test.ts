@@ -74,38 +74,4 @@ describe('test core', () => {
         console.log('verifyResult: ' + verifyResult);
         expect(verifyResult).toBeTruthy();
     });
-
-    // test('verify getMerkleProof', async () => {
-    //     let txHash = '82c17d7430140a1f3863b8f6f03db07bbdfbdb7da22ffdb2358a1d2e185f8bf3'
-    //     let res = await getMerkleProof(txHash)
-    //     console.log(res)
-    // })
-
-    test('test_verifySignature', () => {
-        const pub = PublicKey.deserializeHex(
-            new StringReader('12020290cd6eaa63bf52a3318e770364ff1a21360f907680959ca4dce11136fbded6a1'));
-        const content = 'helloworld';
-        const sig = 'AfR69Xn4I0Pk0Auj+gtYvoXNABsJgzdCJw+VsEjRJxh4xr9Bf6juddwulY3pm7duG8BepZe6KrM5qbSzV/cQXW8=';
-        const value = Buffer.from(sig, 'base64').toString('hex');
-        console.log('value: ' + value);
-        const signature = new Signature(SignatureScheme.ECDSAwithSHA256, value);
-        const result = pub.verify(content, signature);
-        console.log(result);
-        expect(result).toBeTruthy();
-    });
-
-    // entropy: 67a144559c029099e66c24175a3143a7
-// MnmenoicCodes: guilt any betray day cinnamon erupt often loyal blanket spice extend exact
-// tslint:disable-next-line:max-line-length
-// seed: 54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166358fb8b7253b4abbc0799f386d81e472352da1413eaa817638a4a887db03fdf5
-// prikey: 54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166
-
-    test('test_mnemonicWithJava', () => {
-        const entropy = '67a144559c029099e66c24175a3143a7';
-        const mne = bip39.entropyToMnemonic(entropy);
-        expect(mne).toEqual('guilt any betray day cinnamon erupt often loyal blanket spice extend exact');
-
-        const pri = PrivateKey.generateFromMnemonic(mne);
-        expect(pri.key).toEqual('54670753cc5f20e9a99d21104c1743037891a8aadb62146bdd0fd422edf38166');
-    });
 });

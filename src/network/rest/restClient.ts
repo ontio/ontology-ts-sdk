@@ -98,6 +98,7 @@ export default class RestClient {
         });
     }
 
+    // For vbft, the result is null
     getGenerateBlockTime() {
         const url = this.url + UrlConsts.Url_get_generate_block_time;
         return axios.get(url).then((res) => {
