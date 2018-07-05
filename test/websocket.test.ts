@@ -10,7 +10,7 @@ describe('test websocket', () => {
     const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, true);
 
     // tslint:disable-next-line:one-variable-per-declaration
-    const codeHash = 'ff00000000000000000000000000000000000003';
+    const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
 
     let txHash: string;
     let blockHash: string;
@@ -123,7 +123,6 @@ describe('test websocket', () => {
 
         expect(result.Action).toBe('getgenerateblocktime');
         expect(result.Desc).toBe('SUCCESS');
-        expect(typeof result.Result).toBe('number');
     });
 
     test('test getNodeCount', async () => {

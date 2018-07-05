@@ -34,76 +34,15 @@ describe('test scrypt', () => {
         // tslint:disable-next-line:no-console
         console.log('add: ' + address.toBase58());
 
-        const encrypt = scrypt.encrypt(privateKey.key, publicKey, '123456');
+        const encrypt = scrypt.encryptWithCtr(privateKey.key, publicKey, '123456');
         // tslint:disable-next-line:no-console
         console.log('encrypt: ' + encrypt);
         expect(encrypt).toBeDefined();
-
-        const encryptPri = privateKey.encrypt('123456');
-
-        const decryptPri =  encryptPri.decrypt('123456', address);
-
-        expect(decryptPri.key).toEqual(privateKey.key);
-
-        // console.log('encrypt : '+ encrypt)
-
-        // const checksum = address.getB58Checksum();
-
-        // const decrypt = scrypt.decrypt(encrypt, '123456', checksum)
-        // expect(decrypt).toEqual(privateKey.key)
-
-        // const key = '6PYReg3c35DGiwKvfTCKSFHEUv9imMoLNXu5RWsYi3Y9C8EQzTDKfWvLzv';
-        // const pass = 'passwordtest'
-        // const pri = scrypt.decrypt(key, pass)
-        // scrypt.checkDecrypted(key, pri, new PrivateKey(pri).getPublicKey().key);
-        // console.log(pri)
-    });
-
-    test('encrypt_with16384', () => {
-        const params = {
-            cost: 16384,
-            blockSize: 8,
-            parallel: 8,
-            size: 64
-        };
-
-        const enc = new PrivateKey('lZSpCtGa0VtEUPXr27xSKAg+I4hIucDeOIidbN1AyXE=');
-        const pri = enc.decrypt('111111', new Address('TA7WWJ4FqyADWDrU7ZLhYX2woFoFvDfw8P'), params);
-        expect(pri).toBeDefined();
-
-        const pri2 = PrivateKey.random();
-        const enc2 = pri2.encrypt('111111', params);
-        const pub = pri2.getPublicKey();
-        const address = Address.fromPubKey(pub);
-        // tslint:disable:no-console
-        console.log('address: ' + address.toBase58());
-        // tslint:disable-next-line:no-console
-        console.log('enc2: ' + enc2.key);
+        const decrypt = scrypt.decryptWithCtr(encrypt, '123456', address);
+        expect(decrypt).toEqual(privateKey.key);
     });
 
     test('test_enc_mnemonic', () => {
-        // const password = '123456';
-        // const account = new Account();
-        // // generate mnemnic
-        // const mnemonic = bip39.generateMnemonic();
-        // const mneHex = utils.str2hexstr(mnemonic.split(' ').join('0'));
-        // console.log('mne: ' + mnemonic);
-        // // generate seed
-        // const seed = bip39.mnemonicToSeedHex(mnemonic);
-        // // generate privateKey
-        // const pri = seed.substr(0, 64);
-        // const privateKey = new PrivateKey(pri);
-        // account.create(privateKey, password, '');
-        // const encMne = scrypt.encrypt(mneHex, account.publicKey, password);
-        // console.log('encMne: ' + encMne);
-
-        // const decMneHex = scrypt.decrypt(encMne, '123456', account.address);
-        // const decMne = utils.hexstr2str(decMneHex);
-        // const decMneStr = decMne.split('0').join(' ');
-        // console.log('decMne: ' + decMne );
-        // expect(decMneStr).toEqual(mnemonic);
-
-        // console.log(bip39.entropyToMnemonic('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07'))
         const salt = ab2hexstring(secureRandom(16));
         const mnemonic = 'doll remember harbor resource desert curious fatigue nature arrest fix nation rhythm';
         const mnemonicHex = utils.str2hexstr(mnemonic);
@@ -115,6 +54,7 @@ describe('test scrypt', () => {
         const encMne = scrypt.encryptWithGcm(
             mnemonicHex, address, salt, password);
         const decMneHex = scrypt.decryptWithGcm(encMne, address, salt, '123456');
+        // tslint:disable:no-console
         console.log('privateKey: ' + privateKey.key);
         console.log('encMne: ' + encMne);
 
@@ -140,41 +80,19 @@ describe('test scrypt', () => {
 
     });
 
-    test('test_ecb', () => {
-        const enc = '6PYNHtaZ5aNhq8JXhnhMg9qtyfdauGLqftxDz1o6RiSTPWYhHTAFkiVXKR';
-        const dec = scrypt.decryptWithEcb(enc, '123456');
-        const decPri = new PrivateKey(dec);
-        const decPub = decPri.getPublicKey();
-        scrypt.checkEcbDecrypted(enc, dec, decPub.serializeHex());
-    });
-
     test('test_gcm', () => {
-        // const salt = ab2hexstring(secureRandom(16));
-        // const pri = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07');
-        // const pub = pri.getPublicKey();
-        // const address = Address.fromPubKey(pub);
+        const salt = ab2hexstring(secureRandom(16));
+        const pri = new PrivateKey('40b6b5a45bc3ba6bd4f49b0c6b024d5c6851db4cdf1a99c2c7adad9675170b07');
+        const pub = pri.getPublicKey();
+        const address = Address.fromPubKey(pub);
 
-        // const enc = scrypt.encryptWithGcm(pri.key, address, salt, '123456');
-        // console.log('enc: ' + JSON.stringify(enc));
+        const enc = scrypt.encryptWithGcm(pri.key, address, salt, '123456');
+        console.log('enc: ' + JSON.stringify(enc));
 
-        // const dec = scrypt.decryptWithGcm(enc, address, salt,  '123456');
-        // console.log('dec: ' + dec);
-        // expect(dec).toEqual(pri.key);
-        const params = {
-            cost: 16384,
-            blockSize: 8,
-            parallel: 8,
-            size: 64
-        };
-        const saltBase64 = 'q0uJFA3mLo0g0VMH9r1fFA==';
-        const salt = Buffer.from(saltBase64, 'base64').toString('base64');
-
-        console.log('salt: ' + salt);
-        // const address = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
-        // const key = 'S5Y5DnUF4YB+pMBswO/NEQcguBwoBXjL/N9179rvahvYSfYD7EgNYjmro0vI3L6y';
-        // const dec = scrypt.decryptWithGcm(key, address, salt, '123456', params);
-        // console.log('hex ' + salt);
-        // console.log('dec ' + dec);
+        const dec = scrypt.decryptWithGcm(enc, address, salt,  '123456');
+        console.log('dec: ' + dec);
+        expect(dec).toEqual(pri.key);
+        
 
     });
 

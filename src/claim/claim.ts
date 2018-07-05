@@ -151,10 +151,10 @@ export class Claim extends Message {
         await signTransactionAsync(tx, privateKey);
         const response = await client.sendRawTransaction(tx.serialize(), false, true);
 
-        // tslint:disable-next-line:no-console
-        console.log(response);
         const event = AttestNotifyEvent.deserialize(response);
-        return event.Result[0].States[0] === 'Push';
+        // tslint:disable-next-line:no-console
+        console.log(JSON.stringify(event));
+        return event.Result.Notify[0].States[0] === 'Push';
     }
 
     /**
@@ -182,7 +182,7 @@ export class Claim extends Message {
 
         const event = AttestNotifyEvent.deserialize(response);
 
-        return event.Result[0].States[0] === 'Push';
+        return event.Result.Notify[0].States[0] === 'Push';
     }
 
     /**
@@ -202,9 +202,9 @@ export class Claim extends Message {
 
         const response = await client.sendRawTransaction(tx.serialize(), true);
 
-        // tslint:disable-next-line:no-console
-        console.log('resp:', response);
         const result = GetStatusResponse.deserialize(response);
+        // tslint:disable-next-line:no-console
+        console.log(result);
 
         return result.status === Status.ATTESTED && result.issuerId === attesterId;
     }

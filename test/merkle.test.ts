@@ -61,13 +61,13 @@ describe('test merkle proofs', () => {
         expect(result).toBeTruthy();
     });
 
-    test('test verifyMerkleProof', async () => {
+    test('test verifyMerkleProof with wrong contractAddr', async () => {
         const contractAddr = '1234567890';
         const claimProof = await constructClaimProof(txHash, contractAddr);
         console.log(claimProof);
         const result = verifyClaimProof(claimProof.TxnHash, claimProof.MerkleRoot, claimProof.Nodes);
         console.log(result);
-        expect(result).toBeTruthy();
+        expect(result).toBeFalsy();
     });
 
     test('test getProofNodes', () => {
@@ -91,5 +91,6 @@ describe('test merkle proofs', () => {
         const proof = merkle.TargetHashes;
         const proofNodes = getProofNodes(leafIndex, treeSize, proof);
         console.log(proofNodes);
+        expect(proofNodes.length).toBeGreaterThan(0);
     });
 });

@@ -67,23 +67,7 @@ describe('test identity', () => {
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR);
         }
     });
-
-    test('test_create_with_userAgent', () => {
-        const pri = PrivateKey.random();
-        const a = Identity.create(pri, '123456', 'test');
-        const tx = buildRegisterOntidTx(a.ontid, pri.getPublicKey(), '0', '300000');
-        // user agent address
-        tx.payer = new Address('TA4pCAb4zUifHyxSx32dZRjTrnXtxEWKZr');
-        signTransaction(tx, pri);
-        const userAgent = 'http://192.168.50.121:9099/api/v1/ontpass/ontid/register';
-        axios.post(userAgent, {
-            OwnerOntId: a.ontid,
-            TxnStr: tx.serialize()
-        }).then( (res) => {
-            console.log(res.data);
-        });
-    });
-
+    
     test('test_userAgent_devicecode', async () => {
         const pri = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
         const a = Identity.create(pri, '123456', '');
