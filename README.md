@@ -27,7 +27,7 @@ npm install 'ontology-ts-sdk'
 Get into the 'ontology-ts-sdk' directory and run:
 
 ````
-npm run build
+npm run build:dev // or npm run build:prod
 ````
 
 You will get the packaged code under '/lib'
@@ -45,14 +45,15 @@ npm run test
 Modules library export by 'Ont'
 
 ```
-import {Wallet} from 'Ont'
+import {Wallet} from 'ontology-ts-sdk';
+var wallet = Wallet.create('test');
 ```
 
 #### Require
 
 ````
-var Ont = require 'Ont'
-var wallet = Ont.Wallet()
+var Ont = require('ontology-ts-sdk');
+var wallet = Ont.Wallet.create('test');
 ````
 
 #### Web require
