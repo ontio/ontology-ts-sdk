@@ -1,6 +1,6 @@
 {
-  "name": "ont-sdk-ts",
-  "version": "1.0.0",
+  "name": "ontology-ts-sdk",
+  "version": "0.9.0",
   "description": "",
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
@@ -8,7 +8,8 @@
     "test": "jest",
     "lint": "tslint --project ./",
     "build:dev": "cross-env NODE_ENV=development webpack --mode development --display-error-details --progress --color",
-    "build:prod": "cross-env NODE_ENV=production webpack --mode production --progress --color"
+    "build:prod": "cross-env NODE_ENV=production webpack --mode production --progress --color",
+    "prepublish": "npm run lint && npm run test && npm run build:dev"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -24,6 +25,19 @@
   },
   "author": "ontologyNetwork",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ontio/ontology-ts-sdk"
+  },
+  "keywords": [
+    "ontology",
+    "ont",
+    "typescript",
+    "sdk"
+  ],
+  "bugs": {
+    "url": "https://github.com/ontio/ontology-ts-sdk/issues"
+  },
   "devDependencies": {
     "@types/base-x": "^1.0.29",
     "@types/base64-url": "^2.2.0",
