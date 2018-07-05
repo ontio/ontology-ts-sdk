@@ -48,7 +48,7 @@ import { generateMnemonic,
     hexstr2str, isBase64, now, sendBackResult2Native, str2hexstr } from '../utils';
 import { Wallet } from '../wallet';
 // tslint:disable-next-line:no-var-requires
-const HDKey = require('hdkey');
+const HDKey = require('@ont-community/hdkey-secp256r1');
 
 // tslint:disable:no-unused-expression
 // tslint:disable:no-shadowed-variable
