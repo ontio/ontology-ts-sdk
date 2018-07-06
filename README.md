@@ -1,6 +1,6 @@
 
 <h1 align="center">TypeScript SDK For Ontology blockchain </h1>
-<h4 align="center">Version V1.0.0 </h4>
+<h4 align="center">Version V0.9.0 </h4>
 
 ## Overview
 
@@ -14,10 +14,13 @@ The project is a comprehensive TypeScript library for the Ontology blockchain. C
 ## Installation
 
 #### Download
+
 ```
 git clone 'https://github.com/ontio/ontology-ts-sdk.git'
 ```
+
 #### Install
+
 ````
 npm install 'ontology-ts-sdk'
 ````
@@ -42,7 +45,7 @@ npm run test
 
 #### Import
 
-Modules library export by 'Ont'
+Modules library export by 'ontology-ts-sdk'
 
 ```
 import {Wallet} from 'ontology-ts-sdk';
@@ -67,7 +70,7 @@ The browser.js file under the '/lib' folder need referenced to the page:
 The use of the code is required under the global namespace of Ont.
 
 ```
-var wallet = Ont.Wallet()
+var wallet = Ont.Wallet.create('test');
 ```
 
 # Contributing
