@@ -29,10 +29,12 @@ import { SDK } from './sdk/index';
 import AbiFunction from './smartcontract/abi/abiFunction';
 import AbiInfo from './smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from './smartcontract/abi/parameter';
+import Struct from './smartcontract/abi/struct';
 import * as OntAssetTxBuilder from './smartcontract/nativevm/ontAssetTxBuilder';
 import * as OntidContract from './smartcontract/nativevm/ontidContractTxBuilder';
 import * as Token from './smartcontract/nativevm/token';
 import { DDO, DDOAttribute } from './transaction/ddo';
+import * as ScriptBuilder from './transaction/scriptBuilder';
 import { Transaction } from './transaction/transaction';
 import * as TransactionBuilder from './transaction/transactionBuilder';
 import { TxSignature } from './transaction/txSignature';
@@ -64,6 +66,8 @@ class ONT {
     RpcClient: any;
     WebsocketClient: any;
     Crypto: any;
+    Struct: any;
+    ScriptBuilder: any;
 
     constructor() {
         this.Account = Account;
@@ -90,6 +94,8 @@ class ONT {
         this.RpcClient = RpcClient;
         this.WebsocketClient = WebsocketClient;
         this.Crypto = Crypto;
+        this.Struct = Struct;
+        this.ScriptBuilder = ScriptBuilder;
     }
     setNode(url: string) {
         this.CONST.TEST_NODE = url;
@@ -134,5 +140,7 @@ export {
     RestClient,
     RpcClient,
     WebsocketClient,
-    Crypto
+    Crypto,
+    Struct,
+    ScriptBuilder
 };

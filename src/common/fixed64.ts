@@ -26,7 +26,10 @@ export default class Fixed64 {
         let v = sr.read(8);
         // f.value = hexstr2str(v)
         v = reverseHex(v);
-        f.value = new BigNumber(v).toString();
+        while (v.substr(0, 2) === '00' ) {
+            v = v.substring(2);
+        }
+        f.value = new BigNumber(v, 16).toString();
         return f;
     }
 
