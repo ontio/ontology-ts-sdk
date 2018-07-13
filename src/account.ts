@@ -21,6 +21,15 @@ import { ScryptParams } from './scrypt';
 import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
 export class Account {
+    /**
+     * Import account
+     * @param label Account's label
+     * @param encryptedPrivateKey Encrypted private key
+     * @param password User's password to decrypt private key
+     * @param address Account's address
+     * @param saltBase64 Salt to decrypt
+     * @param params Params used to decrypt
+     */
     static importAccount(
         label: string ,
         encryptedPrivateKey: PrivateKey,
@@ -56,7 +65,7 @@ export class Account {
      *
      * The account does not need to be registered on blockchain.
      *
-     * @param privateKey Private key associated with the identity
+     * @param privateKey Private key associated with the account
      * @param password Password use to encrypt the private key
      * @param label Custom label
      * @param params Optional scrypt params

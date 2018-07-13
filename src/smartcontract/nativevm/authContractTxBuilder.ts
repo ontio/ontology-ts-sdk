@@ -24,11 +24,19 @@ import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 import { Transaction } from './../../transaction/transaction';
 
+/**
+ * Address of auth contract.
+ */
 export const AUTH_CONTRACT = '0000000000000000000000000000000000000006';
 const contractAddress = new Address(AUTH_CONTRACT);
 
-/* TODO : Test */
-
+/**
+ * Creates transaction that initialize the admin of some contract.
+ * @param adminOntId Admin's ONT ID
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ */
 export function makeInitContractAdminTx(
     adminOntId: string,
     payer: Address,
@@ -48,9 +56,9 @@ export function makeInitContractAdminTx(
  * @param contractAddr Uer's contract address
  * @param newAdminOntid New admin's ONT ID. This id must be registered.
  * @param keyNo Original admin's public key id. Use this pk to varify tx.
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeTransferAuthTx(
     contractAddr: Address,
@@ -79,9 +87,9 @@ export function makeTransferAuthTx(
  * @param callerOntId caller's ONT ID.This id must be registered.
  * @param funcName the function to call
  * @param keyNo publicKey's id, use this pk to varify tx
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeVerifyTokenTx(
     contractAddr: Address,
@@ -111,9 +119,9 @@ export function makeVerifyTokenTx(
  * @param role role name
  * @param funcNames array of function name
  * @param keyNo publicKey's id, use the pk to varify tx
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeAssignFuncsToRoleTx(
     contractAddr: Address,
@@ -148,9 +156,9 @@ export function makeAssignFuncsToRoleTx(
  * @param role role's name
  * @param ontIds array of ONT ID
  * @param keyNo admin's pk id.use to varify tx.
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeAssignOntIdsToRoleTx(
     contractAddr: Address,
@@ -190,10 +198,10 @@ export function makeAssignOntIdsToRoleTx(
  * @param role role name
  * @param period time of delegate period in second
  * @param level = 1 for now.
- * @param keyNo
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param keyNo The number of user's publick in the DDO.
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeDelegateRoleTx(
     contractAddr: Address,
@@ -229,10 +237,10 @@ export function makeDelegateRoleTx(
  * @param initiator ONT ID of role's owner.This id must be registered.
  * @param delegate ONT ID of role's agent.This id must be registered.
  * @param role role's name
- * @param keyNo
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param keyNo The number of user's public key in the DDO
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeWithdrawRoleTx(
     contractAddr: Address,

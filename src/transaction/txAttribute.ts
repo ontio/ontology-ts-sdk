@@ -30,6 +30,7 @@ function isValidAttributeType(usage: TransactionAttributeUsage): boolean {
 }
 
 /**
+ * @deprecated
  * TransactionAttribute
  * @property {number} usage - Identifying byte
  * @property {string} data - Data

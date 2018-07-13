@@ -114,8 +114,11 @@ describe('test ONT ID contract', () => {
     }, 10000);
 
     test('testDDOTx', async () => {
-        const tx = buildGetDDOTx(ontid5);
+        const tx = buildGetDDOTx('did:ont:ALgLSUboyCssgwdqZkqKaE6zRdpXYJSukt');
         const response = await restClient.sendRawTransaction(tx.serialize(), true);
+        console.log(response);
+        const ddo = DDO.deserialize(response.Result.Result);
+        console.log(ddo);
     }, 10000);
 
     test('testRegIdWithAttributes', async () => {

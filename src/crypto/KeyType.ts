@@ -19,7 +19,7 @@
 import { SignatureScheme } from './SignatureScheme';
 
 /**
- * Type of key.
+ * Type of key. ECDSA is the default one to use.
  */
 export class KeyType {
     static values: KeyType[] = [];

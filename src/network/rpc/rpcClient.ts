@@ -21,17 +21,31 @@ import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
 import { ERROR_CODE } from '../../error';
 
+/**
+ * Wrapper class for RPC apis.
+ */
 export default class RpcClient {
+    /**
+     * Url of the blockchain node
+     */
     url: string;
 
     constructor( url ?: string ) {
         this.url = url || TEST_ONT_URL.RPC_URL;
     }
 
+    /**
+     * Get the current blockchain node url.
+     */
     getUrl() {
         return this.url;
     }
 
+    /**
+     * Make request base on method and parameters
+     * @param method Method's name
+     * @param params Parameters
+     */
     makeRequest(method: string, ...params: any[]) {
         const request = {
             jsonrpc: '2.0',
@@ -43,7 +57,12 @@ export default class RpcClient {
         return request;
     }
 
-    getBalance(address: Address) {
+    /**
+     * Get the balance of some address.
+     * The result contains ONT and ONG.
+     * @param address Address
+     */
+    getBalance(address: Address): Promise<any> {
         const req = this.makeRequest('getbalance', address.toBase58());
 
         return axios.post(this.url, req).then((res) => {
@@ -51,7 +70,12 @@ export default class RpcClient {
         });
     }
 
-    sendRawTransaction(data: string, preExec: boolean = false) {
+    /**
+     * Send ran transaction to blockchain.
+     * @param data Hex encoded data.
+     * @param preExec Decides if it is a pre-execute transaction.
+     */
+    sendRawTransaction(data: string, preExec: boolean = false): Promise<any> {
         let req;
 
         if (preExec) {
@@ -65,7 +89,12 @@ export default class RpcClient {
         });
     }
 
-    getRawTransaction(txHash: string) {
+    /**
+     * Get raw transaction by transaction hash.
+     * The result is hex encoded string.
+     * @param txHash Reversed transaction hash
+     */
+    getRawTransaction(txHash: string): Promise<any> {
         const req = this.makeRequest('getrawtransaction', txHash);
 
         return axios.post(this.url, req).then((res) => {
@@ -73,7 +102,12 @@ export default class RpcClient {
         });
     }
 
-    getRawTransactionJson(txHash: string) {
+    /**
+     * Get transaction info by transaction hash.
+     * The result is json.
+     * @param txHash Reversed transaction hash.
+     */
+    getRawTransactionJson(txHash: string): Promise<any> {
         const req = this.makeRequest('getrawtransaction', txHash, 1);
 
         return axios.post(this.url, req).then((res) => {
@@ -81,7 +115,11 @@ export default class RpcClient {
         });
     }
 
-    getGenerateBlockTime() {
+    /**
+     * Get the generation time for each block.
+     * If the blockchain node runs in vbft, the result is null cause the time is not fixed.
+     */
+    getGenerateBlockTime(): Promise<any> {
         const req = this.makeRequest('getgenerateblocktime');
 
         return axios.post(this.url, req).then((res) => {
@@ -89,7 +127,10 @@ export default class RpcClient {
         });
     }
 
-    getNodeCount() {
+    /**
+     * Get the nodes count.
+     */
+    getNodeCount(): Promise<any> {
         const req = this.makeRequest('getconnectioncount');
 
         return axios.post(this.url, req).then((res) => {
@@ -97,7 +138,10 @@ export default class RpcClient {
         });
     }
 
-    getBlockHeight() {
+    /**
+     * Get the current block height.
+     */
+    getBlockHeight(): Promise<any> {
         const req = this.makeRequest('getblockcount');
 
         return axios.post(this.url, req).then((res) => {
@@ -105,7 +149,10 @@ export default class RpcClient {
         });
     }
 
-    getBlockCount() {
+    /**
+     * Get the all blocks count.
+     */
+    getBlockCount(): Promise<any> {
         const req = this.makeRequest('getblockcount');
 
         return axios.post(this.url, req).then((res) => {
@@ -113,8 +160,12 @@ export default class RpcClient {
         });
     }
 
-    // get by block height or block hash
-    getBlockJson(value: string | number) {
+    /**
+     * Get block info by block's height or hash.
+     * The result is json.
+     * @param value Block's hash or height
+     */
+    getBlockJson(value: string | number): Promise<any> {
         const req = this.makeRequest('getblock', value, 1);
 
         return axios.post(this.url, req).then((res) => {
@@ -122,7 +173,12 @@ export default class RpcClient {
         });
     }
 
-    getContract(hash: string) {
+    /**
+     * Get contract info by contract' code hash.
+     * The result is hex encoded string.
+     * @param hash Contract's code hash.
+     */
+    getContract(hash: string): Promise<any> {
         const req = this.makeRequest('getcontractstate', hash);
 
         return axios.post(this.url, req).then((res) => {
@@ -130,7 +186,12 @@ export default class RpcClient {
         });
     }
 
-    getContractJson(codeHash: string) {
+    /**
+     * Get contract info by contract's code hash.
+     * The result is json.
+     * @param codeHash Contract's code hash.
+     */
+    getContractJson(codeHash: string): Promise<any> {
         const req = this.makeRequest('getcontractstate', codeHash, 1);
 
         return axios.post(this.url, req).then((res) => {
@@ -138,8 +199,13 @@ export default class RpcClient {
         });
     }
 
-    // get by block height or block hash
-    getBlock(value: string | number) {
+    /**
+     * Get block info by block's height or hash.
+     * The result is hex encoded string.
+     *
+     * @param value Block's height or hash
+     */
+    getBlock(value: string | number): Promise<any> {
         const req = this.makeRequest('getblock', value);
 
         return axios.post(this.url, req).then((res) => {
@@ -147,7 +213,14 @@ export default class RpcClient {
         });
     }
 
-    getSmartCodeEvent(value: string | number) {
+    /**
+     * Get smart contract event.
+     * If parameter is transaction's hash, the result is the event of that transaction.
+     * If parameter is block's height, the result is all the events of that block.
+     *
+     * @param value Transaction's hash or block's height
+     */
+    getSmartCodeEvent(value: string | number): Promise<any> {
         const req = this.makeRequest('getsmartcodeevent', value);
 
         return axios.post(this.url, req).then((res) => {
@@ -155,7 +228,11 @@ export default class RpcClient {
         });
     }
 
-    getBlockHeightByTxHash(txHash: string) {
+    /**
+     * Get block height by transaction hash
+     * @param txHash Reversed transaction hash
+     */
+    getBlockHeightByTxHash(txHash: string): Promise<any> {
         const req = this.makeRequest('getblockheightbytxhash', txHash);
 
         return axios.post(this.url, req).then((res) => {
@@ -163,7 +240,12 @@ export default class RpcClient {
         });
     }
 
-    getStorage(codeHash: string, key: string) {
+    /**
+     * Get stored value in smart contract by contract's code hash and the key.
+     * @param codeHash Contract's code hash
+     * @param key Key of stored value
+     */
+    getStorage(codeHash: string, key: string): Promise<any> {
         const req = this.makeRequest('getstorage', codeHash, key);
 
         // tslint:disable-next-line:no-console
@@ -174,7 +256,11 @@ export default class RpcClient {
         });
     }
 
-    getMerkleProof(hash: string) {
+    /**
+     * Get merkle proof by transaction hash.
+     * @param hash Reversed transaction hash
+     */
+    getMerkleProof(hash: string): Promise<any> {
         const req = this.makeRequest('getmerkleproof', hash);
 
         // tslint:disable-next-line:no-console
@@ -187,7 +273,13 @@ export default class RpcClient {
         });
     }
 
-    getAllowance(asset: string, from: Address, to: Address) {
+    /**
+     * Get allowanece
+     * @param asset Asset's type.Only ONT and ONG supported.
+     * @param from Address of allowance's sender.
+     * @param to Address of allowance's receiver.
+     */
+    getAllowance(asset: string, from: Address, to: Address): Promise<any> {
         if (asset !== 'ont' && asset !== 'ong') {
             throw ERROR_CODE.INVALID_PARAMS;
         }

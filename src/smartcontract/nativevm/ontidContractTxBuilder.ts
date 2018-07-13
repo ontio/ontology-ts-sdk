@@ -23,8 +23,14 @@ import { num2hexstring, str2hexstr } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
+/**
+ * Address of ONT ID contract
+ */
 export const ONTID_CONTRACT = '0000000000000000000000000000000000000003';
 
+/**
+ * Method names in ONT ID contract
+ */
 const ONTID_METHOD  = {
     regIDWithPublicKey: 'regIDWithPublicKey',
     regIDWithAttributes: 'regIDWithAttributes',
@@ -89,7 +95,7 @@ export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
  * Registers Identity with initial attributes.
  *
  * @param ontid User's ONT ID
- * @param attributes User's serialized attributes
+ * @param attributes Array of DDOAttributes
  * @param publicKey User's public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
@@ -140,7 +146,7 @@ export function buildRegIdWithAttributes(
  * Adds attributes to ONT ID.
  *
  * @param ontid User's ONT ID
- * @param attributes User's serialized attributes
+ * @param attributes Array of DDOAttributes
  * @param publicKey User's public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
@@ -236,7 +242,7 @@ export function buildGetAttributesTx(ontid: string) {
 }
 
 /**
- * Queries ONT ID Description Object of ONT ID.
+ * Queries Description Object of ONT ID(DDO).
  *
  * @param ontid User's ONT ID
  */
@@ -294,7 +300,7 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  userKey: 
 }
 
 /**
- * Revoked a public key from ONT ID.
+ * Revokes a public key from ONT ID.
  *
  * @param ontid User's ONT ID
  * @param pk2Remove Public key to be removed

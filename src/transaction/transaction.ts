@@ -18,7 +18,6 @@
 
 import * as cryptoJS from 'crypto-js';
 import Fixed64 from '../common/fixed64';
-import Uint256 from '../common/uint256';
 import { Address } from '../crypto/address';
 import { ab2hexstring, generateRandomArray, num2hexstring, StringReader } from '../utils';
 import DeployCode from './payload/deployCode';
@@ -45,6 +44,9 @@ export const TxName = {
     Vote: 'Vote'
 };
 
+/**
+ * @deprecated. Transaction fee.
+ */
 export class Fee {
     static deserialize(sr: StringReader): Fee {
         const fee = new Fee();
@@ -113,26 +115,50 @@ export class Transaction {
         return tx;
     }
 
+    /**
+     * Transaction type
+     */
     type: TxType = 0xd1;
 
+    /**
+     * Version of transaction
+     */
     version: number = 0x00;
 
+    /**
+     * Payload of transaction
+     */
     payload: Payload;
 
-    // hexstring for uint32 = 4bytes
+    /**
+     * Random hex string. 4 bytes.
+     */
     nonce: string;
 
+    /**
+     * @deprecated
+     */
     txAttributes: TransactionAttribute[] = [];
 
+    /**
+     * Gas price
+     */
     gasPrice: Fixed64;
 
+    /**
+     * Gas limit
+     */
     gasLimit: Fixed64;
 
+    /**
+     * Address to pay for gas
+     */
     payer: Address;
 
+    /**
+     * Array of signatures
+     */
     sigs: TxSignature[] = [];
-
-    hash: Uint256;
 
     constructor() {
         this.nonce = ab2hexstring(generateRandomArray(4));
@@ -144,6 +170,10 @@ export class Transaction {
         this.payer = new Address('0000000000000000000000000000000000000000');
     }
 
+    /**
+     * Serialize transaction to hex string
+     * The result is used to send to blockchain.
+     */
     serialize(): string {
         const unsigned = this.serializeUnsignedData();
         const signed = this.serializeSignedData();
@@ -151,6 +181,9 @@ export class Transaction {
         return unsigned + signed;
     }
 
+    /**
+     * Serialize transaction data exclueds signatures
+     */
     serializeUnsignedData() {
         let result = '';
         result += num2hexstring(this.version);
@@ -182,6 +215,9 @@ export class Transaction {
         return result;
     }
 
+    /**
+     * Serialize signatures
+     */
     serializeSignedData() {
         let result = '';
         // programs
@@ -194,6 +230,9 @@ export class Transaction {
         return result;
     }
 
+    /**
+     * Get the hash of transaction
+     */
     getHash() {
         const data = this.serializeUnsignedData();
 

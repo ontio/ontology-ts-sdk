@@ -22,9 +22,23 @@ import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
 import UrlConsts from './urlConsts';
 
+/**
+ * Wrapper class for restful api.
+ */
 export default class RestClient {
+    /**
+     * Url of the blockchain node
+     */
     url: string;
+
+    /**
+     * Version of restful api
+     */
     version: string = 'v1.0.0';
+
+    /**
+     * Action name of the request
+     */
     action: string = 'sendrawtransaction';
 
     constructor(url ?: string) {
@@ -34,6 +48,10 @@ export default class RestClient {
         }
     }
 
+    /**
+     * Concat params as the query part
+     * @param params
+     */
     concatParams(params: Map<string, string>) {
         let result = '';
         if (params.size === 0) {
@@ -51,11 +69,20 @@ export default class RestClient {
         return '?' + result.substr(1);
     }
 
+    /**
+     * Get the current blockchain node url
+     */
     getUrl() {
         return this.url;
     }
 
-    sendRawTransaction(hexData: string, preExec: boolean = false, userId ?: string) {
+    /**
+     * To send raw transaction to blockchian
+     * @param hexData Hex encoded data
+     * @param preExec Decides if it is a pre-execute transaction
+     * @param userId User's id
+     */
+    sendRawTransaction(hexData: string, preExec: boolean = false, userId ?: string): Promise<any> {
         const param = new Map<string, string>();
 
         if (userId) {
@@ -80,7 +107,23 @@ export default class RestClient {
         });
     }
 
-    getRawTransaction(txHash: string) {
+    /**
+     * Get raw transaction by transaction hash.
+     * The result is hex encoded transaction.
+     * @param txHash Transactin hash.Always use the reversed value of transaction hash to query.
+     *
+     * @example
+     *
+     * ```typescript
+     * import { utils, Transaction } from 'ontology-ts-sdk';
+     * const txHash = tx.getHash(); // tx is an instance of Transaction
+     * restClient.getRawTransaction(utils.reverseHex(txHash)).then(res => {
+     *   const tx = Transaction.deserialize(res.Result)
+     * })
+     *
+     * ````
+     */
+    getRawTransaction(txHash: string): Promise<any> {
         const param = new Map<string, string>();
 
         param.set('raw', '1');
@@ -91,37 +134,57 @@ export default class RestClient {
         });
     }
 
-    getRawTransactionJson(txHash: string) {
-        const url = this.url + UrlConsts.Url_get_transaction + txHash;
+    /**
+     * Get transaction by transaction hash.
+     * The result is transaction in json.
+     * @param txHash Reversed transaction hash
+     */
+    getRawTransactionJson(txHash: string): Promise<any> {
+        const param = new Map<string, string>();
+        param.set('raw', '0');
+        let url = this.url + UrlConsts.Url_get_transaction + txHash;
+        url += this.concatParams(param);
         return axios.get(url).then((res) => {
             return res.data;
         });
     }
 
-    // For vbft, the result is null
-    getGenerateBlockTime() {
+    /**
+     * Get the generation time for each block.
+     * If the blockchain node runs in vbft, the result is null.
+     */
+    getGenerateBlockTime(): Promise<any> {
         const url = this.url + UrlConsts.Url_get_generate_block_time;
         return axios.get(url).then((res) => {
             return res.data;
         });
     }
 
-    getNodeCount() {
+    /**
+     * Get the nodes count of the blockchain.
+     */
+    getNodeCount(): Promise<any> {
         const url = this.url + UrlConsts.Url_get_node_count;
         return axios.get(url).then((res) => {
             return res.data;
         });
     }
 
-    getBlockHeight() {
+    /**
+     * Get the current height of the blockchain.
+     */
+    getBlockHeight(): Promise<any> {
         const url = this.url + UrlConsts.Url_get_block_height;
         return axios.get(url).then((res) => {
             return res.data;
         });
     }
 
-        // get block by block height or block hash
-    getBlock(value: number | string) {
+    /**
+     * Get block by block's height or hash
+     * @param value Block height or block hash
+     */
+    getBlock(value: number | string): Promise<any> {
         const params = new Map<string, string>();
         params.set('raw', '1');
 
@@ -138,7 +201,11 @@ export default class RestClient {
         });
     }
 
-    getContract(codeHash: string) {
+    /**
+     * Get contract info by code hash.The result is hex encoded string.
+     * @param codeHash Code hash of contract.The value is reversed contract address.
+     */
+    getContract(codeHash: string): Promise<any> {
         const params = new Map<string, string>();
         params.set('raw', '1');
 
@@ -151,14 +218,27 @@ export default class RestClient {
         });
     }
 
-    getContractJson(codeHash: string) {
-        const url = this.url + UrlConsts.Url_get_contract_state + codeHash;
+    /**
+     * Get contract info by code hash. The result is json.
+     * @param codeHash Code hash of contract.
+     */
+    getContractJson(codeHash: string): Promise<any> {
+        const params = new Map<string, string>();
+        params.set('raw', '0');
+        let url = this.url + UrlConsts.Url_get_contract_state + codeHash;
+        url += this.concatParams(params);
         return axios.get(url).then((res) => {
             return res.data;
         });
     }
 
-    getSmartCodeEvent(value: string | number) {
+    /**
+     * Get smart contract event by Block height or reversed transaction hash.
+     * If the parameter is block height, the result includes all the transaction event of that block;
+     * If the parameter is transaction hash, the result is the event of that transaction.
+     * @param value Block height or reversed transaction hash
+     */
+    getSmartCodeEvent(value: string | number): Promise<any> {
         let url = '';
         if (typeof value === 'string') {
             url = this.url + UrlConsts.Url_get_smartcodeevent_by_txhash + value;
@@ -170,21 +250,34 @@ export default class RestClient {
         });
     }
 
-    getBlockHeightByTxHash(hash: string) {
+    /**
+     * Get the block height by reversed transaction hash.
+     * @param hash Reversed transaction hash.
+     */
+    getBlockHeightByTxHash(hash: string): Promise<any> {
         const url = this.url + UrlConsts.Url_get_block_height_by_txhash + hash;
         return axios.get(url).then((res) => {
             return res.data;
         });
     }
 
-    getStorage(codeHash: string, key: string) {
+    /**
+     * Get the stored value in smart contract by the code hash and key.
+     * @param codeHash Code hash of the smart contract
+     * @param key Key of the stored value
+     */
+    getStorage(codeHash: string, key: string): Promise<any> {
         const url = this.url + UrlConsts.Url_get_storage + codeHash + '/' + key;
         return axios.get(url).then((res) => {
             return res.data;
         });
     }
 
-    getMerkleProof(hash: string) {
+    /**
+     * Get the merkle proof by transaction hash
+     * @param hash Reversed transaction hash
+     */
+    getMerkleProof(hash: string): Promise<any> {
         const url = this.url + UrlConsts.Url_get_merkleproof + hash;
 
             // tslint:disable-next-line:no-console
@@ -195,14 +288,23 @@ export default class RestClient {
         });
     }
 
-    getBalance(address: Address) {
+    /**
+     * Get balance of some address
+     * The result contains balance of ONT and ONG
+     * @param address Address
+     */
+    getBalance(address: Address): Promise<any> {
         const url = this.url + UrlConsts.Url_get_account_balance + address.toBase58();
         return axios.get(url).then((res) => {
             return res.data;
         });
     }
 
-    getBlockJson(value: number | string) {
+    /**
+     * Get block info by block's height or hash.
+     * @param value Block's height or hash
+     */
+    getBlockJson(value: number | string): Promise<any> {
         let url = '';
         if (typeof value === 'number') {
             url = this.url + UrlConsts.Url_get_block_by_height + value;
@@ -215,7 +317,13 @@ export default class RestClient {
         });
     }
 
-    getAllowance(asset: string, from: Address, to: Address) {
+    /**
+     * Get allowance by address
+     * @param asset Asset type. Only ONT or ONG.
+     * @param from Address of allowance sender.
+     * @param to Address of allowance receiver.
+     */
+    getAllowance(asset: string, from: Address, to: Address): Promise<any> {
         asset = asset.toLowerCase();
         if (asset !== 'ont' && asset !== 'ong') {
             throw ERROR_CODE.INVALID_PARAMS;

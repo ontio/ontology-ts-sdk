@@ -34,6 +34,10 @@ export class Signature {
         );
     }
 
+    /**
+     * Deserializes PgpSignature to Signature.
+     * @param pgpSignature PgpSignature
+     */
     static deserializePgp(pgpSignature: PgpSignature): Signature {
         const value = new Buffer(pgpSignature.Value, 'base64').toString('hex');
         const deserialzedValue = Signature.deserializeHex(value).value;

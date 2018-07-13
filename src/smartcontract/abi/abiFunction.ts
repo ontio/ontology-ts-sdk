@@ -18,6 +18,9 @@
 
 import { Parameter } from './parameter';
 
+/**
+ * Describes the Abi function
+ */
 export default class AbiFunction {
     name: string;
     returntype: string;

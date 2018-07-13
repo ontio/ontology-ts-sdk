@@ -67,7 +67,7 @@ describe('test identity', () => {
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR);
         }
     });
-    
+
     test('test_userAgent_devicecode', async () => {
         const pri = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
         const a = Identity.create(pri, '123456', '');

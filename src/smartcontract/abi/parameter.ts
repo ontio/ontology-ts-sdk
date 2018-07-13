@@ -41,6 +41,9 @@ export enum ParameterTypeVal {
     Map = 0x82
 }
 
+/**
+ * Decribes the parameter.
+ */
 export class Parameter {
     public name: string;
     public type: ParameterType;

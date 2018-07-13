@@ -17,9 +17,9 @@
  */
 
 import { Account } from '../src/account';
+import { extractKeyId, extractOntId, Message, retrievePublicKey } from '../src/claim/message';
 import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
-import { extractKeyId, extractOntId, Message, retrievePublicKey } from '../src/message';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';

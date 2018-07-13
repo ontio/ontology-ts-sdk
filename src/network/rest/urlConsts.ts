@@ -16,6 +16,9 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * Restful api
+ */
 export default {
     Url_send_transaction : '/api/v1/transaction',
     Url_get_transaction : '/api/v1/transaction/',

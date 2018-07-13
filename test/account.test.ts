@@ -36,6 +36,8 @@ describe('test account', () => {
 
     beforeAll(() => {
         privateKey = PrivateKey.random();
+        // console.log(privateKey.serializeJson())
+        console.log(privateKey.serializeWIF());
     });
 
     test('test create', () => {
@@ -65,7 +67,6 @@ describe('test account', () => {
         expect(a.label).toBe('mickey');
 
     });
-
     test('test import  with incorrect password', () => {
         try {
             const a = Account.importAccount('mickey', encryptedPrivateKey, '1234567', account.address, account.salt);

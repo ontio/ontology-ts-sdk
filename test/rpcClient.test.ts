@@ -75,6 +75,13 @@ describe('test rpc client', () => {
 
     test('test getRawTransaction', async () => {
         const res = await rpcClient.getRawTransaction(txHash);
+        console.log(res);
+        expect(res.desc).toEqual('SUCCESS');
+    });
+
+    test('test getRawTransactionJson', async () => {
+        const res = await rpcClient.getRawTransactionJson(txHash);
+        console.log(res);
         expect(res.desc).toEqual('SUCCESS');
     });
 

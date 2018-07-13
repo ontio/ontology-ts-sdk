@@ -17,23 +17,12 @@
  */
 import { Account } from './account';
 import { DEFAULT_SCRYPT } from './consts';
-import { PrivateKey } from './crypto';
 import { Identity } from './identity';
 
+/**
+ * Class to manage Accounts and Identity
+ */
 export class Wallet {
-
-    static createIdentityWallet(password: string, name?: string) {
-        if (!name) {
-            name = 'Default name';
-        }
-        const wallet = Wallet.create(name);
-        const privateKey = PrivateKey.random();
-        const identity = Identity.create(privateKey, password, name);
-
-        wallet.defaultOntid = identity.ontid;
-        wallet.addIdentity(identity);
-        return wallet;
-    }
 
     static parseJson(json: string): Wallet {
         return Wallet.parseJsonObj(JSON.parse(json));
@@ -65,7 +54,16 @@ export class Wallet {
         return wallet;
     }
 
-    // create a empty wallet
+    /**
+     * @example
+     * ```typescript
+     *
+     * import { Wallet } from 'ontology-ts-sdk';
+     * const wallet = Wallet.create('test');
+     * ```
+     *
+     * @param name Wallet's name
+     */
     static create(name: string): Wallet {
         const wallet = new Wallet();
         wallet.name = name;

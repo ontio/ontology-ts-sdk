@@ -18,7 +18,6 @@
 
 import * as b64 from 'base64-url';
 import { Address, PrivateKey, Signature, SignatureScheme } from '../crypto';
-import { Message, Metadata } from '../message';
 import RestClient from '../network/rest/restClient';
 import { WebsocketClient } from '../network/websocket/websocketClient';
 import {
@@ -30,6 +29,7 @@ import { signTransactionAsync } from '../transaction/transactionBuilder';
 import { hexstr2str, StringReader } from '../utils';
 import { AttestNotifyEvent } from './attestNotifyEvent';
 import { ClaimProof } from './claimProof';
+import { Message, Metadata } from './message';
 
 /**
  * Type of revocation.

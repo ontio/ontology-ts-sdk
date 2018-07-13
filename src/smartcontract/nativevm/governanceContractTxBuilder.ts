@@ -39,10 +39,10 @@ const contractAddress = new Address(GOVERNANCE_CONTRACT);
  * @param peerPubKey public key of user's peer
  * @param userAddr user's address to pledge ONT&ONG. This address must have enough ONT & ONG.
  * @param keyNo user's pk id
- * @param initPos
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param initPos Initial state
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeRegisterCandidateTx(
     ontid: string,
@@ -65,6 +65,13 @@ export function makeRegisterCandidateTx(
                                      gasPrice, gasLimit, payer);
 }
 
+/**
+ * Creates transaction to approve candidate
+ * @param peerPubKey Public key of user's peer
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ */
 export function makeApproveCandidateTx(
     peerPubKey: string,
     payer: Address,
@@ -78,6 +85,13 @@ export function makeApproveCandidateTx(
                                      gasPrice, gasLimit, payer);
 }
 
+/**
+ * Creates transaction to reject candidate
+ * @param peerPubKey Public key of user's peer
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ */
 export function makeRejectCandidateTx(
     peerPubKey: string,
     payer: Address,
@@ -92,14 +106,15 @@ export function makeRejectCandidateTx(
 }
 
 /**
+ * Creates transaction to vote for some peers.
  * Can only vote for peers that with status 1 or 2
  * This tx needs signatures from userAddr and payer if these two address are not the same.
- * @param userAddr
- * @param peerPubKeys
- * @param posList
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param userAddr User's address
+ * @param peerPubKeys Public keys of peers that to be voted
+ * @param posList Array of token that to vote
+ * @param payer Address to pay for transaction's gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeVoteForPeerTx(
     userAddr: Address,
@@ -133,9 +148,9 @@ export function makeVoteForPeerTx(
  * @param userAddr user's address
  * @param peerPubKeys peer's pks
  * @param posList amount of ONT to unvote
- * @param payer
- * @param gasPrice
- * @param gasLimit
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
  */
 export function makeUnvoteForPeerTx(
     userAddr: Address,
@@ -195,6 +210,10 @@ export function makeWithdrawTx(
         gasPrice, gasLimit, payer);
 }
 
+/**
+ * Query all the peer's state. The result is a map.
+ * @param url Url of blockchain node
+ */
 export async function getPeerPoolMap(url?: string) {
     const restClient = new RestClient(url);
     const codeHash = contractAddress.toHexString();
@@ -215,7 +234,9 @@ export async function getPeerPoolMap(url?: string) {
     }
     return result;
 }
-
+/**
+ * Use to store governance state.
+ */
 class GovernanceView {
     static deserialize(sr: StringReader): GovernanceView {
         const g = new GovernanceView();
@@ -237,6 +258,9 @@ class GovernanceView {
     }
 }
 
+/**
+ * Describs the peer's state in the pool.
+ */
 class PeerPoolItem {
     static deserialize(sr: StringReader): PeerPoolItem {
         const p = new PeerPoolItem();

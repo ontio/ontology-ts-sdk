@@ -20,9 +20,15 @@ import { BigNumber } from 'bignumber.js';
 import { ERROR_CODE } from './../error';
 import { reverseHex } from './../utils';
 
-/* big positive integer based on BigNumber */
 const SIZE = 8;
+/**
+ * Big positive integer base on BigNumber
+ */
 export default class BigInt {
+    /**
+     * Create BigInt from string
+     * @param hex Byte string value
+     */
     static fromHexstr(hex: string): BigInt {
         hex = reverseHex(hex);
         const bi = new BigNumber(hex, 16).toString();
@@ -39,6 +45,9 @@ export default class BigInt {
         this.value = value;
     }
 
+    /**
+     * Create hex string from BigInt
+     */
     toHexstr(): string {
         const bi = new BigNumber(this.value);
         let hex = bi.toString(16);

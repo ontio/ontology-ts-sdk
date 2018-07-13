@@ -18,11 +18,14 @@
 import axios from 'axios';
 import * as bip39 from 'bip39';
 import * as cryptoJS from 'crypto-js';
-import { ec as EC } from 'elliptic';
 import * as secureRandom from 'secure-random';
 import { WEBVIEW_SCHEME } from './consts';
 import { ERROR_CODE } from './error';
-const curve = new EC('p256');
+
+/**
+ * Turn hex string into array buffer
+ * @param str hex string
+ */
 export function hexstring2ab(str: string): number[] {
     const result = [];
 
@@ -34,6 +37,10 @@ export function hexstring2ab(str: string): number[] {
     return result;
 }
 
+/**
+ * Turn array buffer into hex string
+ * @param arr Array like value
+ */
 export function ab2hexstring(arr: any): string {
     let result: string = '';
     const uint8Arr: Uint8Array = new Uint8Array(arr);
@@ -49,12 +56,18 @@ export function ab2hexstring(arr: any): string {
     return result;
 }
 
-// Turn ArrayBuffer or array-like oject into normal string
+ /**
+  * Turn ArrayBuffer or array-like oject into normal string
+  * @param buf
+  */
 export function ab2str(buf: ArrayBuffer | number[]): string {
     return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
-// Turn normal string into ArrayBuffer
+/**
+ * Turn normal string into ArrayBuffer
+ * @param str Normal string
+ */
 export function str2ab(str: string) {
     const buf = new ArrayBuffer(str.length); // 每个字符占用1个字节
     const bufView = new Uint8Array(buf);
@@ -64,15 +77,26 @@ export function str2ab(str: string) {
     return buf;
 }
 
+/**
+ * Turn normal string into hex string
+ * @param str Normal string
+ */
 export function str2hexstr(str: string) {
     return ab2hexstring(str2ab(str));
 }
 
+/**
+ * Turn hex string into normal string
+ * @param str Hex string
+ */
 export function hexstr2str(str: string) {
     return ab2str(hexstring2ab(str));
 }
 
-// return the length of bytes + bytes, 2 char as one byte
+/**
+ * return the (length of bytes) + bytes
+ * @param hex Hex string
+ */
 export function hex2VarBytes(hex: string) {
     let result = '';
     result += num2VarInt(hex.length / 2);
@@ -80,7 +104,10 @@ export function hex2VarBytes(hex: string) {
     return result;
 }
 
-// return the length of string(bytes) + string(bytes)
+/**
+ * return the length of string(bytes) + string(bytes)
+ * @param str Normal string
+ */
 export function str2VarBytes(str: string) {
     let result = '';
     const hex = str2hexstr(str);
@@ -90,11 +117,19 @@ export function str2VarBytes(str: string) {
     return result;
 }
 
-// return the byte of boolean value
+/**
+ * return the byte of boolean value
+ * @param v
+ */
 export function bool2VarByte(v: boolean) {
     return v ? '01' : '00';
 }
 
+/**
+ * Do xor operation with two strings
+ * @param str1 Hex string
+ * @param str2 Hex string
+ */
 export function hexXor(str1: string, str2: string): string {
     if (str1.length !== str2.length) {
         throw new Error('strings are disparate lengths');
@@ -267,23 +302,37 @@ export class StringReader {
         return len;
     }
 
+    /**
+     * Read Uint8
+     */
     readUint8() {
         return parseInt(reverseHex(this.read(1)), 16);
     }
 
-    /* read 2 bytes as uint16 in littleEndian */
+    /**
+     * read 2 bytes as uint16 in littleEndian
+     */
     readUint16() {
         return parseInt(reverseHex(this.read(2)), 16);
     }
 
+    /**
+     * Read 4 bytes as uint32 in littleEndian
+     */
     readUint32() {
         return parseInt(reverseHex(this.read(4)), 16);
     }
 
+    /**
+     * Read 4 bytes as int in littleEndian
+     */
     readInt() {
         return parseInt(reverseHex(this.read(4)), 16);
     }
 
+    /**
+     * Read 8 bytes as long in littleEndian
+     */
     readLong() {
         return parseInt(reverseHex(this.read(8)), 16);
     }
@@ -409,28 +458,6 @@ export function varifyPositiveInt(v: number) {
         throw ERROR_CODE.INVALID_PARAMS;
     }
     return;
-}
-
-/**
- * For test, may remove in the futrue.
- * @param publicKey
- */
-export function getEncodedPublicKey(publicKey: string) {
-    const publicKeyArray = hexstring2ab(publicKey);
-    if (publicKeyArray[64] % 2 === 1) {
-        return '03' + ab2hexstring(publicKeyArray.slice(1, 33));
-    } else {
-        return '02' + ab2hexstring(publicKeyArray.slice(1, 33));
-    }
-}
-
-/**
- * For test, may remove in the futrue.
- * @param publicKey
- */
-export function getUnencodedPublicKey(publicKey: string) {
-    const keyPair = curve.keyFromPublic(publicKey, 'hex');
-    return keyPair.getPublic().encode('hex');
 }
 
 export function isBase64(str: string): boolean {

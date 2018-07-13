@@ -1,6 +1,7 @@
 var path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 var nodeExternals = require('webpack-node-externals');
+var TypedocWebpackPlugin = require('typedoc-webpack-plugin');
 
 let common = {
   entry: './src/index.ts',
