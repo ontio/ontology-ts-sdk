@@ -19,6 +19,9 @@
 import AbiFunction from './abiFunction';
 import { Parameter } from './parameter';
 
+/**
+ * Decribes the Abi info.
+ */
 export default class AbiInfo {
     static parseJson(json: string): AbiInfo {
         const a = new AbiInfo();

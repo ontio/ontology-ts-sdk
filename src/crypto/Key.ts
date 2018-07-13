@@ -29,6 +29,10 @@ import { SignatureScheme } from './SignatureScheme';
  * Specific parameters for the key type.
  */
 export class KeyParameters {
+    /**
+     * Create KeyParameters from json.
+     * @param json JsonKeyParameters
+     */
     static deserializeJson(json: JsonKeyParameters): KeyParameters {
         return new KeyParameters(
         CurveLabel.fromLabel(json.curve)
@@ -40,6 +44,9 @@ export class KeyParameters {
         this.curve = curve;
     }
 
+    /**
+     * Serialize KeyParameters to json.
+     */
     serializeJson(): JsonKeyParameters {
         return {
             curve: this.curve.label

@@ -24,6 +24,10 @@ import { hexstr2str, str2VarBytes, StringReader } from '../utils';
  *
  */
 export class PublicKeyWithId {
+    /**
+     * Deserialize from hex string to PublicKeyWithId
+     * @param hexstr
+     */
     static deserialize(hexstr: string): PublicKeyWithId[] {
         const sr = new StringReader(hexstr);
 
@@ -49,6 +53,9 @@ export class PublicKeyWithId {
     pk: PublicKey;
 }
 
+/**
+ * Description attribute of ONT ID
+ */
 export class DDOAttribute {
     static deserialize(hexstr: string) {
         const sr = new StringReader(hexstr);
@@ -68,10 +75,22 @@ export class DDOAttribute {
         return result;
     }
 
+    /**
+     * Key of the attribute
+     */
     key: string;
+    /**
+     * Type of the attribute
+     */
     type: string;
+    /**
+     * Value of the attribute
+     */
     value: string;
 
+    /**
+     * Serialize DDO to hex string
+     */
     serialize(): string {
         let result = '';
         result += str2VarBytes(this.key);
@@ -80,7 +99,15 @@ export class DDOAttribute {
         return result;
     }
 }
+
+/**
+ * Description object of ONT ID
+ */
 export class DDO {
+    /**
+     * Deserialize from hex string to DDO
+     * @param hexstr Hex encoded string
+     */
     static deserialize(hexstr: string): DDO {
         const ss = new StringReader(hexstr);
 
@@ -103,7 +130,16 @@ export class DDO {
         return ddo;
     }
 
+    /**
+     * Array of public keys
+     */
     publicKeys: PublicKeyWithId[] = [];
+    /**
+     * Array of attributes
+     */
     attributes: DDOAttribute[] = [];
+    /**
+     * Recovery of DDO
+     */
     recovery: string = '';
 }

@@ -26,6 +26,9 @@ import { KeyType } from './KeyType';
 import { Signature } from './Signature';
 import { SignatureScheme } from './SignatureScheme';
 
+/**
+ * Class to manage the public key with some userful functions.
+ */
 export class PublicKey extends Key {
     /**
      * Creates PublicKey from Hex representation.
@@ -97,6 +100,12 @@ export class PublicKey extends Key {
         return result;
     }
 
+    /**
+     * For internal use.
+     * @param hash Message hash
+     * @param signature Hex encoded signature
+     * @param schema Signature scheme to use
+     */
     verifySignature(hash: string, signature: string, schema: SignatureScheme): boolean {
         switch (schema) {
         case SignatureScheme.ECDSAwithSHA224:

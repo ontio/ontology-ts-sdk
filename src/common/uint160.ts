@@ -18,7 +18,7 @@
 
 import { ab2hexstring, hex2VarBytes, hexstring2ab, StringReader } from '../utils';
 
-const UINT256SIZE = 20;
+const UINT160SIZE = 20;
 
 export default class Uint160 {
     static deserialize(sr: StringReader) {
@@ -39,7 +39,7 @@ export default class Uint160 {
     compareTo(o: Uint160) {
         const x = this.value;
         const y = o.value;
-        for (let i = UINT256SIZE - 1; i >= 0; i--) {
+        for (let i = UINT160SIZE - 1; i >= 0; i--) {
             if (x[i] > y[i]) {
                 return 1;
             }

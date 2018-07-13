@@ -25,6 +25,9 @@ import { PublicKey } from './crypto/PublicKey';
 import { ERROR_CODE } from './error';
 import { ab2hexstring, hexstring2ab, hexXor, StringReader } from './utils';
 
+/**
+ * Decribtes the structure of params for scrypt
+ */
 export interface ScryptParams {
     cost: number;
     blockSize: number;
@@ -58,6 +61,9 @@ function scrypt(keyphrase: string, addressHash: string, params: ScryptParams) {
     return new Buffer(derived);
 }
 
+/**
+ * Encrypt with aes-ctr
+ */
 export function encryptWithCtr(
     privateKey: string,
     publicKeyEncoded: string,
@@ -107,6 +113,7 @@ export function encryptWithCtr(
 }
 
 /**
+ * Decrypt with aes-ctr
  * @param encryptedKey encrypted private key
  * @param keyphrase user's password to encrypt private key
  * @param saltOrAddress 4 hex encoded bytes salt or Address object
@@ -215,6 +222,9 @@ export function checkCtrDecrypted(saltOrAddress: string | Address, publicKeyEnco
     // console.log( "wifKey: ", wifKey );
 }
 
+/**
+ * Encrypt with aes-ecb
+ */
 export function encryptWithEcb(
     privateKey: string,
     publicKeyEncoded: string,
@@ -246,6 +256,9 @@ export function encryptWithEcb(
     return Bs58check.encode(Buffer.from(assembled, 'hex'));
 }
 
+/**
+ * Decrypt with aes-ecb
+ */
 export function decryptWithEcb(
     encryptedKey: string,
     keyphrase: string,
@@ -307,6 +320,15 @@ export function checkEcbDecrypted(encryptedKey: string, decryptedKey: string, pu
     }
 }
 
+/**
+ * Encrypt with aes-gcm-256
+ * This is the default encryption algorithm for private key
+ * @param privateKey Private key to encpryt with
+ * @param address Adderss to encrypt with
+ * @param salt Salt to encrypt with
+ * @param keyphrase User's password
+ * @param scryptParams Optional params to encrypt
+ */
 export function encryptWithGcm(
     privateKey: string,
     address: Address,
@@ -333,6 +355,14 @@ export function encryptWithGcm(
     return result.toString('base64');
 }
 
+/**
+ * Decrypt with aes-256-gcm
+ * @param encrypted Encrypted private key
+ * @param address Address to decrypt with
+ * @param salt Salt to decrypt with
+ * @param keyphrase User's password
+ * @param scryptParams Optioanl params to decrypt with
+ */
 export function decryptWithGcm(
     // ciphertext: string,
     // authTag: string,

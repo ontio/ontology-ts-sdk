@@ -18,3 +18,5 @@ lib/
 
 /.DS_Store
 src/.DS_Store
+
+apidoc/

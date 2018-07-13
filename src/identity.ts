@@ -20,15 +20,30 @@ import { deserializeFromJson } from './crypto/PrivateKeyFactory';
 import { ScryptParams } from './scrypt';
 import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
+/**
+ * Control data of identity
+ */
 export class ControlData {
     static fromJson(json: any): ControlData {
         const privateKey = deserializeFromJson(json as JsonKey);
         return new ControlData(json.id, privateKey, new Address(json.address), json.salt);
     }
 
+    /**
+     * Id of control data
+     */
     id: string;
+    /**
+     * Encrypted private key
+     */
     encryptedKey: PrivateKey;
+    /**
+     * Addresso of control data
+     */
     address: Address;
+    /**
+     * Salt of control data
+     */
     salt: string;
 
     constructor(id: string, encryptedKey: PrivateKey, address: Address, salt: string) {
@@ -50,6 +65,15 @@ export class ControlData {
 }
 
 export class Identity {
+    /**
+     * Import identity
+     * @param label Name of identity
+     * @param encryptedPrivateKey Encrypted private key
+     * @param password User's password to decrypt
+     * @param address Address to decrypt
+     * @param saltBase64 Salt to decrypt
+     * @param params Optional params to decrypt
+     */
     static importIdentity(
         label: string,
         encryptedPrivateKey: PrivateKey,

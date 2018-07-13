@@ -134,6 +134,15 @@ export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
     tx.sigs.push(sig);
 };
 
+/**
+ * Creates transaction to invoke native contract
+ * @param funcName Function name of contract to call
+ * @param params Parameters serialized in hex string
+ * @param contractAddr Adderss of contract
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Address to pay for transaction gas
+ */
 export function makeNativeContractTx(
     funcName: string,
     params: string,
@@ -166,6 +175,15 @@ export function makeNativeContractTx(
     return tx;
 }
 
+/**
+ * Creates transaction to inovke smart contract
+ * @param funcName Function name of smart contract
+ * @param params Array of Parameters
+ * @param contractAddr Address of contract
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Address to pay for gas
+ */
 export const makeInvokeTransaction = (
     funcName: string,
     params: Parameter[],
@@ -198,6 +216,19 @@ export const makeInvokeTransaction = (
     return tx;
 };
 
+/**
+ * Creates transaction to deploy smart contract
+ * @param code Avm code of contract to deploy
+ * @param name Name of contract
+ * @param codeVersion version of contract
+ * @param author Author of contract
+ * @param email Email of author
+ * @param desp Description of contract
+ * @param needStorage Decides if the contract needs storage
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Address to pay for gas
+ */
 export function makeDeployCodeTransaction(
     code: string,
     name: string= '',
@@ -241,6 +272,12 @@ export function makeDeployCodeTransaction(
 
 }
 
+/**
+ * @deprecated
+ * Creates params from transaction to send with websocket
+ * @param tx Transactio to send
+ * @param isPreExec Decides if it is pre-execute transaction
+ */
 export function buildTxParam(tx: Transaction, isPreExec: boolean = false) {
     const op = isPreExec ? { PreExec: '1'} : {};
     const serialized = tx.serialize();
@@ -248,8 +285,13 @@ export function buildTxParam(tx: Transaction, isPreExec: boolean = false) {
     return JSON.stringify(Object.assign({}, Default_params, { Data: serialized }, op));
 }
 
-// {"jsonrpc": "2.0", "method": "sendrawtransaction", "params": ["raw transactioin in hex"], "id": 0}
-export function buildRpcParam(tx: any, method?: string) {
+/**
+ * @deprecated
+ * Creates params from transaction to send with rpc
+ * @param tx Transaction
+ * @param method Method name
+ */
+export function buildRpcParam(tx: Transaction, method?: string) {
     const param = tx.serialize();
     const result = {
         jsonrpc: '2.0',
@@ -260,7 +302,12 @@ export function buildRpcParam(tx: any, method?: string) {
     return result;
 }
 
-export function buildRestfulParam(tx: any) {
+/**
+ * @deprecated
+ * Creates params from transaction to send with restful
+ * @param tx Transaction
+ */
+export function buildRestfulParam(tx: Transaction) {
     const param = tx.serialize();
     return {
         Action : 'sendrawtransaction',
@@ -269,6 +316,11 @@ export function buildRestfulParam(tx: any) {
     };
 }
 
+/**
+ * @deprecated
+ * @param url Url of blochchain node
+ * @param preExec Decides if is a pre-execute request
+ */
 export function sendRawTxRestfulUrl(url: string, preExec: boolean = false) {
     if (url.charAt(url.length - 1) === '/') {
         url = url.substring(0, url.length - 1);

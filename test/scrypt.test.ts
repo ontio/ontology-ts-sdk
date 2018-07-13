@@ -92,7 +92,6 @@ describe('test scrypt', () => {
         const dec = scrypt.decryptWithGcm(enc, address, salt,  '123456');
         console.log('dec: ' + dec);
         expect(dec).toEqual(pri.key);
-        
 
     });
 

@@ -18,11 +18,11 @@
 
 import * as b64 from 'base64-url';
 import * as uuid from 'uuid';
-import { PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from './crypto';
-import RestClient from './network/rest/restClient';
-import { buildGetDDOTx, buildGetPublicKeyStateTx } from './smartcontract/nativevm/ontidContractTxBuilder';
-import { DDO } from './transaction/ddo';
-import { now } from './utils';
+import { PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from '../crypto';
+import RestClient from '../network/rest/restClient';
+import { buildGetDDOTx, buildGetPublicKeyStateTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
+import { DDO } from '../transaction/ddo';
+import { now } from '../utils';
 
 /**
  * Factory method type used for creating concrete instances of Message.

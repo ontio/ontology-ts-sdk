@@ -26,8 +26,9 @@ export default class InvokeCode extends Payload {
     functionName : string
      */
 
-    // gasLimit : Fixed64
-    // code: VmCode;
+    /**
+     * Hex encoed string
+     */
     code: string;
 
     constructor() {

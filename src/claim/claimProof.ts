@@ -16,11 +16,17 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * Direction of noe in merkle proof
+ */
 export enum Direction {
     Right = 'Right',
     Left = 'Left'
 }
 
+/**
+ * Node in merkle proof
+ */
 export interface Node {
     Direction: Direction;
     TargetHash: string;

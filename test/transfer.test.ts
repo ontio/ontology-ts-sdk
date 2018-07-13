@@ -62,17 +62,19 @@ describe('test transfer asset', () => {
     };
     test('test transfer asset', async () => {
         const from = adminAddress;
-        const to = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
-        const tx = makeTransferTx('ONT', from, to, 10, gasPrice, gasLimit);
+        const to = new Address('AXpNeebiUZZQxLff6czjpHZ3Tftj8go2TF');
+        const tx = makeTransferTx('ONT', from, to, 2, gasPrice, gasLimit);
         signTransaction(tx, adminPrivateKey);
-        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // tslint:disable:no-console
-        console.log(JSON.stringify(response));
-        expect(response.Result.State).toEqual(1);
+        const res = await restClient.sendRawTransaction(tx.serialize())
+        console.log(res)
+        // const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // // tslint:disable:no-console
+        // console.log(JSON.stringify(response));
+        // expect(response.Result.State).toEqual(1);
     }, 10000);
 
     test('test get balance', async () => {
-        const to = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
+        const to = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
         const result = await restClient.getBalance(to);
         console.log(result);
         expect(result).toBeTruthy();
@@ -115,14 +117,13 @@ describe('test transfer asset', () => {
         const mulAddr = Address.fromMultiPubKeys(5, pks);
         console.log('mulAddr: ' + mulAddr.toBase58());
         // console.log('pris: ' + JSON.stringify(pris));
-        const payer = new Address(w[0].accounts[0].address);
+        const payer = mulAddr;
         const tx = makeTransferTx('ONT', mulAddr,
             new Address('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve'), 100, gasPrice, gasLimit, payer);
         const multiPri = [pris[0], pris[1], pris[2], pris[3], pris[4]];
         for (const p of multiPri) {
             signTx(tx, 5, pks, p);
         }
-        addSign(tx, pris[0]);
         const result = await restClient.sendRawTransaction(tx.serialize());
         console.log(result);
         expect(result.Error).toEqual(0);

@@ -47,7 +47,7 @@ export class AttestNotifyEvent {
 }
 
 /**
- * One of the results of Notify event.
+ * Result of Notify event.
  */
 export class Result {
     /**
@@ -74,12 +74,17 @@ export class Result {
     }
 
     TxHash: string;
-    // State = 1 : smartcontract executation success
-    // State = 0 : smartcontract executation failure
+    /**
+     * State = 1 : smartcontract executation success
+     * State = 0 : smartcontract executation failure
+     */
     State: number;
     GasConsumed: number;
     Notify: [{
         ContractAddress: string;
+        /**
+         * The value of States are usually hex string
+         */
         States: any[];
     }];
     Version: string;

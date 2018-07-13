@@ -24,6 +24,9 @@ export enum VmType {
     WASMVM   = 0x90
 }
 
+/**
+ * @deprecated
+ */
 export class VmCode {
     static deserialize(sr: StringReader): any {
         const vmcode = new VmCode();

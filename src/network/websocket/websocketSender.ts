@@ -23,6 +23,9 @@ import { TEST_ONT_URL } from '../../consts';
  * in browser environment, which does not require 'ws'.
  */
 
+ /**
+  * Websocket sender for send messages and handle notify.
+  */
 export class WebsocketSender {
     url: string;
     debug: boolean;

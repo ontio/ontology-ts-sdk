@@ -30,7 +30,7 @@ import * as bip39 from 'bip39';
 import { Account } from '../account';
 import { Claim } from '../claim/claim';
 import { HTTP_REST_PORT, HTTP_WS_PORT, ONT_BIP44_PATH, REST_API, TEST_NODE } from '../consts';
-import { Address, PgpSignature, PrivateKey } from '../crypto';
+import { Address, PgpSignature, PrivateKey, PublicKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
 import RestClient from '../network/rest/restClient';
@@ -39,13 +39,14 @@ import { makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT } from '../smartcontrac
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx
 } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { DDOAttribute } from '../transaction/ddo';
+import { Transaction } from '../transaction/transaction';
 import {
     buildRestfulParam,
     sendRawTxRestfulUrl,
     signTransaction
 } from '../transaction/transactionBuilder';
 import { generateMnemonic,
-    hexstr2str, isBase64, now, sendBackResult2Native, str2hexstr } from '../utils';
+    hexstr2str, isBase64, now, reverseHex, sendBackResult2Native, str2hexstr, StringReader } from '../utils';
 import { Wallet } from '../wallet';
 // tslint:disable-next-line:no-var-requires
 const HDKey = require('@ont-community/hdkey-secp256r1');
@@ -733,7 +734,8 @@ export class SDK {
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: '',
-            tx: tx.serialize()
+            tx: tx.serialize(),
+            txHash: reverseHex(tx.getHash())
         };
         callback && sendBackResult2Native(JSON.stringify(result), callback);
         // clear privateKey and password
@@ -788,7 +790,8 @@ export class SDK {
         const result = {
             error: ERROR_CODE.SUCCESS,
             result: '',
-            tx: tx.serialize()
+            tx: tx.serialize(),
+            txHash: reverseHex(tx.getHash())
         };
         callback && sendBackResult2Native(JSON.stringify(result), callback);
         // clear privateKey and password
@@ -1088,6 +1091,106 @@ export class SDK {
             }
             return result;
         });
+    }
+
+    static createSharedWallet(requiredSignatureNum: string, allRelatedPks: string, callback: string) {
+        const M  = parseInt(requiredSignatureNum, 10);
+        let pks = [];
+        let pubs = [];
+        let error = ERROR_CODE.SUCCESS;
+        try {
+            pks = JSON.parse(allRelatedPks);
+            pubs = pks.map((p: string) => PublicKey.deserializeHex(new StringReader(p)));
+        } catch (err) {
+            error = ERROR_CODE.INVALID_PARAMS;
+        }
+        if (M < 2 || pks.length < M || pks.length > 12) {
+            error = ERROR_CODE.INVALID_PARAMS;
+        }
+        const address = Address.fromMultiPubKeys(M, pubs).toBase58();
+        if (callback) {
+            const result = {
+                error,
+                result: address
+            };
+            sendBackResult2Native(JSON.stringify(result), callback);
+        }
+        return address;
+    }
+
+    static adderssFromPublicKey(publicKey: string, callback: string) {
+        const pk = PublicKey.deserializeHex(new StringReader(publicKey));
+        const address = Address.fromPubKey(pk).toBase58();
+        const result = {
+            error : ERROR_CODE.SUCCESS,
+            result: address
+        };
+        if (callback) {
+            sendBackResult2Native(JSON.stringify(result), callback);
+        }
+        return address;
+    }
+
+    static makeMultiSignTransaction(asset: string, from: string, to: string, amount: string, gasPrice: string,
+                                    gasLimit: string, callback: string) {
+        let fromAddress: Address;
+        let toAddress: Address;
+        try {
+            fromAddress = new Address(from);
+            toAddress = new Address(to);
+        } catch (err) {
+            const result = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+        const tx = makeTransferTx(asset, fromAddress, toAddress, amount, gasPrice, gasLimit);
+        tx.payer = fromAddress;
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            txHash: reverseHex(tx.getHash()),
+            txData: tx.serialize()
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        return result;
+    }
+
+    static signMultiAddrTransaction(
+        encryptedPrivateKey: string,
+        address: string,
+        salt: string,
+        password: string,
+        requiredSignatureNum: string,
+        txDada: string,
+        callback: string) {
+        password = this.transformPassword(password);
+        let privateKey: PrivateKey;
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        try {
+            const addr = new Address(address);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+        const tx = Transaction.deserialize(txDada);
+        signTransaction(tx, privateKey);
+        const sigData = tx.sigs[0].sigData[0];
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            sigData
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        return tx;
     }
 
 }
