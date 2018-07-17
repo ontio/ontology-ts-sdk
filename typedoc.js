@@ -14,7 +14,7 @@ module.exports = {
     //     '*/src/transaction/program.ts',
     //     '*/src/transaction/txAttribute.ts'
     // ],
-    exclude: '**/*+(txSender|vmcode|program|uint256|uint160|txAttribute|websocketBuilder|governanceContractTxBuilder|token).ts',
+    exclude: '**/*+(txSender|vmcode|program|uint256|uint160|txAttribute|websocketBuilder|governanceContractTxBuilder|token|nep5TxBuilder).ts',
     // mode: 'file',
     ignoreCompilerErrors: true
 }

@@ -62,15 +62,13 @@ describe('test transfer asset', () => {
     };
     test('test transfer asset', async () => {
         const from = adminAddress;
-        const to = new Address('AXpNeebiUZZQxLff6czjpHZ3Tftj8go2TF');
-        const tx = makeTransferTx('ONT', from, to, 2, gasPrice, gasLimit);
+        const to = new Address('ARswehu2w1jMZU5qhckTdoZV9jogUzXfZX');
+        const tx = makeTransferTx('ONG', from, to, 2*1e9, gasPrice, gasLimit);
         signTransaction(tx, adminPrivateKey);
-        const res = await restClient.sendRawTransaction(tx.serialize())
-        console.log(res)
-        // const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // // tslint:disable:no-console
-        // console.log(JSON.stringify(response));
-        // expect(response.Result.State).toEqual(1);
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log(JSON.stringify(response));
+        expect(response.Result.State).toEqual(1);
     }, 10000);
 
     test('test get balance', async () => {
