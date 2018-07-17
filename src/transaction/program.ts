@@ -21,6 +21,7 @@ import { sm2 } from 'sm.js';
 import BigInt from '../common/bigInt';
 import { KeyType } from '../crypto/KeyType';
 import { PublicKey } from '../crypto/PublicKey';
+import { ERROR_CODE } from '../error';
 import { num2hexstring, StringReader } from './../utils';
 import opcode from './opcode';
 // The sorting rules is as follows:
@@ -110,9 +111,11 @@ export function pushBytes(hexstr: string): string {
     } else if (len < 0x10000) {
         result += num2hexstring(opcode.PUSHDATA2);
         result += num2hexstring(len, 2, true);
-    } else {
+    } else if (len < 0x100000000) {
         result += num2hexstring(opcode.PUSHDATA4);
         result += num2hexstring(len, 4, true);
+    } else {
+        throw ERROR_CODE.INVALID_PARAMS;
     }
     result += hexstr;
     return result;
@@ -148,6 +151,7 @@ export function programFromMultiPubKey(pubkeys: PublicKey[], m: number): string 
 
 export function programFromParams(sigs: string[]): string {
     let result = '';
+    sigs.sort();
     for ( const s of sigs) {
         result += pushBytes(s);
     }

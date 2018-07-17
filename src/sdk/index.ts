@@ -33,8 +33,13 @@ import { HTTP_REST_PORT, HTTP_WS_PORT, ONT_BIP44_PATH, REST_API, TEST_NODE } fro
 import { Address, PgpSignature, PrivateKey, PublicKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
+import { Parameter } from '../index';
+import { NeoRpc } from '../neocore/NeoRpc';
+import { Program } from '../neocore/Program';
+import { SmartContract } from '../neocore/SmartContract';
 import RestClient from '../network/rest/restClient';
 import * as scrypt from '../scrypt';
+import AbiInfo from '../smartcontract/abi/abiInfo';
 import { makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT } from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx
 } from '../smartcontract/nativevm/ontidContractTxBuilder';
@@ -48,11 +53,25 @@ import {
 import { generateMnemonic,
     hexstr2str, isBase64, now, reverseHex, sendBackResult2Native, str2hexstr, StringReader } from '../utils';
 import { Wallet } from '../wallet';
+import { ParameterType } from './../smartcontract/abi/parameter';
+
 // tslint:disable-next-line:no-var-requires
 const HDKey = require('@ont-community/hdkey-secp256r1');
 
 // tslint:disable:no-unused-expression
 // tslint:disable:no-shadowed-variable
+
+// neo contract
+const CONTRACT_HASH = 'ceab719b8baa2310f232ee0d277c061704541cfb';
+// neo node
+const NEO_NODE = 'http://52.224.162.48:10332';
+// neo abi
+// tslint:disable-next-line:max-line-length
+const NEP5_ABI = '{"hash":"0x5bb169f915c916a5e30a3c13a5e0cd228ea26826","entrypoint":"Main","functions":[{"name":"Name","parameters":[],"returntype":"String"},{"name":"Symbol","parameters":[],"returntype":"String"},{"name":"Decimals","parameters":[],"returntype":"Integer"},{"name":"Main","parameters":[{"name":"operation","type":"String"},{"name":"args","type":"Array"}],"returntype":"Any"},{"name":"Init","parameters":[],"returntype":"Boolean"},{"name":"TotalSupply","parameters":[],"returntype":"Integer"},{"name":"Transfer","parameters":[{"name":"from","type":"ByteArray"},{"name":"to","type":"ByteArray"},{"name":"value","type":"Integer"}],"returntype":"Boolean"},{"name":"BalanceOf","parameters":[{"name":"address","type":"ByteArray"}],"returntype":"Integer"}],"events":[{"name":"transfer","parameters":[{"name":"arg1","type":"ByteArray"},{"name":"arg2","type":"ByteArray"},{"name":"arg3","type":"Integer"}],"returntype":"Void"}]}';
+// neo swap address
+// const RECEIVER_ADDR = 'AFmseVrdL9f9oyCzZefL9tG6UbvhPbdYzM';
+
+const NEO_TRAN = 100000000;
 
 export class SDK {
     static SERVER_NODE: string = TEST_NODE;
@@ -1024,9 +1043,8 @@ export class SDK {
                     size: keyStoreObj.scrypt.dkLen || 64
                 };
                 const addr = new Address(keyStoreObj.address);
-                const saltHex = Buffer.from(keyStoreObj.salt, 'base64').toString('hex');
                 account = Account.importAccount(
-                    keyStoreObj.label, encryptedPrivateKeyObj, password, addr, saltHex, params);
+                    keyStoreObj.label, encryptedPrivateKeyObj, password, addr, keyStoreObj.salt, params);
                 const obj = {
                     error: ERROR_CODE.SUCCESS,
                     result: account.toJson()
@@ -1191,6 +1209,80 @@ export class SDK {
         };
         callback && sendBackResult2Native(JSON.stringify(result), callback);
         return tx;
+    }
+
+    /**
+     * Neo transfer
+     */
+    static neoTransfer(
+        from: string,
+        to: string,
+        value: string,
+        encryptedPrivateKey: string,
+        password: string,
+        salt: string,
+        callback: string
+    ) {
+        password = this.transformPassword(password);
+        const recv = new Address(to);
+        const addr = new Address(from);
+        const abiInfo = AbiInfo.parseJson(NEP5_ABI);
+        const contractAddr = new Address(reverseHex(CONTRACT_HASH));
+        const amount = parseInt(value, 10);
+        const func = abiInfo.getFunction('Transfer');
+        func.name = func.name.toLowerCase();
+        let privateKey: PrivateKey;
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        try {
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+        const p1 = new Parameter('from', ParameterType.ByteArray, addr.serialize());
+        const p2 = new Parameter('to', ParameterType.ByteArray, recv.serialize());
+        const p3 = new Parameter('value', ParameterType.Integer, amount * NEO_TRAN);
+        func.setParamsValue(p1, p2, p3);
+        const tx = SmartContract.makeInvokeTransaction(contractAddr, addr, func);
+        const p = new Program();
+        p.parameter = Program.programFromParams([tx.sign(privateKey)]);
+        p.code = Program.programFromPubKey(privateKey.getPublicKey());
+        tx.scripts = [p];
+
+        return NeoRpc.sendRawTransaction(NEO_NODE, tx.serialize()).then((res: any) => {
+            const result = {
+                error: ERROR_CODE.SUCCESS,
+                result: ''
+            };
+            if (res.result) {
+                result.result = tx.getHash();
+                callback && sendBackResult2Native(JSON.stringify(result), callback);
+            } else {
+                result.error = ERROR_CODE.NETWORK_ERROR;
+                callback && sendBackResult2Native(JSON.stringify(result), callback);
+            }
+        });
+    }
+
+    static getNeoBalance(address: string, callback: string) {
+        const contractAddr = new Address(reverseHex(CONTRACT_HASH));
+        const addr = new Address(address);
+        return NeoRpc.getBalance(NEO_NODE, contractAddr, addr).then((res: any) => {
+            const result = {
+                error: ERROR_CODE.SUCCESS,
+                result: 0
+            };
+            if (res.result) {
+                const balance = parseInt(reverseHex(res.result), 16);
+                result.result = balance;
+            }
+            callback && sendBackResult2Native(JSON.stringify(result), callback);
+            return result;
+        });
     }
 
 }

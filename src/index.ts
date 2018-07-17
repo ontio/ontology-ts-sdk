@@ -21,6 +21,7 @@ import { Claim } from './claim';
 import * as CONST from './consts';
 import * as Crypto from './crypto';
 import { Identity } from './identity';
+import * as NeoCore from './neocore';
 import RestClient from './network/rest/restClient';
 import RpcClient from './network/rpc/rpcClient';
 import { WebsocketClient } from './network/websocket/websocketClient';
@@ -68,6 +69,7 @@ class ONT {
     Crypto: any;
     Struct: any;
     ScriptBuilder: any;
+    NeoCore: any;
 
     constructor() {
         this.Account = Account;
@@ -96,6 +98,7 @@ class ONT {
         this.Crypto = Crypto;
         this.Struct = Struct;
         this.ScriptBuilder = ScriptBuilder;
+        this.NeoCore = NeoCore;
     }
     setNode(url: string) {
         this.CONST.TEST_NODE = url;
@@ -142,5 +145,6 @@ export {
     WebsocketClient,
     Crypto,
     Struct,
-    ScriptBuilder
+    ScriptBuilder,
+    NeoCore
 };

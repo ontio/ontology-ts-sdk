@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+import { ERROR_CODE } from '../error';
 import { hex2VarBytes, num2hexstring, StringReader } from '../utils';
 
 export enum TransactionAttributeUsage {
@@ -22,11 +23,6 @@ export enum TransactionAttributeUsage {
     Script          = 0x20,
     DescriptionUrl  = 0x81,
     Description     = 0x90
-}
-
-function isValidAttributeType(usage: TransactionAttributeUsage): boolean {
-    return usage === TransactionAttributeUsage.Nonce || usage === TransactionAttributeUsage.Script
-        || usage === TransactionAttributeUsage.Description || usage === TransactionAttributeUsage.DescriptionUrl;
 }
 
 /**
@@ -40,17 +36,19 @@ export class TransactionAttribute {
     // hexstring
     data: string;
 
-    // hexstring for uint32
-    size: string;
-
     serialize(): string {
         let result = '';
         result += num2hexstring(this.usage);
-        // result += this.nonce
-        if (!isValidAttributeType(this.usage)) {
-            throw new Error('[TxAttribute] error, Unsupported attribute Description.');
+        if (this.usage === TransactionAttributeUsage.Script) {
+            result += this.data;
+        } else if (this.usage === TransactionAttributeUsage.DescriptionUrl
+                || this.usage === TransactionAttributeUsage.Description
+                || this.usage === TransactionAttributeUsage.Nonce) {
+            result += hex2VarBytes(this.data);
+        } else {
+            throw ERROR_CODE.INVALID_PARAMS;
         }
-        result += hex2VarBytes(this.data);
+
         return result;
     }
 
