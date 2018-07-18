@@ -22,15 +22,15 @@ import { PrivateKey } from './PrivateKey';
 /**
  * Interface for Key deserializers
  */
-export abstract class KeyDeserializer {
-    abstract getType(): string;
-    abstract deserialize(json: JsonKey): PrivateKey;
+export interface KeyDeserializer {
+    getType(): string;
+    deserialize(json: JsonKey): PrivateKey;
 }
 
 /**
  * Default private key deserializer.
  */
-export class DefaultKeyDeserializer extends KeyDeserializer {
+export class DefaultKeyDeserializer implements KeyDeserializer {
     getType(): string {
         return '';
     }
