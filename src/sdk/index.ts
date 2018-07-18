@@ -33,13 +33,13 @@ import { HTTP_REST_PORT, HTTP_WS_PORT, ONT_BIP44_PATH, REST_API, TEST_NODE } fro
 import { Address, PgpSignature, PrivateKey, PublicKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
-import { Parameter } from '../index';
 import { NeoRpc } from '../neocore/NeoRpc';
 import { Program } from '../neocore/Program';
 import { SmartContract } from '../neocore/SmartContract';
 import RestClient from '../network/rest/restClient';
 import * as scrypt from '../scrypt';
 import AbiInfo from '../smartcontract/abi/abiInfo';
+import { Parameter } from '../smartcontract/abi/parameter';
 import { makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT } from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx
 } from '../smartcontract/nativevm/ontidContractTxBuilder';
