@@ -42,8 +42,8 @@ import { signTransaction, signTx } from './../src/transaction/transactionBuilder
 describe('test transfer asset', () => {
     const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
     const restClient = new RestClient('http://polaris1.ont.io:20334');
-    const gasLimit = '300000';
-    const gasPrice = '0';
+    const gasLimit = '20000';
+    const gasPrice = '500';
     const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
 
@@ -62,8 +62,8 @@ describe('test transfer asset', () => {
     };
     test('test transfer asset', async () => {
         const from = adminAddress;
-        const to = new Address('ARswehu2w1jMZU5qhckTdoZV9jogUzXfZX');
-        const tx = makeTransferTx('ONG', from, to, 2*1e9, gasPrice, gasLimit);
+        const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
+        const tx = makeTransferTx('ONG', from, to, 0.1 * 1e9, gasPrice, gasLimit);
         signTransaction(tx, adminPrivateKey);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         // tslint:disable:no-console

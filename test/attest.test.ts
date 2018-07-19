@@ -33,7 +33,7 @@ describe('test attest claim', () => {
     const identity = Identity.create(privateKey, '123456', '');
     const ontId =  identity.ontid;
     const address = account.address;
-    const gasPrice = '0';
+    const gasPrice = '500';
     const gasLimit = '30000';
 
     function randomClaim(): Claim {

@@ -53,7 +53,7 @@ describe('test message', () => {
     }
 
     beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
+        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
         tx.payer = account.address;
         signTransaction(tx, privateKey);
 
