@@ -21,7 +21,7 @@ import { PrivateKey } from '../src/crypto/PrivateKey';
 import { RestClient, WebsocketClient } from '../src/index';
 import Nep5TxBuilder from '../src/smartcontract/neovm/nep5TxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
-import { reverseHex, hexstr2str } from '../src/utils';
+import { hexstr2str, reverseHex } from '../src/utils';
 import { Address } from './../src/crypto/address';
 
 describe('test nep5', () => {
@@ -39,14 +39,14 @@ describe('test nep5', () => {
     const codeHash = 'cacbaf1024af9eb19f981c084548df14510d85ae';
 
     const contractAddr = new Address(reverseHex(codeHash));
-    const gasPrice = '0';
+    const gasPrice = '500';
     const gasLimit = '30000';
     const restClient = new RestClient('http://127.0.0.1:20334');
     const socketClient = new WebsocketClient('http://127.0.0.1:20335');
 
 
     test('test_init', async () => {
-        const tx = Nep5TxBuilder.init(contractAddr, '0', gasLimit, account1.address);
+        const tx = Nep5TxBuilder.init(contractAddr, gasPrice, gasLimit, account1.address);
         signTransaction(tx, private1);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         // tslint:disable:no-console

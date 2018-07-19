@@ -28,7 +28,7 @@ describe('test rpc client', () => {
      * Registers new ONT ID to create transaction with Events and new block
      */
     beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
+        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
         tx.payer = account.address;
         signTransaction(tx, privateKey);
 

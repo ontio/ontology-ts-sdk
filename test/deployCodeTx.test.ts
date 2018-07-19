@@ -56,7 +56,7 @@ describe('test deploy contract', () => {
     test('test deploy with avm code', async () => {
 
         const tx = makeDeployCodeTransaction(attestClaimAvmCode,
-            'name', '1.0', 'alice', 'testmail', 'desc', true, '0', '30000000');
+            'name', '1.0', 'alice', 'testmail', 'desc', true, '500', '30000000');
         tx.payer = account.address;
         signTransaction(tx, privateKey);
         const result = await restClient.sendRawTransaction(tx.serialize());

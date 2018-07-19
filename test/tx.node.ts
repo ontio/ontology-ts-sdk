@@ -48,7 +48,7 @@ import { signTransaction, signTx } from './../src/transaction/transactionBuilder
 
 describe('test ONT ID contract', () => {
 
-    const gasPrice = '0';
+    const gasPrice = '500';
     const gasLimit = '30000';
     const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
 
@@ -85,23 +85,29 @@ describe('test ONT ID contract', () => {
     const account2 = Account.create(pri2, '123456', '');
     const pub2 = pri2.getPublicKey();
     const ontid2 = 'did:ont:ALnvzTMkbanffAKzQwxJ3EGoBqYuR6WqcG';
+    console.log('address2: ' + account2.address.toBase58());
 
     const pri3 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const account3 = Account.create(pri3, '123456', '');
     const pub3 = pri3.getPublicKey();
     const ontid3 = Address.generateOntid(pub3);
     console.log('pk3:' + pri3.getPublicKey().serializeHex());
+    console.log('address3: ' + account3.address.toBase58());
+    
 
     const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
     const account4 = Account.create(pri4, '123456', '');
     const pub4 = pri4.getPublicKey();
     const ontid4 = Address.generateOntid(pub4);
     console.log('pk4:' + pri4.getPublicKey().serializeHex());
+    console.log('address4: ' + account4.address.toBase58());
+    
 
     const pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
     const account5 = Account.create(pri5, '123456', '');
     const pub5 = pri5.getPublicKey();
     const ontid5 = Address.generateOntid(pub5);
+    console.log('address5: ' + account5.address.toBase58());
 
     test('testRegisterOntid', async () => {
 
