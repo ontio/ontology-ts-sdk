@@ -27,18 +27,13 @@ import { WebsocketSender } from './websocketSender';
  * TODO: correlate request and response with id, so socket can be reused.
  */
 export class WebsocketClient {
-    /**
-     * Url of blockchain node
-     */
-    url: string;
-    /**
-     * Decides if the client runs in debug mode so it can print info for debug.
-     */
-    debug: boolean;
+    sender: WebsocketSender;
 
-    constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false) {
-        this.url = url;
-        this.debug = debug;
+    autoClose: boolean;
+
+    constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false, autoClose = true) {
+        this.autoClose = autoClose;
+        this.sender = new WebsocketSender(url, debug);
     }
 
     /**
@@ -76,11 +71,28 @@ export class WebsocketClient {
      * Send raw transaction
      * @param hexData Hex encoded data
      * @param preExec Decides if it is a pre-executed transaction
-     * @param waitNotify Decides if client waits for notify from blockchain.
+     * @param waitNotify Decides if client waits for notify from blockchain before closing
      */
     async sendRawTransaction(hexData: string, preExec = false, waitNotify = false) {
         const raw = Builder.sendRawTransaction(hexData, preExec);
-        return this.send(raw, waitNotify);
+
+        if (waitNotify) {
+            return new Promise((resolve, reject) => {
+
+                this.sender.addListener((result) => {
+                    if (result.Action === 'Notify') {
+                        if (this.autoClose) {
+                            this.sender.close();
+                        }
+                        resolve(result);
+                    }
+                });
+
+                this.send(raw, false);
+            });
+        } else {
+            return this.send(raw);
+        }
     }
 
     /**
@@ -229,23 +241,32 @@ export class WebsocketClient {
     }
 
     /**
+     * Adds listener for Notify messages.
+     *
+     * Be careful to not set autoClose = true and close the websocket on your own.
+     * @param listener Listener
+     */
+    addNotifyListener(listener: (result: any) => void) {
+        this.sender.addListener((result: any) => {
+            if (result.Action === 'Notify') {
+                listener(result);
+            }
+        });
+    }
+
+    /**
+     * Close the websocket manually.
+     */
+    close() {
+        this.sender.close();
+    }
+
+    /**
      * Send msg to blockchain
      * @param raw Message to send
-     * @param waitNotify Decides if need to wait for notify from blockchain
+     * @param close Automaticly close connection if also autoClose is specified
      */
-    private async send(raw: string, waitNotify = false): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            const sender = new WebsocketSender(this.url, this.debug);
-            sender.send(raw, (err, res, socket) => {
-                if (err !== null) {
-                    reject(err);
-                } else if (socket !== null) {
-                    if (!waitNotify || res.Action === 'Notify') {
-                        socket.close();
-                        resolve(res);
-                    }
-                }
-            });
-        });
+    private async send<T extends object>(raw: T, close: boolean = this.autoClose): Promise<any> {
+        return this.sender.send(raw, close);
     }
 }

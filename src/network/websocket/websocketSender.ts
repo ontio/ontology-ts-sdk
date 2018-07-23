@@ -15,7 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as Html5WebSocket from 'html5-websocket';
+import * as Html5WebSocket from '@ont-community/html5-websocket';
+import * as WebSocketAsPromised from 'websocket-as-promised';
 import { TEST_ONT_URL } from '../../consts';
 
 /**
@@ -27,55 +28,75 @@ import { TEST_ONT_URL } from '../../consts';
   * Websocket sender for send messages and handle notify.
   */
 export class WebsocketSender {
-    url: string;
-    debug: boolean;
-
-    constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false) {
-        this.url = url;
-        this.debug = debug;
+    private static generateReqId() {
+        return Math.floor(Math.random() * 10e8);
     }
 
-    send(param: string, callback: (err: any, res: any, socket: WebSocket | null) => any) {
-        if (!param) {
-            return;
-        }
+    debug: boolean;
 
-        const socket = new Html5WebSocket(this.url);
+    private wsp: any;    // WebSocketAsPromised
 
-        socket.onopen = () => {
+    constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false) {
+        this.debug = debug;
+        this.wsp = new WebSocketAsPromised(url, {
+            createWebSocket: (socketUrl: string) => new Html5WebSocket(socketUrl),
+            attachRequestId: (data: any, id: number) => ({ Id: id, ...data }),
+            extractRequestId: (data: any) => data && data.Id,
+            packMessage: (data: any) => JSON.stringify(data),
+            unpackMessage: (message: string) => JSON.parse(message)
+        });
+
+        this.wsp.onOpen.addListener(() => {
             if (this.debug) {
                 // tslint:disable-next-line:no-console
                 console.log('connected');
             }
-            socket.send(param);
-        };
+        });
 
-        socket.onmessage = (event) => {
+        this.wsp.onSend.addListener((message: any) => {
             if (this.debug) {
                 // tslint:disable-next-line:no-console
-                console.log('received: ', event.data);
+                console.log('sent: ', message);
             }
-            let res: any;
-            if (typeof event.data === 'string') {
-                res = JSON.parse(event.data);
-            } else {
-                res = event.data;
-            }
+        });
 
-            // pass socket to let caller decide when to close the it.
-            if (callback) {
-                callback(null, res, socket);
-            }
-        };
-
-        socket.onerror = (err: any) => {
+        this.wsp.onMessage.addListener((message: any) => {
             if (this.debug) {
                 // tslint:disable-next-line:no-console
-                console.log('error', err);
+                console.log('received: ', message);
             }
-            // no server or server is stopped
-            callback(err, null, null);
-            socket.close();
-        };
+        });
+
+        this.wsp.onError.addListener((event: any) => {
+            if (this.debug) {
+                // tslint:disable-next-line:no-console
+                console.log('error: ', event);
+            }
+        });
+    }
+
+    async send<T extends object>(param: T, close: boolean = true) {
+        try {
+            if (!param) {
+                return;
+            }
+
+            await this.wsp.open();
+            const response = await this.wsp.sendRequest(param, { requestId: WebsocketSender.generateReqId() });
+
+            return response;
+        } finally {
+            if (close) {
+                await this.wsp.close();
+            }
+        }
+    }
+
+    addListener(listener: (result: any) => void) {
+        this.wsp.onUnpackedMessage.addListener(listener);
+    }
+
+    close() {
+        this.wsp.close();
     }
 }
