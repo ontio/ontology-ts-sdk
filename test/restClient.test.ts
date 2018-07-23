@@ -24,13 +24,16 @@ describe('test restClient', () => {
     const ontid =  identity.ontid;
     const address = account.address;
 
+    const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+    const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-        tx.payer = account.address;
-        signTransaction(tx, privateKey);
+        tx.payer = adminAddress;
+        signTransaction(tx, adminPrivateKey);
 
         const client = new WebsocketClient();
         const result = await client.sendRawTransaction(tx.serialize(), false, true);
