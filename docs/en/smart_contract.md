@@ -1,6 +1,6 @@
 [中文](../cn/smart_contract.md) | English
 
-<h1 align="center">Deploy and invoke smart contract</h1>
+<h1 align="center">Deploy and Invoke Smart Contract</h1>
 <h4 align="center">Version V0.9.0 </h4>
 
 ## 1. Deploy smart contract
