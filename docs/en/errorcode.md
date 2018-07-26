@@ -3,7 +3,7 @@
 <h1 align="center">Error Code </h1>
 <p align="center" class="version">Version 0.7.0 </p>
 
-| Return Code | Description                   | Explaination                                     |
+| Return Code | Description                   | Explanation                                     |
 | :----       | ----------------------------- | -----------------                                |
 | 0           | SUCCESS                       | Success                                          |
 | 41001       | SESSION_EXPIRED               | Invalid session or timeout (need to login again) |
@@ -22,4 +22,4 @@
 | 47001 | SMARTCODE_ERROR| Smart contract error |
 | 51000 | UNKNOWN_ONTID  | Unknown ONT ID |
 | 52000 | NETWORK_ERROR  | Network error |
-| 53000 | Decrypto_ERROR | Decryption error |                       |
+| 53000 | Decrypto_ERROR | Decryption error |                       | 
