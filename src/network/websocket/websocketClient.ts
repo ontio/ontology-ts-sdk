@@ -171,6 +171,16 @@ export class WebsocketClient {
     }
 
     /**
+     * Get unbound ong of this address
+     * The result contains ONG.
+     * @param address Address
+     */
+    async getUnboundong(address: Address): Promise<any> {
+        const raw = Builder.getUnboundOng(address);
+        return this.send(raw);
+    }
+
+    /**
      * Get contract info by code hash.
      * The result is hex encoded string.
      * @param hash Contract's code hash.

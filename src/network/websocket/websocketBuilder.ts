@@ -150,6 +150,15 @@ export function getBalance(address: Address) {
     return param;
 }
 
+export function getUnboundOng(address: Address) {
+    const param = {
+        Action: 'getunboundong',
+        Version: '1.0.0',
+        Addr: address.toBase58()
+    };
+    return param;
+}
+
 export function getContract(hash: string) {
     const param = {
         Action: 'getcontract',
