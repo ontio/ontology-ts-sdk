@@ -7,7 +7,7 @@ import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/native
 import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test websocket', () => {
-    const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, true);
+    const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, true, false);
 
     // tslint:disable-next-line:one-variable-per-declaration
     const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
@@ -23,17 +23,24 @@ describe('test websocket', () => {
     const ontid =  identity.ontid;
     const address = account.address;
 
+    const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+    const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
     beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '0', '30000');
-        tx.payer = account.address;
-        signTransaction(tx, privateKey);
+        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+        tx.payer = adminAddress;
+        signTransaction(tx, adminPrivateKey);
 
         const result = await client.sendRawTransaction(tx.serialize(), false, true);
         txHash = result.Result.TxHash;
     }, 5000);
+
+    afterAll(async () => {
+        client.close();
+    });
 
     /**
      * Gets current block height to be used by following tests.

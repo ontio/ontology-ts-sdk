@@ -18,7 +18,7 @@
 
 import { Account } from '../src/account';
 import { Claim, RevocationType } from '../src/claim/claim';
-import { PrivateKey } from '../src/crypto';
+import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
@@ -35,6 +35,9 @@ describe('test claim', () => {
     const address = account.address;
     const publicKeyId = ontid + '#keys-1';
 
+    const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+    const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+
     let serialized: string;
     let signed: string;
 
@@ -43,8 +46,8 @@ describe('test claim', () => {
      */
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-        tx.payer = account.address;
-        signTransaction(tx, privateKey);
+        tx.payer = adminAddress;
+        signTransaction(tx, adminPrivateKey);
 
         const client = new WebsocketClient();
         await client.sendRawTransaction(tx.serialize(), false, true);

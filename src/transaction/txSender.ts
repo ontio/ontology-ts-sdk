@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as Html5WebSocket from 'html5-websocket';
+import * as Html5WebSocket from '@ont-community/html5-websocket';
 import { TEST_ONT_URL } from '../consts';
 
 /**

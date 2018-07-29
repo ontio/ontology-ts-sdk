@@ -27,7 +27,7 @@ export function sendHeartBeat() {
         Action : 'heartbeat',
         Version : 'V1.0.0'
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function sendSubscribe(
@@ -44,7 +44,7 @@ export function sendSubscribe(
         SubscribeRawBlock: subscribeRawBlock, // optional
         SubscribeBlockTxHashs: subscribeBlockTxHashes // optional
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function sendRawTransaction(hexData: string, preExec: boolean = false) {
@@ -56,7 +56,7 @@ export function sendRawTransaction(hexData: string, preExec: boolean = false) {
     if (preExec) {
         param = Object.assign(param, { PreExec : '1' });
     }
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getRawTransaction(txHash: string) {
@@ -66,7 +66,7 @@ export function getRawTransaction(txHash: string) {
         Hash: txHash,
         Raw : '1'
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getRawTransactionJson(txHash: string) {
@@ -76,7 +76,7 @@ export function getRawTransactionJson(txHash: string) {
         Hash: txHash,
         Raw: '0'
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getGenerateBlockTime() {
@@ -84,7 +84,7 @@ export function getGenerateBlockTime() {
         Action: 'getgenerateblocktime',
         Version: '1.0.0'
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getNodeCount() {
@@ -92,7 +92,7 @@ export function getNodeCount() {
         Action: 'getconnectioncount',
         Version: '1.0.0'
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getBlockHeight() {
@@ -100,7 +100,7 @@ export function getBlockHeight() {
         Action: 'getblockheight',
         Version: '1.0.0'
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getBlock(value: number | string) {
@@ -120,7 +120,7 @@ export function getBlock(value: number | string) {
             Raw: '1'
         };
     }
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getBlockJson(value: number | string) {
@@ -138,7 +138,7 @@ export function getBlockJson(value: number | string) {
             Hash: value
         };
     }
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getBalance(address: Address) {
@@ -147,7 +147,16 @@ export function getBalance(address: Address) {
         Version: '1.0.0',
         Addr: address.toBase58()
     };
-    return JSON.stringify(param);
+    return param;
+}
+
+export function getUnboundOng(address: Address) {
+    const param = {
+        Action: 'getunboundong',
+        Version: '1.0.0',
+        Addr: address.toBase58()
+    };
+    return param;
 }
 
 export function getContract(hash: string) {
@@ -157,7 +166,7 @@ export function getContract(hash: string) {
         Hash: hash,
         Raw: '1'
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getContractJson(hash: string) {
@@ -167,7 +176,7 @@ export function getContractJson(hash: string) {
         Hash: hash,
         Raw: '0'
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getSmartCodeEvent(value: number | string) {
@@ -185,7 +194,7 @@ export function getSmartCodeEvent(value: number | string) {
             Hash: value
         };
     }
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getBlockHeightByTxHash(hash: string) {
@@ -194,7 +203,7 @@ export function getBlockHeightByTxHash(hash: string) {
         Version: '1.0.0',
         Hash: hash
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getStorage(codeHash: string, key: string) {
@@ -204,7 +213,7 @@ export function getStorage(codeHash: string, key: string) {
         Hash: codeHash,
         Key : key
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getMerkleProof(hash: string) {
@@ -213,7 +222,7 @@ export function getMerkleProof(hash: string) {
         Version: '1.0.0',
         Hash: hash
     };
-    return JSON.stringify(param);
+    return param;
 }
 
 export function getAllowance(asset: string, from: Address, to: Address) {
@@ -224,5 +233,5 @@ export function getAllowance(asset: string, from: Address, to: Address) {
         From: from.toBase58(),
         To: to.toBase58()
     };
-    return JSON.stringify(param);
+    return param;
 }
