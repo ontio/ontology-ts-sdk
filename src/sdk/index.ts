@@ -754,7 +754,7 @@ export class SDK {
             error: ERROR_CODE.SUCCESS,
             result: '',
             tx: tx.serialize(),
-            txHash: reverseHex(tx.getHash())
+            txHash: reverseHex(tx.getSignContent())
         };
         callback && sendBackResult2Native(JSON.stringify(result), callback);
         // clear privateKey and password
@@ -810,7 +810,7 @@ export class SDK {
             error: ERROR_CODE.SUCCESS,
             result: '',
             tx: tx.serialize(),
-            txHash: reverseHex(tx.getHash())
+            txHash: reverseHex(tx.getSignContent())
         };
         callback && sendBackResult2Native(JSON.stringify(result), callback);
         // clear privateKey and password
@@ -1171,7 +1171,7 @@ export class SDK {
         tx.payer = fromAddress;
         const result = {
             error: ERROR_CODE.SUCCESS,
-            txHash: reverseHex(tx.getHash()),
+            txHash: reverseHex(tx.getSignContent()),
             txData: tx.serialize()
         };
         callback && sendBackResult2Native(JSON.stringify(result), callback);

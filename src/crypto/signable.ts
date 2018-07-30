@@ -16,13 +16,12 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { Address } from './address';
-export { KeyType } from './KeyType';
-export { CurveLabel } from './CurveLabel';
-export { SignatureScheme } from './SignatureScheme';
-export { KeyParameters, JsonKeyParameters, JsonKey } from './Key';
-export { PrivateKey } from './PrivateKey';
-export { KeyDeserializer, registerKeyDeserializer } from './PrivateKeyFactory';
-export { PublicKey, PublicKeyStatus } from './PublicKey';
-export { Signature, PgpSignature } from './Signature';
-export { Signable } from './signable';
+/**
+ * Interface for other classes to implement, which should be signable.
+ */
+export interface Signable {
+    /**
+     * Get the sign content of object
+     */
+    getSignContent(): string;
+}
