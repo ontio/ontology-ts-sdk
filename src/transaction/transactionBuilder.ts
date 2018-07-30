@@ -30,6 +30,7 @@ import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { buildSmartContractParam, pushHexString, pushInt } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
+import { Transfer } from './transfer';
 import { TxSignature } from './txSignature';
 // const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
@@ -155,7 +156,14 @@ export function makeNativeContractTx(
     code += pushHexString(str2hexstr(NATIVE_INVOKE_NAME));
     const payload = new InvokeCode();
     payload.code = code;
-    const tx = new Transaction();
+
+    let tx: Transaction;
+    if (funcName === 'transfer') {
+        tx = new Transfer();
+    } else {
+        tx = new Transaction();
+    }
+
     tx.type = TxType.Invoke;
     tx.payload = payload;
     if (gasLimit) {

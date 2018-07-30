@@ -20,6 +20,7 @@ import { TOKEN_TYPE } from '../../consts';
 import { Address } from '../../crypto';
 import { ERROR_CODE } from '../../error';
 import { Transaction } from '../../transaction/transaction';
+import { Transfer } from '../../transaction/transfer';
 import { hex2VarBytes } from '../../utils';
 import { makeNativeContractTx } from './../../transaction/transactionBuilder';
 import { buildNativeCodeScript } from './../abi/nativeVmParamsBuilder';
@@ -72,7 +73,7 @@ export function makeTransferTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-): Transaction {
+): Transfer {
     amount = Number(amount);
     verifyAmount(amount);
     const struct = new Struct();
@@ -81,7 +82,12 @@ export function makeTransferTx(
     list.push([struct]);
     const contract = getTokenContract(tokenType);
     const params = buildNativeCodeScript(list);
-    const tx = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit);
+    const tx: Transfer = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit) as any;
+    tx.tokenType = tokenType;
+    tx.from = from;
+    tx.to = to;
+    tx.amount = amount;
+
     if (payer) {
         tx.payer = payer;
     } else {
