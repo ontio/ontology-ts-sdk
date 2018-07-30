@@ -255,7 +255,7 @@ export class PrivateKey extends Key {
      */
     computeEcDSASignature(hash: string): string {
         const ec = new elliptic.ec(this.parameters.curve.preset);
-        const signed = ec.sign(hash, this.key, null);
+        const signed = ec.sign(hash, this.key, { canonical: true });
         return Buffer.concat([
             signed.r.toArrayLike(Buffer, 'be', 32),
             signed.s.toArrayLike(Buffer, 'be', 32)
