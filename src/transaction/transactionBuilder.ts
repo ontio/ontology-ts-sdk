@@ -28,6 +28,7 @@ import {
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
+import { comparePublicKeys } from './program';
 import { buildSmartContractParam, pushHexString, pushInt } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 import { Transfer } from './transfer';
@@ -90,6 +91,23 @@ export const addSign = (tx: Transaction, privateKey: PrivateKey, schema?: Signat
     tx.sigs.push(signature);
 };
 
+const equalPks = (pks1: PublicKey[], pks2: PublicKey[]): boolean => {
+    if (pks1 === pks2) {
+        return true;
+    }
+    pks1.sort(comparePublicKeys);
+    pks2.sort(comparePublicKeys);
+    if (pks1.length !== pks2.length) {
+        return false;
+    }
+    for (let i = 0; i < pks1.length ; i++) {
+        if (pks1[i].key !== pks2[i].key) {
+            return false;
+        }
+    }
+    return true;
+};
+
 /**
  * Signs the transaction with multiple signatures with multi-sign keys.
  *
@@ -113,7 +131,7 @@ export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
         }
         // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < tx.sigs.length; i++) {
-            if (tx.sigs[i].pubKeys === pubKeys) {
+            if (equalPks(tx.sigs[i].pubKeys, pubKeys)) {
                 if (tx.sigs[i].sigData.length + 1 > pubKeys.length) {
                     throw new Error('Too many sigData');
                 }
