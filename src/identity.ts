@@ -38,7 +38,7 @@ export class ControlData {
      */
     encryptedKey: PrivateKey;
     /**
-     * Addresso of control data
+     * Address of control data
      */
     address: Address;
     /**
@@ -97,7 +97,7 @@ export class Identity {
         identity.lock = false;
 
         // control
-        const control = new ControlData('1', encryptedPrivateKey, Address.fromOntid(identity.ontid), salt);
+        const control = new ControlData('1', encryptedPrivateKey, Address.fromOntid(identity.ontid), saltBase64);
 
         identity.controls.push(control);
 
