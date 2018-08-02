@@ -38,6 +38,7 @@ import { DDO, DDOAttribute } from './transaction/ddo';
 import * as ScriptBuilder from './transaction/scriptBuilder';
 import { Transaction } from './transaction/transaction';
 import * as TransactionBuilder from './transaction/transactionBuilder';
+import { Transfer } from './transaction/transfer';
 import { TxSignature } from './transaction/txSignature';
 import * as utils from './utils';
 import { Wallet } from './wallet';
@@ -49,6 +50,7 @@ class ONT {
     DDO: any;
     DDOAttribute: any;
     Transaction: any;
+    Transfer: any;
     TxSignature: any;
     TransactionBuilder: any;
     OntAssetTxBuilder: any;
@@ -78,6 +80,7 @@ class ONT {
         this.DDO = DDO;
         this.DDOAttribute = DDOAttribute;
         this.Transaction = Transaction;
+        this.Transfer = Transfer;
         this.TxSignature = TxSignature;
         this.TransactionBuilder = TransactionBuilder;
         this.OntAssetTxBuilder = OntAssetTxBuilder;
@@ -126,6 +129,7 @@ export {
     DDO,
     DDOAttribute,
     Transaction,
+    Transfer,
     TxSignature,
     Parameter,
     ParameterType,

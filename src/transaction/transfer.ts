@@ -15,14 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+import { Address } from '../crypto/address';
+import { Transaction } from './transaction';
 
-export { Address } from './address';
-export { KeyType } from './KeyType';
-export { CurveLabel } from './CurveLabel';
-export { SignatureScheme } from './SignatureScheme';
-export { KeyParameters, JsonKeyParameters, JsonKey } from './Key';
-export { PrivateKey } from './PrivateKey';
-export { KeyDeserializer, registerKeyDeserializer } from './PrivateKeyFactory';
-export { PublicKey, PublicKeyStatus } from './PublicKey';
-export { Signature, PgpSignature } from './Signature';
-export { Signable } from './signable';
+export class Transfer extends Transaction {
+    amount: number | string;
+    tokenType: string;
+    from: Address;
+    to: Address;
+}

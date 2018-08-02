@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { PrivateKey, PublicKey, SignatureScheme } from '../crypto';
+import { PrivateKey, PublicKey, Signable, SignatureScheme } from '../crypto';
 import { hex2VarBytes, StringReader } from '../utils';
 import { getParamsFromProgram, getProgramInfo,
     programFromMultiPubKey, programFromParams, programFromPubKey } from './program';
@@ -64,11 +64,11 @@ export class TxSignature {
      *
      * If the signature schemas is not provided, the default schemes for the key types are used.
      *
-     * @param hash hash of the transaction
+     * @param hash hash of the transaction or signable transaction
      * @param privateKey Private key to use
      * @param scheme Signature scheme to use
      */
-    static create(hash: string, privateKey: PrivateKey, scheme?: SignatureScheme) {
+    static create(hash: string | Signable, privateKey: PrivateKey, scheme?: SignatureScheme) {
         const signature = new TxSignature();
 
         signature.M = 1;
@@ -83,11 +83,11 @@ export class TxSignature {
      *
      * If the signature schemas is not provided, the default schemes for the key types are used.
      *
-     * @param hash hash of the transaction
+     * @param hash hash of the transaction or signable transaction
      * @param privateKey Private key to use
      * @param scheme Signature scheme to use
      */
-    static async createAsync(hash: string, privateKey: PrivateKey, scheme?: SignatureScheme) {
+    static async createAsync(hash: string | Signable, privateKey: PrivateKey, scheme?: SignatureScheme) {
         const signature = new TxSignature();
 
         signature.M = 1;

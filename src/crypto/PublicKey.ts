@@ -23,6 +23,7 @@ import { hexstr2str, hexstring2ab, num2hexstring, StringReader } from '../utils'
 import { CurveLabel } from './CurveLabel';
 import { Key, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
+import { Signable } from './signable';
 import { Signature } from './Signature';
 import { SignatureScheme } from './SignatureScheme';
 
@@ -60,12 +61,17 @@ export class PublicKey extends Key {
      * Verifies if the signature was created with private key corresponding to supplied public key
      * and was not tampered with using signature schema.
      *
-     * @param msg Hex encoded input data
+     * @param msg Hex encoded input data or Signable object
      * @param signature Signature object
      */
-    verify(msg: string, signature: Signature): boolean {
+    verify(msg: string | Signable, signature: Signature): boolean {
         if (!this.isSchemaSupported(signature.algorithm)) {
             throw new Error('Signature schema does not match key type.');
+        }
+
+        // retrieves content to sign if not provided directly
+        if (typeof msg !== 'string') {
+            msg = msg.getSignContent();
         }
 
         let hash: string;

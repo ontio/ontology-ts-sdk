@@ -30,6 +30,7 @@ import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { buildSmartContractParam, pushHexString, pushInt } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
+import { Transfer } from './transfer';
 import { TxSignature } from './txSignature';
 // const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
@@ -52,9 +53,7 @@ export const Default_params = {
  * @param schema Signature Schema to use
  */
 export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
-    const hash = tx.getHash();
-
-    const signature = TxSignature.create(hash, privateKey, schema);
+    const signature = TxSignature.create(tx, privateKey, schema);
 
     tx.sigs = [signature];
 };
@@ -70,9 +69,7 @@ export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?
  * @param schema Signature Schema to use
  */
 export const signTransactionAsync = async (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
-    const hash = tx.getHash();
-
-    const signature = await TxSignature.createAsync(hash, privateKey, schema);
+    const signature = await TxSignature.createAsync(tx, privateKey, schema);
 
     tx.sigs = [signature];
 };
@@ -88,8 +85,7 @@ export const signTransactionAsync = async (tx: Transaction, privateKey: PrivateK
  * @param schema Signature Schema to use
  */
 export const addSign = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
-    const hash = tx.getHash();
-    const signature = TxSignature.create(hash, privateKey, schema);
+    const signature = TxSignature.create(tx, privateKey, schema);
 
     tx.sigs.push(signature);
 };
@@ -121,7 +117,7 @@ export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
                 if (tx.sigs[i].sigData.length + 1 > pubKeys.length) {
                     throw new Error('Too many sigData');
                 }
-                const signData = privateKey.sign(tx.getHash(), scheme).serializeHex();
+                const signData = privateKey.sign(tx, scheme).serializeHex();
                 tx.sigs[i].sigData.push(signData);
                 return;
             }
@@ -130,7 +126,7 @@ export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
     const sig = new TxSignature();
     sig.M = M;
     sig.pubKeys = pubKeys;
-    sig.sigData = [privateKey.sign(tx.getHash(), scheme).serializeHex()];
+    sig.sigData = [privateKey.sign(tx, scheme).serializeHex()];
     tx.sigs.push(sig);
 };
 
@@ -160,7 +156,14 @@ export function makeNativeContractTx(
     code += pushHexString(str2hexstr(NATIVE_INVOKE_NAME));
     const payload = new InvokeCode();
     payload.code = code;
-    const tx = new Transaction();
+
+    let tx: Transaction;
+    if (funcName === 'transfer') {
+        tx = new Transfer();
+    } else {
+        tx = new Transaction();
+    }
+
     tx.type = TxType.Invoke;
     tx.payload = payload;
     if (gasLimit) {

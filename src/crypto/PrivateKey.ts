@@ -29,8 +29,10 @@ import { Address } from './address';
 import { Key, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
 import { PublicKey } from './PublicKey';
+import { Signable } from './signable';
 import { Signature } from './Signature';
 import { SignatureScheme } from './SignatureScheme';
+
 // tslint:disable-next-line:no-var-requires
 const HDKey = require('@ont-community/hdkey-secp256r1');
 
@@ -94,17 +96,22 @@ export class PrivateKey extends Key {
      *
      * This method is not suitable, if external keys (Ledger, TPM, ...) support is required.
      *
-     * @param msg Hex encoded input data
+     * @param msg Hex encoded input data or Signable object
      * @param schema Signing schema to use
      * @param publicKeyId Id of public key
      */
-    sign(msg: string, schema?: SignatureScheme, publicKeyId?: string): Signature {
+    sign(msg: string | Signable, schema?: SignatureScheme, publicKeyId?: string): Signature {
         if (schema === undefined) {
             schema = this.algorithm.defaultSchema;
         }
 
         if (!this.isSchemaSupported(schema)) {
             throw new Error('Signature schema does not match key type.');
+        }
+
+        // retrieves content to sign if not provided directly
+        if (typeof msg !== 'string') {
+            msg = msg.getSignContent();
         }
 
         let hash: string;
@@ -126,11 +133,11 @@ export class PrivateKey extends Key {
      *
      * This method is suitable, if external keys (Ledger, TPM, ...) support is required.
      *
-     * @param msg Hex encoded input data
+     * @param msg Hex encoded input data or Signable object
      * @param schema Signing schema to use
      * @param publicKeyId Id of public key
      */
-    async signAsync(msg: string, schema?: SignatureScheme, publicKeyId?: string): Promise<Signature> {
+    async signAsync(msg: string | Signable, schema?: SignatureScheme, publicKeyId?: string): Promise<Signature> {
         return this.sign(msg, schema, publicKeyId);
     }
 
@@ -255,7 +262,7 @@ export class PrivateKey extends Key {
      */
     computeEcDSASignature(hash: string): string {
         const ec = new elliptic.ec(this.parameters.curve.preset);
-        const signed = ec.sign(hash, this.key, null);
+        const signed = ec.sign(hash, this.key, { canonical: true });
         return Buffer.concat([
             signed.r.toArrayLike(Buffer, 'be', 32),
             signed.s.toArrayLike(Buffer, 'be', 32)

@@ -53,6 +53,13 @@ export class WebsocketSender {
             }
         });
 
+        this.wsp.onClose.addListener(() => {
+            if (this.debug) {
+                // tslint:disable-next-line:no-console
+                console.log('disconnected');
+            }
+        });
+
         this.wsp.onSend.addListener((message: any) => {
             if (this.debug) {
                 // tslint:disable-next-line:no-console

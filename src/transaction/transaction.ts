@@ -19,6 +19,7 @@
 import * as cryptoJS from 'crypto-js';
 import Fixed64 from '../common/fixed64';
 import { Address } from '../crypto/address';
+import { Signable } from '../crypto/signable';
 import { ab2hexstring, generateRandomArray, num2hexstring, StringReader } from '../utils';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
@@ -70,7 +71,7 @@ export class Fee {
     }
 }
 
-export class Transaction {
+export class Transaction implements Signable {
     static deserialize(hexstring: string): Transaction {
         const tx = new Transaction();
 
@@ -231,9 +232,9 @@ export class Transaction {
     }
 
     /**
-     * Get the hash of transaction
+     * Get the signable content
      */
-    getHash() {
+    getSignContent() {
         const data = this.serializeUnsignedData();
 
         const ProgramHexString = cryptoJS.enc.Hex.parse(data);
@@ -241,5 +242,13 @@ export class Transaction {
         const ProgramSha2562 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(ProgramSha256)).toString();
 
         return ProgramSha2562;
+    }
+
+    /**
+     * Get the hash of transaction
+     * @deprecated Use getSignContent instead
+     */
+    getHash() {
+        return this.getSignContent();
     }
 }
