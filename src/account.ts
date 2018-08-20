@@ -15,10 +15,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
+import * as bip39 from 'bip39';
+import { ONT_BIP44_PATH } from './consts';
 import { Address, PrivateKey } from './crypto';
 import { deserializeFromJson } from './crypto/PrivateKeyFactory';
+import { ERROR_CODE } from './error';
 import { ScryptParams } from './scrypt';
 import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
+
+// tslint:disable-next-line:no-var-requires
+const HDKey = require('@ont-community/hdkey-secp256r1');
 
 export class Account {
     /**
@@ -57,6 +63,32 @@ export class Account {
 
         account.address = Address.fromPubKey(publicKey);
 
+        return account;
+    }
+
+    /**
+     * Import account with mnemonic
+     * @param label Account's label
+     * @param mnemonic User's mnemonic
+     * @param password user's password to encrypt the private key
+     * @param params Params used to encrypt the private key.
+     */
+    static importWithMnemonic(
+        label: string,
+        mnemonic: string,
+        password: string,
+        params?: ScryptParams
+    ): Account {
+        mnemonic = mnemonic.trim();
+        if (!bip39.validateMnemonic(mnemonic)) {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        const seed = bip39.mnemonicToSeedHex(mnemonic);
+        const hdkey = HDKey.fromMasterSeed(Buffer.from(seed, 'hex'));
+        const pri = hdkey.derive(ONT_BIP44_PATH);
+        const key = Buffer.from(pri.privateKey).toString('hex');
+        const privateKey = new PrivateKey(key);
+        const account = Account.create(privateKey, password, label, params);
         return account;
     }
 
