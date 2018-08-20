@@ -37,6 +37,7 @@ import { NeoRpc } from '../neocore/NeoRpc';
 import { Program } from '../neocore/Program';
 import { SmartContract } from '../neocore/SmartContract';
 import RestClient from '../network/rest/restClient';
+import { ScryptParams } from '../scrypt';
 import * as scrypt from '../scrypt';
 import AbiInfo from '../smartcontract/abi/abiInfo';
 import { Parameter } from '../smartcontract/abi/parameter';
@@ -65,7 +66,7 @@ const HDKey = require('@ont-community/hdkey-secp256r1');
 // neo contract
 const CONTRACT_HASH = 'ceab719b8baa2310f232ee0d277c061704541cfb';
 // neo node
-const NEO_NODE = 'http://neonode1.ont.network';
+const NEO_NODE = 'http://neonode1.ont.network:10332';
 // neo abi
 // tslint:disable-next-line:max-line-length
 const NEP5_ABI = '{"hash":"0x5bb169f915c916a5e30a3c13a5e0cd228ea26826","entrypoint":"Main","functions":[{"name":"Name","parameters":[],"returntype":"String"},{"name":"Symbol","parameters":[],"returntype":"String"},{"name":"Decimals","parameters":[],"returntype":"Integer"},{"name":"Main","parameters":[{"name":"operation","type":"String"},{"name":"args","type":"Array"}],"returntype":"Any"},{"name":"Init","parameters":[],"returntype":"Boolean"},{"name":"TotalSupply","parameters":[],"returntype":"Integer"},{"name":"Transfer","parameters":[{"name":"from","type":"ByteArray"},{"name":"to","type":"ByteArray"},{"name":"value","type":"Integer"}],"returntype":"Boolean"},{"name":"BalanceOf","parameters":[{"name":"address","type":"ByteArray"}],"returntype":"Integer"}],"events":[{"name":"transfer","parameters":[{"name":"arg1","type":"ByteArray"},{"name":"arg2","type":"ByteArray"},{"name":"arg3","type":"Integer"}],"returntype":"Void"}]}';
@@ -822,6 +823,10 @@ export class SDK {
 
     static exportIdentityToQrcode(identityDataStr: string, callback: string) {
         const obj = Identity.parseJson(identityDataStr);
+        let salt = obj.controls[0].salt;
+        if (!isBase64(salt)) {
+            salt = Buffer.from(salt, 'hex').toString('base64');
+        }
         const result = {
             type : 'I',
             label : obj.label,
@@ -833,7 +838,7 @@ export class SDK {
                 dkLen : 64
             },
             key : obj.controls[0].encryptedKey.key,
-            salt : obj.controls[0].salt,
+            salt,
             address: obj.controls[0].address.toBase58(),
             parameters : {
                 curve : 'secp256r1'
@@ -1230,7 +1235,8 @@ export class SDK {
         encryptedPrivateKey: string,
         password: string,
         salt: string,
-        callback: string
+        callback: string,
+        params ?: ScryptParams
     ) {
         password = this.transformPassword(password);
         const recv = new Address(to);
@@ -1244,7 +1250,7 @@ export class SDK {
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
         try {
             const saltHex = Buffer.from(salt, 'base64').toString('hex');
-            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex, params);
         } catch (err) {
             const result = this.getDecryptError(err);
             if (callback) {
@@ -1268,12 +1274,13 @@ export class SDK {
                 result: ''
             };
             if (res.result) {
-                result.result = tx.getHash();
+                result.result = reverseHex(tx.getHash());
                 callback && sendBackResult2Native(JSON.stringify(result), callback);
             } else {
                 result.error = ERROR_CODE.NETWORK_ERROR;
                 callback && sendBackResult2Native(JSON.stringify(result), callback);
             }
+            return result;
         });
     }
 

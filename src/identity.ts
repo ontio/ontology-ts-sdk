@@ -95,6 +95,7 @@ export class Identity {
         identity.ontid = Address.generateOntid(publicKey);
         identity.label = label;
         identity.lock = false;
+        identity.isDefault = false;
 
         // control
         const control = new ControlData('1', encryptedPrivateKey, Address.fromOntid(identity.ontid), saltBase64);
@@ -119,6 +120,7 @@ export class Identity {
         identity.ontid = '';
         identity.label = label;
         identity.lock = false;
+        identity.isDefault = false;
 
         // ontid
         const publicKey = privateKey.getPublicKey();
@@ -150,6 +152,7 @@ export class Identity {
         id.ontid = obj.ontid;
         id.label = obj.label;
         id.lock = obj.lock;
+        id.isDefault = obj.isDefault;
         id.controls = (obj.controls as any[]).map((c) => ControlData.fromJson(c));
         id.extra = obj.extra;
         return id;
@@ -158,6 +161,7 @@ export class Identity {
     ontid: string;
     label: string;
     lock: boolean;
+    isDefault: boolean;
     controls: ControlData[] = [];
     extra: null;
 

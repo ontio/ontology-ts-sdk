@@ -31,6 +31,7 @@ import AbiFunction from './smartcontract/abi/abiFunction';
 import AbiInfo from './smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from './smartcontract/abi/parameter';
 import Struct from './smartcontract/abi/struct';
+import * as GovernanceTxBuilder from './smartcontract/nativevm/governanceContractTxBuilder';
 import * as OntAssetTxBuilder from './smartcontract/nativevm/ontAssetTxBuilder';
 import * as OntidContract from './smartcontract/nativevm/ontidContractTxBuilder';
 import * as Token from './smartcontract/nativevm/token';
@@ -65,6 +66,7 @@ class ONT {
     SDK: any;
     Token: any;
     OntidContract: any;
+    GovernanceTxBuilder: any;
     RestClient: any;
     RpcClient: any;
     WebsocketClient: any;
@@ -84,6 +86,7 @@ class ONT {
         this.TxSignature = TxSignature;
         this.TransactionBuilder = TransactionBuilder;
         this.OntAssetTxBuilder = OntAssetTxBuilder;
+        this.GovernanceTxBuilder = GovernanceTxBuilder;
         this.Parameter = Parameter;
         this.ParameterType = ParameterType;
         this.AbiFunction = AbiFunction;
@@ -137,6 +140,7 @@ export {
     AbiInfo,
     TransactionBuilder,
     OntAssetTxBuilder,
+    GovernanceTxBuilder,
     utils,
     scrypt,
     CONST,

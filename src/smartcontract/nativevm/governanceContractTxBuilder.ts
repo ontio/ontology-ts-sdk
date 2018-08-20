@@ -66,6 +66,27 @@ export function makeRegisterCandidateTx(
 }
 
 /**
+ *
+ * @param userAddr User's address to pledge ONT&ONG.
+ * @param peerPubKey Public key of user's peer
+ * @param payer Address to pay for the gas.
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ */
+export function makeUnregisterCandidateTx(
+    userAddr: Address,
+    peerPubKey: string,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubKey), userAddr.serialize());
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('unRegisterCandidate', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+/**
  * Creates transaction to approve candidate
  * @param peerPubKey Public key of user's peer
  * @param payer Address to pay for the gas.
@@ -180,6 +201,7 @@ export function makeUnvoteForPeerTx(
 
 /**
  * Withdraw the unvote ONT
+ * Need two signatures if userAddr and payer are not the same
  * @param userAddr
  * @param peerPubKeys
  * @param withdrawList
@@ -208,6 +230,22 @@ export function makeWithdrawTx(
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('withdraw', params, contractAddress,
         gasPrice, gasLimit, payer);
+}
+
+/** Quit node register
+ * Need two signatures if userAddr and payer are not the same
+ */
+export function makeQuitNodeTx(
+    userAddr: Address,
+    peerPubKey: string,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubKey), userAddr.serialize());
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('quitNode', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 /**
