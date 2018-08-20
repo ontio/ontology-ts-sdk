@@ -18,6 +18,7 @@
 import { Address } from '../../crypto';
 import { ERROR_CODE } from '../../error';
 import RestClient from '../../network/rest/restClient';
+import opcode from '../../transaction/opcode';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionBuilder';
 import { hex2VarBytes, hexstr2str, num2hexstring,
@@ -26,6 +27,8 @@ import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
 export const GOVERNANCE_CONTRACT = '0000000000000000000000000000000000000007';
+export const PEER_ATTRIBUTE = 'peerAttribute';
+export const SPLIT_FEE_ADDRESS = 'splitFeeAddress';
 const contractAddress = new Address(GOVERNANCE_CONTRACT);
 
 /* TODO: Test */
@@ -249,6 +252,141 @@ export function makeQuitNodeTx(
 }
 
 /**
+ * Peer change the status of authorization
+ * @param peerPubKey Peer's public key
+ * @param userAddr User's address
+ * @param ifAuthorize True of false
+ * @param payer Payer of the transaction fee
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ */
+export function makeChangeAuthorizationTx(
+    peerPubKey: string,
+    userAddr: Address,
+    ifAuthorize: boolean,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubKey), userAddr.serialize(), ifAuthorize);
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('changeAuthorization', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+/**
+ * Update allocation proportion of peer
+ * @param peerPubKey
+ * @param userAddr
+ * @param peerCost
+ * @param payer
+ * @param gasPrice
+ * @param gasLimit
+ */
+export function makeSetPeerCostTx(
+    peerPubKey: string,
+    userAddr: Address,
+    peerCost: number,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubKey), userAddr.serialize(), peerPubKey);
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('setPeerCost', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+/**
+ * Withdraw fee to user's address
+ * @param userAddr User's address
+ * @param payer
+ * @param gasPrice
+ * @param gasLimit
+ */
+export function makeWithdrawFeeTx(
+    userAddr: Address,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(userAddr.serialize());
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('withdrawFee', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+/**
+ * User authorize some peers
+ * @param userAddr
+ * @param peerPubKeyList
+ * @param posList
+ * @param payer
+ * @param gasPrice
+ * @param gasLimit
+ */
+export function makeAuthorizeForPeerTx(
+    userAddr: Address,
+    peerPubKeyList: string[],
+    posList: number[],
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(userAddr.serialize());
+    struct.add(peerPubKeyList.length);
+    for (const p of peerPubKeyList) {
+        struct.add(str2hexstr(p));
+    }
+    struct.add(posList.length);
+    for (const w of posList) {
+        struct.add(w);
+    }
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('authorizeForPeer', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+export function makeUnauthorizeForPeerTx(
+    userAddr: Address,
+    peerPubKeyList: string[],
+    posList: number[],
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(userAddr.serialize());
+    struct.add(peerPubKeyList.length);
+    for (const p of peerPubKeyList) {
+        struct.add(str2hexstr(p));
+    }
+    struct.add(posList.length);
+    for (const w of posList) {
+        struct.add(w);
+    }
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('authorizeForPeer', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+export async function getAttributes(peerPubKey: string, url?: string) {
+    const restClient = new RestClient(url);
+    const codeHash = contractAddress.toHexString();
+    const key = str2hexstr(PEER_ATTRIBUTE) + peerPubKey;
+    const res = await restClient.getStorage(codeHash, key);
+    const result = res.Result;
+    return PeerAttributes.deserialize(new StringReader(result));
+}
+
+export async function getSplitFeeAddress(address: Address, url?: string) {
+    const restClient = new RestClient(url);
+    const codeHash = contractAddress.toHexString();
+    const key = str2hexstr(SPLIT_FEE_ADDRESS) + address.serialize();
+    const res = await restClient.getStorage(codeHash, key);
+    const result = res.Result;
+    return SplitFeeAddress.deserialize(new StringReader(result));
+}
+/**
  * Query all the peer's state. The result is a map.
  * @param url Url of blockchain node
  */
@@ -328,4 +466,49 @@ class PeerPoolItem {
         result += num2hexstring(this.totalPos, 8, true);
         return result;
     }
+}
+
+export class PeerAttributes {
+    static deserialize(sr: StringReader): PeerAttributes {
+        const pr = new PeerAttributes();
+        pr.peerPubkey = hexstr2str(sr.readNextBytes());
+
+        const boolV = sr.readNextLen() === opcode.PUSHT ? true : false;
+        pr.ifAuthorize = boolV;
+
+        pr.oldPeerCost = sr.readLong();
+        pr.newPeerCost = sr.readLong();
+        pr.setCostView = sr.readUint32();
+        pr.field1 = sr.readNextBytes();
+        pr.field2 = sr.readNextBytes();
+        pr.field3 = sr.readNextBytes();
+        pr.field4 = sr.readNextBytes();
+
+        return pr;
+    }
+    peerPubkey: string;
+    ifAuthorize: boolean;
+    oldPeerCost: number;
+    newPeerCost: number;
+    setCostView: number;
+    field1: string;
+    field2: string;
+    field3: string;
+    field4: string;
+
+    serialize(): string {
+        return '';
+    }
+}
+
+export class SplitFeeAddress {
+    static deserialize(sr: StringReader) {
+        const sfa = new SplitFeeAddress();
+        sfa.address = Address.deserialize(sr);
+        sfa.amount = sr.readLong();
+        return sfa;
+    }
+
+    address: Address;
+    amount: number;
 }
