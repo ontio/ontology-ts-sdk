@@ -18,6 +18,7 @@
 
 import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
+import { Deferred } from './deferred';
 import * as Builder from './websocketBuilder';
 import { WebsocketSender } from './websocketSender';
 
@@ -31,9 +32,13 @@ export class WebsocketClient {
 
     autoClose: boolean;
 
+    promises: Map<string, Deferred<any>>;
+
     constructor(url = TEST_ONT_URL.SOCKET_URL, debug = false, autoClose = true) {
         this.autoClose = autoClose;
+        this.promises = new Map();
         this.sender = new WebsocketSender(url, debug);
+        this.sender.addListener(this.notifyListener.bind(this));
     }
 
     /**
@@ -75,23 +80,20 @@ export class WebsocketClient {
      */
     async sendRawTransaction(hexData: string, preExec = false, waitNotify = false) {
         const raw = Builder.sendRawTransaction(hexData, preExec);
+        const sendResult = await this.send(raw, this.autoClose && !waitNotify);
+
+        if (sendResult.Error === -1) {
+            throw new Error('FAILED_TRANSACTION');
+        }
 
         if (waitNotify) {
-            return new Promise((resolve, reject) => {
+            const txHash: string = sendResult.Result;
 
-                this.sender.addListener((result) => {
-                    if (result.Action === 'Notify') {
-                        if (this.autoClose) {
-                            this.sender.close();
-                        }
-                        resolve(result);
-                    }
-                });
-
-                this.send(raw, false);
-            });
+            const deferred = new Deferred<any>();
+            this.promises.set(txHash, deferred);
+            return deferred.promise;
         } else {
-            return this.send(raw);
+            return sendResult;
         }
     }
 
@@ -278,5 +280,27 @@ export class WebsocketClient {
      */
     private async send<T extends object>(raw: T, close: boolean = this.autoClose): Promise<any> {
         return this.sender.send(raw, close);
+    }
+
+    private notifyListener(result: any) {
+        if (result.Action === 'Notify') {
+            const txHash: string | undefined = result.Result.TxHash;
+
+            if (txHash !== undefined) {
+                const promise = this.promises.get(txHash);
+
+                if (promise !== undefined) {
+                    this.promises.delete(txHash);
+                    promise.resolve(result);
+                } else {
+                    // tslint:disable-next-line:no-console
+                    console.warn('Received Notify event for unknown transaction');
+                }
+
+                if (this.autoClose) {
+                    this.sender.close();
+                }
+            }
+        }
     }
 }
