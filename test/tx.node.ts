@@ -94,7 +94,6 @@ describe('test ONT ID contract', () => {
     console.log('pk3:' + pri3.getPublicKey().serializeHex());
     console.log('address3: ' + account3.address.toBase58());
     
-
     const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
     const account4 = Account.create(pri4, '123456', '');
     const pub4 = pri4.getPublicKey();
@@ -102,7 +101,6 @@ describe('test ONT ID contract', () => {
     console.log('pk4:' + pri4.getPublicKey().serializeHex());
     console.log('address4: ' + account4.address.toBase58());
     
-
     const pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
     const account5 = Account.create(pri5, '123456', '');
     const pub5 = pri5.getPublicKey();
@@ -120,7 +118,8 @@ describe('test ONT ID contract', () => {
     }, 10000);
 
     test('testDDOTx', async () => {
-        const tx = buildGetDDOTx('did:ont:ALgLSUboyCssgwdqZkqKaE6zRdpXYJSukt');
+        const tx = buildGetDDOTx('did:ont:AUEKhXNsoAT27HJwwqFGbpRy8QLHUMBMPz');
+        const restClient = new RestClient('http://139.219.128.220:20334')
         const response = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(response);
         const ddo = DDO.deserialize(response.Result.Result);
