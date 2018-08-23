@@ -26,9 +26,10 @@ import { hex2VarBytes, hexstr2str, num2hexstring,
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
-export const GOVERNANCE_CONTRACT = '0000000000000000000000000000000000000007';
-export const PEER_ATTRIBUTE = 'peerAttribute';
-export const SPLIT_FEE_ADDRESS = 'splitFeeAddress';
+const GOVERNANCE_CONTRACT = '0000000000000000000000000000000000000007';
+const PEER_ATTRIBUTES = 'peerAttributes';
+const SPLIT_FEE_ADDRESS = 'splitFeeAddress';
+const AUTHORIZE_INFO_POOL = 'authorizeInfoPool';
 const contractAddress = new Address(GOVERNANCE_CONTRACT);
 
 /* TODO: Test */
@@ -255,7 +256,7 @@ export function makeQuitNodeTx(
  * Peer change the status of authorization
  * @param peerPubKey Peer's public key
  * @param userAddr User's address
- * @param ifAuthorize True of false
+ * @param ifAuthorize 0 - Not allow authorize; 1 - allow authorize;
  * @param payer Payer of the transaction fee
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
@@ -263,7 +264,7 @@ export function makeQuitNodeTx(
 export function makeChangeAuthorizationTx(
     peerPubKey: string,
     userAddr: Address,
-    ifAuthorize: boolean,
+    ifAuthorize: number,
     payer: Address,
     gasPrice: string,
     gasLimit: string
@@ -292,7 +293,7 @@ export function makeSetPeerCostTx(
     gasLimit: string
 ): Transaction {
     const struct = new Struct();
-    struct.add(str2hexstr(peerPubKey), userAddr.serialize(), peerPubKey);
+    struct.add(str2hexstr(peerPubKey), userAddr.serialize(), peerCost);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('setPeerCost', params, contractAddress, gasPrice, gasLimit, payer);
 }
@@ -366,16 +367,25 @@ export function makeUnauthorizeForPeerTx(
         struct.add(w);
     }
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx('authorizeForPeer', params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx('unAuthorizeForPeer', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
+/**
+ * If not set ifAuthorize or cost before, query result will be empty.
+ * @param peerPubKey
+ * @param url
+ */
 export async function getAttributes(peerPubKey: string, url?: string) {
     const restClient = new RestClient(url);
     const codeHash = contractAddress.toHexString();
-    const key = str2hexstr(PEER_ATTRIBUTE) + peerPubKey;
+    const key = str2hexstr(PEER_ATTRIBUTES) + peerPubKey;
     const res = await restClient.getStorage(codeHash, key);
     const result = res.Result;
-    return PeerAttributes.deserialize(new StringReader(result));
+    if (result) {
+        return PeerAttributes.deserialize(new StringReader(result));
+    } else {
+        return new PeerAttributes();
+    }
 }
 
 export async function getSplitFeeAddress(address: Address, url?: string) {
@@ -383,9 +393,27 @@ export async function getSplitFeeAddress(address: Address, url?: string) {
     const codeHash = contractAddress.toHexString();
     const key = str2hexstr(SPLIT_FEE_ADDRESS) + address.serialize();
     const res = await restClient.getStorage(codeHash, key);
+    console.log(res);
     const result = res.Result;
-    return SplitFeeAddress.deserialize(new StringReader(result));
+    if (result) {
+        return SplitFeeAddress.deserialize(new StringReader(result));
+    } else {
+        return new SplitFeeAddress();
+    }
 }
+export async function getAuthorizeInfo(peerPubKey: string, address: Address, url?: string) {
+    const restClient = new RestClient(url);
+    const codeHash = contractAddress.toHexString();
+    const key = str2hexstr(AUTHORIZE_INFO_POOL) + peerPubKey + address.serialize();
+    const res = await restClient.getStorage(codeHash, key);
+    const result = res.Result;
+    if (result) {
+        return AuthorizeInfo.deserialize(new StringReader(result));
+    } else {
+        return new AuthorizeInfo();
+    }
+}
+
 /**
  * Query all the peer's state. The result is a map.
  * @param url Url of blockchain node
@@ -413,7 +441,7 @@ export async function getPeerPoolMap(url?: string) {
 /**
  * Use to store governance state.
  */
-class GovernanceView {
+export class GovernanceView {
     static deserialize(sr: StringReader): GovernanceView {
         const g = new GovernanceView();
         g.view = sr.readInt();
@@ -437,7 +465,7 @@ class GovernanceView {
 /**
  * Describs the peer's state in the pool.
  */
-class PeerPoolItem {
+export class PeerPoolItem {
     static deserialize(sr: StringReader): PeerPoolItem {
         const p = new PeerPoolItem();
         p.index = sr.readInt();
@@ -473,8 +501,7 @@ export class PeerAttributes {
         const pr = new PeerAttributes();
         pr.peerPubkey = hexstr2str(sr.readNextBytes());
 
-        const boolV = sr.readNextLen() === opcode.PUSHT ? true : false;
-        pr.ifAuthorize = boolV;
+        pr.ifAuthorize = sr.readNextLen();
 
         pr.oldPeerCost = sr.readLong();
         pr.newPeerCost = sr.readLong();
@@ -487,7 +514,7 @@ export class PeerAttributes {
         return pr;
     }
     peerPubkey: string;
-    ifAuthorize: boolean;
+    ifAuthorize: number; // 0 or 1
     oldPeerCost: number;
     newPeerCost: number;
     setCostView: number;
@@ -510,5 +537,29 @@ export class SplitFeeAddress {
     }
 
     address: Address;
-    amount: number;
+    amount: number = 0;
+}
+
+export class AuthorizeInfo {
+    static deserialize(sr: StringReader) {
+        const ai = new AuthorizeInfo();
+        ai.peerPubkey = hexstr2str(sr.readNextBytes());
+        ai.address = Address.deserialize(sr);
+        ai.consensusPos = sr.readLong();
+        ai.freezePos = sr.readLong();
+        ai.newPos = sr.readLong();
+        ai.withdrawPos = sr.readLong();
+        ai.withdrawFreezePos = sr.readLong();
+        ai.withdrawUnfreezePos = sr.readLong();
+        return ai;
+    }
+
+    peerPubkey: string;
+    address: Address;
+    consensusPos: number;
+    freezePos: number;
+    newPos: number;
+    withdrawPos: number;
+    withdrawFreezePos: number;
+    withdrawUnfreezePos: number;
 }

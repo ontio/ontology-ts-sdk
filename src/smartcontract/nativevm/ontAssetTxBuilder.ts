@@ -50,7 +50,7 @@ export function getTokenContract(tokenType: string) {
 export function verifyAmount(amount: number | string) {
     const value = new BigNumber(amount);
 
-    if (!value.isInteger() || value <= new BigNumber(0)) {
+    if (!value.isInteger() || value.lte(new BigNumber(0))) {
         throw new Error('Amount is invalid.');
     }
 }
