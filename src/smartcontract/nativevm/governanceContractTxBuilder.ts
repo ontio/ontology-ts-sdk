@@ -18,7 +18,7 @@
 import { Address } from '../../crypto';
 import { ERROR_CODE } from '../../error';
 import RestClient from '../../network/rest/restClient';
-import opcode from '../../transaction/opcode';
+// import opcode from '../../transaction/opcode';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionBuilder';
 import { hex2VarBytes, hexstr2str, num2hexstring,

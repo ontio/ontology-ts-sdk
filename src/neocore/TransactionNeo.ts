@@ -17,6 +17,7 @@
  */
 
 import * as cryptoJS from 'crypto-js';
+import { Signable } from '../crypto/index';
 import { PrivateKey } from '../crypto/PrivateKey';
 import { TxType } from '../transaction/transaction';
 import { SignatureScheme } from './../crypto/SignatureScheme';
@@ -44,7 +45,7 @@ import { TransactionOutput } from './TransactionOutput';
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export class TransactionNeo {
+export class TransactionNeo implements Signable {
     /**
      * Transaction type
      */
@@ -104,6 +105,14 @@ export class TransactionNeo {
         const ProgramSha2562 = cryptoJS.SHA256(cryptoJS.enc.Hex.parse(ProgramSha256)).toString();
 
         return ProgramSha2562;
+    }
+
+    getSignContent() {
+        return this.getHashData();
+    }
+
+    serializeUnsignedData() {
+        return this.getHashData();
     }
 
     getHashData() {
