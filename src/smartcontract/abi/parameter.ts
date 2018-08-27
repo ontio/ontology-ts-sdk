@@ -67,7 +67,7 @@ export class Parameter {
     }
 
     setValue(value: any): boolean {
-        if (value.type === this.type && value.name === this.name && value.value) {
+        if (value.type === this.type && value.name === this.name && value.value != null) {
             this.value = value.value;
             return true;
         }
