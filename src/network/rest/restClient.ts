@@ -149,16 +149,16 @@ export default class RestClient {
         });
     }
 
-    /**
+    /** Deprecated
      * Get the generation time for each block.
      * If the blockchain node runs in vbft, the result is null.
      */
-    getGenerateBlockTime(): Promise<any> {
-        const url = this.url + UrlConsts.Url_get_generate_block_time;
-        return axios.get(url).then((res) => {
-            return res.data;
-        });
-    }
+    // getGenerateBlockTime(): Promise<any> {
+    //     const url = this.url + UrlConsts.Url_get_generate_block_time;
+    //     return axios.get(url).then((res) => {
+    //         return res.data;
+    //     });
+    // }
 
     /**
      * Get the nodes count of the blockchain.

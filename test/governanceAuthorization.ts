@@ -61,8 +61,8 @@ describe('test governance authorization', () => {
         const stake = stake2;
         const pk = stake.peerPubkey;
         const address = new Address(stake.address);
-        const ifAuthorize = true;
-        const tx = makeChangeAuthorizationTx(pk, address, ifAuthorize, address, gasPrice, gasLimit);
+        const maxAuthorize = 500;
+        const tx = makeChangeAuthorizationTx(pk, address, maxAuthorize, address, gasPrice, gasLimit);
         const pri = getPrivatekey(stake2Account, stake.addrPass);
         signTransaction(tx, pri);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);

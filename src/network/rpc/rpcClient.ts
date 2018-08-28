@@ -115,17 +115,17 @@ export default class RpcClient {
         });
     }
 
-    /**
+    /** Deprecated
      * Get the generation time for each block.
      * If the blockchain node runs in vbft, the result is null cause the time is not fixed.
      */
-    getGenerateBlockTime(): Promise<any> {
-        const req = this.makeRequest('getgenerateblocktime');
+    // getGenerateBlockTime(): Promise<any> {
+    //     const req = this.makeRequest('getgenerateblocktime');
 
-        return axios.post(this.url, req).then((res) => {
-            return res.data;
-        });
-    }
+    //     return axios.post(this.url, req).then((res) => {
+    //         return res.data;
+    //     });
+    // }
 
     /**
      * Get the nodes count.

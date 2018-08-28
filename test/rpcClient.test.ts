@@ -88,10 +88,10 @@ describe('test rpc client', () => {
         expect(res.desc).toEqual('SUCCESS');
     });
 
-    test('test getGenerateBlockTime', async () => {
-        const res = await rpcClient.getGenerateBlockTime();
-        expect(res.desc).toEqual('SUCCESS');
-    });
+    // test('test getGenerateBlockTime', async () => {
+    //     const res = await rpcClient.getGenerateBlockTime();
+    //     expect(res.desc).toEqual('SUCCESS');
+    // });
 
     test('test getNodeCount', async () => {
         const res = await rpcClient.getNodeCount();

@@ -59,12 +59,12 @@ describe('test restClient', () => {
         expect(res.Result).toBeTruthy();
     });
 
-    test('test GenerateBlockTime', async () => {
-        const res = await rest.getGenerateBlockTime();
-        console.log(res);
-        // expect(res.Result).toBeTruthy();
-        expect(res.Result).toBeFalsy();
-    });
+    // test('test GenerateBlockTime', async () => {
+    //     const res = await rest.getGenerateBlockTime();
+    //     console.log(res);
+    //     // expect(res.Result).toBeTruthy();
+    //     expect(res.Result).toBeFalsy();
+    // });
 
     test('test getNodeCount', async () => {
         const res = await rest.getNodeCount();

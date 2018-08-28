@@ -125,12 +125,12 @@ describe('test websocket', () => {
         expect(result.Result.Payload).toBeDefined();
     });
 
-    test('test getGenerateBlockTime', async () => {
-        const result = await client.getGenerateBlockTime();
+    // test('test getGenerateBlockTime', async () => {
+    //     const result = await client.getGenerateBlockTime();
 
-        expect(result.Action).toBe('getgenerateblocktime');
-        expect(result.Desc).toBe('SUCCESS');
-    });
+    //     expect(result.Action).toBe('getgenerateblocktime');
+    //     expect(result.Desc).toBe('SUCCESS');
+    // });
 
     test('test getNodeCount', async () => {
         const result = await client.getNodeCount();
