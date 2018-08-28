@@ -18,7 +18,6 @@
 import { Address } from '../../crypto';
 import { ERROR_CODE } from '../../error';
 import RestClient from '../../network/rest/restClient';
-// import opcode from '../../transaction/opcode';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionBuilder';
 import { hex2VarBytes, hexstr2str, num2hexstring,
@@ -256,7 +255,7 @@ export function makeQuitNodeTx(
  * Peer change the status of authorization
  * @param peerPubKey Peer's public key
  * @param userAddr User's address
- * @param ifAuthorize 0 - Not allow authorize; 1 - allow authorize;
+ * @param maxAuthorize Allowed max amount of stake authorization
  * @param payer Payer of the transaction fee
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
@@ -264,13 +263,13 @@ export function makeQuitNodeTx(
 export function makeChangeAuthorizationTx(
     peerPubKey: string,
     userAddr: Address,
-    ifAuthorize: number,
+    maxAuthorize: number,
     payer: Address,
     gasPrice: string,
     gasLimit: string
 ): Transaction {
     const struct = new Struct();
-    struct.add(str2hexstr(peerPubKey), userAddr.serialize(), ifAuthorize);
+    struct.add(str2hexstr(peerPubKey), userAddr.serialize(), maxAuthorize);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('changeAuthorization', params, contractAddress, gasPrice, gasLimit, payer);
 }
@@ -370,6 +369,34 @@ export function makeUnauthorizeForPeerTx(
     return makeNativeContractTx('unAuthorizeForPeer', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
+export function makeAddInitPosTx(
+    peerPubkey: string,
+    userAddr: Address,
+    pos: number,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubkey), userAddr.serialize(), pos);
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('addInitPos', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+export function makeReduceInitPosTx(
+    peerPubkey: string,
+    userAddr: Address,
+    pos: number,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubkey), userAddr.serialize(), pos);
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('reduceInitPos', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
 /**
  * If not set ifAuthorize or cost before, query result will be empty.
  * @param peerPubKey
@@ -388,6 +415,11 @@ export async function getAttributes(peerPubKey: string, url?: string) {
     }
 }
 
+/**
+ * Get the reward fee of address
+ * @param address User's address
+ * @param url Node's restfull url
+ */
 export async function getSplitFeeAddress(address: Address, url?: string) {
     const restClient = new RestClient(url);
     const codeHash = contractAddress.toHexString();
@@ -401,6 +433,13 @@ export async function getSplitFeeAddress(address: Address, url?: string) {
         return new SplitFeeAddress();
     }
 }
+
+/**
+ * Get authorization of user's address
+ * @param peerPubKey Peer's public key
+ * @param address User's address
+ * @param url Node's restful url
+ */
 export async function getAuthorizeInfo(peerPubKey: string, address: Address, url?: string) {
     const restClient = new RestClient(url);
     const codeHash = contractAddress.toHexString();
@@ -501,7 +540,7 @@ export class PeerAttributes {
         const pr = new PeerAttributes();
         pr.peerPubkey = hexstr2str(sr.readNextBytes());
 
-        pr.ifAuthorize = sr.readNextLen();
+        pr.maxAuthorize = sr.readNextLen();
 
         pr.oldPeerCost = sr.readLong();
         pr.newPeerCost = sr.readLong();
@@ -513,11 +552,11 @@ export class PeerAttributes {
 
         return pr;
     }
-    peerPubkey: string;
-    ifAuthorize: number; // 0 or 1
-    oldPeerCost: number;
-    newPeerCost: number;
-    setCostView: number;
+    peerPubkey: string = '';
+    maxAuthorize: number = 0;
+    oldPeerCost: number = 100;
+    newPeerCost: number = 100;
+    setCostView: number = 0;
     field1: string;
     field2: string;
     field3: string;
@@ -562,4 +601,18 @@ export class AuthorizeInfo {
     withdrawPos: number;
     withdrawFreezePos: number;
     withdrawUnfreezePos: number;
+}
+
+export class ChangeInitPosParam {
+    static deserialize(sr: StringReader) {
+        const cip = new ChangeInitPosParam();
+        cip.peerPubkey = hexstr2str(sr.readNextBytes());
+        cip.address = Address.deserialize(sr);
+        cip.pos = sr.readUint32();
+        return cip;
+    }
+
+    peerPubkey: string;
+    address: Address;
+    pos: number;
 }

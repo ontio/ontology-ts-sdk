@@ -117,14 +117,14 @@ export class WebsocketClient {
         return this.send(raw);
     }
 
-    /**
+    /** Deprecated
      * Get the generation time for each block.
      * If the blockchain node runs in vbft, the result is null.
      */
-    async getGenerateBlockTime(): Promise<any> {
-        const raw = Builder.getGenerateBlockTime();
-        return this.send(raw);
-    }
+    // async getGenerateBlockTime(): Promise<any> {
+    //     const raw = Builder.getGenerateBlockTime();
+    //     return this.send(raw);
+    // }
 
     /**
      * Get Nodes count

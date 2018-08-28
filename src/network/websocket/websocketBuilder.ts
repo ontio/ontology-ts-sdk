@@ -79,13 +79,13 @@ export function getRawTransactionJson(txHash: string) {
     return param;
 }
 
-export function getGenerateBlockTime() {
-    const param = {
-        Action: 'getgenerateblocktime',
-        Version: '1.0.0'
-    };
-    return param;
-}
+// export function getGenerateBlockTime() {
+//     const param = {
+//         Action: 'getgenerateblocktime',
+//         Version: '1.0.0'
+//     };
+//     return param;
+// }
 
 export function getNodeCount() {
     const param = {
