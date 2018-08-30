@@ -398,7 +398,7 @@ export class SDK {
     }
 
     static decryptMnemonicEnc(mnemonicEnc: string,
-                              address: string, salt: string, password: string, callback: string) {
+                              address: string, salt: string, password: string, callback?: string) {
         let obj;
         password = this.transformPassword(password);
         const addr = new Address(address);
@@ -715,7 +715,7 @@ export class SDK {
         gasPrice: string,
         gasLimit: string,
         payer: string,
-        callback: string) {
+        callback?: string) {
 
         let fromAddress: Address;
         let toAddress: Address;
@@ -774,7 +774,7 @@ export class SDK {
         gasPrice: string,
         gasLimit: string,
         payer: string,
-        callback: string
+        callback?: string
     ) {
         let addressObj: Address;
         password = this.transformPassword(password);
@@ -821,7 +821,7 @@ export class SDK {
         return result;
     }
 
-    static exportIdentityToQrcode(identityDataStr: string, callback: string) {
+    static exportIdentityToQrcode(identityDataStr: string, callback?: string) {
         const obj = Identity.parseJson(identityDataStr);
         let salt = obj.controls[0].salt;
         if (!isBase64(salt)) {
@@ -851,7 +851,7 @@ export class SDK {
         return result;
     }
 
-    static exportIdentityToKeystring(identityDataStr: string, callback: string) {
+    static exportIdentityToKeystring(identityDataStr: string, callback?: string) {
         const obj = Identity.parseJson(identityDataStr);
         const address = obj.controls[0].address.toBase58();
         const salt = obj.controls[0].salt;
@@ -864,7 +864,7 @@ export class SDK {
         return result;
     }
 
-    static exportAccountToQrcode(accountDataStr: string, callback: string) {
+    static exportAccountToQrcode(accountDataStr: string, callback?: string) {
         const obj = Account.parseJson(accountDataStr);
         const result = {
             type: 'A',
@@ -890,7 +890,7 @@ export class SDK {
         return result;
     }
 
-    static exportAccountToKeystring(accountDataStr: string, callback: string) {
+    static exportAccountToKeystring(accountDataStr: string, callback?: string) {
         const obj = Account.parseJson(accountDataStr);
         const salt = obj.salt;
         const address = obj.address.toBase58();
@@ -903,7 +903,7 @@ export class SDK {
         return result;
     }
 
-    static importAccountMnemonic(label: string, mnemonic: string, password: string, callback: string) {
+    static importAccountMnemonic(label: string, mnemonic: string, password: string, callback?: string) {
         mnemonic = mnemonic.trim();
         password = this.transformPassword(password);
         if (!bip39.validateMnemonic(mnemonic)) {
@@ -939,7 +939,7 @@ export class SDK {
     }
 
     static exportWifPrivakeKey(encryptedKey: string, password: string,
-                               address: string, salt: string, callback: string) {
+                               address: string, salt: string, callback?: string) {
         if (address.length !== 34 && address.length !== 40) {
             const obj = {
                 error: ERROR_CODE.INVALID_PARAMS,
@@ -966,7 +966,7 @@ export class SDK {
         return result;
     }
 
-    static importAccountWithWif(label: string, wif: string, password: string, callback: string) {
+    static importAccountWithWif(label: string, wif: string, password: string, callback?: string) {
         let privateKey;
         password = this.transformPassword(password);
         try {
@@ -991,7 +991,7 @@ export class SDK {
         return result;
     }
 
-    static importAccountWithPrivateKey(label: string, privateKey: string, password: string, callback: string) {
+    static importAccountWithPrivateKey(label: string, privateKey: string, password: string, callback?: string) {
         privateKey = privateKey.trim();
         password = this.transformPassword(password);
         if (!privateKey || privateKey.length !== 64) {
@@ -1018,7 +1018,7 @@ export class SDK {
     /**
      * Actually import with Qrcode
      */
-    static importAccountWithKeystore(keystore: string, password: string, callback: string) {
+    static importAccountWithKeystore(keystore: string, password: string, callback?: string) {
         let keyStoreObj;
         password = this.transformPassword(password);
         try {
@@ -1071,7 +1071,7 @@ export class SDK {
         }
     }
 
-    static getUnclaimedOng(address: string, callback: string) {
+    static getUnclaimedOng(address: string, callback?: string) {
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.getAllowance('ong', new Address(ONT_CONTRACT), new Address(address)).then((res) => {
             const result = {
@@ -1094,7 +1094,7 @@ export class SDK {
         });
     }
 
-    static querySmartCodeEventByTxhash(txHash: string, callback: string) {
+    static querySmartCodeEventByTxhash(txHash: string, callback?: string) {
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.getSmartCodeEvent(txHash).then((res) => {
             const obj = {
@@ -1117,7 +1117,7 @@ export class SDK {
         });
     }
 
-    static createSharedWallet(requiredSignatureNum: string, allRelatedPks: string, callback: string) {
+    static createSharedWallet(requiredSignatureNum: string, allRelatedPks: string, callback?: string) {
         const M  = parseInt(requiredSignatureNum, 10);
         let pks = [];
         let pubs = [];
@@ -1147,7 +1147,7 @@ export class SDK {
         return address;
     }
 
-    static adderssFromPublicKey(publicKey: string, callback: string) {
+    static adderssFromPublicKey(publicKey: string, callback?: string) {
         const pk = PublicKey.deserializeHex(new StringReader(publicKey));
         const address = Address.fromPubKey(pk).toBase58();
         const result = {
@@ -1161,7 +1161,7 @@ export class SDK {
     }
 
     static makeMultiSignTransaction(asset: string, from: string, to: string, amount: string, gasPrice: string,
-                                    gasLimit: string, callback: string) {
+                                    gasLimit: string, callback?: string) {
         let fromAddress: Address;
         let toAddress: Address;
         try {
@@ -1197,7 +1197,7 @@ export class SDK {
         allRelatedPks: string,
         requiredSignatureNum: string,
         txDada: string,
-        callback: string) {
+        callback?: string) {
         password = this.transformPassword(password);
         let privateKey: PrivateKey;
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
@@ -1235,7 +1235,7 @@ export class SDK {
         encryptedPrivateKey: string,
         password: string,
         salt: string,
-        callback: string,
+        callback?: string,
         params ?: ScryptParams
     ) {
         password = this.transformPassword(password);
@@ -1284,7 +1284,7 @@ export class SDK {
         });
     }
 
-    static getNeoBalance(address: string, callback: string) {
+    static getNeoBalance(address: string, callback?: string) {
         const contractAddr = new Address(reverseHex(CONTRACT_HASH));
         const addr = new Address(address);
         return NeoRpc.getBalance(NEO_NODE, contractAddr, addr).then((res: any) => {
@@ -1301,7 +1301,7 @@ export class SDK {
         });
     }
 
-    static sendTransaction(txData: string, callback: string) {
+    static sendTransaction(txData: string, callback?: string) {
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(txData).then((res) => {
             const obj = {
