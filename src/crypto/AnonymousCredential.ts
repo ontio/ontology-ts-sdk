@@ -559,7 +559,7 @@ export class CryptoSuite {
 
     getRandG2(): any {
         const r = this.getRandBN();
-        const g = this.PAIR.G1mul(this.g2, r);
+        const g = this.PAIR.G2mul(this.g2, r);
         return g;
     }
 
