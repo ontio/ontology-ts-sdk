@@ -26,3 +26,4 @@ export { KeyDeserializer, registerKeyDeserializer } from './PrivateKeyFactory';
 export { PublicKey, PublicKeyStatus } from './PublicKey';
 export { Signature, PgpSignature } from './Signature';
 export { Signable } from './signable';
+export { Issuer, User } from './AnonymousCredential';
