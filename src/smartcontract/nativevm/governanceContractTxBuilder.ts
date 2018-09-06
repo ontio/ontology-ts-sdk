@@ -31,6 +31,7 @@ const PEER_ATTRIBUTES = 'peerAttributes';
 const SPLIT_FEE_ADDRESS = 'splitFeeAddress';
 const AUTHORIZE_INFO_POOL = 'voteInfoPool';
 const GLOBAL_PARAM = 'globalParam';
+const TOTAL_STAKE = 'totalStake';
 const contractAddress = new Address(GOVERNANCE_CONTRACT);
 
 /* TODO: Test */
@@ -502,6 +503,19 @@ export async function getGlobalParam(url?: string) {
     }
 
 }
+
+export async function getTotalStake(userAddr: Address, url?: string) {
+    const restClient = new RestClient(url);
+    const codeHash = contractAddress.toHexString();
+    const key = str2hexstr(TOTAL_STAKE) + userAddr.serialize();
+    const res = await restClient.getStorage(codeHash, key);
+    if (res.Result) {
+        return TotalStake.deserialize(new StringReader(res.Result));
+    } else {
+        return new TotalStake();
+    }
+}
+
 /**
  * Use to store governance state.
  */
@@ -664,4 +678,17 @@ export class GlobalParam {
     B: number;
     yita: number;
     penalty: number;
+}
+
+export class TotalStake {
+    static deserialize(sr: StringReader): TotalStake {
+        const ts = new TotalStake();
+        ts.address = Address.deserialize(sr);
+        ts.stake = sr.readLong();
+        ts.timeOffset = sr.readUint32();
+        return ts;
+    }
+    address: Address;
+    stake: number;
+    timeOffset: number;
 }

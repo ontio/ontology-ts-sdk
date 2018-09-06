@@ -7,7 +7,7 @@ import { ParameterType } from './../src/smartcontract/abi/parameter';
 import { RestClient } from '../src/index';
 import { Parameter } from '../src/smartcontract/abi/parameter';
 import { getAttributes, getAuthorizeInfo, getGlobalParam, getGovernanceView,
-    getPeerPoolMap, getSplitFeeAddress, makeAuthorizeForPeerTx, makeChangeAuthorizationTx, makeSetPeerCostTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawTx
+    getPeerPoolMap, getSplitFeeAddress, makeAuthorizeForPeerTx, makeChangeAuthorizationTx, makeSetPeerCostTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawTx, getTotalStake
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
 import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
 import { reverseHex } from '../src/utils';
@@ -153,7 +153,8 @@ describe('test governance authorization', () => {
 
     test('getPeerPoolMap', async () => {
         const res = await getPeerPoolMap();
-        console.log(res);
+        const pk = stake1.peerPubkey;
+        console.log(res[pk]);
     }, 10000);
 
     test('getAuthorizeInfo', async () => {
@@ -178,5 +179,11 @@ describe('test governance authorization', () => {
         const view = await getGlobalParam(nodeUrl);
         console.log(view);
     }, 1000);
+
+    test('getTotalStake', async () => {
+        const addr = new Address(stake2.address);
+        const ts = await getTotalStake(addr, nodeUrl);
+        console.log(ts);
+    });
 
 });
