@@ -15,6 +15,7 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
+import BigInt from '../../common/bigInt';
 import { Address } from '../../crypto';
 import { ERROR_CODE } from '../../error';
 import RestClient from '../../network/rest/restClient';
@@ -28,7 +29,8 @@ import Struct from '../abi/struct';
 const GOVERNANCE_CONTRACT = '0000000000000000000000000000000000000007';
 const PEER_ATTRIBUTES = 'peerAttributes';
 const SPLIT_FEE_ADDRESS = 'splitFeeAddress';
-const AUTHORIZE_INFO_POOL = 'authorizeInfoPool';
+const AUTHORIZE_INFO_POOL = 'voteInfoPool';
+const GLOBAL_PARAM = 'globalParam';
 const contractAddress = new Address(GOVERNANCE_CONTRACT);
 
 /* TODO: Test */
@@ -162,7 +164,6 @@ export function makeVoteForPeerTx(
         struct.add(n);
     }
     const params = buildNativeCodeScript([struct]);
-    console.log('params: ' + params);
     return makeNativeContractTx('voteForPeer', params, contractAddress,
        gasPrice, gasLimit, payer);
 }
@@ -271,7 +272,7 @@ export function makeChangeAuthorizationTx(
     const struct = new Struct();
     struct.add(str2hexstr(peerPubKey), userAddr.serialize(), maxAuthorize);
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx('changeAuthorization', params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx('changeMaxAuthorization', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 /**
@@ -425,7 +426,6 @@ export async function getSplitFeeAddress(address: Address, url?: string) {
     const codeHash = contractAddress.toHexString();
     const key = str2hexstr(SPLIT_FEE_ADDRESS) + address.serialize();
     const res = await restClient.getStorage(codeHash, key);
-    console.log(res);
     const result = res.Result;
     if (result) {
         return SplitFeeAddress.deserialize(new StringReader(result));
@@ -454,16 +454,28 @@ export async function getAuthorizeInfo(peerPubKey: string, address: Address, url
 }
 
 /**
+ * Query the governance view
+ * @param url Url of restful api
+ */
+export async function getGovernanceView(url?: string) {
+    const restClient = new RestClient(url);
+    const codeHash = contractAddress.toHexString();
+    const key = str2hexstr('governanceView');
+    const viewRes = await restClient.getStorage(codeHash, key);
+    const view = viewRes.Result;
+    console.log(view);
+    const governanceView = GovernanceView.deserialize(new StringReader(view));
+    return governanceView;
+}
+
+/**
  * Query all the peer's state. The result is a map.
  * @param url Url of blockchain node
  */
 export async function getPeerPoolMap(url?: string) {
     const restClient = new RestClient(url);
     const codeHash = contractAddress.toHexString();
-    const key = str2hexstr('governanceView');
-    const viewRes = await restClient.getStorage(codeHash, key);
-    const view = viewRes.Result;
-    const governanceView = GovernanceView.deserialize(new StringReader(view));
+    const governanceView = await getGovernanceView(url);
     const key1 = str2hexstr('peerPool');
     const key2 = num2hexstring(governanceView.view, 4, true);
     const keyP = key1 + key2;
@@ -477,20 +489,33 @@ export async function getPeerPoolMap(url?: string) {
     }
     return result;
 }
+
+export async function getGlobalParam(url?: string) {
+    const restClient = new RestClient(url);
+    const codeHash = contractAddress.toHexString();
+    const key = str2hexstr(GLOBAL_PARAM);
+    const res = await restClient.getStorage(codeHash, key);
+    if (res.Result) {
+        return GlobalParam.deserialize(new StringReader(res.Result));
+    } else {
+        return new GlobalParam();
+    }
+
+}
 /**
  * Use to store governance state.
  */
 export class GovernanceView {
     static deserialize(sr: StringReader): GovernanceView {
         const g = new GovernanceView();
-        g.view = sr.readInt();
-        g.height = sr.readInt();
-        g.txhash = sr.readNextBytes();
+        g.view = sr.readUint32();
+        g.height = sr.readUint32();
+        g.txhash = sr.read(64); // uint256
         return g;
     }
-    view: number;
-    height: number;
-    txhash: string;
+    view: number = 0;
+    height: number = 0;
+    txhash: string = '';
 
     serialize(): string {
         let result = '';
@@ -516,12 +541,12 @@ export class PeerPoolItem {
         return p;
     }
 
-    index: number;
-    peerPubkey: string;
+    index: number = 0;
+    peerPubkey: string = '';
     address: Address;
-    status: number;
-    initPos: number;
-    totalPos: number;
+    status: number = 0;
+    initPos: number = 0;
+    totalPos: number = 0;
 
     serialize(): string {
         let result = '';
@@ -540,7 +565,7 @@ export class PeerAttributes {
         const pr = new PeerAttributes();
         pr.peerPubkey = hexstr2str(sr.readNextBytes());
 
-        pr.maxAuthorize = sr.readNextLen();
+        pr.maxAuthorize = sr.readUint32();
 
         pr.oldPeerCost = sr.readLong();
         pr.newPeerCost = sr.readLong();
@@ -593,26 +618,50 @@ export class AuthorizeInfo {
         return ai;
     }
 
-    peerPubkey: string;
+    peerPubkey: string = '';
     address: Address;
-    consensusPos: number;
-    freezePos: number;
-    newPos: number;
-    withdrawPos: number;
-    withdrawFreezePos: number;
-    withdrawUnfreezePos: number;
+    consensusPos: number = 0;
+    freezePos: number = 0;
+    newPos: number = 0;
+    withdrawPos: number = 0;
+    withdrawFreezePos: number = 0;
+    withdrawUnfreezePos: number = 0;
 }
 
-export class ChangeInitPosParam {
+export class GlobalParam {
     static deserialize(sr: StringReader) {
-        const cip = new ChangeInitPosParam();
-        cip.peerPubkey = hexstr2str(sr.readNextBytes());
-        cip.address = Address.deserialize(sr);
-        cip.pos = sr.readUint32();
-        return cip;
+        const gp = new GlobalParam();
+        const feeHexStr = sr.readNextBytes();
+        const candidateFeeStr = BigInt.fromHexstr(feeHexStr).value;
+        gp.candidateFee = Number(candidateFeeStr);
+        const minStr = BigInt.fromHexstr(sr.readNextBytes()).value;
+        gp.minInitState = Number(minStr);
+        const candidateNumStr = BigInt.fromHexstr(sr.readNextBytes()).value;
+        const candidateNum = Number(candidateNumStr);
+        gp.candidateNum = candidateNum;
+        const posLimitStr = BigInt.fromHexstr(sr.readNextBytes()).value;
+        gp.posLimit = Number(posLimitStr);
+        const aStr = BigInt.fromHexstr(sr.readNextBytes()).value;
+        const a = Number(aStr);
+        const bStr = BigInt.fromHexstr(sr.readNextBytes()).value;
+        const b = Number(bStr);
+        const yStr = BigInt.fromHexstr(sr.readNextBytes()).value;
+        const yita = Number(yStr);
+        const pStr = BigInt.fromHexstr(sr.readNextBytes()).value;
+        const penalty = Number(pStr);
+        gp.A = a;
+        gp.B = b;
+        gp.yita = yita;
+        gp.penalty = penalty;
+        return gp;
     }
 
-    peerPubkey: string;
-    address: Address;
-    pos: number;
+    candidateFee: number;
+    candidateNum: number;
+    minInitState: number;
+    posLimit: number;
+    A: number;
+    B: number;
+    yita: number;
+    penalty: number;
 }
