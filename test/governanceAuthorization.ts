@@ -1,12 +1,16 @@
 import { Address } from '../src/crypto/address';
 import { PrivateKey } from '../src/crypto/PrivateKey';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
+import { PublicKey } from './../src/crypto/PublicKey';
+import { ParameterType } from './../src/smartcontract/abi/parameter';
 
 import { RestClient } from '../src/index';
-import { getAttributes, getPeerPoolMap, getSplitFeeAddress, makeAuthorizeForPeerTx,
-    makeChangeAuthorizationTx, makeSetPeerCostTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawTx
+import { Parameter } from '../src/smartcontract/abi/parameter';
+import { getAttributes, getAuthorizeInfo, getGlobalParam, getGovernanceView,
+    getPeerPoolMap, getSplitFeeAddress, makeAuthorizeForPeerTx, makeChangeAuthorizationTx, makeSetPeerCostTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawTx
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
-import { signTransaction } from '../src/transaction/transactionBuilder';
+import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
+import { reverseHex } from '../src/utils';
 import { Key } from './../src/crypto/Key';
 
 describe('test governance authorization', () => {
@@ -151,5 +155,28 @@ describe('test governance authorization', () => {
         const res = await getPeerPoolMap();
         console.log(res);
     }, 10000);
+
+    test('getAuthorizeInfo', async () => {
+        const pk = stake2.peerPubkey;
+        const userAddr = new Address(account4.address);
+        const res = await getAuthorizeInfo(pk, userAddr, nodeUrl);
+        console.log(res);
+    }, 10000);
+
+    test('testPass', () => {
+        const pk = '033d9aea7fb2f72bb3b1db9e2416f32f313b5489b626d34fb576440c7220995e11';
+        const address = Address.fromPubKey(new PublicKey(pk)).toBase58();
+        expect(address).toEqual('AUg53MTnZ8x8awYvbgV8zhxxsrCgG3jqjc');
+    });
+
+    test('getGovernanceView', async () => {
+        const view = await getGovernanceView(nodeUrl);
+        console.log(view);
+    }, 1000);
+
+    test('getGlobalParam', async () => {
+        const view = await getGlobalParam(nodeUrl);
+        console.log(view);
+    }, 1000);
 
 });
