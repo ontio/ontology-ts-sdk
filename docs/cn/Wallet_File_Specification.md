@@ -1,6 +1,6 @@
-#Wallet File Specification
+# Wallet File Specification
 
-##Wallet
+## Wallet
 A wallet file in JSON format has the following basic structure:
 
 ```
@@ -25,7 +25,7 @@ A wallet file in JSON format has the following basic structure:
 
 ```extra``` is an object that is defined by the implementor of the client for storing extra data. This field can be null.
 
-##ScryptParameters
+## ScryptParameters
 ScryptParameters object has the following structure:
 
 ```
@@ -41,7 +41,7 @@ ScryptParameters object has the following structure:
 
 ```p``` is a tuning parameter (parallelization parameter). A large value of p can increase computational cost of SCrypt without increasing the memory usage.
 
-##Identity
+## Identity
 Identity object has the following structure:
 ```
 {
@@ -65,7 +65,7 @@ Identity object has the following structure:
 
 ```extra``` is an object that is defined by the implementor of the client for storing extra data. This field can be null.
 
-##Control
+## Control
 Control object has the following structure:
 ```
 {
@@ -83,7 +83,7 @@ Control object has the following structure:
 
 ```key``` is the private key of the account in the NEP-2 format. This field can be null (for watch-only address or non-standard address).
 
-##Parameter
+## Parameter
 Parameter object has the following structure:
 ```
 {
@@ -92,7 +92,7 @@ Parameter object has the following structure:
 ```
 ```curve``` is the name of the elliptic curve.
 
-##Account
+## Account
 Account object has the following structure:
 ```
 {
@@ -125,7 +125,7 @@ Account object has the following structure:
 
 ```extra``` is an object that is defined by the implementor of the client for storing extra data. This field can be null.
 
-##Contract
+## Contract
 Contract object has the following structure:
 ```
 {
