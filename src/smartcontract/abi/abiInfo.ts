@@ -46,15 +46,12 @@ export default class AbiInfo {
     }
 
     getFunction(name: string): AbiFunction {
-        const f = {} as AbiFunction;
-
         for (const v of this.functions) {
             if (v.name === name) {
                 const parameters = v.parameters.map((p: any) => new Parameter(p.name, p.type, ''));
                 return new AbiFunction(v.name, v.returntype, parameters);
             }
         }
-
-        return f;
+        throw Error('not found');
     }
 }
