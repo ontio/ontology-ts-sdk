@@ -69,7 +69,7 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
-    "@ont-community/hdkey-secp256r1": "^1.0.0",
+    "@ont-community/hdkey-secp256r1": "^1.0.1",
     "@ont-community/html5-websocket": "^2.0.2",
     "axios": "^0.17.1",
     "babel-polyfill": "^6.26.0",
