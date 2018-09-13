@@ -130,8 +130,6 @@ export class Claim extends Message {
      * Attests the claim onto blockchain.
      *
      * @param url Websocket endpoint of Ontology node
-     * @param gas the cost of the transaction
-     * @param payer the payer of the gas
      * @param privateKey Private key to sign the transaction
      * @param gasPrice gasPrice
      * @param gasLimit gasLimit

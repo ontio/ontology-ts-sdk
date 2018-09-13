@@ -93,14 +93,14 @@ describe('test ONT ID contract', () => {
     const ontid3 = Address.generateOntid(pub3);
     console.log('pk3:' + pri3.getPublicKey().serializeHex());
     console.log('address3: ' + account3.address.toBase58());
-    
+
     const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
     const account4 = Account.create(pri4, '123456', '');
     const pub4 = pri4.getPublicKey();
     const ontid4 = Address.generateOntid(pub4);
     console.log('pk4:' + pri4.getPublicKey().serializeHex());
     console.log('address4: ' + account4.address.toBase58());
-    
+
     const pri5 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b99');
     const account5 = Account.create(pri5, '123456', '');
     const pub5 = pri5.getPublicKey();
@@ -110,8 +110,9 @@ describe('test ONT ID contract', () => {
     test('testRegisterOntid', async () => {
 
         const tx = buildRegisterOntidTx(ontid5, pub5, gasPrice, gasLimit);
-        tx.payer = account5.address;
+        tx.payer = account.address;
         signTransaction(tx, pri5);
+        addSign(tx, privateKey);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
         expect(res.Error).toEqual(0);
@@ -119,7 +120,7 @@ describe('test ONT ID contract', () => {
 
     test('testDDOTx', async () => {
         const tx = buildGetDDOTx('did:ont:AUEKhXNsoAT27HJwwqFGbpRy8QLHUMBMPz');
-        const restClient = new RestClient('http://139.219.128.220:20334')
+        const restClient = new RestClient('http://139.219.128.220:20334');
         const response = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(response);
         const ddo = DDO.deserialize(response.Result.Result);
