@@ -629,7 +629,7 @@ export class SDK {
     }
 
     static signData(
-        content: string,
+        content: string, // hex string
         encryptedPrivateKey: string,
         password: string,
         address: string,

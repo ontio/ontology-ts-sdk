@@ -17,14 +17,14 @@
  */
 
 import AbiFunction from '../smartcontract/abi/abiFunction';
-import { buildSmartContractParam } from '../transaction/scriptBuilder';
+import { serializeAbiFunction } from '../transaction/scriptBuilder';
 import { num2hexstring, randomBytes } from '../utils';
 import { Address } from './../crypto/address';
 import { TransactionAttribute, TransactionAttributeUsage } from './../transaction/txAttribute';
 import { InvocationTransaction } from './InvocationTransaction';
 export class SmartContract {
     static makeInvokeTransaction(contractAddr: Address, addr: Address, abiFunction: AbiFunction) {
-        let params = buildSmartContractParam(abiFunction.name, abiFunction.parameters);
+        let params = serializeAbiFunction(abiFunction);
         params += num2hexstring(0x67);
         params += contractAddr.serialize();
         const tx = this.makeInvocationTransaction(params, addr);
