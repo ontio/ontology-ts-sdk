@@ -74,6 +74,7 @@ describe('test claim', () => {
         serialized = claim.serialize();
 
         expect(serialized).toBeDefined();
+        
     });
 
     test('test deserialization', async () => {
