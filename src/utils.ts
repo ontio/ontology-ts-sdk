@@ -19,7 +19,7 @@ import axios from 'axios';
 import * as bip39 from 'bip39';
 import * as cryptoJS from 'crypto-js';
 import * as secureRandom from 'secure-random';
-import { WEBVIEW_SCHEME } from './consts';
+import { ONT_TOTAL_SUPPLY, UNBOUND_GENERATION_AMOUNT, UNBOUND_TIME_INTERVAL, WEBVIEW_SCHEME } from './consts';
 import { ERROR_CODE } from './error';
 
 /**
@@ -462,4 +462,42 @@ export function varifyPositiveInt(v: number) {
 
 export function isBase64(str: string): boolean {
     return Buffer.from(str, 'base64').toString('base64') === str;
+}
+
+export function unboundDeadline() {
+    let count = 0;
+    for (const m of UNBOUND_GENERATION_AMOUNT) {
+        count += m;
+    }
+    count *= UNBOUND_TIME_INTERVAL;
+    const numInterval = UNBOUND_GENERATION_AMOUNT.length;
+    if (UNBOUND_GENERATION_AMOUNT[numInterval - 1] !== 1 ||
+        ! ((count - UNBOUND_TIME_INTERVAL < ONT_TOTAL_SUPPLY) && ONT_TOTAL_SUPPLY <= count)) {
+        throw new Error('incompatible constants setting');
+    }
+    return UNBOUND_TIME_INTERVAL * numInterval - (count - ONT_TOTAL_SUPPLY);
+}
+
+export function calcUnboundOng(balance: number, startOffset: number, endOffset: number) {
+    let amount = 0;
+    if (startOffset >= endOffset) {
+        return 0;
+    }
+    const UNBOUND_DEADLINE = unboundDeadline();
+    if (startOffset < UNBOUND_DEADLINE) {
+        let ustart = Math.floor(startOffset / UNBOUND_TIME_INTERVAL);
+        let istart = startOffset % UNBOUND_TIME_INTERVAL;
+        if (endOffset >= UNBOUND_DEADLINE) {
+            endOffset = UNBOUND_DEADLINE;
+        }
+        const uend = Math.floor(endOffset / UNBOUND_TIME_INTERVAL);
+        const iend = endOffset % UNBOUND_TIME_INTERVAL;
+        while (ustart < uend) {
+            amount += (UNBOUND_TIME_INTERVAL - istart) * UNBOUND_GENERATION_AMOUNT[ustart];
+            ustart++;
+            istart = 0;
+        }
+        amount += (iend - istart) * UNBOUND_GENERATION_AMOUNT[ustart];
+    }
+    return amount * balance;
 }

@@ -35,7 +35,7 @@ import { State } from '../src/smartcontract/nativevm/token';
 import { Transaction } from '../src/transaction/transaction';
 import { addSign, buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
-import { ab2hexstring, generateRandomArray, isBase64, num2hexstring, str2hexstr, StringReader } from '../src/utils';
+import { ab2hexstring, generateRandomArray, isBase64, num2hexstring, str2hexstr, StringReader, reverseHex } from '../src/utils';
 import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
 

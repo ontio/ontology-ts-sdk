@@ -16,13 +16,14 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 import BigInt from '../../common/bigInt';
+import { GENESIS_BLOCK_TIMESTAMP } from '../../consts';
 import { Address } from '../../crypto';
 import { ERROR_CODE } from '../../error';
 import RestClient from '../../network/rest/restClient';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionBuilder';
-import { hex2VarBytes, hexstr2str, num2hexstring,
-    str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../../utils';
+import { calcUnboundOng, hex2VarBytes, hexstr2str,
+    num2hexstring, str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
@@ -349,6 +350,9 @@ export function makeAuthorizeForPeerTx(
     return makeNativeContractTx('authorizeForPeer', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
+/**
+ * User cancels the authorization of peer
+ */
 export function makeUnauthorizeForPeerTx(
     userAddr: Address,
     peerPubKeyList: string[],
@@ -371,6 +375,15 @@ export function makeUnauthorizeForPeerTx(
     return makeNativeContractTx('unAuthorizeForPeer', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
+/**
+ * Peer add the init pos
+ * @param peerPubkey Peer's public key
+ * @param userAddr Stake wallet address
+ * @param pos Amount of pos to add
+ * @param payer Payer of the transaction
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ */
 export function makeAddInitPosTx(
     peerPubkey: string,
     userAddr: Address,
@@ -385,6 +398,15 @@ export function makeAddInitPosTx(
     return makeNativeContractTx('addInitPos', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
+/**
+ * Peer reduce the init pos
+ * @param peerPubkey Peer's public key
+ * @param userAddr Stake wallet address
+ * @param pos Amount of pos to reduce
+ * @param payer Payer of the transaction
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ */
 export function makeReduceInitPosTx(
     peerPubkey: string,
     userAddr: Address,
@@ -397,6 +419,18 @@ export function makeReduceInitPosTx(
     struct.add(str2hexstr(peerPubkey), userAddr.serialize(), pos);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('reduceInitPos', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+export function makeWithdrawPeerUnboundOngTx(
+    userAddr: Address,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+) {
+    const struct = new Struct();
+    struct.add(userAddr.serialize());
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('withdrawOng', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 /**
@@ -516,6 +550,19 @@ export async function getTotalStake(userAddr: Address, url?: string) {
     }
 }
 
+export async function getPeerUnboundOng(userAddr: Address, url?: string) {
+    const totalStake = await getTotalStake(userAddr, url);
+    console.log(totalStake);
+    if (!totalStake.address) {
+        return 0;
+    }
+    const restClient = new RestClient(url);
+    const blockHeight = (await restClient.getBlockHeight()).Result;
+    const block = (await restClient.getBlockJson(blockHeight)).Result;
+    const timeStamp = block.Header.Timestamp - GENESIS_BLOCK_TIMESTAMP;
+    return calcUnboundOng(totalStake.stake, totalStake.timeOffset, timeStamp);
+}
+
 /**
  * Use to store governance state.
  */
@@ -579,11 +626,15 @@ export class PeerAttributes {
         const pr = new PeerAttributes();
         pr.peerPubkey = hexstr2str(sr.readNextBytes());
 
-        pr.maxAuthorize = sr.readUint32();
+        pr.maxAuthorize = sr.readLong();
 
         pr.oldPeerCost = sr.readLong();
         pr.newPeerCost = sr.readLong();
         pr.setCostView = sr.readUint32();
+
+        if (sr.isEmpty) {
+            return pr;
+        }
         pr.field1 = sr.readNextBytes();
         pr.field2 = sr.readNextBytes();
         pr.field3 = sr.readNextBytes();
@@ -596,10 +647,10 @@ export class PeerAttributes {
     oldPeerCost: number = 100;
     newPeerCost: number = 100;
     setCostView: number = 0;
-    field1: string;
-    field2: string;
-    field3: string;
-    field4: string;
+    field1: string = '';
+    field2: string = '';
+    field3: string = '';
+    field4: string = '';
 
     serialize(): string {
         return '';

@@ -20,6 +20,7 @@ import { NATIVE_INVOKE_NAME, REST_API, TX_MAX_SIG_SIZE } from '../consts';
 import { Address, PrivateKey, SignatureScheme } from '../crypto';
 import { PublicKey } from '../crypto/PublicKey';
 import { ERROR_CODE } from '../error';
+import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter } from '../smartcontract/abi/parameter';
 import {
     num2hexstring,
@@ -29,7 +30,7 @@ import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { comparePublicKeys } from './program';
-import { buildSmartContractParam, pushHexString, pushInt } from './scriptBuilder';
+import { pushHexString, pushInt, serializeAbiFunction } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 import { Transfer } from './transfer';
 import { TxSignature } from './txSignature';
@@ -216,7 +217,8 @@ export const makeInvokeTransaction = (
     const tx = new Transaction();
     tx.type = TxType.Invoke;
 
-    const args = buildSmartContractParam(funcName, params);
+    const abiFunc = new AbiFunction(funcName, '', params);
+    const args = serializeAbiFunction(abiFunc);
 
     let code = args + num2hexstring(opcode.APPCALL);
     code += contractAddr.serialize();

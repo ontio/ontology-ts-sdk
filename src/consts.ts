@@ -99,3 +99,11 @@ export const TX_MAX_SIG_SIZE = 16;
 
 // tslint:disable-next-line:quotemark
 export const ONT_BIP44_PATH = "m/44'/1024'/0'/0/0";
+
+export const UNBOUND_GENERATION_AMOUNT = [5, 4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+
+export const UNBOUND_TIME_INTERVAL = 31536000;
+
+export const ONT_TOTAL_SUPPLY = 1000000000;
+
+export const GENESIS_BLOCK_TIMESTAMP = 1530316800;

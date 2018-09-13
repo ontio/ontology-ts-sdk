@@ -22,6 +22,7 @@ import { Identity } from '../src/identity';
 import * as scrypt from '../src/scrypt';
 import * as utils from '../src/utils';
 import { Wallet } from '../src/wallet';
+import { Address } from '../src/crypto/address';
 
 // tslint:disable:no-console
 describe('test wallet', () => {
@@ -57,5 +58,4 @@ describe('test wallet', () => {
         wallet.addIdentity(identity);
         expect(wallet.accounts.length).toEqual(1);
     });
-
 });

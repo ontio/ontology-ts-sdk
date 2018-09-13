@@ -18,6 +18,7 @@
 
 import BigInt from '../common/bigInt';
 import { ERROR_CODE } from '../error';
+import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter, ParameterType, ParameterTypeVal } from '../smartcontract/abi/parameter';
 import Struct from '../smartcontract/abi/struct';
 import { num2hexstring, num2VarInt, str2hexstr } from '../utils';
@@ -114,6 +115,49 @@ export const getMapBytes = (val: Map<string, Parameter>) => {
     return result;
 };
 
+export const serializeAbiFunction = (abiFunction: AbiFunction) => {
+    const list = [];
+    list.push(str2hexstr(abiFunction.name));
+    const tmp = [];
+    for (const p of abiFunction.parameters) {
+        if (p.getType() === ParameterType.String) {
+            tmp.push(str2hexstr(p.getValue()));
+        } else {
+            tmp.push(p.getValue());
+        }
+    }
+    if (tmp.length > 0) {
+        list.push(tmp);
+    }
+    const result = createCodeParamsScript(list);
+    return result;
+};
+
+export const createCodeParamsScript = (list: any[]) => {
+    let result = '';
+    for (let i = list.length - 1; i >= 0; i--) {
+        const val = list[i];
+        if (typeof val === 'string') {
+            result += pushHexString(val);
+        } else if (typeof val === 'number') {
+            result += pushInt(val);
+        } else if (typeof val === 'boolean') {
+            result += pushBool(val);
+        } else if (val instanceof Map) {
+            const mapBytes = getMapBytes(val);
+            result += pushHexString(mapBytes);
+        } else if (val instanceof Struct) {
+            const structBytes = getStructBytes(val);
+            result += pushHexString(structBytes);
+        } else if (val instanceof Array) {
+            result += createCodeParamsScript(val);
+            result += pushInt(val.length);
+            result += num2hexstring(opcode.PACK);
+        }
+    }
+    return result;
+};
+
 // params is like [param1, param2...]
 export const buildSmartContractParam = (functionName: string, params: Parameter[]) => {
     let result = '';
@@ -146,8 +190,13 @@ export const buildSmartContractParam = (functionName: string, params: Parameter[
             const structBytes = getStructBytes(params[i].getValue());
             result += pushHexString(structBytes);
             break;
+        // case ParameterType.Array:
+        //     result += buildSmartContractParam(params[i].getValue());
+        //     result += pushInt(params[i].getValue().length);
+        //     result += num2hexstring(opcode.PACK);
+        //     break;
         default:
-            throw new Error('Unsupported param type: ' + params[i]);
+            throw new Error('Unsupported param type: ' + JSON.stringify(params[i]));
         }
     }
 

@@ -9,7 +9,7 @@ import { signTransaction } from '../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console
 describe('test rpc client', () => {
-    const rpcClient = new RpcClient();
+    const rpcClient = new RpcClient('http://139.219.128.220:20336');
 
     const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
 
@@ -30,15 +30,15 @@ describe('test rpc client', () => {
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
-    beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-        tx.payer = adminAddress;
-        signTransaction(tx, adminPrivateKey);
+    // beforeAll(async () => {
+    //     const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+    //     tx.payer = adminAddress;
+    //     signTransaction(tx, adminPrivateKey);
 
-        const client = new WebsocketClient();
-        const result = await client.sendRawTransaction(tx.serialize(), false, true);
-        txHash = result.Result.TxHash;
-    }, 10000);
+    //     const client = new WebsocketClient();
+    //     const result = await client.sendRawTransaction(tx.serialize(), false, true);
+    //     txHash = result.Result.TxHash;
+    // }, 10000);
 
     /**
      * Gets current block height to be used by following tests.
@@ -128,6 +128,7 @@ describe('test rpc client', () => {
 
     test('test getBlockCount', async () => {
         const res = await rpcClient.getBlockCount();
+        console.log(res);
         expect(res.desc).toEqual('SUCCESS');
     });
 
