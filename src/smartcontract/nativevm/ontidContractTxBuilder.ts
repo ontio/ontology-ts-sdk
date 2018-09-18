@@ -55,26 +55,20 @@ const ONTID_METHOD  = {
  * @param publicKey Public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
+ * @param payer Payer
  */
-export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
-                                     gasPrice: string, gasLimit: string): Transaction {
+export function buildRegisterOntidTx(
+    ontid: string,
+    publicKey: PublicKey,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
     const method = ONTID_METHOD.regIDWithPublicKey;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
-    // // tslint:disable-next-line:no-console
-    // console.log('Register ', ontid);
-
-    // const name1 = f.parameters[0].getName();
-    // const type1 = ParameterType.ByteArray;
-
-    // const name2 = f.parameters[1].getName();
-    // const type2 = ParameterType.ByteArray;
-
-    // const p1 = new Parameter(name1, type1, ontid);
-    // const p2 = new Parameter(name2, type2, publicKey.serializeHex());
-    // f.setParamsValue(p1, p2);
     const struct = new Struct();
     struct.add(ontid, publicKey.serializeHex());
     const list = [struct];
@@ -85,7 +79,8 @@ export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
         params,
         new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit
+        gasLimit,
+        payer
     );
 
     return tx;
@@ -99,13 +94,15 @@ export function buildRegisterOntidTx(ontid: string, publicKey: PublicKey,
  * @param publicKey User's public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
+ * @param payer Payer
  */
 export function buildRegIdWithAttributes(
     ontid: string,
     attributes: DDOAttribute[],
     publicKey: PublicKey,
     gasPrice: string,
-    gasLimit: string
+    gasLimit: string,
+    payer?: Address
 ) {
     const method = ONTID_METHOD.regIDWithAttributes;
     if (ontid.substr(0, 3) === 'did') {
@@ -136,7 +133,8 @@ export function buildRegIdWithAttributes(
         params,
         new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit
+        gasLimit,
+        payer
     );
 
     return tx;
@@ -150,19 +148,21 @@ export function buildRegIdWithAttributes(
  * @param publicKey User's public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
+ * @param payer Payer
  */
-export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], publicKey: PublicKey,
-                                    gasPrice: string, gasLimit: string) {
+export function buildAddAttributeTx(
+    ontid: string,
+    attributes: DDOAttribute[],
+    publicKey: PublicKey,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
     const method = ONTID_METHOD.addAttributes;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
-
-    // let attrs = '';
-    // for (const a of attributes) {
-    //     attrs += a.serialize();
-    // }
     const struct = new Struct();
     struct.add(ontid, attributes.length);
     for (const a of attributes) {
@@ -179,7 +179,8 @@ export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], p
         params,
         new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit
+        gasLimit,
+        payer
     );
     return tx;
 }
@@ -192,20 +193,23 @@ export function buildAddAttributeTx(ontid: string, attributes: DDOAttribute[], p
  * @param publicKey User's public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
+ * @param payer Payer
  *
  */
-export function buildRemoveAttributeTx(ontid: string, key: string, publicKey: PublicKey,
-                                       gasPrice: string, gasLimit: string) {
+export function buildRemoveAttributeTx(
+    ontid: string,
+    key: string,
+    publicKey: PublicKey,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
     const method = ONTID_METHOD.removeAttribute;
 
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);
     }
 
-    // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    // const p2 = new Parameter(f.parameters[1].getName(), ParameterType.ByteArray, key);
-    // const p3 = new Parameter(f.parameters[2].getName(), ParameterType.ByteArray, publicKey.serializeHex());
-    // f.setParamsValue(p1, p2, p3);
     const struct = new Struct();
     struct.add(ontid, str2hexstr(key), publicKey.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -214,7 +218,8 @@ export function buildRemoveAttributeTx(ontid: string, key: string, publicKey: Pu
         params,
         new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit
+        gasLimit,
+        payer
     );
     return tx;
 }
@@ -231,8 +236,6 @@ export function buildGetAttributesTx(ontid: string) {
         ontid = str2hexstr(ontid);
     }
 
-    // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    // f.setParamsValue(p1);
     const struct = new Struct();
     struct.add(ontid);
     const params = buildNativeCodeScript([struct]);
@@ -252,8 +255,6 @@ export function buildGetDDOTx(ontid: string) {
         ontid = str2hexstr(ontid);
     }
 
-    // const p1 = new Parameter(f.parameters[0].getName(), ParameterType.ByteArray, ontid);
-    // f.setParamsValue(p1);
     const struct = new Struct();
     struct.add(ontid);
     const params = buildNativeCodeScript([struct]);
@@ -268,9 +269,16 @@ export function buildGetDDOTx(ontid: string) {
  * @param userKey User's public key or address
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
+ * @param payer Payer
  */
-export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  userKey: PublicKey | Address,
-                                     gasPrice: string, gasLimit: string) {
+export function buildAddControlKeyTx(
+    ontid: string,
+    newPk: PublicKey,
+    userKey: PublicKey | Address,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
     const method = ONTID_METHOD.addKey;
 
     if (ontid.substr(0, 3) === 'did') {
@@ -293,7 +301,8 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  userKey: 
         params,
         new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit
+        gasLimit,
+        payer
     );
 
     return tx;
@@ -307,9 +316,16 @@ export function buildAddControlKeyTx(ontid: string, newPk: PublicKey,  userKey: 
  * @param sender User's public key or address
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
+ * @param payer Payer
  */
-export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey, sender: PublicKey | Address,
-                                        gasPrice: string, gasLimit: string) {
+export function buildRemoveControlKeyTx(
+    ontid: string,
+    pk2Remove: PublicKey,
+    sender: PublicKey | Address,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
     const method = ONTID_METHOD.removeKey;
 
     if (ontid.substr(0, 3) === 'did') {
@@ -333,7 +349,8 @@ export function buildRemoveControlKeyTx(ontid: string, pk2Remove: PublicKey, sen
         params,
         new Address(ONTID_CONTRACT),
         gasPrice,
-        gasLimit
+        gasLimit,
+        payer
     );
     return tx;
 }
@@ -365,9 +382,16 @@ export function buildGetPublicKeysTx(ontid: string) {
  * @param publicKey User's public key, must be user's existing public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
+ * @param payer Payer
  */
-export function buildAddRecoveryTx(ontid: string, recovery: Address,
-                                   publicKey: PublicKey, gasPrice: string, gasLimit: string) {
+export function buildAddRecoveryTx(
+    ontid: string,
+    recovery: Address,
+    publicKey: PublicKey,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
     const method = ONTID_METHOD.addRecovery;
 
     if (ontid.substr(0, 3) === 'did') {
@@ -380,7 +404,7 @@ export function buildAddRecoveryTx(ontid: string, recovery: Address,
     const struct = new Struct();
     struct.add(p1, p2, p3);
     const params = buildNativeCodeScript([struct]);
-    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT), gasPrice, gasLimit);
+    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT), gasPrice, gasLimit, payer);
     return tx;
 }
 
@@ -394,9 +418,16 @@ export function buildAddRecoveryTx(ontid: string, recovery: Address,
  * @param oldrecovery Original recoevery address
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
+ * @param payer Payer
  */
-export function buildChangeRecoveryTx(ontid: string, newrecovery: Address,
-                                      oldrecovery: Address, gasPrice: string, gasLimit: string) {
+export function buildChangeRecoveryTx(
+    ontid: string,
+    newrecovery: Address,
+    oldrecovery: Address,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
     const method = ONTID_METHOD.changeRecovery;
 
     if (ontid.substr(0, 3) === 'did') {
@@ -411,7 +442,8 @@ export function buildChangeRecoveryTx(ontid: string, newrecovery: Address,
     const params = buildNativeCodeScript([struct]);
 
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT),
-    gasPrice, gasLimit, oldrecovery);
+    gasPrice, gasLimit);
+    tx.payer = payer || oldrecovery;
     return tx;
 }
 

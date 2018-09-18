@@ -252,4 +252,19 @@ describe('test ONT ID contract', () => {
         expect(res.Error).toEqual(0);
     }, 10000);
 
+    test('nodeId', async () => {
+        const socket = new WebsocketClient('ws://139.219.128.220:20335');
+        const keystore = { "country": "", "claimArray": [], "address": "ATjxdkdFEPsLAr7G4iDG9Dqv3AESQZ4J4c", "salt": "JCxxTv8uhphMpztleNncDQ==", "label": "节点2", "type": "I", "parameters": { "curve": "secp256r1" }, "scrypt": { "dkLen": 64, "n": 4096, "p": 8, "r": 8 }, "key": "zpkgpYg7IjPwTh7dYLqav1Ofw5B/9THi7Im4FAjYFet4KQXEdeSHtl01B8muahMH", "algorithm": "ECDSA" }
+        const did = 'did:ont:' + keystore.address;
+        const enc = new PrivateKey(keystore.key);
+        const addr = new Address(keystore.address);
+        const pri = enc.decrypt('111111', addr, keystore.salt);
+        const pub = pri.getPublicKey();
+        const tx = buildRegisterOntidTx(did, pub, '0', '20000');
+        tx.payer = addr;
+        signTransaction(tx, pri);
+        const res = await socket.sendRawTransaction(tx.serialize(), false, true);
+        console.log(JSON.stringify(res));
+
+    });
 });
