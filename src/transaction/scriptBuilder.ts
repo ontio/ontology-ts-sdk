@@ -126,7 +126,7 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
             tmp.push(p.getValue());
         }
     }
-    if (tmp.length > 0) {
+    if (list.length > 0) {
         list.push(tmp);
     }
     const result = createCodeParamsScript(list);
@@ -158,7 +158,7 @@ export const createCodeParamsScript = (list: any[]) => {
     return result;
 };
 
-// params is like [param1, param2...]
+// deprecated
 export const buildSmartContractParam = (functionName: string, params: Parameter[]) => {
     let result = '';
     for (let i = params.length - 1; i > -1; i--) {

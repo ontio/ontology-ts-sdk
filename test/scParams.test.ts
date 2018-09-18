@@ -1,11 +1,10 @@
 import { PrivateKey } from '../src/crypto/PrivateKey';
-import { Struct } from '../src/index';
+import { Struct, RestClient } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { makeInvokeTransaction } from '../src/transaction/transactionBuilder';
 import { num2hexstring, reverseHex } from '../src/utils';
 import { Address } from './../src/crypto/address';
 import { Parameter, ParameterType } from './../src/smartcontract/abi/parameter';
-import { signTransaction } from './../src/transaction/transactionBuilder';
+import { signTransaction, makeInvokeTransaction } from './../src/transaction/transactionBuilder';
 
 describe('test smarct contract params', () => {
     test('test params Array', async () => {
@@ -35,10 +34,14 @@ describe('test smarct contract params', () => {
             )
 
         ];
-        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', from);
-        const pri = PrivateKey.deserializeWIF('KxRfVFzS6Wm3mAy8h1txuhRzkudN8j2kWAKdjs9FVptCx54HLL7r');
-        signTransaction(tx, pri);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', from);
+        // const pri = PrivateKey.deserializeWIF('KxRfVFzS6Wm3mAy8h1txuhRzkudN8j2kWAKdjs9FVptCx54HLL7r');
+        // signTransaction(tx, pri);
+        // const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // console.log(JSON.stringify(res));
+
+        const tx = makeInvokeTransaction('BalanceOf', [], contractAddr, '500', '20000');
+        const res = await socketClient.sendRawTransaction(tx.serialize(), true, false);
         console.log(JSON.stringify(res));
     }, 10000);
 });
