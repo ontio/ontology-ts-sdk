@@ -173,11 +173,11 @@ export class PrivateKey extends Key {
         const decrypted = decryptWithGcm(this.key, address, salt, keyphrase, params);
         const decryptedKey = new PrivateKey(decrypted, this.algorithm, this.parameters);
         // checkDecrypted(checksum, decryptedKey.getPublicKey().serializeHex());
-        const pk = decryptedKey.getPublicKey();
-        const addrTmp = Address.fromPubKey(pk);
-        if (addrTmp.toBase58() !== address.toBase58()) {
-            throw ERROR_CODE.Decrypto_ERROR;
-        }
+        // const pk = decryptedKey.getPublicKey();
+        // const addrTmp = Address.fromPubKey(pk);
+        // if (addrTmp.toBase58() !== address.toBase58()) {
+        //     throw ERROR_CODE.Decrypto_ERROR;
+        // }
         return decryptedKey;
     }
 

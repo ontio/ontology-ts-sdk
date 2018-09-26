@@ -14,7 +14,7 @@ describe('test websocket', () => {
 
     let txHash: string;
     let blockHash: string;
-    let height: number;
+    let height: number = 10000;
 
     const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
@@ -184,7 +184,7 @@ describe('test websocket', () => {
         expect(result.Result.Code).toBeDefined();
     });
 
-    test.skip('test getSmartCodeEvent by height', async () => {
+    test('test getSmartCodeEvent by height', async () => {
         const result = await client.getSmartCodeEvent(height);
 
         expect(result.Action).toBe('getsmartcodeeventbyheight');

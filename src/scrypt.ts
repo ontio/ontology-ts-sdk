@@ -23,7 +23,7 @@ import { DEFAULT_SCRYPT, OEP_FLAG, OEP_HEADER } from './consts';
 import { Address } from './crypto/address';
 import { PublicKey } from './crypto/PublicKey';
 import { ERROR_CODE } from './error';
-import { ab2hexstring, hexstring2ab, hexXor, StringReader } from './utils';
+import { ab2hexstring, hexstring2ab, hexXor, isHexString, StringReader } from './utils';
 
 /**
  * Decribtes the structure of params for scrypt
@@ -336,6 +336,9 @@ export function encryptWithGcm(
     keyphrase: string,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ) {
+    if (privateKey.length !== 64 || !isHexString(privateKey)) {
+        throw new Error(ERROR_CODE.INVALID_PARAMS + ', Invalid private key');
+    }
     const derived = scrypt(keyphrase, salt, scryptParams);
     const derived1 = derived.slice(0, 12);
     const derived2 = derived.slice(32);

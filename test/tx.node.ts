@@ -119,7 +119,7 @@ describe('test ONT ID contract', () => {
     }, 10000);
 
     test('testDDOTx', async () => {
-        const tx = buildGetDDOTx('did:ont:AUEKhXNsoAT27HJwwqFGbpRy8QLHUMBMPz');
+        const tx = buildGetDDOTx('did:ont:ARTH2zCmyQp8RVMqXE6HaWNqmBjsYL9r21');
         const restClient = new RestClient('http://139.219.128.220:20334');
         const response = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(response);
@@ -254,7 +254,7 @@ describe('test ONT ID contract', () => {
 
     test('nodeId', async () => {
         const socket = new WebsocketClient('ws://139.219.128.220:20335');
-        const keystore = { "country": "", "claimArray": [], "address": "ATjxdkdFEPsLAr7G4iDG9Dqv3AESQZ4J4c", "salt": "JCxxTv8uhphMpztleNncDQ==", "label": "节点2", "type": "I", "parameters": { "curve": "secp256r1" }, "scrypt": { "dkLen": 64, "n": 4096, "p": 8, "r": 8 }, "key": "zpkgpYg7IjPwTh7dYLqav1Ofw5B/9THi7Im4FAjYFet4KQXEdeSHtl01B8muahMH", "algorithm": "ECDSA" }
+        const keystore = { "country": "", "claimArray": [], "address": "ARTH2zCmyQp8RVMqXE6HaWNqmBjsYL9r21", "salt": "AKApq2LPAPL1J182gr7soQ==", "label": "节点1", "type": "I", "parameters": { "curve": "secp256r1" }, "scrypt": { "dkLen": 64, "n": 4096, "p": 8, "r": 8 }, "key": "6idIWIBRT5tJUPDGwGoNihjlfcXeAAId227H8pU6besfojWyhjqOQo7pzGDWlObq", "algorithm": "ECDSA" };
         const did = 'did:ont:' + keystore.address;
         const enc = new PrivateKey(keystore.key);
         const addr = new Address(keystore.address);

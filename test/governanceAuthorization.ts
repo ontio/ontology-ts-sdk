@@ -141,7 +141,7 @@ describe('test governance authorization', () => {
     });
 
     test('getAttributes', async () => {
-        const pk = stake2.peerPubkey;
+        const pk = '03eb441b6350ba803b987c7aa957bacfe4e1b570d51e96204d663f8e6b42b7fc45';
         const res = await getAttributes(pk, nodeUrl);
         console.log(res);
     }, 10000);

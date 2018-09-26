@@ -498,7 +498,6 @@ export async function getGovernanceView(url?: string) {
     const key = str2hexstr('governanceView');
     const viewRes = await restClient.getStorage(codeHash, key);
     const view = viewRes.Result;
-    console.log(view);
     const governanceView = GovernanceView.deserialize(new StringReader(view));
     return governanceView;
 }
@@ -552,7 +551,6 @@ export async function getTotalStake(userAddr: Address, url?: string) {
 
 export async function getPeerUnboundOng(userAddr: Address, url?: string) {
     const totalStake = await getTotalStake(userAddr, url);
-    console.log(totalStake);
     if (!totalStake.address) {
         return 0;
     }
@@ -628,9 +626,9 @@ export class PeerAttributes {
 
         pr.maxAuthorize = sr.readLong();
 
-        pr.oldPeerCost = sr.readLong();
-        pr.newPeerCost = sr.readLong();
-        pr.setCostView = sr.readUint32();
+        pr.t2PeerCost = sr.readLong();
+        pr.t1PeerCost = sr.readLong();
+        pr.tPeerCost = sr.readLong();
 
         if (sr.isEmpty) {
             return pr;
@@ -644,9 +642,9 @@ export class PeerAttributes {
     }
     peerPubkey: string = '';
     maxAuthorize: number = 0;
-    oldPeerCost: number = 100;
-    newPeerCost: number = 100;
-    setCostView: number = 0;
+    t2PeerCost: number = 100; // peer cost, active in view T + 2
+    t1PeerCost: number = 100; // peer cost, active in view T + 1
+    tPeerCost: number = 0; // peer cost, active in view T
     field1: string = '';
     field2: string = '';
     field3: string = '';

@@ -464,6 +464,11 @@ export function isBase64(str: string): boolean {
     return Buffer.from(str, 'base64').toString('base64') === str;
 }
 
+export function isHexString(str: string): boolean {
+    const regexp = /^[0-9a-fA-F]+$/;
+    return regexp.test(str) && (str.length % 2 === 0);
+}
+
 export function unboundDeadline() {
     let count = 0;
     for (const m of UNBOUND_GENERATION_AMOUNT) {
