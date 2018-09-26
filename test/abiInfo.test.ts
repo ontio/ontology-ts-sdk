@@ -1,3 +1,4 @@
+import { PublicKey } from './../src/crypto/PublicKey';
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -26,7 +27,7 @@ import { VmType } from './../src/transaction/vmcode';
 
 import { Address } from '../src/crypto';
 import { makeInvokeTransaction } from '../src/transaction/transactionBuilder';
-import { str2hexstr } from '../src/utils';
+import { str2hexstr, reverseHex } from '../src/utils';
 
 describe('test AbiInfo', () => {
 

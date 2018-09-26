@@ -15,7 +15,7 @@ describe('test restClient', () => {
 
     let txHash: string;
     let blockHash: string;
-    let height: number;
+    let height: number = 10000;
 
     const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
@@ -30,15 +30,15 @@ describe('test restClient', () => {
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
-    beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-        tx.payer = adminAddress;
-        signTransaction(tx, adminPrivateKey);
+    // beforeAll(async () => {
+    //     const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+    //     tx.payer = adminAddress;
+    //     signTransaction(tx, adminPrivateKey);
 
-        const client = new WebsocketClient();
-        const result = await client.sendRawTransaction(tx.serialize(), false, true);
-        txHash = result.Result.TxHash;
-    }, 5000);
+    //     const client = new WebsocketClient();
+    //     const result = await client.sendRawTransaction(tx.serialize(), false, true);
+    //     txHash = result.Result.TxHash;
+    // }, 5000);
 
     test('test sendRawTransaction', async () => {
         const tx = buildGetDDOTx(ontid);

@@ -183,13 +183,13 @@ export function getSmartCodeEvent(value: number | string) {
     let param = {};
     if (typeof value === 'number') {
         param = {
-            Action: 'getsmartcodeevent',
+            Action: 'getsmartcodeeventbyheight',
             Version: '1.0.0',
             Height: value
         };
     } else if (typeof value === 'string') {
         param = {
-            Action: 'getsmartcodeeventtxs',
+            Action: 'getsmartcodeeventbyhash',
             Version: '1.0.0',
             Hash: value
         };
