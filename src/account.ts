@@ -144,6 +144,7 @@ export class Account {
         account.lock = obj.lock;
         account.isDefault = obj.isDefault;
         account.publicKey = obj.publicKey;
+        account.hash = obj.hash;
         account.salt = obj.salt;
         account.encryptedKey = deserializeFromJson({
             algorithm: obj.algorithm,
@@ -164,6 +165,7 @@ export class Account {
 
     // to compatible with cli wallet
     'enc-alg': string = 'aes-256-gcm';
+    hash: string = 'sha256';
     salt: string;
 
     publicKey: string;
@@ -186,6 +188,7 @@ export class Account {
             'lock': this.lock,
             ...this.encryptedKey.serializeJson(),
             'enc-alg': this['enc-alg'],
+            'hash': this.hash,
             'salt': this.salt,
             'isDefault': this.isDefault,
             'publicKey': this.publicKey,

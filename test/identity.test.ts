@@ -43,6 +43,9 @@ describe('test identity', () => {
         address = identity.controls[0].address;
         encryptedPrivateKey = identity.controls[0].encryptedKey;
         identityDataStr = identity.toJson();
+        console.log(identityDataStr);
+        const itemp = Identity.parseJson(identityDataStr);
+        expect(itemp).toBeDefined();
         expect(identityDataStr).toBeDefined();
     });
 
