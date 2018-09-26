@@ -26,7 +26,10 @@ import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 export class ControlData {
     static fromJson(json: any): ControlData {
         const privateKey = deserializeFromJson(json as JsonKey);
-        return new ControlData(json.id, privateKey, new Address(json.address), json.salt);
+        const cd = new ControlData(json.id, privateKey, new Address(json.address), json.salt);
+        cd.publicKey = json.publicKey;
+        cd.hash = json.hash;
+        return cd;
     }
 
     /**
@@ -45,6 +48,14 @@ export class ControlData {
      * Salt of control data
      */
     salt: string;
+    /**
+     * hash type
+     */
+    hash: string = 'sha256';
+    /**
+     * The public key
+     */
+    publicKey: string;
 
     constructor(id: string, encryptedKey: PrivateKey, address: Address, salt: string) {
         this.id = id;
@@ -59,7 +70,9 @@ export class ControlData {
             ...this.encryptedKey.serializeJson(),
             address: this.address.toBase58(),
             salt: this.salt,
-            ['enc-alg']: 'aes-256-gcm'
+            ['enc-alg']: 'aes-256-gcm',
+            hash: this.hash,
+            publicKey: this.publicKey
         };
     }
 }
@@ -99,7 +112,7 @@ export class Identity {
 
         // control
         const control = new ControlData('1', encryptedPrivateKey, Address.fromOntid(identity.ontid), saltBase64);
-
+        control.publicKey = publicKey.serializeHex();
         identity.controls.push(control);
 
         return identity;
@@ -131,6 +144,7 @@ export class Identity {
         // start from 1
         const saltBase64 = Buffer.from(salt, 'hex').toString('base64');
         const control = new ControlData('1', encryptedPrivateKey, address, saltBase64);
+        control.publicKey = publicKey.serializeHex();
         identity.controls.push(control);
 
         return identity;
@@ -190,6 +204,7 @@ export class Identity {
             ontid: this.ontid,
             label: this.label,
             lock: this.lock,
+            isDefault: this.isDefault,
             controls: this.controls.map((c) => c.toJson()),
             extra: this.extra
         };
