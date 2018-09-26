@@ -69,17 +69,4 @@ describe('test AbiInfo', () => {
         console.log('serialize: ' + serialized);
         expect(serialized).toBeDefined();
     });
-
-    test('reverse', () => {
-        // const addr = 'f9417534cbd3b09976f75f8597fe7be3fd88456b';
-        // const re = reverseHex(addr);
-        // console.log(re);
-
-        const pk = new PublicKey('02799e59d9a3dd3989dfc4115fd620b7056d40208ad61cf32131a1df75d575a264');
-        const addr = Address.fromPubKey(pk);
-        console.log('addr: ' + addr.toBase58());
-    })
 });
-emTMqaGpnOoH+B+ieZwpGq0=
-
-MN21s5+72ooJ0Zojhn9HBLU1afeNt9t0YRKrn/6LvvMVblufDXn3v9u/orlUHCSc

@@ -336,7 +336,7 @@ export function encryptWithGcm(
     keyphrase: string,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ) {
-    if (privateKey.length !== 64 || !isHexString(privateKey)) {
+    if (!isHexString(privateKey)) {
         throw new Error(ERROR_CODE.INVALID_PARAMS + ', Invalid private key');
     }
     const derived = scrypt(keyphrase, salt, scryptParams);
