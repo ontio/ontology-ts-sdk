@@ -6,6 +6,7 @@ import RpcClient from '../src/network/rpc/rpcClient';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
+import { addSign } from './../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console
 describe('test rpc client', () => {
@@ -30,15 +31,16 @@ describe('test rpc client', () => {
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
-    // beforeAll(async () => {
-    //     const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-    //     tx.payer = adminAddress;
-    //     signTransaction(tx, adminPrivateKey);
+    beforeAll(async () => {
+        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+        tx.payer = adminAddress;
+        signTransaction(tx, adminPrivateKey);
+        addSign(tx, privateKey);
 
-    //     const client = new WebsocketClient();
-    //     const result = await client.sendRawTransaction(tx.serialize(), false, true);
-    //     txHash = result.Result.TxHash;
-    // }, 10000);
+        const client = new WebsocketClient();
+        const result = await client.sendRawTransaction(tx.serialize(), false, true);
+        txHash = result.Result.TxHash;
+    }, 10000);
 
     /**
      * Gets current block height to be used by following tests.

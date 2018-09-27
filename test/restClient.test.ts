@@ -1,3 +1,4 @@
+import { addSign } from './../src/transaction/transactionBuilder';
 import { Account } from '../src/account';
 import { PrivateKey } from '../src/crypto';
 import { Address } from '../src/crypto/address';
@@ -30,15 +31,16 @@ describe('test restClient', () => {
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
-    // beforeAll(async () => {
-    //     const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-    //     tx.payer = adminAddress;
-    //     signTransaction(tx, adminPrivateKey);
+    beforeAll(async () => {
+        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+        tx.payer = adminAddress;
+        signTransaction(tx, adminPrivateKey);
+        addSign(tx, privateKey);
 
-    //     const client = new WebsocketClient();
-    //     const result = await client.sendRawTransaction(tx.serialize(), false, true);
-    //     txHash = result.Result.TxHash;
-    // }, 5000);
+        const client = new WebsocketClient();
+        const result = await client.sendRawTransaction(tx.serialize(), false, true);
+        txHash = result.Result.TxHash;
+    }, 5000);
 
     test('test sendRawTransaction', async () => {
         const tx = buildGetDDOTx(ontid);

@@ -22,7 +22,7 @@ import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
-import { signTransaction } from '../src/transaction/transactionBuilder';
+import { addSign, signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test claim', () => {
     const restUrl = 'http://polaris1.ont.io:20334';
@@ -48,6 +48,7 @@ describe('test claim', () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
         tx.payer = adminAddress;
         signTransaction(tx, adminPrivateKey);
+        addSign(tx, privateKey);
 
         const client = new WebsocketClient();
         await client.sendRawTransaction(tx.serialize(), false, true);
@@ -74,7 +75,7 @@ describe('test claim', () => {
         serialized = claim.serialize();
 
         expect(serialized).toBeDefined();
-        
+
     });
 
     test('test deserialization', async () => {
@@ -133,5 +134,35 @@ describe('test claim', () => {
         const result = await msg.verify(restUrl, true);
 
         expect(result).toBeFalsy();
+    });
+    test('claim', async () => {
+        const restUrl = 'http://polaris1.ont.io:20334';
+        const ontid = 'did:ont:AN88DMMBZr5X9ChpMHX3LqRvQHqGxk2c3r';
+        const publicKeyId = ontid + '#keys-1';
+        const privateKey = new PrivateKey('4a8d6d61060998cf83acef4d6e7976d538b16ddeaa59a96752a4a7c0f7ec4860');
+        const claim = new Claim({
+            messageId: '1',
+            issuer: ontid,
+            subject: ontid,
+            issuedAt: 1525800823
+        }, undefined, false);
+        claim.version = '0.7.0';
+        claim.context = 'https://example.com/template/v1';
+        claim.content = {
+            Name: 'Bob Dylan',
+            Age: '22'
+        };
+        claim.revocation = {
+            type: RevocationType.AttestContract,
+            addr: '8055b362904715fd84536e754868f4c8d27ca3f6'
+        };
+        await claim.sign(restUrl, publicKeyId, privateKey);
+        let signed = claim.serialize();
+
+
+        const msg = Claim.deserialize(signed);
+        const result = await msg.verify(restUrl, false);
+
+        console.log("Info: ", signed, result, claim);
     });
 });
