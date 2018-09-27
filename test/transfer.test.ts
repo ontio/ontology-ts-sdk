@@ -65,6 +65,7 @@ describe('test transfer asset', () => {
         const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
         const tx = makeTransferTx('ONG', from, to, 0.1 * 1e9, gasPrice, gasLimit);
         signTransaction(tx, adminPrivateKey);
+        console.log(tx.payload.serialize());
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         // tslint:disable:no-console
         console.log(JSON.stringify(response));

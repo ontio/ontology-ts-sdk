@@ -177,7 +177,7 @@ export function makeNativeContractTx(
     payload.code = code;
 
     let tx: Transaction;
-    if (funcName === 'transfer') {
+    if (funcName === 'transfer' || funcName === 'transferFrom') {
         tx = new Transfer();
     } else {
         tx = new Transaction();

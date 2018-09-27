@@ -16,12 +16,13 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { BigNumber } from 'bignumber.js';
+import BigInt from '../../common/bigInt';
 import { TOKEN_TYPE } from '../../consts';
 import { Address } from '../../crypto';
 import { ERROR_CODE } from '../../error';
 import { Transaction } from '../../transaction/transaction';
 import { Transfer } from '../../transaction/transfer';
-import { hex2VarBytes } from '../../utils';
+import { hex2VarBytes, hexstr2str, StringReader } from '../../utils';
 import { makeNativeContractTx } from './../../transaction/transactionBuilder';
 import { buildNativeCodeScript } from './../abi/nativeVmParamsBuilder';
 import Struct from './../abi/struct';
@@ -87,6 +88,7 @@ export function makeTransferTx(
     tx.from = from;
     tx.to = to;
     tx.amount = amount;
+    tx.method = 'transfer';
 
     if (payer) {
         tx.payer = payer;
@@ -180,7 +182,7 @@ export function makeTransferTx(
  * @param gasLimit Gas limit
  */
 export function makeWithdrawOngTx(from: Address, to: Address, amount: number | string, payer: Address,
-                                  gasPrice: string, gasLimit: string): Transaction {
+                                  gasPrice: string, gasLimit: string): Transfer {
     amount = Number(amount);
     verifyAmount(amount);
 
@@ -191,8 +193,14 @@ export function makeWithdrawOngTx(from: Address, to: Address, amount: number | s
     struct.add(from, new Address(ONT_CONTRACT), to, amount);
     list.push(struct);
     const args = buildNativeCodeScript(list);
-    const tx = makeNativeContractTx('transferFrom', args, new Address(ONG_CONTRACT) , gasPrice, gasLimit);
+    const tx: Transfer = makeNativeContractTx(
+        'transferFrom', args, new Address(ONG_CONTRACT) , gasPrice, gasLimit) as any;
     tx.payer = payer;
+    tx.tokenType = 'ONG';
+    tx.from = from;
+    tx.to = to;
+    tx.amount = amount;
+    tx.method = 'transferFrom';
     return tx;
 }
 
@@ -241,5 +249,71 @@ export function makeQueryBalanceTx(asset: string,  address: Address): Transactio
     }
     const params = hex2VarBytes(address.serialize());
     const tx = makeNativeContractTx('balanceOf', params, new Address(contract), '0', '0');
+    return tx;
+}
+
+export function deserializeTransferTx(str: string): Transfer {
+    const tx: Transfer = Transaction.deserialize(str) as any;
+    const code = tx.payload.serialize();
+    const contractIndex1 = code.lastIndexOf('14' + '000000000000000000000000000000000000000');
+    const contractIndex2 = code.lastIndexOf('14' + '0000000000000000000000000000000000000002');
+    if (contractIndex1 > 0 && code.substr(contractIndex1 + 41, 1) === '1') {
+        tx.tokenType = 'ONT';
+    } else if (contractIndex1 > 0 && code.substr(contractIndex1 + 41, 1) === '2') {
+        tx.tokenType = 'ONG';
+    } else {
+        throw new Error('Not a transfer tx');
+    }
+    const contractIndex = Math.max(contractIndex1, contractIndex2);
+    const params = code.substring(0, contractIndex);
+    const paramsEnd = params.indexOf('6a7cc86c') + 8;
+    if (params.substr(paramsEnd, 4) === '51c1') { // transfer
+        const methodStr = params.substring(paramsEnd + 6);
+        tx.method = hexstr2str(methodStr);
+    } else {
+        const methodStr = params.substring(paramsEnd + 2);
+        tx.method = hexstr2str(methodStr);
+    }
+
+    if (tx.method === 'transfer') {
+        const sr = new StringReader(params);
+        const codeLength = sr.readNextLen();
+        const bytes = sr.read(4);
+        const from = new Address(sr.read(20));
+        tx.from = from;
+        const bytes2 = sr.read(4);
+        const to = new Address(sr.read(20));
+        tx.to = to;
+        const bytes3 = sr.read(3);
+        const numTmp = parseInt(sr.read(1), 16);
+        if (sr.str.substr(sr.pos, 6) === '6a7cc8') {
+            tx.amount = numTmp - 80;
+        } else {
+            const amount = BigInt.fromHexstr(sr.read(numTmp)).value;
+            tx.amount = new BigNumber(amount).toNumber();
+        }
+    } else if (tx.method === 'transferFrom') {
+        const sr = new StringReader(params);
+        const codeLength = sr.readNextLen();
+        const bytes = sr.read(4);
+        const from = new Address(sr.read(20));
+        tx.from = from;
+        const bytes1 = sr.read(4);
+        const contract = new Address(sr.read(20));
+        const bytes2 = sr.read(4);
+        const to = new Address(sr.read(20));
+        tx.to = to;
+        const bytes3 = sr.read(3);
+        const numTmp = parseInt(sr.read(1), 16);
+        if (sr.str.substr(sr.pos, 6) === '6a7cc8') {
+            tx.amount = numTmp - 80;
+        } else {
+            const amount = BigInt.fromHexstr(sr.read(numTmp)).value;
+            tx.amount = new BigNumber(amount).toNumber();
+        }
+    } else {
+        throw new Error('Not a transfer tx');
+    }
+
     return tx;
 }

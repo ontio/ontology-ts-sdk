@@ -23,4 +23,5 @@ export class Transfer extends Transaction {
     tokenType: string;
     from: Address;
     to: Address;
+    method: string;
 }
