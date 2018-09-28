@@ -277,14 +277,17 @@ export function deserializeTransferTx(str: string): Transfer {
 
     if (tx.method === 'transfer') {
         const sr = new StringReader(params);
-        const codeLength = sr.readNextLen();
-        const bytes = sr.read(4);
+        // const codeLength = sr.readNextLen();
+        // const bytes = sr.read(4);
+        sr.pos += 10;
         const from = new Address(sr.read(20));
         tx.from = from;
-        const bytes2 = sr.read(4);
+        // const bytes2 = sr.read(4);
+        sr.pos += 8;
         const to = new Address(sr.read(20));
         tx.to = to;
-        const bytes3 = sr.read(3);
+        // const bytes3 = sr.read(3);
+        sr.pos += 6;
         const numTmp = parseInt(sr.read(1), 16);
         if (sr.str.substr(sr.pos, 6) === '6a7cc8') {
             tx.amount = numTmp - 80;
@@ -294,16 +297,19 @@ export function deserializeTransferTx(str: string): Transfer {
         }
     } else if (tx.method === 'transferFrom') {
         const sr = new StringReader(params);
-        const codeLength = sr.readNextLen();
-        const bytes = sr.read(4);
+        // const codeLength = sr.readNextLen();
+        // const bytes = sr.read(4);
+        sr.pos += 10;
         const from = new Address(sr.read(20));
         tx.from = from;
-        const bytes1 = sr.read(4);
-        const contract = new Address(sr.read(20));
-        const bytes2 = sr.read(4);
+        // const bytes1 = sr.read(4);
+        // const contract = new Address(sr.read(20));
+        // const bytes2 = sr.read(4);
+        sr.pos += 56;
         const to = new Address(sr.read(20));
         tx.to = to;
-        const bytes3 = sr.read(3);
+        // const bytes3 = sr.read(3);
+        sr.pos += 6;
         const numTmp = parseInt(sr.read(1), 16);
         if (sr.str.substr(sr.pos, 6) === '6a7cc8') {
             tx.amount = numTmp - 80;

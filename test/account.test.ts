@@ -37,7 +37,7 @@ describe('test account', () => {
     beforeAll(() => {
         privateKey = PrivateKey.random();
         // console.log(privateKey.serializeJson())
-        console.log(privateKey.serializeWIF());
+        // console.log(privateKey.serializeWIF());
     });
 
     test('test create', () => {
