@@ -85,7 +85,7 @@ export class WebsocketClient {
         if (sendResult.Error === -1) {
             // tslint:disable-next-line:no-console
             console.log(sendResult);
-            throw new Error('FAILED_TRANSACTION');
+            throw new Error(sendResult.Result);
         }
 
         if (waitNotify) {
