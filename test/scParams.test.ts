@@ -2,12 +2,17 @@ import { PrivateKey } from '../src/crypto/PrivateKey';
 import { RestClient, Struct } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { num2hexstring, reverseHex } from '../src/utils';
+import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
 import { Parameter, ParameterType } from './../src/smartcontract/abi/parameter';
 import { makeInvokeTransaction, signTransaction } from './../src/transaction/transactionBuilder';
 
 describe('test smarct contract params', () => {
     const socketClient = new WebsocketClient();
+
+    const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93');
+    const account = Account.create(privateKey, '123456', 'test');
+    console.log(account.address.serialize());
     test('test params Array', async () => {
         const contract = reverseHex('f7bafc05ad1fc3822a1db1d195c7dc02959f073e');
         const contractAddr = new Address(contract);
@@ -59,5 +64,22 @@ describe('test smarct contract params', () => {
         const tx = makeInvokeTransaction(method, parameters, contractAddr, '500', '20000');
         const res = await socketClient.sendRawTransaction(tx.serialize(), true, false);
         console.log(JSON.stringify(res));
-    })
+    });
+
+    test('fomo3dBuy', async () => {
+        const contract = '462c4fea67cd7a3e4c96edb993cb08866616f8cc';
+        const contractAddr = new Address(reverseHex(contract));
+        const method = 'Buy';
+        const parameters = [
+            new Parameter('playerAddr', ParameterType.ByteArray, account.address.serialize()),
+            new Parameter('amountInCoin', ParameterType.Int, 1),
+            new Parameter('team', ParameterType.Int, 1),
+            new Parameter('useVault', ParameterType.Boolean, false),
+            new Parameter('referrer', ParameterType.String, 'test')
+        ];
+        const tx = makeInvokeTransaction(method, parameters, contractAddr, '500', '20000');
+        signTransaction(tx, privateKey);
+        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        console.log(JSON.stringify(res));
+    });
 });
