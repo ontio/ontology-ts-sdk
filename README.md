@@ -1,6 +1,6 @@
 
 <h1 align="center">TypeScript SDK For Ontology blockchain </h1>
-<h4 align="center">Version V0.9.7 </h4>
+<h4 align="center">Version V0.9.8 </h4>
 
 ## Overview
 
@@ -19,10 +19,16 @@ The project is a comprehensive TypeScript library for the Ontology blockchain. C
 git clone 'https://github.com/ontio/ontology-ts-sdk.git'
 ```
 
-#### Install
+Then please install the packges.
+
+```
+npm install (or yarn)
+```
+
+#### Use in your project
 
 ````
-npm install 'ontology-ts-sdk'
+npm install 'ontology-ts-sdk' --save
 ````
 
 #### Compile
