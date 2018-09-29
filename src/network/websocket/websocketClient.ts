@@ -82,10 +82,10 @@ export class WebsocketClient {
         const raw = Builder.sendRawTransaction(hexData, preExec);
         const sendResult = await this.send(raw, this.autoClose && !waitNotify);
 
-        if (sendResult.Error === -1) {
+        if (sendResult.Error !== 0) {
             // tslint:disable-next-line:no-console
             console.log(sendResult);
-            throw new Error(sendResult.Result);
+            throw new Error(JSON.stringify(sendResult));
         }
 
         if (waitNotify) {
