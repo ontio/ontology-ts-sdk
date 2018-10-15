@@ -16,6 +16,7 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import { BigNumber } from 'bignumber.js';
 import BigInt from '../common/bigInt';
 import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';
@@ -37,17 +38,33 @@ export const pushBool = (param: boolean) => {
 export const pushInt = (param: number) => {
     let result = '';
     if (param === -1) {
-        result += num2hexstring(opcode.PUSHM1);
+        result = num2hexstring(opcode.PUSHM1);
     } else if (param === 0) {
-        result += num2hexstring(opcode.PUSH0);
+        result = num2hexstring(opcode.PUSH0);
     } else if (param > 0 && param < 16) {
         const num = opcode.PUSH1 - 1 + param;
-        result += num2hexstring(num);
+        result = num2hexstring(num);
     } else {
         const biHex = new BigInt(param.toString()).toHexstr();
         result = pushHexString(biHex);
     }
 
+    return result;
+};
+
+export const pushBigNum = (param: BigNumber) => {
+    let result = '';
+    if (param.isEqualTo(-1)) {
+        result = num2hexstring(opcode.PUSHM1);
+    } else if (param.isEqualTo(0)) {
+        result = num2hexstring(opcode.PUSH0);
+    } else if (param.isGreaterThan(0) && param.isLessThan(16)) {
+        const num = opcode.PUSH1 - 1 + param.toNumber();
+        result = num2hexstring(num);
+    } else {
+        const biHex = new BigInt(param.toString()).toHexstr();
+        result = pushHexString(biHex);
+    }
     return result;
 };
 
@@ -122,6 +139,8 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
     for (const p of abiFunction.parameters) {
         if (p.getType() === ParameterType.String) {
             tmp.push(str2hexstr(p.getValue()));
+        } else if (p.getType() === ParameterType.Long) {
+            tmp.push(new BigNumber(p.getValue()));
         } else {
             tmp.push(p.getValue());
         }
@@ -143,6 +162,8 @@ export const createCodeParamsScript = (list: any[]) => {
             result += pushInt(val);
         } else if (typeof val === 'boolean') {
             result += pushBool(val);
+        } else if (val instanceof BigNumber) {
+            result += pushBigNum(val);
         } else if (val instanceof Map) {
             const mapBytes = getMapBytes(val);
             result += pushHexString(mapBytes);

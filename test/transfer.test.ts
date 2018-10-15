@@ -29,13 +29,14 @@ import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
 import { makeQueryAllowanceTx, makeQueryBalanceTx,
-    makeTransferTx, makeWithdrawOngTx, ONG_CONTRACT, ONT_CONTRACT
+    makeTransferTx, makeWithdrawOngTx, ONG_CONTRACT, ONT_CONTRACT, deserializeTransferTx
 } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/nativevm/token';
 import { Transaction } from '../src/transaction/transaction';
 import { addSign, buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
-import { ab2hexstring, generateRandomArray, isBase64, num2hexstring, str2hexstr, StringReader, reverseHex } from '../src/utils';
+// tslint:disable-next-line:max-line-length
+import { ab2hexstring, generateRandomArray, isBase64, num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
 import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
 
@@ -153,4 +154,16 @@ describe('test transfer asset', () => {
         console.log(result);
         expect(result).toBeTruthy();
     }, 10000);
+
+    test('test amount number', () => {
+        const expectAmount = '90071992547409911';
+        const from = new Address('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
+        const to = new Address('ALFZykMAYibLoj66jcBdbpTnrBCyczf4CL');
+        const tx = makeTransferTx('ONG', from, to, expectAmount, '500', '30000');
+
+        const transferAmount = deserializeTransferTx(tx.serialize()).amount;
+        console.log('Expected Amount', expectAmount);
+        console.log('Transfer Amount', transferAmount);
+        expect(transferAmount).toEqual(expectAmount);
+    });
 });
