@@ -52,8 +52,8 @@ import {
     signTransaction,
     signTx
 } from '../transaction/transactionBuilder';
-import { generateMnemonic,
-    hexstr2str, isBase64, now, reverseHex, sendBackResult2Native, str2hexstr, StringReader } from '../utils';
+import { generateMnemonic, hexstr2str, isBase64, isHexString, now, reverseHex,
+    sendBackResult2Native, str2hexstr, StringReader } from '../utils';
 import { Wallet } from '../wallet';
 import { ParameterType } from './../smartcontract/abi/parameter';
 
@@ -994,7 +994,7 @@ export class SDK {
     static importAccountWithPrivateKey(label: string, privateKey: string, password: string, callback?: string) {
         privateKey = privateKey.trim();
         password = this.transformPassword(password);
-        if (!privateKey || privateKey.length !== 64) {
+        if (!privateKey || privateKey.length !== 64 || !isHexString(privateKey)) {
             const obj = {
                 error: ERROR_CODE.INVALID_PARAMS,
                 result: ''

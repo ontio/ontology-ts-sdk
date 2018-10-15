@@ -1,4 +1,3 @@
-
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -17,10 +16,11 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import { BigNumber } from 'bignumber.js';
 import { Address } from '../../crypto/address';
 import opcode from '../../transaction/opcode';
 import { hex2VarBytes, num2hexstring, str2VarBytes } from '../../utils';
-import { pushBool, pushHexString, pushInt } from './../../transaction/scriptBuilder';
+import { pushBigNum, pushBool, pushHexString, pushInt } from './../../transaction/scriptBuilder';
 import { Parameter, ParameterType } from './parameter';
 import Struct from './struct';
 
@@ -56,6 +56,8 @@ export function createCodeParamScript(obj: any): string {
         result += pushBool(obj);
     } else if (typeof obj === 'number') {
         result += pushInt(obj);
+    } else if (obj instanceof BigNumber) {
+        result += pushBigNum(obj);
     } else if (obj instanceof Address) {
         result += pushHexString(obj.serialize());
     } else if (obj instanceof Struct) {
@@ -80,6 +82,8 @@ export function buildNativeCodeScript(list: any[]) {
             result += pushBool(val);
         } else if (typeof val === 'number') {
             result += pushInt(val);
+        } else if (val instanceof BigNumber) {
+            result += pushBigNum(val);
         } else if (val instanceof Address) {
             result += pushHexString(val.serialize());
         } else if (val instanceof Struct) {

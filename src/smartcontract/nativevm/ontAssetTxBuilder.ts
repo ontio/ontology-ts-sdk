@@ -75,10 +75,10 @@ export function makeTransferTx(
     gasLimit: string,
     payer?: Address
 ): Transfer {
-    amount = Number(amount);
     verifyAmount(amount);
+    const num = new BigNumber(amount);
     const struct = new Struct();
-    struct.add(from, to, amount);
+    struct.add(from, to, num);
     const list = [];
     list.push([struct]);
     const contract = getTokenContract(tokenType);
@@ -183,14 +183,14 @@ export function makeTransferTx(
  */
 export function makeWithdrawOngTx(from: Address, to: Address, amount: number | string, payer: Address,
                                   gasPrice: string, gasLimit: string): Transfer {
-    amount = Number(amount);
     verifyAmount(amount);
+    const num = new BigNumber(amount);
 
     // const tf = new TransferFrom(from, new Address(ONT_CONTRACT), to, amount);
     // const params = tf.serialize();
     const list = [];
     const struct = new Struct();
-    struct.add(from, new Address(ONT_CONTRACT), to, amount);
+    struct.add(from, new Address(ONT_CONTRACT), to, num);
     list.push(struct);
     const args = buildNativeCodeScript(list);
     const tx: Transfer = makeNativeContractTx(
@@ -293,7 +293,7 @@ export function deserializeTransferTx(str: string): Transfer {
             tx.amount = numTmp - 80;
         } else {
             const amount = BigInt.fromHexstr(sr.read(numTmp)).value;
-            tx.amount = new BigNumber(amount).toNumber();
+            tx.amount = new BigNumber(amount).toString();
         }
     } else if (tx.method === 'transferFrom') {
         const sr = new StringReader(params);
@@ -315,7 +315,7 @@ export function deserializeTransferTx(str: string): Transfer {
             tx.amount = numTmp - 80;
         } else {
             const amount = BigInt.fromHexstr(sr.read(numTmp)).value;
-            tx.amount = new BigNumber(amount).toNumber();
+            tx.amount = new BigNumber(amount).toString();
         }
     } else {
         throw new Error('Not a transfer tx');

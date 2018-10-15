@@ -43,8 +43,8 @@ export class Wallet {
         wallet.createTime = obj.createTime;
         wallet.version = obj.version;
         wallet.scrypt = obj.scrypt;
-        wallet.identities = (obj.identities as any[]).map((i) => Identity.parseJsonObj(i));
-        wallet.accounts = (obj.accounts as any[]).map((a) => Account.parseJsonObj(a));
+        wallet.identities = obj.identities && (obj.identities as any[]).map((i) => Identity.parseJsonObj(i));
+        wallet.accounts = obj.accounts && (obj.accounts as any[]).map((a) => Account.parseJsonObj(a));
         wallet.extra = obj.extra;
         return wallet;
     }

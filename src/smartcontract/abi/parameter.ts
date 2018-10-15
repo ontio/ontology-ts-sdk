@@ -25,7 +25,7 @@ export enum ParameterType  {
     Map = 'Map',
     String  = 'String',
     Int = 'Int',
-    Long = 'Long',
+    Long = 'Long', // value should be string
     IntArray = 'IntArray',
     LongArray = 'LongArray',
     Address = 'Address'

@@ -141,8 +141,9 @@ describe('test governance authorization', () => {
     });
 
     test('getAttributes', async () => {
-        const pk = '03eb441b6350ba803b987c7aa957bacfe4e1b570d51e96204d663f8e6b42b7fc45';
-        const res = await getAttributes(pk, nodeUrl);
+        const pk = '031554b64b4145fb33e83f686081e9148188c2176aaf6a55c874b38fd093e1bc0c';
+        const url = 'http://dappnode1.ont.io:20334';
+        const res = await getAttributes(pk, url);
         console.log(res);
     }, 10000);
 
