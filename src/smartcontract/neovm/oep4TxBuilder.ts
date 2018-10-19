@@ -16,10 +16,10 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 import { BigNumber } from 'bignumber.js';
-import { Parameter, Transaction } from '../../index';
 import { createCodeParamsScript } from '../../transaction/scriptBuilder';
+import { Transaction } from '../../transaction/transaction';
 import { str2hexstr } from '../../utils';
-import { ParameterType } from '../abi/parameter';
+import { Parameter, ParameterType } from '../abi/parameter';
 import { Address } from './../../crypto/address';
 import { makeInvokeTransaction } from './../../transaction/transactionBuilder';
 
