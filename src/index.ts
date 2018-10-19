@@ -35,6 +35,8 @@ import * as GovernanceTxBuilder from './smartcontract/nativevm/governanceContrac
 import * as OntAssetTxBuilder from './smartcontract/nativevm/ontAssetTxBuilder';
 import * as OntidContract from './smartcontract/nativevm/ontidContractTxBuilder';
 import * as Token from './smartcontract/nativevm/token';
+import * as Oep4 from './smartcontract/neovm/oep4TxBuilder';
+import * as Oep8 from './smartcontract/neovm/oep8TxBuilder';
 import { DDO, DDOAttribute } from './transaction/ddo';
 import * as ScriptBuilder from './transaction/scriptBuilder';
 import { Transaction } from './transaction/transaction';
@@ -74,6 +76,8 @@ class ONT {
     Struct: any;
     ScriptBuilder: any;
     NeoCore: any;
+    Oep4: any;
+    Oep8: any;
 
     constructor() {
         this.Account = Account;
@@ -105,6 +109,8 @@ class ONT {
         this.Struct = Struct;
         this.ScriptBuilder = ScriptBuilder;
         this.NeoCore = NeoCore;
+        this.Oep4 = Oep4;
+        this.Oep8 = Oep8;
     }
     setNode(url: string) {
         this.CONST.TEST_NODE = url;
@@ -154,5 +160,7 @@ export {
     Crypto,
     Struct,
     ScriptBuilder,
-    NeoCore
+    NeoCore,
+    Oep4,
+    Oep8
 };
