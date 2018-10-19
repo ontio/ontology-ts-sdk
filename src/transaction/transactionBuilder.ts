@@ -200,7 +200,7 @@ export function makeNativeContractTx(
 /**
  * Creates transaction to inovke smart contract
  * @param funcName Function name of smart contract
- * @param params Array of Parameters
+ * @param params Array of Parameters or serialized parameters
  * @param contractAddr Address of contract
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
@@ -208,7 +208,7 @@ export function makeNativeContractTx(
  */
 export const makeInvokeTransaction = (
     funcName: string,
-    params: Parameter[],
+    params: Parameter[] | string,
     contractAddr: Address,
     gasPrice?: string,
     gasLimit?: string,
@@ -217,8 +217,13 @@ export const makeInvokeTransaction = (
     const tx = new Transaction();
     tx.type = TxType.Invoke;
 
-    const abiFunc = new AbiFunction(funcName, '', params);
-    const args = serializeAbiFunction(abiFunc);
+    let args = '';
+    if (typeof params === 'string') {
+        args = params;
+    } else {
+        const abiFunc = new AbiFunction(funcName, '', params);
+        args = serializeAbiFunction(abiFunc);
+    }
 
     let code = args + num2hexstring(opcode.APPCALL);
     code += contractAddr.serialize();

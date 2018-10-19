@@ -47,6 +47,8 @@ describe('test identity', () => {
         const itemp = Identity.parseJson(identityDataStr);
         expect(itemp).toBeDefined();
         expect(identityDataStr).toBeDefined();
+        const pri = identity.exportPrivateKey('123456');
+        expect(pri.key).toEqual(privateKey.key);
     });
 
     test('test import with correct password', () => {

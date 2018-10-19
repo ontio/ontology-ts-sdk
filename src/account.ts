@@ -21,6 +21,8 @@ import { Address, PrivateKey } from './crypto';
 import { deserializeFromJson } from './crypto/PrivateKeyFactory';
 import { ERROR_CODE } from './error';
 import { ScryptParams } from './scrypt';
+import { Transaction } from './transaction/transaction';
+import { signTransaction } from './transaction/transactionBuilder';
 import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
 // tslint:disable-next-line:no-var-requires
@@ -195,5 +197,15 @@ export class Account {
             'signatureScheme': this.encryptedKey.algorithm.defaultSchema.label
         };
         return obj;
+    }
+
+    exportPrivateKey(password: string, params?: ScryptParams) {
+        return this.encryptedKey.decrypt(password, this.address, this.salt, params);
+    }
+
+    signTransaction(password: string, tx: Transaction, params?: ScryptParams) {
+        const pri = this.exportPrivateKey(password, params);
+        signTransaction(tx, pri, pri.algorithm.defaultSchema);
+        return tx;
     }
 }
