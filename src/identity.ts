@@ -18,6 +18,8 @@
 import { Address, JsonKey, PrivateKey } from './crypto';
 import { deserializeFromJson } from './crypto/PrivateKeyFactory';
 import { ScryptParams } from './scrypt';
+import { Transaction } from './transaction/transaction';
+import { signTransaction } from './transaction/transactionBuilder';
 import { ab2hexstring, generateRandomArray, randomBytes } from './utils';
 
 /**
@@ -209,5 +211,18 @@ export class Identity {
             extra: this.extra
         };
         return obj;
+    }
+
+    exportPrivateKey(password: string, params?: ScryptParams) {
+        const encryptedKey = this.controls[0].encryptedKey;
+        const address = this.controls[0].address;
+        const salt = this.controls[0].salt;
+        return encryptedKey.decrypt(password, address, salt, params);
+    }
+
+    signTransaction(password: string, tx: Transaction, params?: ScryptParams) {
+        const pri = this.exportPrivateKey(password, params);
+        signTransaction(tx, pri, pri.algorithm.defaultSchema);
+        return tx;
     }
 }

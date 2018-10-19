@@ -1,6 +1,4 @@
-import { BigNumber } from 'bignumber.js';
-import { sm2, SM2KeyPair } from 'sm.js';
-import { KeyType } from './../src/crypto/KeyType';
+
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -19,6 +17,8 @@ import { KeyType } from './../src/crypto/KeyType';
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import { BigNumber } from 'bignumber.js';
+import { sm2, SM2KeyPair } from 'sm.js';
 import { Account } from '../src/account';
 import { Address, PublicKey } from '../src/crypto';
 import { PrivateKey } from '../src/crypto';
@@ -26,6 +26,8 @@ import { CurveLabel } from '../src/crypto/CurveLabel';
 import { KeyParameters } from '../src/crypto/Key';
 import { ERROR_CODE } from '../src/error';
 import * as utils from '../src/utils';
+import { KeyType } from './../src/crypto/KeyType';
+
 describe('test account', () => {
 
     // tslint:disable-next-line:one-variable-per-declaration
@@ -56,14 +58,14 @@ describe('test account', () => {
         console.log('Address: ' + Address.fromPubKey(new PublicKey(pub)).toBase58());
     });
     test('test import account with correct password', () => {
-        let a;
+        let a: Account;
         try {
             a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address, account.salt);
-
         } catch (err) {
             console.log(err);
         }
-
+        const pri = a.exportPrivateKey('123456');
+        expect(pri.key).toEqual(privateKey.key);
         expect(a.label).toBe('mickey');
 
     });

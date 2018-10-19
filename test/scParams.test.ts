@@ -1,7 +1,7 @@
 import { PrivateKey } from '../src/crypto/PrivateKey';
 import { RestClient, Struct } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { num2hexstring, reverseHex } from '../src/utils';
+import { num2hexstring, reverseHex, str2hexstr } from '../src/utils';
 import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
 import { Parameter, ParameterType } from './../src/smartcontract/abi/parameter';
@@ -67,15 +67,16 @@ describe('test smarct contract params', () => {
     });
 
     test('fomo3dBuy', async () => {
-        const contract = '462c4fea67cd7a3e4c96edb993cb08866616f8cc';
+        console.log('hex: ' +str2hexstr(''));
+        const contract = '9361fc1e3a628e1aa46b3d58dde051530f0f5aa0';
         const contractAddr = new Address(reverseHex(contract));
         const method = 'Buy';
         const parameters = [
-            new Parameter('playerAddr', ParameterType.ByteArray, account.address.serialize()),
-            new Parameter('amountInCoin', ParameterType.Int, 1),
+            new Parameter('playerAddr', ParameterType.ByteArray, account.address.toHexString()),
+            new Parameter('amountInCoin', ParameterType.Int, 150314570501736060),
             new Parameter('team', ParameterType.Int, 1),
             new Parameter('useVault', ParameterType.Boolean, false),
-            new Parameter('referrer', ParameterType.String, 'test')
+            new Parameter('referrer', ParameterType.String, '')
         ];
         const tx = makeInvokeTransaction(method, parameters, contractAddr, '500', '20000');
         signTransaction(tx, privateKey);
