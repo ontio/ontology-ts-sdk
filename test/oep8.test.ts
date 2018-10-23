@@ -43,7 +43,7 @@ describe('test oep8', () => {
     // console.log(account2.address.toBase58());
     // console.log(account3.address.toBase58());
 
-    const codeHash = 'c411141fa6ec39a34aac291dbec5c1622eb5ae98';
+    const codeHash = 'a2054b2d84a87190ea3a96e122e0710e95da36f3';
 
     const contractAddr = new Address(reverseHex(codeHash));
     const oep8 = new Oep8TxBuilder(contractAddr);
@@ -67,6 +67,35 @@ describe('test oep8', () => {
 
     test('test_queryBalance', async () => {
         const tx = oep8.makeQueryBalanceOfTx(address2, 7);
+        const res = await restClient.sendRawTransaction(tx.serialize(), true);
+        console.log(res);
+        if (!res.Result.Result) { // balance is 0
+            const balance = 0;
+            expect(balance).toEqual(0);
+            console.log(balance);
+            return;
+        }
+        const val = parseInt(reverseHex(res.Result.Result), 16);
+        console.log(val);
+        // tslint:disable-next-line:no-console
+        expect(val).toBeGreaterThan(0);
+    }, 10000);
+
+    test('test_queryBalances', async () => {
+        const tx = oep8.makeQueryBalancesTx(address1);
+        const res = await restClient.sendRawTransaction(tx.serialize(), true);
+        console.log(res);
+        if (res.Result.Result) { // balance is 0
+            const vals = res.Result.Result.map((v) => v ? parseInt(reverseHex(v), 16) : 0);
+            console.log('Token Ids: ["1", "2", "3", "4", "5", "6", "7", "8"]');
+            console.log('Balances: ' + vals);
+            expect(vals[0]).toBeGreaterThan(0);
+        }
+        // tslint:disable-next-line:no-console
+    }, 10000);
+
+    test('test_totalBalance', async () => {
+        const tx = oep8.makeQueryTotalBalanceTx(address2);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         if (!res.Result.Result) { // balance is 0
@@ -199,8 +228,8 @@ describe('test oep8', () => {
     });
 
     test('test_compound', async () => {
-        const tx = oep8.makeCompoundTx(address2, gasPrice, gasLimit, address2);
-        signTransaction(tx, private2);
+        const tx = oep8.makeCompoundTx(address1, 1, gasPrice, gasLimit, address1);
+        signTransaction(tx, private1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
         /*

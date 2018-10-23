@@ -41,10 +41,6 @@
   dependencies:
     ws "^3.1.0"
 
-"@ont-community/window-post-message-proxy@^0.2.14":
-  version "0.2.14"
-  resolved "https://registry.yarnpkg.com/@ont-community/window-post-message-proxy/-/window-post-message-proxy-0.2.14.tgz#e3b1fe1b1558d7aedbbc1d0053e35f21cd9dc05e"
-
 "@samverschueren/stream-to-observable@^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@samverschueren/stream-to-observable/-/stream-to-observable-0.3.0.tgz#ecdf48d532c58ea477acfcab80348424f8d0662f"
@@ -1280,9 +1276,9 @@ bigi@^1.1.0, bigi@^1.2.1, bigi@^1.4.2:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/bigi/-/bigi-1.4.2.tgz#9c665a95f88b8b08fc05cfd731f561859d725825"
 
-bignumber.js@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-6.0.0.tgz#bbfa047644609a5af093e9cbd83b0461fa3f6002"
+bignumber.js@^7.2.1:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-7.2.1.tgz#80c048759d826800807c4bfd521e50edbba57a5f"
 
 binary-extensions@^1.0.0:
   version "1.11.0"
@@ -4703,48 +4699,6 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-ontology-dapi@^0.3.13:
-  version "0.3.13"
-  resolved "https://registry.yarnpkg.com/ontology-dapi/-/ontology-dapi-0.3.13.tgz#3a002d93c53a9f2d82a384a6769d31a4ae5cc4fd"
-  dependencies:
-    "@ont-community/window-post-message-proxy" "^0.2.14"
-    bs58 "^4.0.1"
-    crypto-js "^3.1.9-1"
-    promise-timeout "^1.3.0"
-    uuid "^3.3.2"
-    webextension-polyfill-ts "^0.8.7"
-
-ontology-ts-sdk@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ontology-ts-sdk/-/ontology-ts-sdk-1.0.0.tgz#f7ff12b42780b7b4111bd7ef0b9c2a91843eb6be"
-  dependencies:
-    "@ont-community/hdkey-secp256r1" "^1.0.1"
-    "@ont-community/html5-websocket" "^2.0.2"
-    axios "^0.17.1"
-    babel-polyfill "^6.26.0"
-    base-x "^3.0.3"
-    base64-url "^2.2.0"
-    bigi "^1.4.2"
-    bignumber.js "^6.0.0"
-    bip39 "^2.5.0"
-    bs58 "^4.0.1"
-    bs58check "^2.1.1"
-    crypto "^1.0.1"
-    crypto-js "^3.1.9-1"
-    ecdsa "^0.7.0"
-    ecurve "^1.0.6"
-    elliptic "^6.4.0"
-    js-sha3 "^0.7.0"
-    milagro-crypto-js "^3.3.0"
-    promise-timeout "^1.3.0"
-    scrypt-async "^2.0.0"
-    secure-random "^1.1.1"
-    sm.js "0.1.7"
-    uuid "^3.2.1"
-    websocket-as-promised "^0.8.0"
-    wif "^2.0.6"
-    ws "^4.1.0"
-
 optimist@^0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/optimist/-/optimist-0.6.1.tgz#da3ea74686fa21a19a111c326e90eb15a0196686"
@@ -6367,7 +6321,7 @@ util@^0.10.3:
   dependencies:
     inherits "2.0.3"
 
-uuid@^3.1.0, uuid@^3.2.1, uuid@^3.3.2:
+uuid@^3.1.0, uuid@^3.2.1:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
 
@@ -6452,16 +6406,6 @@ watchpack@^1.5.0:
     chokidar "^2.0.2"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
-
-webextension-polyfill-ts@^0.8.7:
-  version "0.8.9"
-  resolved "https://registry.yarnpkg.com/webextension-polyfill-ts/-/webextension-polyfill-ts-0.8.9.tgz#2bb62c31602d2bba7a66ca296fb36ab3a8fe61d5"
-  dependencies:
-    webextension-polyfill "^0.3.0"
-
-webextension-polyfill@^0.3.0:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/webextension-polyfill/-/webextension-polyfill-0.3.1.tgz#fab2aed917a713a5d8221e41febad81c5d0b080f"
 
 webidl-conversions@^4.0.2:
   version "4.0.2"
