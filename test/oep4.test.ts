@@ -39,7 +39,7 @@ describe('test oep4', () => {
     const gasPrice = '0';
     const gasLimit = '200000';
     // const url = TEST_ONT_URL.REST_URL;
-    const url = 'http://127.0.0.1:';
+    const url = 'http://polaris1.ont.io:';
     const restClient = new RestClient(url + '20334');
     const socketClient = new WebsocketClient(url + '20335');
 

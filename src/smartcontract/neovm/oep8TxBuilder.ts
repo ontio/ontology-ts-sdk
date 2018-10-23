@@ -69,7 +69,10 @@ const FunctionNames = {
     Concatkey: 'concatkey',
     Init: 'init',
     CreateMultiKindsPumpkin: 'createMultiKindsPumpkin',
-    CheckTokenPrefix: 'checkTokenPrefix'
+    CheckTokenPrefix: 'checkTokenPrefix',
+    BalancesOf: 'balancesOf',
+    TotalBalanceOf: 'totalBalanceOf',
+    CheckTokenId: 'checkTokenId'
 };
 
 export class Oep8TxBuilder {
@@ -216,15 +219,25 @@ export class Oep8TxBuilder {
         return makeInvokeTransaction(func, params, this.contractAddr, gasPrice, gasLimit, payer);
     }
 
+    /**
+     * Compound tokens
+     * @param account User's address
+     * @param compoundNum 0 - compound all tokens that can be compounded; 1 - compound 1 token of each type.
+     * @param gasPrice Gas price
+     * @param gasLimit Gas limit
+     * @param payer Payer to pay for gas
+     */
     makeCompoundTx(
         account: Address,
+        compoundNum: number,
         gasPrice: string,
         gasLimit: string,
         payer: Address
     ): Transaction {
         const func = FunctionNames.Compound;
         const params = [
-            new Parameter('account', ParameterType.ByteArray, account.serialize())
+            new Parameter('account', ParameterType.ByteArray, account.serialize()),
+            new Parameter('compoundNum', ParameterType.Integer, compoundNum)
         ];
         return makeInvokeTransaction(func, params, this.contractAddr, gasPrice, gasLimit, payer);
     }
@@ -286,6 +299,26 @@ export class Oep8TxBuilder {
         const func = FunctionNames.Symbol;
         const params = [
             new Parameter('tokenId', ParameterType.ByteArray, num2hexstring(tokenId))
+        ];
+        return makeInvokeTransaction(func, params, this.contractAddr);
+    }
+
+    makeQueryBalancesTx(
+        account: Address
+    ): Transaction {
+        const func = FunctionNames.BalancesOf;
+        const params = [
+            new Parameter('account', ParameterType.ByteArray, account.serialize())
+        ];
+        return makeInvokeTransaction(func, params, this.contractAddr);
+    }
+
+    makeQueryTotalBalanceTx(
+        account: Address
+    ): Transaction {
+        const func = FunctionNames.TotalBalanceOf;
+        const params = [
+            new Parameter('account', ParameterType.ByteArray, account.serialize())
         ];
         return makeInvokeTransaction(func, params, this.contractAddr);
     }

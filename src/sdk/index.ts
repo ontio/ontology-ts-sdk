@@ -44,6 +44,7 @@ import { Parameter } from '../smartcontract/abi/parameter';
 import { makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT } from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx
 } from '../smartcontract/nativevm/ontidContractTxBuilder';
+import { Oep8TxBuilder } from '../smartcontract/neovm/oep8TxBuilder';
 import { DDOAttribute } from '../transaction/ddo';
 import { Transaction } from '../transaction/transaction';
 import {
@@ -79,6 +80,7 @@ export class SDK {
     static SERVER_NODE: string = TEST_NODE;
     static REST_PORT: string = HTTP_REST_PORT;
     static SOCKET_PORT: string = HTTP_WS_PORT;
+    static restClient: RestClient = new RestClient();
 
     static setServerNode(node: string) {
         if (node) {
@@ -98,6 +100,7 @@ export class SDK {
     static setRestPort(port: string) {
         if (port) {
             SDK.REST_PORT = port;
+            SDK.restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
             return;
         }
 
@@ -1322,6 +1325,182 @@ export class SDK {
             }
             return result;
         });
+    }
+
+    // ope8 apis for ONTO
+    static queryOep8Balance(
+        contractHash: string,
+        account: string,
+        tokenId: number,
+        callback?: string
+    ) {
+        const contractAddr = new Address(reverseHex(contractHash));
+        const oep8 = new Oep8TxBuilder(contractAddr);
+        const addr = new Address(account);
+        const tx = oep8.makeQueryBalanceOfTx(addr, tokenId);
+        return SDK.restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+            const result = {
+                error: ERROR_CODE.SUCCESS,
+                result: 0
+            };
+            if (res.Result.Result) {
+                result.result = parseInt(reverseHex(res.Result.Result), 16);
+            }
+            callback && sendBackResult2Native(JSON.stringify(result), callback);
+            return result;
+        });
+    }
+
+    static queryOep8Balances(
+        contractHash: string,
+        account: string,
+        callback?: string
+    ) {
+        const contractAddr = new Address(reverseHex(contractHash));
+        const oep8 = new Oep8TxBuilder(contractAddr);
+        const addr = new Address(account);
+        const tx = oep8.makeQueryBalancesTx(addr);
+        return SDK.restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+            const result = {
+                error: ERROR_CODE.SUCCESS,
+                result: [0, 0, 0, 0, 0, 0, 0, 0]
+            };
+            if (res.Result.Result) {
+                const vals = res.Result.Result.map((v: string) => v ? parseInt(reverseHex(v), 16) : 0);
+                result.result = vals;
+            }
+            callback && sendBackResult2Native(JSON.stringify(result), callback);
+            return result;
+        });
+    }
+
+    static queryOep8TotalBalance(
+        contractHash: string,
+        account: string,
+        callback?: string
+    ) {
+        const contractAddr = new Address(reverseHex(contractHash));
+        const oep8 = new Oep8TxBuilder(contractAddr);
+        const addr = new Address(account);
+        const tx = oep8.makeQueryTotalBalanceTx(addr);
+        return SDK.restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+            const result = {
+                error: ERROR_CODE.SUCCESS,
+                result: 0
+            };
+            if (res.Result.Result) {
+                result.result = parseInt(reverseHex(res.Result.Result), 16);
+            }
+            callback && sendBackResult2Native(JSON.stringify(result), callback);
+            return result;
+        });
+    }
+
+    static transferOep8(
+        contractHash: string,
+        from: string,
+        to: string,
+        value: string,
+        tokenId: number,
+        encryptedPrivateKey: string,
+        password: string,
+        salt: string,
+        gasPrice: string,
+        gasLimit: string,
+        payer: string,
+        callback?: string
+    ) {
+        let fromAddress: Address;
+        let toAddress: Address;
+        let payerAddress: Address;
+        password = this.transformPassword(password);
+        try {
+            fromAddress = new Address(from);
+            toAddress = new Address(to);
+            payerAddress = new Address(payer);
+        } catch (err) {
+            const result = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            return result;
+        }
+
+        let privateKey: PrivateKey;
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        try {
+            const addr = new Address(from);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+            return result;
+        }
+        const contractAddr = new Address(reverseHex(contractHash));
+        const oep8 = new Oep8TxBuilder(contractAddr);
+        const tx = oep8.makeTransferTx(fromAddress, toAddress, tokenId, value, gasPrice, gasLimit, payerAddress);
+        signTransaction(tx, privateKey);
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: '',
+            tx: tx.serialize(),
+            txHash: reverseHex(tx.getSignContent())
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
+    }
+
+    static compoundOep8(
+        contractHash: string,
+        account: string,
+        compoundNum: number,
+        encryptedPrivateKey: string,
+        password: string,
+        salt: string,
+        gasPrice: string,
+        gasLimit: string,
+        payer: string,
+        callback: string
+    ) {
+        let addr: Address;
+        password = this.transformPassword(password);
+        try {
+            addr = new Address(account);
+        } catch (err) {
+            const result = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            return result;
+        }
+
+        let privateKey: PrivateKey;
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        try {
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+            return result;
+        }
+        const contractAddr = new Address(reverseHex(contractHash));
+        const oep8 = new Oep8TxBuilder(contractAddr);
+        const tx = oep8.makeCompoundTx(addr, compoundNum, gasPrice, gasLimit, addr);
+        signTransaction(tx, privateKey);
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: '',
+            tx: tx.serialize(),
+            txHash: reverseHex(tx.getSignContent())
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
     }
 
 }
