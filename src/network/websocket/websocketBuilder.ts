@@ -235,3 +235,71 @@ export function getAllowance(asset: string, from: Address, to: Address) {
     };
     return param;
 }
+
+export function getBlockHash(value: number) {
+    const param = {
+        Action: 'getblockhash',
+        Version: '1.0.0',
+        Height: value
+    };
+    return param;
+}
+
+export function getBlockTxsByHeight(value: number) {
+    const param = {
+        Action: 'getblocktxsbyheight',
+        Version: '1.0.0',
+        Height: value
+    };
+    return param;
+}
+
+export function getGasPrice() {
+    const param = {
+        Action: 'getgasprice',
+        Version: '1.0.0'
+    };
+    return param;
+}
+
+export function getGrantOng(address: Address) {
+    const param = {
+        Action: 'getgrantong',
+        Version: '1.0.0',
+        Addr: address.toBase58()
+    };
+    return param;
+}
+
+export function getMempoolTxCount() {
+    const param = {
+        Action: 'getmempooltxcount',
+        Version: '1.0.0'
+    };
+    return param;
+}
+
+export function getMempoolTxState(txHash: string) {
+    const param = {
+        Action: 'getmempooltxstate',
+        Version: '1.0.0',
+        Hash: txHash
+    };
+    return param;
+}
+
+export function getVersion() {
+    const param = {
+        Action: 'getversion',
+        Version: '1.0.0'
+    };
+    return param;
+}
+
+export function getNetworkId() {
+    const param = {
+        Action: 'getnetworkid',
+        Version: '1.0.0'
+    };
+    return param;
+}

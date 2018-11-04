@@ -54,6 +54,65 @@ describe('test websocket', () => {
         height = result.Result;
     });
 
+    test.skip('test getBestBlockHash', async () => {
+        const result = await client.getBlockHash(20);
+
+        expect(result.Action).toBe('getblockhash');
+        expect(result.Desc).toBe('SUCCESS');
+        expect(typeof result.Result).toBe('string');
+    });
+
+    test.skip('test getBlockTxsByHeight', async () => {
+        const result = await client.getBlockTxsByHeight(20);
+
+        expect(result.Action).toBe('getblocktxsbyheight');
+        expect(result.Desc).toBe('SUCCESS');
+    });
+
+    test.skip('test getGasPrice', async () => {
+        const result = await client.getGasPrice();
+
+        expect(result.Action).toBe('getgasprice');
+        expect(result.Desc).toBe('SUCCESS');
+    });
+
+    test.skip('test getGrantOng', async () => {
+        const result = await client.getGrantOng(address);
+
+        expect(result.Action).toBe('getgrantong');
+        expect(result.Desc).toBe('SUCCESS');
+        expect(typeof result.Result).toBe('number');
+    });
+
+    test.skip('test getMempoolTxCount', async () => {
+        const result = await client.getMempoolTxCount();
+
+        expect(result.Action).toBe('getmempooltxcount');
+        expect(result.Desc).toBe('SUCCESS');
+    });
+
+    test.skip('test getMempoolTxState', async () => {
+        // tslint:disable-next-line:max-line-length
+        const result = await client.getMempoolTxState('acece6ad5545d440db8371febbeb6ece39061a3a56c415a18c412c1b45e880d9');
+
+        expect(result.Action).toBe('getmempooltxstate');
+        expect(result.Desc).toBe('SUCCESS');
+    });
+
+    test('test getVerson', async () => {
+        const result = await client.getVersion();
+
+        expect(result.Action).toBe('getversion');
+        expect(result.Desc).toBe('SUCCESS');
+    });
+
+    test('test getNetworkId', async () => {
+        const result = await client.getNetworkId();
+
+        expect(result.Action).toBe('getnetworkid');
+        expect(result.Desc).toBe('SUCCESS');
+    });
+
     test('test getBlock by height', async () => {
         const result = await client.getBlock(height);
 
