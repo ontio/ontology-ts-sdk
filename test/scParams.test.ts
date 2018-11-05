@@ -83,4 +83,13 @@ describe('test smarct contract params', () => {
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
     });
+
+    test('getCurrentRound', async () => {
+        const contract = 'dedc8c61d03dcc3387737fbddbe8096300be84de';
+        const contractAddr = new Address(reverseHex(contract));
+        const method = 'getCurrentRound';
+        const tx = makeInvokeTransaction(method, [], contractAddr);
+        const res = await socketClient.sendRawTransaction(tx.serialize(), true);
+        console.log(res);
+    })
 });
