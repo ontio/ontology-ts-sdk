@@ -255,6 +255,73 @@ export class WebsocketClient {
     }
 
     /**
+     * Get block hash by block height
+     * @param height Height of the block
+     */
+    async getBlockHash(height: number): Promise<any> {
+        const raw = Builder.getBlockHash(height);
+        return this.send(raw);
+    }
+
+    /**
+     * Return all transaction hash contained in the block corresponding to this height
+     * @param height Height of the block
+     */
+    async getBlockTxsByHeight(height: number): Promise<any> {
+        const raw = Builder.getBlockTxsByHeight(height);
+        return this.send(raw);
+    }
+
+    /**
+     * Return the state of transaction locate in memory
+     */
+    async getGasPrice(): Promise<any> {
+        const raw = Builder.getGasPrice();
+        return this.send(raw);
+    }
+
+    /**
+     * Get grant ong
+     * @param address Address
+     */
+    async getGrantOng(address: Address): Promise<any> {
+        const raw = Builder.getGrantOng(address);
+        return this.send(raw);
+    }
+
+    /**
+     * Query the transaction count in the memory pool
+     */
+    async getMempoolTxCount(): Promise<any> {
+        const raw = Builder.getMempoolTxCount();
+        return this.send(raw);
+    }
+
+    /**
+     * Query the transaction state in the memory pool
+     */
+    async getMempoolTxState(txHash: string): Promise<any> {
+        const raw = Builder.getMempoolTxState(txHash);
+        return this.send(raw);
+    }
+
+    /**
+     * Get the version information of the node
+     */
+    async getVersion(): Promise<any> {
+        const raw = Builder.getVersion();
+        return this.send(raw);
+    }
+
+    /**
+     * Get the network id
+     */
+    async getNetworkId(): Promise<any> {
+        const raw = Builder.getNetworkId();
+        return this.send(raw);
+    }
+
+    /**
      * Adds listener for Notify messages.
      *
      * Be careful to not set autoClose = true and close the websocket on your own.
