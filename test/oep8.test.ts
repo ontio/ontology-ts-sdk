@@ -43,16 +43,16 @@ describe('test oep8', () => {
     // console.log(account2.address.toBase58());
     // console.log(account3.address.toBase58());
 
-    const codeHash = 'a2054b2d84a87190ea3a96e122e0710e95da36f3';
+    const codeHash = 'b2ae73193b07043e75de65edd4ad74b0fa6148b3';
 
     const contractAddr = new Address(reverseHex(codeHash));
     const oep8 = new Oep8TxBuilder(contractAddr);
-    const gasPrice = '0';
+    const gasPrice = '500';
     const gasLimit = '200000';
     // const url = TEST_ONT_URL.REST_URL;
     const url = 'http://127.0.0.1:';
-    const restClient = new RestClient(url + '20334');
-    const socketClient = new WebsocketClient(url + '20335');
+    const restClient = new RestClient();
+    const socketClient = new WebsocketClient();
     // tokenId is from 1 to 7;
     const tokenIds = [1, 2, 3, 4, 5, 6, 7];
 
@@ -65,8 +65,8 @@ describe('test oep8', () => {
         expect(response.Result.State).toEqual(1);
     });
 
-    test('test_queryBalance', async () => {
-        const tx = oep8.makeQueryBalanceOfTx(address2, 7);
+    test('test_query_Balance', async () => {
+        const tx = oep8.makeQueryBalanceOfTx(address1, 1);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         if (!res.Result.Result) { // balance is 0
@@ -111,7 +111,7 @@ describe('test oep8', () => {
     }, 10000);
 
     test('test_makeTransfer', async () => {
-        const tx = oep8.makeTransferTx(address1, address2, 7, '10', gasPrice, gasLimit, address2);
+        const tx = oep8.makeTransferTx(address1, address2, 1, '1', gasPrice, gasLimit, address2);
         signTransaction(tx, private2);
         addSign(tx, private1);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
@@ -159,7 +159,7 @@ describe('test oep8', () => {
 
      // Amount to approve can not exceed balance.
     test('test_approve', async () => {
-        const tx = oep8.makeApproveTx(address1, address3, 2, '10', gasPrice, gasLimit, address1);
+        const tx = oep8.makeApproveTx(address1, address3, 1, '10', gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -177,7 +177,7 @@ describe('test oep8', () => {
     });
 
     test('test_transferFrom_error', async () => {
-        const tx = oep8.makeTransferFromTx(address3, address1, address3, 2, '15', gasPrice, gasLimit, address3);
+        const tx = oep8.makeTransferFromTx(address3, address1, address3, 1, '15', gasPrice, gasLimit, address3);
         signTransaction(tx, private3);
         let res;
         res = await restClient.sendRawTransaction(tx.serialize(), false);
@@ -186,7 +186,7 @@ describe('test oep8', () => {
     });
 
     test('test_transferFrom_right', async () => {
-        const tx = oep8.makeTransferFromTx(address3, address1, address3, 2, '9', gasPrice, gasLimit, address3);
+        const tx = oep8.makeTransferFromTx(address3, address1, address3, 1, '9', gasPrice, gasLimit, address3);
         signTransaction(tx, private3);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -227,8 +227,9 @@ describe('test oep8', () => {
         expect(res.Result.State).toEqual(1);
     });
 
+
     test('test_compound', async () => {
-        const tx = oep8.makeCompoundTx(address1, 1, gasPrice, gasLimit, address1);
+        const tx = oep8.makeCompoundTx(address1, 100000, gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
