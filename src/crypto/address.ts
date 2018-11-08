@@ -22,7 +22,7 @@ import { ERROR_CODE } from '../error';
 import opcode from '../transaction/opcode';
 import { comparePublicKeys, programFromPubKey, pushBigInt } from '../transaction/program';
 import { pushHexString } from '../transaction/scriptBuilder';
-import { ab2hexstring, hash160, hexstring2ab, num2hexstring, sha256, StringReader } from '../utils';
+import { ab2hexstring, hash160, num2hexstring, sha256, StringReader } from '../utils';
 import { reverseHex } from './../utils';
 import { PublicKey } from './PublicKey';
 
@@ -183,7 +183,7 @@ function hexToBase58(hexEncoded: string): string {
 
     const datas = data + checksum;
 
-    return base58.encode(hexstring2ab(datas));
+    return base58.encode(new Buffer(datas, 'hex'));
 }
 
 function base58ToHex(base58Encoded: string) {

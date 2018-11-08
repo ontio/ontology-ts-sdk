@@ -28,8 +28,8 @@ import { SignatureScheme } from '../src/crypto/SignatureScheme';
 import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
-import { makeQueryAllowanceTx, makeQueryBalanceTx,
-    makeTransferTx, makeWithdrawOngTx, ONG_CONTRACT, ONT_CONTRACT, deserializeTransferTx
+import { deserializeTransferTx, makeQueryAllowanceTx,
+    makeQueryBalanceTx, makeTransferTx, makeWithdrawOngTx, ONG_CONTRACT, ONT_CONTRACT
 } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/nativevm/token';
 import { Transaction } from '../src/transaction/transaction';
