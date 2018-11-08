@@ -82,6 +82,7 @@ describe('test account', () => {
         const keyParameter = new KeyParameters(CurveLabel.SM2P256V1);
         const pri = PrivateKey.random(KeyType.SM2, keyParameter);
         const acc = Account.create(pri, '123456', 'sm2Account');
+        console.log('addr: ' + acc.address.toBase58());
         const accJson = acc.toJsonObj();
         console.log(accJson);
         expect(accJson.algorithm).toEqual('SM2');

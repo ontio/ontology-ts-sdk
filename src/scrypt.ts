@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as Bs58check from 'bs58check';
+import * as base58 from 'bs58';
 import { createCipheriv, createDecipheriv } from 'crypto';
 import * as CryptoJS from 'crypto-js';
 import * as asyncScrypt from 'scrypt-async';
@@ -253,7 +253,7 @@ export function encryptWithEcb(
     // Construct
     const assembled = OEP_HEADER + OEP_FLAG + addresshash + encrypted.ciphertext.toString();
     // console.log( "assembled: ", assembled );
-    return Bs58check.encode(Buffer.from(assembled, 'hex'));
+    return base58.encode(Buffer.from(assembled, 'hex'));
 }
 
 /**
@@ -264,7 +264,7 @@ export function decryptWithEcb(
     keyphrase: string,
     scryptParams: ScryptParams = DEFAULT_SCRYPT
 ): string {
-    const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
+    const assembled = ab2hexstring(base58.decode(encryptedKey));
     // console.log( "assembled: ", assembled );
     const addressHash = assembled.substr(6, 8);
     // console.log( "addressHash: ", addressHash );
@@ -301,7 +301,7 @@ export function decryptWithEcb(
  * @param publicKeyEncoded Public key from decrypted key
  */
 export function checkEcbDecrypted(encryptedKey: string, decryptedKey: string, publicKeyEncoded: string): void {
-    const assembled = ab2hexstring(Bs58check.decode(encryptedKey));
+    const assembled = ab2hexstring(base58.decode(encryptedKey));
     // console.log( "assembled: ", assembled );
     const addressHash = assembled.substr(6, 8);
 
