@@ -20,7 +20,7 @@ import { BigNumber } from 'bignumber.js';
 import { ERROR_CODE } from './../error';
 import { reverseHex } from './../utils';
 
-const SIZE = 8;
+// const SIZE = 8;
 /**
  * Big positive integer base on BigNumber
  */
@@ -51,9 +51,9 @@ export default class BigInt {
     toHexstr(): string {
         const bi = new BigNumber(this.value);
         let hex = bi.toString(16);
-        if (hex.length % 2 !== 0 || hex.length < 16) {
-            hex = ('0'.repeat(SIZE * 2) + hex).substring(hex.length);
-        }
+        // if (hex.length % 2 !== 0 || hex.length < 16) {
+        //     hex = ('0'.repeat(SIZE * 2) + hex).substring(hex.length);
+        // }
         hex = reverseHex(hex);
         return hex;
     }

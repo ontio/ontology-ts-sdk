@@ -64,7 +64,7 @@ describe('test transfer asset', () => {
     test('test transfer asset', async () => {
         const from = adminAddress;
         const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
-        const tx = makeTransferTx('ONT', from, to, 1, gasPrice, gasLimit);
+        const tx = makeTransferTx('ONG', from, to, 1.234 * 1e9, gasPrice, gasLimit);
         signTransaction(tx, adminPrivateKey);
         console.log(tx.payload.serialize());
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
