@@ -152,6 +152,22 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
     return result;
 };
 
+export const converArray = (list: any[]) => {
+    const tmp = [];
+    for (const p of list) {
+        if (p.getType && p.getType() === ParameterType.String) {
+            tmp.push(str2hexstr(p.getValue()));
+        } else if (p.getType && p.getType() === ParameterType.Long) {
+            tmp.push(new BigNumber(p.getValue()));
+        } else if (Array.isArray(p)) {
+            tmp.push(converArray(p));
+        } else {
+            tmp.push(p);
+        }
+    }
+    return tmp;
+};
+
 export const createCodeParamsScript = (list: any[]) => {
     let result = '';
     for (let i = list.length - 1; i >= 0; i--) {
@@ -171,7 +187,7 @@ export const createCodeParamsScript = (list: any[]) => {
             const structBytes = getStructBytes(val);
             result += pushHexString(structBytes);
         } else if (val instanceof Array) {
-            result += createCodeParamsScript(val);
+            result += createCodeParamsScript(converArray(val));
             result += pushInt(val.length);
             result += num2hexstring(opcode.PACK);
         }

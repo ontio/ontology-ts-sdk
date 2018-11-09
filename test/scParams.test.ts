@@ -91,5 +91,29 @@ describe('test smarct contract params', () => {
         const tx = makeInvokeTransaction(method, [], contractAddr);
         const res = await socketClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
-    })
+    });
+
+    test('checkNumber', async () => {
+        const contract = reverseHex('9e092590a023a0a7519a56a37c0c2a8deea27e73');
+        const contractAddr = new Address(contract);
+
+        const params = [
+            new Parameter('args', ParameterType.Array,
+                [
+                    18, 33, 5139, 12849, 2368291, 3551794, 353637396, 1178681665, 94842983701,
+                    353551602001, 43044802274854, 114771766698594,
+                    new Parameter('', ParameterType.Long, '14978884054759223'),
+                    new Parameter('', ParameterType.Long, '32778036993815411')
+                ]
+            )
+
+        ];
+
+        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr);
+        const rest = new RestClient();
+        const res = await rest.sendRawTransaction(tx.serialize(), true);
+        console.log(JSON.stringify(res));
+    }, 10000);
+
 });
+
