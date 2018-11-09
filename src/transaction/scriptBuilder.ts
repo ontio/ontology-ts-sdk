@@ -152,7 +152,7 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
     return result;
 };
 
-export const converArray = (list: any[]) => {
+export function convertArray(list: any[]): any {
     const tmp = [];
     for (const p of list) {
         if (p.getType && p.getType() === ParameterType.String) {
@@ -160,13 +160,13 @@ export const converArray = (list: any[]) => {
         } else if (p.getType && p.getType() === ParameterType.Long) {
             tmp.push(new BigNumber(p.getValue()));
         } else if (Array.isArray(p)) {
-            tmp.push(converArray(p));
+            tmp.push(convertArray(p));
         } else {
             tmp.push(p);
         }
     }
     return tmp;
-};
+}
 
 export const createCodeParamsScript = (list: any[]) => {
     let result = '';
@@ -187,7 +187,7 @@ export const createCodeParamsScript = (list: any[]) => {
             const structBytes = getStructBytes(val);
             result += pushHexString(structBytes);
         } else if (val instanceof Array) {
-            result += createCodeParamsScript(converArray(val));
+            result += createCodeParamsScript(convertArray(val));
             result += pushInt(val.length);
             result += num2hexstring(opcode.PACK);
         }
