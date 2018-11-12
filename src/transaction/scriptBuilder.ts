@@ -71,7 +71,7 @@ export const pushBigNum = (param: BigNumber) => {
 export const pushHexString = (param: string) => {
     let result = '';
     const len = param.length / 2;
-    if (len < opcode.PUSHBYTES75) {
+    if (len <= opcode.PUSHBYTES75) {
         result += num2hexstring(len);
     } else if (len < 0x100) {
         result += num2hexstring(opcode.PUSHDATA1);

@@ -18,10 +18,10 @@
 import axios from 'axios';
 import * as bip39 from 'bip39';
 import * as cryptoJS from 'crypto-js';
+import * as Long from 'long';
 import * as secureRandom from 'secure-random';
 import { ONT_TOTAL_SUPPLY, UNBOUND_GENERATION_AMOUNT, UNBOUND_TIME_INTERVAL, WEBVIEW_SCHEME } from './consts';
 import { ERROR_CODE } from './error';
-
 /**
  * Turn hex string into array buffer
  * @param str hex string
@@ -211,6 +211,43 @@ export const reverseHex = (hex: string) => {
     }
     return out;
 };
+
+export function bigIntFromBytes(bytes: string): Long {
+    const buff = Buffer.from(bytes, 'hex');
+    let data = Array.from(buff.subarray(0));
+    const b = data[data.length - 1];
+
+    if (b >> 7 === 1) {
+        data = data.concat(Array(8 - data.length).fill(255));
+    }
+    return Long.fromBytesLE(data);
+}
+
+export function bigIntToBytes(value: Long) {
+    let data = value.toBytesLE();
+    const negData = value.neg().toBytesLE();
+    let stop;
+    if (value.isNegative()) {
+        stop = 255;
+    } else {
+        stop = 0;
+    }
+    let b = stop;
+    let pos = 0;
+    for (let i = data.length - 1; i >= 0; i--) {
+        if (data[i] !== stop) {
+            b = value.isNegative() ? negData[i] : data[i];
+            pos = i + 1;
+            break;
+        }
+    }
+    data = data.slice(0, pos);
+
+    if (b >> 7 === 1) {
+        data.push(value.isNegative() ? 255 : 0);
+    }
+    return new Buffer(data).toString('hex');
+}
 
 /**
  * @class StringReader

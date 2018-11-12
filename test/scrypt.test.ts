@@ -109,6 +109,9 @@ describe('test scrypt', () => {
         const address = new Address('AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU');
         const encrypt = pri.encrypt('11111111', address, salt);
         console.log('encrypt: ' + encrypt);
+        const params = {
+            
+        }
 
         // const key = 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd'
         // const decrypt = scrypt.decryptWithGcm(key, address, salt, '11111111');
