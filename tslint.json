@@ -24,7 +24,8 @@
       "check-typecast",
       "check-type-operator",
       "check-preblock"
-    ]
+    ],
+    "no-bitwise": false
   },
   "rulesDirectory": []
 }

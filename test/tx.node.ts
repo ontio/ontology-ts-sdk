@@ -49,7 +49,7 @@ import { signTransaction, signTx } from './../src/transaction/transactionBuilder
 describe('test ONT ID contract', () => {
 
     const gasPrice = '500';
-    const gasLimit = '30000';
+    const gasLimit = '20000';
     const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
 
     const txSender = new TxSender(TEST_ONT_URL.SOCKET_URL);
@@ -78,8 +78,11 @@ describe('test ONT ID contract', () => {
 
     privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
     const account = Account.create(privateKey, '123456', '');
+    console.log('account: ' + account.address.toBase58());
     publicKey = privateKey.getPublicKey();
-    ontid = 'did:ont:AUG62qrHboRc4oNn8SvJ31ha6BkwLPKvvG';
+    console.log('pk: ' + publicKey.key);
+    // ontid = 'did:ont:AUG62qrHboRc4oNn8SvJ31ha6BkwLPKvvG';
+    ontid = 'did:ont:' + account.address.toBase58();
 
     const pri2 = new PrivateKey('cd19cfe79112f1339749adcb3491595753ea54687e78925cb5e01a6451244406');
     const account2 = Account.create(pri2, '123456', '');
@@ -109,10 +112,10 @@ describe('test ONT ID contract', () => {
 
     test('testRegisterOntid', async () => {
 
-        const tx = buildRegisterOntidTx(ontid5, pub5, gasPrice, gasLimit);
+        const tx = buildRegisterOntidTx(ontid, publicKey, gasPrice, gasLimit);
         tx.payer = account.address;
-        signTransaction(tx, pri5);
-        addSign(tx, privateKey);
+        signTransaction(tx, privateKey);
+        // addSign(tx, privateKey);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
         expect(res.Error).toEqual(0);

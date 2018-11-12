@@ -61,10 +61,22 @@ describe('test transfer asset', () => {
         'publicKey': '1314031220580679fda524f575ac48b39b9f74cb0a97993df4fac5798b04c702d07a39',
         'signatureScheme': 'SM3withSM2'
     };
-    test('test transfer asset', async () => {
+    test('test_transfer_asset_ONT', async () => {
         const from = adminAddress;
         const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
-        const tx = makeTransferTx('ONG', from, to, 1.234 * 1e9, gasPrice, gasLimit);
+        const tx = makeTransferTx('ONT', from, to, 170, gasPrice, gasLimit);
+        signTransaction(tx, adminPrivateKey);
+        console.log(tx.payload.serialize());
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log(JSON.stringify(response));
+        expect(response.Result.State).toEqual(1);
+    }, 10000);
+    
+    test('test_transfer_asset_ONG', async () => {
+        const from = adminAddress;
+        const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
+        const tx = makeTransferTx('ONG', from, to, 1.23 * 1e9, gasPrice, gasLimit);
         signTransaction(tx, adminPrivateKey);
         console.log(tx.payload.serialize());
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
