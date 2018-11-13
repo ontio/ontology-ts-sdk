@@ -16,8 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as crypto from 'crypto';
 import * as CTX from 'milagro-crypto-js';
+import * as utils from '../utils';
 
 /**
  * Issuer
@@ -544,7 +544,7 @@ export class CryptoSuite {
     }
 
     getRandBN(): any {
-        const buf = crypto.randomBytes(256);
+        const buf = utils.generateRandomArray(256);
         this.rng.clean();
         this.rng.seed(256, buf);
         const r = this.BIG.randomnum(this.order, this.rng);
