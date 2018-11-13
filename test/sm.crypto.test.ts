@@ -19,6 +19,7 @@
 import { sm2 } from 'sm.js';
 import { CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey, Signature, SignatureScheme } from '../src/crypto';
 import { ab2hexstring, ab2str, str2ab, str2hexstr } from '../src/utils';
+import { Address } from '../src/crypto/address';
 
 describe('SM2 and SM3 cryptographics functions tests', () => {
     test('test SM3 hash', () => {
@@ -75,5 +76,5 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
         const pk = new PublicKey('035384561673e76c7e3003e705e4aa7aee67714c8b68d62dd1fb3221f48c5d3da0');
         const result = pk.verify(msg, signature);
         console.log(result);
-    })
+    });
 });
