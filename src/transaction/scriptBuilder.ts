@@ -148,6 +148,7 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
     if (list.length > 0) {
         list.push(tmp);
     }
+    console.log(JSON.stringify(list));
     const result = createCodeParamsScript(list);
     return result;
 };
@@ -162,7 +163,7 @@ export function convertArray(list: any[]): any {
         } else if (Array.isArray(p)) {
             tmp.push(convertArray(p));
         } else {
-            tmp.push(p);
+            tmp.push(p.getValue ? p.getValue() : p);
         }
     }
     return tmp;
