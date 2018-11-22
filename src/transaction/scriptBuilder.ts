@@ -148,7 +148,6 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
     if (list.length > 0) {
         list.push(tmp);
     }
-    console.log(JSON.stringify(list));
     const result = createCodeParamsScript(list);
     return result;
 };

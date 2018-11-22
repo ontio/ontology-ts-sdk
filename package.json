@@ -1,6 +1,6 @@
 {
   "name": "ontology-ts-sdk",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
