@@ -64,7 +64,7 @@ describe('test transfer asset', () => {
     test('test_transfer_asset_ONT', async () => {
         const from = adminAddress;
         const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
-        const tx = makeTransferTx('ONT', from, to, 170, gasPrice, gasLimit);
+        const tx = makeTransferTx('ONT', from, to, 17, gasPrice, gasLimit);
         signTransaction(tx, adminPrivateKey);
         console.log(tx.payload.serialize());
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
@@ -144,9 +144,13 @@ describe('test transfer asset', () => {
     test('test get allowance with tx', async () => {
         const from = adminAddress;
         const to = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
-        const tx = makeQueryAllowanceTx('ont', from, to);
+        const tx = makeQueryAllowanceTx('ong', new Address(ONT_CONTRACT), from);
         const result = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(result);
+        if (result.Result) {
+            const num = parseInt(reverseHex(result.Result.Result), 16);
+            console.log(num);
+        }
         expect(result).toBeTruthy();
     }, 10000);
 

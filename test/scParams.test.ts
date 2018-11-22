@@ -1,6 +1,7 @@
 import { PrivateKey } from '../src/crypto/PrivateKey';
 import { RestClient, Struct } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
+import { createCodeParamsScript } from '../src/transaction/scriptBuilder';
 import { num2hexstring, reverseHex, str2hexstr } from '../src/utils';
 import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
@@ -14,39 +15,25 @@ describe('test smarct contract params', () => {
     const account = Account.create(privateKey, '123456', 'test');
     console.log(account.address.serialize());
     test('test params Array', async () => {
-        const contract = reverseHex('f7bafc05ad1fc3822a1db1d195c7dc02959f073e');
+        const contract = reverseHex('ab01641c418af066402075c78dc8cb8279a7c074');
         const contractAddr = new Address(contract);
-        const method = 'TransferMulti';
-        const from = new Address('AMxBvXdVasM1WApTS3ViCU9V8hiXYa4437');
-        const to = new Address('AWyZRDzFp3c53VTLdyD1Z31gB4bUo8ojN4').serialize();
-        const to2 = new Address('AQGkPm8KqQi4rRbhXX9N6FyjRSawtGwfUf').serialize();
-        const amount = 100;
+        const method = 'testHello';
 
         const params = [
+            new Parameter('op', ParameterType.String, 'test'),
             new Parameter('args', ParameterType.Array,
                 [
-                    from.serialize(),
-                    to,
-                    100
-                ]
-            ),
-            new Parameter('args', ParameterType.Array,
-                [
-                    from.serialize(),
-                    to,
-                    100
+                    new Parameter('arg1', ParameterType.Boolean, false),
+                    new Parameter('arg2', ParameterType.Integer, 3),
+                    new Parameter('arg3', ParameterType.ByteArray, account.address.serialize()),
+                    new Parameter('arg4', ParameterType.String, 'arg4')
                 ]
             )
-
         ];
-        // const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', from);
-        // const pri = PrivateKey.deserializeWIF('KxRfVFzS6Wm3mAy8h1txuhRzkudN8j2kWAKdjs9FVptCx54HLL7r');
-        // signTransaction(tx, pri);
-        // const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // console.log(JSON.stringify(res));
 
-        const tx = makeInvokeTransaction('BalanceOf', [], contractAddr, '500', '20000');
-        const res = await socketClient.sendRawTransaction(tx.serialize(), true, false);
+        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        signTransaction(tx, privateKey);
+        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
     }, 10000);
 
@@ -67,7 +54,7 @@ describe('test smarct contract params', () => {
     });
 
     test('fomo3dBuy', async () => {
-        console.log('hex: ' +str2hexstr(''));
+        console.log('hex: ' + str2hexstr(''));
         const contract = '9361fc1e3a628e1aa46b3d58dde051530f0f5aa0';
         const contractAddr = new Address(reverseHex(contract));
         const method = 'Buy';
@@ -116,4 +103,3 @@ describe('test smarct contract params', () => {
     }, 10000);
 
 });
-
