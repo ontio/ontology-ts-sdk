@@ -373,6 +373,10 @@ export class StringReader {
     readLong() {
         return parseInt(reverseHex(this.read(8)), 16);
     }
+
+    readBoolean() {
+        return parseInt(this.read(1), 16) !== 0;
+    }
 }
 
 export class EventEmitter {
