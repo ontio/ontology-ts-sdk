@@ -22,7 +22,7 @@ import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter, ParameterType, ParameterTypeVal } from '../smartcontract/abi/parameter';
 import Struct from '../smartcontract/abi/struct';
-import { num2hexstring, num2VarInt, str2hexstr } from '../utils';
+import { num2hexstring, num2VarInt, str2hexstr, StringReader, bigIntFromBytes, hexstr2str } from '../utils';
 import opcode from './opcode';
 
 export const pushBool = (param: boolean) => {
@@ -132,6 +132,55 @@ export const getMapBytes = (val: Map<string, Parameter>) => {
     return result;
 };
 
+export const pushMap = (val: Map<string, any>) => {
+    let result = '';
+    result += num2hexstring(opcode.NEWMAP);
+    result += num2hexstring(opcode.TOALTSTACK);
+    for (const k of val.keys()) {
+        result += num2hexstring(opcode.DUPFROMALTSTACK);
+        result += pushHexString(str2hexstr(k));
+        result += pushParam(val.get(k));
+        result += num2hexstring(opcode.SETITEM);
+    }
+    result += num2hexstring(opcode.FROMALTSTACK);
+    return result;
+};
+
+export const pushParam = (p: any) => {
+    if (!p) {
+        throw Error('Parameter can not be undefined');
+    }
+    let result = '';
+    if (p.type === ParameterType.ByteArray) {
+        result += pushHexString(p.value);
+    } else if (p.type === ParameterType.String) {
+        result += pushHexString(str2hexstr(p.value));
+    } else if (p.type === ParameterType.Boolean) {
+        result += pushBool(Boolean(p.value));
+        result += num2hexstring(opcode.PUSH0);
+        result += num2hexstring(opcode.BOOLOR);
+    } else if (p instanceof Map) {
+        result += pushMap(p);
+    } else if (p.type === ParameterType.Array) {
+        for (let i = p.value.length - 1; i > -1; i--) {
+            result += pushParam(p.value[i]);
+        }
+        result += pushInt(p.value.length);
+        result += num2hexstring(opcode.PACK);
+    } else if (p.type === ParameterType.Integer) {
+        result += pushInt(p.value);
+        result += num2hexstring(opcode.PUSH0);
+        result += num2hexstring(opcode.ADD);
+    } else if (p.type === ParameterType.Long) {
+        result += pushBigNum(new BigNumber(p.value));
+        result += num2hexstring(opcode.PUSH0);
+        result += num2hexstring(opcode.ADD);
+    } else {
+        throw Error('Invalid parameter type: ' + p.type);
+    }
+    return result;
+};
+
 export const serializeAbiFunction = (abiFunction: AbiFunction) => {
     const list = [];
     list.push(str2hexstr(abiFunction.name));
@@ -141,6 +190,8 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
             tmp.push(str2hexstr(p.getValue()));
         } else if (p.getType() === ParameterType.Long) {
             tmp.push(new BigNumber(p.getValue()));
+        } else if (p.getType() === ParameterType.Map) {
+            tmp.push(convertMap(p));
         } else {
             tmp.push(p.getValue());
         }
@@ -148,25 +199,75 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
     if (list.length > 0) {
         list.push(tmp);
     }
-    console.log(JSON.stringify(list));
     const result = createCodeParamsScript(list);
     return result;
 };
 
-export function convertArray(list: any[]): any {
+export function convertArray(list: Parameter[]): any {
     const tmp = [];
     for (const p of list) {
         if (p.getType && p.getType() === ParameterType.String) {
             tmp.push(str2hexstr(p.getValue()));
         } else if (p.getType && p.getType() === ParameterType.Long) {
             tmp.push(new BigNumber(p.getValue()));
-        } else if (Array.isArray(p)) {
-            tmp.push(convertArray(p));
+        } else if (p.getType && p.getType() === ParameterType.Array) {
+            tmp.push(convertArray(p.value));
+        } else if (p.getType && p.getType() === ParameterType.Map) {
+            tmp.push(convertMap(p));
         } else {
             tmp.push(p.getValue ? p.getValue() : p);
         }
     }
     return tmp;
+}
+
+export function convertMap(p: Parameter): any {
+    const map = new Map();
+    for (const k of Object.keys(p.value)) {
+        const pVal = p.value[k];
+        // map.set(k, pVal);
+        if (pVal.type && pVal.type === ParameterType.Map) {
+            map.set(k, convertMap(pVal));
+        } else {
+            map.set(k, pVal);
+        }
+    }
+    return map;
+}
+
+/**
+ * To deserialize the value return from smart contract invoke.
+ * @param hexstr
+ */
+export function deserializeItem(sr: StringReader): any {
+    const t = parseInt(sr.read(1), 16);
+    if ( t === ParameterTypeVal.ByteArray) {
+        return sr.readNextBytes();
+    } else if (t === ParameterTypeVal.Boolean) {
+        return sr.readBoolean();
+    } else if (t === ParameterTypeVal.Integer) {
+        const v = bigIntFromBytes(sr.readNextBytes()).toNumber();
+        return v;
+    } else if (t === ParameterTypeVal.Array || t === ParameterTypeVal.Struct ) {
+        const length = sr.readNextLen();
+        const list = [];
+        for (let i = length; i > 0; i--) {
+            const ele = deserializeItem(sr);
+            list.push(ele);
+        }
+        return list;
+    } else if (t === ParameterTypeVal.Map ) {
+        const length = sr.readNextLen();
+        const map = new Map();
+        for (let i = length; i > 0; i--) {
+            const key = hexstr2str(deserializeItem(sr));
+            const value = deserializeItem(sr);
+            map.set(key, value);
+        }
+        return map;
+    } else {
+        throw Error('Invalid parameter type: ' + t);
+    }
 }
 
 export const createCodeParamsScript = (list: any[]) => {
@@ -182,8 +283,9 @@ export const createCodeParamsScript = (list: any[]) => {
         } else if (val instanceof BigNumber) {
             result += pushBigNum(val);
         } else if (val instanceof Map) {
-            const mapBytes = getMapBytes(val);
-            result += pushHexString(mapBytes);
+            result += pushMap(val);
+            // const mapBytes = getMapBytes(val);
+            // result += pushHexString(mapBytes);
         } else if (val instanceof Struct) {
             const structBytes = getStructBytes(val);
             result += pushHexString(structBytes);

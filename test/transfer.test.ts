@@ -39,6 +39,7 @@ import TxSender from '../src/transaction/txSender';
 import { ab2hexstring, generateRandomArray, isBase64, num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
 import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
+import { comparePublicKeys } from '../src/transaction/program';
 
 describe('test transfer asset', () => {
     const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
@@ -126,19 +127,33 @@ describe('test transfer asset', () => {
             const p = new PrivateKey(v.accounts[0].key);
             pris.push(p.decrypt('1', new Address(v.accounts[0].address), v.accounts[0].salt, params));
         }
-        const mulAddr = Address.fromMultiPubKeys(5, pks);
+
+        const mulAddr = Address.fromMultiPubKeys(2, [pks[0], pks[1]]);
         console.log('mulAddr: ' + mulAddr.toBase58());
-        // console.log('pris: ' + JSON.stringify(pris));
-        const payer = mulAddr;
         const tx = makeTransferTx('ONT', mulAddr,
-            new Address('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve'), 100, gasPrice, gasLimit, payer);
-        const multiPri = [pris[0], pris[1], pris[2], pris[3], pris[4]];
+            new Address('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve'), 100, gasPrice, gasLimit, mulAddr);
+        const multiPri = [pris[0], pris[1]];
         for (const p of multiPri) {
-            signTx(tx, 5, pks, p);
+            signTx(tx, 2, [pks[0], pks[1]], p);
         }
+        console.log('tx:' + JSON.stringify(tx));
         const result = await restClient.sendRawTransaction(tx.serialize());
         console.log(result);
-        expect(result.Error).toEqual(0);
+
+        // const mulAddr = Address.fromMultiPubKeys(5, pks);
+        // console.log('mulAddr: ' + mulAddr.toBase58());
+        // // console.log('pris: ' + JSON.stringify(pris));
+        // const payer = mulAddr;
+        // const tx = makeTransferTx('ONT', mulAddr,
+        //     new Address('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve'), 100, gasPrice, gasLimit, payer);
+        // const multiPri = [pris[0], pris[1], pris[2], pris[3], pris[4]];
+        // for (const p of multiPri) {
+        //     signTx(tx, 5, pks, p);
+        // }
+        // console.log('tx:' + JSON.stringify(tx));
+        // const result = await restClient.sendRawTransaction(tx.serialize());
+        // console.log(result);
+        // expect(result.Error).toEqual(0);
     }, 10000);
 
     test('test get allowance with tx', async () => {
@@ -181,5 +196,18 @@ describe('test transfer asset', () => {
         console.log('Expected Amount', expectAmount);
         console.log('Transfer Amount', transferAmount);
         expect(transferAmount).toEqual(expectAmount);
+    });
+
+    test('sort_pk', () => {
+        const pk1 = new PublicKey('03a3c7a40461238a210d306ce4a79db69800449173e47b9e2fa92b7815d7517872');
+        const pk2 = new PublicKey('023c5b6e0e4fe8647d1065ecd09c60d251e1e168999202423e3be5d174866f9349');
+        const pks = [pk1, pk2];
+        console.log(pks);
+        const add1 = Address.fromMultiPubKeys(2, [pk1, pk2]);
+        console.log('add1: ' + add1.toBase58());
+        pks.sort(comparePublicKeys);
+        console.log(pks);
+        const add2 = Address.fromMultiPubKeys(2, [pk2, pk1]);
+        console.log('add2: ' + add2.toBase58());
     });
 });

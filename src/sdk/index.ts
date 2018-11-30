@@ -516,10 +516,11 @@ export class SDK {
     ) {
         password = this.transformPassword(password);
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        let pri;
         try {
             const addr = new Address(address);
             const saltHex = Buffer.from(salt, 'base64').toString('hex');
-            encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+            pri = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
         } catch (err) {
             const result = this.getDecryptError(err);
 
@@ -530,7 +531,7 @@ export class SDK {
         }
         const obj = {
             error : 0,
-            result : ''
+            result : pri.key
         };
         if (callback) {
             sendBackResult2Native(JSON.stringify(obj), callback);

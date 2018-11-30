@@ -1,8 +1,8 @@
 import { PrivateKey } from '../src/crypto/PrivateKey';
 import { RestClient, Struct } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { createCodeParamsScript } from '../src/transaction/scriptBuilder';
-import { num2hexstring, reverseHex, str2hexstr } from '../src/utils';
+import { createCodeParamsScript, deserializeItem } from '../src/transaction/scriptBuilder';
+import { num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
 import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
 import { Parameter, ParameterType } from './../src/smartcontract/abi/parameter';
@@ -10,6 +10,7 @@ import { makeInvokeTransaction, signTransaction } from './../src/transaction/tra
 
 describe('test smarct contract params', () => {
     const socketClient = new WebsocketClient();
+    const restClient = new RestClient();
 
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93');
     const account = Account.create(privateKey, '123456', 'test');
@@ -37,6 +38,82 @@ describe('test smarct contract params', () => {
         console.log(JSON.stringify(res));
     }, 10000);
 
+    test('test_list', async () => {
+        const contract = reverseHex('16edbe366d1337eb510c2ff61099424c94aeef02');
+        const contractAddr = new Address(contract);
+        const method = 'testHello';
+
+        const params = [
+            new Parameter('args', ParameterType.Array,
+                [
+                    new Parameter('arg1', ParameterType.String, 'test')
+                ]
+            )
+        ];
+        console.log(JSON.stringify(params));
+        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        signTransaction(tx, privateKey);
+        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        console.log(JSON.stringify(res));
+    }, 10000);
+
+    test('test_map', async () => {
+        const contract = reverseHex('16edbe366d1337eb510c2ff61099424c94aeef02');
+        const contractAddr = new Address(contract);
+        const method = 'testMap';
+
+        const params = [
+            new Parameter('args', ParameterType.Map,
+                { key : new Parameter('', ParameterType.String, 'test'),
+                    key2: new Parameter('', ParameterType.String, 'test')
+                }
+            )
+        ];
+        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        signTransaction(tx, privateKey);
+        const res = await restClient.sendRawTransaction(tx.serialize(), true);
+        console.log(JSON.stringify(res));
+    }, 10000);
+
+    test('test_mapInMap', async () => {
+        const contract = reverseHex('16edbe366d1337eb510c2ff61099424c94aeef02');
+        const contractAddr = new Address(contract);
+        const method = 'testMapInMap';
+
+        const params = [
+            new Parameter('args', ParameterType.Map,
+                {
+                    key: new Parameter('', ParameterType.String, 'hello2'),
+                    key2: new Parameter('', ParameterType.ByteArray, 'aabb'),
+                    key3: new Parameter('', ParameterType.Integer, 100),
+                    key4: new Parameter('', ParameterType.Boolean, true),
+                    key5: new Parameter('', ParameterType.Array, [
+                        new Parameter('', ParameterType.String, 'hello'),
+                        new Parameter('', ParameterType.Integer, 100)
+                    ]),
+                    key6: new Parameter('', ParameterType.Map, {
+                        key: new Parameter('', ParameterType.String, 'hello2'),
+                        key1: new Parameter('', ParameterType.Boolean, true),
+                        key3: new Parameter('', ParameterType.Integer, 100)
+                    })
+                }
+
+            )
+        ];
+        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        signTransaction(tx, privateKey);
+        const res = await restClient.sendRawTransaction(tx.serialize(), true);
+        console.log(JSON.stringify(res));
+    }, 10000);
+
+    test('deserialize_item', () => {
+        const hex = '820600036b6579000668656c6c6f3200046b6579320002aabb00046b65793302016400046b657934010100046b6579358002000568656c6c6f02016400046b657936820300036b6579000668656c6c6f3200046b657931010100046b657933020164';
+        const sr = new StringReader(hex);
+        const val = deserializeItem(sr);
+        expect(val.get('key5').length).toEqual(2);
+        console.log(val);
+    });
+
     test('exchange', async () => {
         const contract = '7dffd39e53be06f104f443857f9115ec55212b43';
         const contractAddr = new Address(reverseHex(contract));
@@ -52,6 +129,10 @@ describe('test smarct contract params', () => {
         const res = await socketClient.sendRawTransaction(tx.serialize(), true, false);
         console.log(JSON.stringify(res));
     });
+
+    
+
+
 
     test('fomo3dBuy', async () => {
         console.log('hex: ' + str2hexstr(''));

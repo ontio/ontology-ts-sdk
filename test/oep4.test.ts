@@ -36,7 +36,7 @@ describe('test oep4', () => {
 
     const contractAddr = new Address(reverseHex(codeHash));
     const oep4 = new Oep4TxBuilder(contractAddr);
-    const gasPrice = '0';
+    const gasPrice = '500';
     const gasLimit = '200000';
     // const url = TEST_ONT_URL.REST_URL;
     const url = 'http://polaris1.ont.io:';
@@ -82,6 +82,10 @@ describe('test oep4', () => {
     test('test_name', async () => {
         const tx = oep4.queryName();
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
+        console.log('res: ' + JSON.stringify(res));
+        if (!res.Result.Result) {
+            return;
+        }
         const val = hexstr2str(res.Result.Result);
         console.log(val);
         // tslint:disable-next-line:no-console
@@ -103,6 +107,9 @@ describe('test oep4', () => {
         console.log(res);
         const val = res.Result;
         console.log(val);
+        if (val.Result) {
+            console.log('decimal:' + parseInt(val.Result, 16));
+        }
         // tslint:disable-next-line:no-console
         expect(val).toBeTruthy();
     }, 10000);

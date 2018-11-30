@@ -1,3 +1,4 @@
+import { num2hexstring } from './../src/utils';
 import { PublicKey } from './../src/crypto/PublicKey';
 /*
 * Copyright (C) 2018 The ontology Authors
@@ -27,7 +28,7 @@ import { VmType } from './../src/transaction/vmcode';
 
 import { Address } from '../src/crypto';
 import { makeInvokeTransaction } from '../src/transaction/transactionBuilder';
-import { str2hexstr, reverseHex } from '../src/utils';
+import { str2hexstr, reverseHex, num2hexstring } from '../src/utils';
 
 describe('test AbiInfo', () => {
 
