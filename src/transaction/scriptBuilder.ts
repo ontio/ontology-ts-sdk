@@ -22,7 +22,7 @@ import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter, ParameterType, ParameterTypeVal } from '../smartcontract/abi/parameter';
 import Struct from '../smartcontract/abi/struct';
-import { num2hexstring, num2VarInt, str2hexstr, StringReader, bigIntFromBytes, hexstr2str } from '../utils';
+import { bigIntFromBytes, hexstr2str, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../utils';
 import opcode from './opcode';
 
 export const pushBool = (param: boolean) => {
