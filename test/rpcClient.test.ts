@@ -163,4 +163,47 @@ describe('test rpc client', () => {
         let res = await rpcClient.getMerkleProof(hash)
         expect(res.desc).toEqual('SUCCESS')
     }) */
+
+    test('test_getUnboundOng', async () => {
+        const res = await rpcClient.getUnboundOng(adminAddress);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getBlockTxsByHeight', async () => {
+        const res = await rpcClient.getBlockTxsByHeight(height);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getGasPrice', async () => {
+        const res = await rpcClient.getGasPrice();
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getGrangOng', async () => {
+        const res = await rpcClient.getGrantOng(adminAddress);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getMempoolTxCount', async () => {
+        const res = await rpcClient.getMempoolTxCount();
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getMempoolTxState', async () => {
+        // const txHash = '6f3c0da62e83c126c7e3b2381d5fd6d2513026afcabea295f0a8dd8bcca2a7ad';
+        const res = await rpcClient.getMempoolTxState(txHash);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getVersion', async () => {
+        const res = await rpcClient.getVersion();
+        console.log(res);
+        expect(res).toBeDefined();
+    });
 });

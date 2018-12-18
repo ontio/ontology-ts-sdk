@@ -34,5 +34,13 @@ export default {
     Url_get_block_height_by_txhash : '/api/v1/block/height/txhash/',
     Url_get_storage : '/api/v1/storage/',
     Url_get_merkleproof : '/api/v1/merkleproof/',
-    Url_get_allowance: '/api/v1/allowance/'
+    Url_get_allowance: '/api/v1/allowance/',
+    Url_get_block_txs_by_height: '/api/v1/block/transactions/height/',
+    Url_get_unbound_ong: '/api/v1/unboundong/',
+    Url_get_grant_ong: '/api/v1/grantong/',
+    Url_get_mempool_txcount: '/api/v1/mempool/txcount',
+    Url_get_mempool_txstate: '/api/v1/mempool/txstate/',
+    Url_get_version: '/api/v1/version',
+    Url_get_networkid: '/api/v1/networkid',
+    Url_get_gasprice: '/api/v1/gasprice'
 };

@@ -288,4 +288,54 @@ export default class RpcClient {
             return res.data;
         });
     }
+
+    getUnboundOng(address: Address): Promise<any> {
+        const req = this.makeRequest('getunboundong', 'ong', address.toBase58(), address.toBase58());
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getBlockTxsByHeight(height: number): Promise<any> {
+        const req = this.makeRequest('getblocktxsbyheight', height);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getGasPrice(): Promise<any> {
+        const req = this.makeRequest('getgasprice');
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getGrantOng(address: Address): Promise<any> {
+        const req = this.makeRequest('getgrantong', address.toBase58());
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getMempoolTxCount(): Promise<any> {
+        const req = this.makeRequest('getmempooltxcount');
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getMempoolTxState(txHash: string): Promise<any> {
+        const req = this.makeRequest('getmempooltxstate', txHash);
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    getVersion(): Promise<any> {
+        const req = this.makeRequest('getversion');
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
 }
