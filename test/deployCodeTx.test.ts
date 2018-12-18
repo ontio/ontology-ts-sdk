@@ -25,7 +25,7 @@ import { buildRestfulParam, buildRpcParam, buildTxParam, Default_params, makeDep
 import { ab2hexstring, ab2str, num2hexstring , reverseHex, str2hexstr } from '../src/utils';
 
 import axios from 'axios';
-import { ONT_NETWORK, TEST_NODE, TEST_ONT_URL } from '../src/consts';
+import { ONT_NETWORK, TEST_NODE, TEST_ONT_URL, MAIN_NODE, MAIN_ONT_URL } from '../src/consts';
 import AbiFunction from '../src/smartcontract/abi/abiFunction';
 import AbiInfo from '../src/smartcontract/abi/abiInfo';
 import { Parameter } from '../src/smartcontract/abi/parameter';
@@ -75,4 +75,12 @@ describe('test deploy contract', () => {
         console.log(result);
         expect(result.Result).toBeTruthy();
     }, 10000);
+
+    test('getContract', async () => {
+        const restClient = new RestClient(MAIN_ONT_URL.REST_URL);
+        const hash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
+        const contract = reverseHex(hash);
+        const res = await restClient.getContract(hash);
+        console.log(res);
+    });
 });

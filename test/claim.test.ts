@@ -41,6 +41,7 @@ describe('test claim', () => {
     let serialized: string;
     let signed: string;
 
+    console.log('did:' + ontid);
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
@@ -157,7 +158,12 @@ describe('test claim', () => {
             addr: '8055b362904715fd84536e754868f4c8d27ca3f6'
         };
         await claim.sign(restUrl, publicKeyId, privateKey);
+        const socketUrl = 'ws://polaris1.ont.io:20335';
+        const res = await claim.attest(socketUrl, '500', '20000', adminAddress, adminPrivateKey);
+        console.log(res);
+
         let signed = claim.serialize();
+
 
 
         const msg = Claim.deserialize(signed);

@@ -8,6 +8,9 @@ import { signTransaction } from '../src/transaction/transactionBuilder';
 
 describe('test websocket', () => {
     const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, true, false);
+    client.addNotifyListener((result) => {
+        console.log('listener: ' + result);
+    });
 
     // tslint:disable-next-line:one-variable-per-declaration
     const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';

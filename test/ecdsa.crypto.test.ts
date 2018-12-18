@@ -9,6 +9,9 @@ describe('test sign and verify with ECDSAwithSHA256', () => {
         const content = 'helloworld';
         const msg = str2hexstr(content);
         const signature = pri.sign(msg, SignatureScheme.ECDSAwithSHA256);
+        console.log('hex: ' + signature.serializeHex());
+        console.log('pk: ' + pri.getPublicKey().key);
+
 
         const pub = pri.getPublicKey();
         const result = pub.verify(msg, signature);
