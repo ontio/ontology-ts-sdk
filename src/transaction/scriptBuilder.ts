@@ -176,7 +176,7 @@ export const pushParam = (p: any) => {
         result += num2hexstring(opcode.PUSH0);
         result += num2hexstring(opcode.ADD);
     } else {
-        throw Error('Invalid parameter type: ' + p.type);
+        throw Error('Invalid parameter type: ' + JSON.stringify(p));
     }
     return result;
 };

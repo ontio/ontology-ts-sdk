@@ -1,3 +1,4 @@
+import { MAIN_ONT_URL } from './../src/consts';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -122,8 +123,8 @@ describe('test ONT ID contract', () => {
     }, 10000);
 
     test('testDDOTx', async () => {
-        const tx = buildGetDDOTx('did:ont:ARTH2zCmyQp8RVMqXE6HaWNqmBjsYL9r21');
-        const restClient = new RestClient('http://139.219.128.220:20334');
+        const tx = buildGetDDOTx('did:ont:ANs2CwqK5qPFHyvnr78ke6218z9pwqwusi');
+        const restClient = new RestClient(MAIN_ONT_URL.REST_URL);
         const response = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(response);
         const ddo = DDO.deserialize(response.Result.Result);

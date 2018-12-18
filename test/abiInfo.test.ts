@@ -1,5 +1,3 @@
-import { num2hexstring } from './../src/utils';
-import { PublicKey } from './../src/crypto/PublicKey';
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -17,10 +15,10 @@ import { PublicKey } from './../src/crypto/PublicKey';
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 import AbiFunction from '../src/smartcontract/abi/abiFunction';
 import AbiInfo from '../src/smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../src/smartcontract/abi/parameter';
+import { PublicKey } from './../src/crypto/PublicKey';
 
 import json from '../src/smartcontract/data/idContract.abi';
 import { Transaction } from '../src/transaction/transaction';
@@ -28,7 +26,7 @@ import { VmType } from './../src/transaction/vmcode';
 
 import { Address } from '../src/crypto';
 import { makeInvokeTransaction } from '../src/transaction/transactionBuilder';
-import { str2hexstr, reverseHex, num2hexstring } from '../src/utils';
+import { num2hexstring, reverseHex, str2hexstr } from '../src/utils';
 
 describe('test AbiInfo', () => {
 
@@ -54,11 +52,11 @@ describe('test AbiInfo', () => {
         // tslint:disable-next-line:no-console
         console.log(f);
 
-	});
+    });
 
-	test('test getFunction throws error if not found', () => {
-		expect(() => a.getFunction('not_a_function')).toThrowError('not found');
-	})
+	   test('test getFunction throws error if not found', () => {
+       expect(() => a.getFunction('not_a_function')).toThrowError('not found');
+   });
 
     test('test make invokecode tx', () => {
         tx = makeInvokeTransaction( f.name, f.parameters, new Address(a.getHash()), '0');

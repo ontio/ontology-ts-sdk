@@ -75,6 +75,24 @@ describe('test smarct contract params', () => {
         console.log(JSON.stringify(res));
     }, 10000);
 
+    test('testGetmap', async () => {
+        const contract = reverseHex('16edbe366d1337eb510c2ff61099424c94aeef02');
+        const contractAddr = new Address(contract);
+        const method = 'testGetMap';
+
+        const params = [
+            new Parameter('args', ParameterType.Map,
+                {
+                    key: new Parameter('', ParameterType.String, 'test')
+                }
+            )
+        ];
+        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        signTransaction(tx, privateKey);
+        const res = await restClient.sendRawTransaction(tx.serialize(), true);
+        console.log(JSON.stringify(res));
+    }, 10000);
+
     test('test_mapInMap', async () => {
         const contract = reverseHex('16edbe366d1337eb510c2ff61099424c94aeef02');
         const contractAddr = new Address(contract);
@@ -110,7 +128,7 @@ describe('test smarct contract params', () => {
         const hex = '820600036b6579000668656c6c6f3200046b6579320002aabb00046b65793302016400046b657934010100046b6579358002000568656c6c6f02016400046b657936820300036b6579000668656c6c6f3200046b657931010100046b657933020164';
         const sr = new StringReader(hex);
         const val = deserializeItem(sr);
-        expect(val.get('key5').length).toEqual(2);
+        expect(val.get('key5').length).toEqual
         console.log(val);
     });
 

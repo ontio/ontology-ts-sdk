@@ -24,17 +24,18 @@ import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter } from '../smartcontract/abi/parameter';
 import {
     num2hexstring,
+    reverseHex,
     str2hexstr
 } from '../utils';
+import { ParameterType } from './../smartcontract/abi/parameter';
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { comparePublicKeys } from './program';
-import { pushHexString, pushInt, serializeAbiFunction } from './scriptBuilder';
+import { createCodeParamsScript, pushHexString, pushInt, serializeAbiFunction } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 import { Transfer } from './transfer';
 import { TxSignature } from './txSignature';
-// const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
 
 // tslint:disable-next-line:variable-name
 export const Default_params = {
@@ -360,4 +361,129 @@ export function sendRawTxRestfulUrl(url: string, preExec: boolean = false) {
     }
 
     return restUrl;
+}
+
+export function transferStringParameter(value: string): Parameter {
+    const strs = value.split(':');
+    if (strs.length !== 2) {
+        throw new Error('Invalid parameter. ' + value);
+    }
+    const p = new Parameter('', strs[0] as ParameterType, strs[1]);
+    if (p.type === ParameterType.Address) {
+        p.type = ParameterType.ByteArray;
+        p.value = new Address(p.value).serialize();
+    }
+    return p;
+}
+
+export function transformMapParameter(value: any) {
+    const map: any = {};
+    for (const k of Object.keys(value)) {
+        const v = value[k];
+        if (typeof v === 'number') {
+            map[k] = new Parameter('', ParameterType.Integer, v);
+        } else if (typeof v === 'boolean') {
+            map[k] = new Parameter('', ParameterType.Boolean, v);
+        } else if (Array.isArray(v)) {
+            map[k] = new Parameter('', ParameterType.Array, transformArrayParameter(v));
+        } else if (typeof v === 'object') {
+            map[k] = new Parameter('', ParameterType.Map, transformMapParameter(v));
+        } else if (typeof v === 'string') {
+            map[k] = transferStringParameter(v);
+        }
+    }
+    return map;
+}
+
+export function transformArrayParameter(val: any) {
+    const list = [];
+    for (const v of val) {
+        let p = new Parameter('', ParameterType.ByteArray, v);
+        if (typeof v === 'number') {
+            p.type = ParameterType.Integer;
+        } else if (typeof v === 'boolean') {
+            p.type = ParameterType.Boolean;
+        } else if (Array.isArray(v)) {
+            p.type = ParameterType.Array;
+            p.value = transformArrayParameter(v);
+        } else if (typeof v === 'object') {
+            p.type = ParameterType.Map;
+            p.value = transformMapParameter(v);
+        } else if (typeof v === 'string') {
+            p = transferStringParameter(v);
+        }
+        list.push(p);
+    }
+    return list;
+}
+
+export function transformParameter(arg: any) {
+    const name = arg.name;
+    const value = arg.value;
+    let p = new Parameter(name, ParameterType.ByteArray, value);
+    if (typeof value === 'number') {
+        p.type = ParameterType.Integer;
+        p.value = Number(value);
+    } else if (typeof value === 'boolean') {
+        p.type = ParameterType.Boolean;
+        p.value = Boolean(value);
+    } else if (Array.isArray(value)) {
+        p.type = ParameterType.Array;
+        p.value = transformArrayParameter(value);
+    } else if (typeof value === 'object') {
+        p.type = ParameterType.Map;
+        p.value = transformMapParameter(value);
+    } else if (typeof value === 'string') {
+        p = transferStringParameter(value);
+    }
+    return p;
+}
+
+export function buildParamsByJson(json: any) {
+    const paramsList = [];
+    const functions = json.functions;
+    for (const obj of functions) {
+        const { operation, args } = obj;
+        const list = [];
+        list.push(str2hexstr(operation));
+        const temp = [];
+        for (const arg of args) {
+            temp.push(transformParameter(arg));
+        }
+        list.push(temp);
+        paramsList.push(list);
+    }
+    return paramsList;
+}
+
+export function makeTransactionByJson(json: any) {
+    if (!json) {
+        throw new Error('Invalid parameter. Expect JSON object');
+    }
+    if (!json.action || json.action !== 'invoke') {
+        throw new Error('Invalid parameter. The action type must be "invoke."');
+    }
+    if (!json.params || !json.params.invokeConfig) {
+        throw new Error('Invalid parameter. The params can not be empty.');
+    }
+    const invokeConfig = json.params.invokeConfig;
+    // tslint:disable-next-line:prefer-const
+    let { payer, gasPrice, gasLimit, contractHash } = invokeConfig;
+    if (!contractHash) {
+        throw new Error('Invalid parameter. The contractHash can not be empty.');
+    }
+    const contractAddr = new Address(reverseHex(contractHash));
+    payer = payer ? new Address(payer) : null;
+    gasPrice = gasPrice + '' || '500';
+    gasLimit = gasLimit + '' || '200000';
+
+    const parameters = buildParamsByJson(invokeConfig);
+    const txList = [];
+    for (const list of parameters) {
+        const params = createCodeParamsScript(list);
+        const tx = makeInvokeTransaction('', params, contractAddr, gasPrice, gasLimit, payer);
+        txList.push(tx);
+    }
+
+    return txList;
 }
