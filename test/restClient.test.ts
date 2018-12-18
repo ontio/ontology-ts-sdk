@@ -1,4 +1,3 @@
-import { addSign } from './../src/transaction/transactionBuilder';
 import { Account } from '../src/account';
 import { PrivateKey } from '../src/crypto';
 import { Address } from '../src/crypto/address';
@@ -7,6 +6,7 @@ import RestClient from '../src/network/rest/restClient';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
+import { addSign } from './../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console
 describe('test restClient', () => {
@@ -160,6 +160,49 @@ describe('test restClient', () => {
     // wait for update this api in testnet
     test('test getMerkleProof', async () => {
         const res = await rest.getMerkleProof(txHash);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getUnboundOng', async () => {
+        const res = await rest.getUnboundOng(adminAddress);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getBlockTxsByHeight', async () => {
+        const res = await rest.getBlockTxsByHeight(height);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getGasPrice', async () => {
+        const res = await rest.getGasPrice();
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getGrangOng', async () => {
+        const res = await rest.getGrangOng(adminAddress);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getMempoolTxCount', async () => {
+        const res = await rest.getMempoolTxCount();
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getMempoolTxState', async () => {
+        const txHash = '6f3c0da62e83c126c7e3b2381d5fd6d2513026afcabea295f0a8dd8bcca2a7ad';
+        const res = await rest.getMempoolTxState(txHash);
+        console.log(res);
+        expect(res).toBeDefined();
+    });
+
+    test('test_getVersion', async () => {
+        const res = await rest.getVersion();
         console.log(res);
         expect(res).toBeDefined();
     });

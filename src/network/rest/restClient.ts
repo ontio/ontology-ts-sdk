@@ -334,4 +334,53 @@ export default class RestClient {
             return res.data;
         });
     }
+
+    getUnboundOng(address: Address): Promise<any> {
+        const url = this.url + UrlConsts.Url_get_unbound_ong + address.toBase58();
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+    getBlockTxsByHeight(height: number): Promise<any> {
+        const url = this.url + UrlConsts.Url_get_block_txs_by_height + height;
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+    getGasPrice(): Promise<any> {
+        const url = this.url + UrlConsts.Url_get_gasprice ;
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+    getGrangOng(address: Address): Promise<any> {
+        const url = this.url + UrlConsts.Url_get_grant_ong + address.toBase58();
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+    getMempoolTxCount(): Promise<any> {
+        const url = this.url + UrlConsts.Url_get_mempool_txcount;
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+    getMempoolTxState(hash: string): Promise<any> {
+        const url = this.url + UrlConsts.Url_get_mempool_txstate + hash;
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+    getVersion(): Promise<any> {
+        const url = this.url + UrlConsts.Url_get_version;
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
 }

@@ -5,6 +5,7 @@ import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
+import { addSign } from './../src/transaction/transactionBuilder';
 
 describe('test websocket', () => {
     const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, true, false);
@@ -35,7 +36,8 @@ describe('test websocket', () => {
     beforeAll(async () => {
         const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
         tx.payer = adminAddress;
-        signTransaction(tx, adminPrivateKey);
+        signTransaction(tx, privateKey);
+        addSign(tx, adminPrivateKey);
 
         const result = await client.sendRawTransaction(tx.serialize(), false, true);
         txHash = result.Result.TxHash;
@@ -94,9 +96,9 @@ describe('test websocket', () => {
         expect(result.Desc).toBe('SUCCESS');
     });
 
-    test.skip('test getMempoolTxState', async () => {
+    test.skip('test_getMempoolTxState', async () => {
         // tslint:disable-next-line:max-line-length
-        const result = await client.getMempoolTxState('acece6ad5545d440db8371febbeb6ece39061a3a56c415a18c412c1b45e880d9');
+        const result = await client.getMempoolTxState('6f3c0da62e83c126c7e3b2381d5fd6d2513026afcabea295f0a8dd8bcca2a7ad');
 
         expect(result.Action).toBe('getmempooltxstate');
         expect(result.Desc).toBe('SUCCESS');
