@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as base58 from 'bs58';
+import * as base58 from 'base-58';
 import * as cryptoJS from 'crypto-js';
 import { ADDR_VERSION } from '../consts';
 import { ERROR_CODE } from '../error';
