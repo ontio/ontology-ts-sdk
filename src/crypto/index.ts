@@ -27,3 +27,4 @@ export { PublicKey, PublicKeyStatus } from './PublicKey';
 export { Signature, PgpSignature } from './Signature';
 export { Signable } from './signable';
 export { Issuer, User } from './AnonymousCredential';
+export { Ecies } from './Ecies';
