@@ -16,55 +16,63 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// tslint:disable:no-console
+// tslint:disable:variable-name
+// tslint:disable:no-empty
 import { Ecies } from '../src/crypto';
 
 describe('test ECIES', () => {
-    // const case = {
-    const seed = Buffer.from('0102', 'hex');
-    const bitlen = 512;
-
-    // tslint:disable:variable-name
-    const supposed_output = [
-        '27704664b7e8ba3c36199f581fa3023f49fd90af918444e2d9477e82565f868a',
-        '5dbee0a29283512256238cd05870a61c81ccea8a245c8973abc0618df4d3471f'
-    ];
-
     const test_case = [
         '',
         '12345',
         'hello world',
         'qwertyuiopasdfghjklzxcvbnm1234567890',
-        '一去二三里'
+        '一去二三里',
+        'Attack!'
     ];
+
+    const python_sdk_case = {
+        priv:
+            '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3',
+        cipher: {
+            iv: '577b04f22c6edcc67c0a864a8d9ba4ee',
+            out:
+                '0468d87653b57c6e39a66442d7b64fbae5d3fd49ce81858b8107cf' +
+                'ddf0152a7e9c4a04fe6207891b64af9036674a7723f22c002a7b12443bcc12f8b2b6ad1bafc4',
+            msgCipher: 'fed0f33ba2d90062d6dc9310ad65d4ac'
+        },
+        msg: 'Attack!'
+    };
 
     const curvename = 'p256';
 
-    beforeAll(() => {
-        // console.log( crypto.getCurves() );
-    });
+    beforeAll(() => {});
 
-    // tslint:disable-next-line:no-empty
-    test('test kdf', () => {
+    test('test kdf()', () => {
+        const supposed_output = [
+            // java sdk & python sdk
+            '27704664b7e8ba3c36199f581fa3023f49fd90af918444e2d9477e82565f868a',
+            '5dbee0a29283512256238cd05870a61c81ccea8a245c8973abc0618df4d3471f'
+        ];
+        const seed = Buffer.from('0102', 'hex');
+        const bitlen = 512;
         const ins = new Ecies(curvename);
         const key = ins.kdf2(seed, bitlen, ins.digestSize, ins.hashAlg);
-
-        console.log('************************************');
-        console.log('key: ', key[0].toString('hex'));
-        console.log('key: ', key[1].toString('hex'));
 
         expect(key[0].toString('hex') === supposed_output[0]).toBeTruthy();
         expect(key[1].toString('hex') === supposed_output[1]).toBeTruthy();
     });
 
-    // tslint:disable-next-line:no-empty
-    test('test enc & dec', () => {
-        let i = 0;
+    test('test enc() then dec()', () => {
         for (const msg of test_case) {
             const insA = new Ecies(curvename);
             const insB = new Ecies(curvename);
-            const keyA = insA.generateKeyPair();
-            const keyB = insB.generateKeyPair();
+            insA.generateKeyPair();
+            insB.generateKeyPair();
+
+            const keyB = insB.getKeyPair();
+
+            // tslint:disable:no-console
+            // console.log(keyB.pub);
 
             const cipher = insA.enc(keyB.pub, Buffer.from(msg, 'utf8'), 32);
 
@@ -77,12 +85,28 @@ describe('test ECIES', () => {
 
             const plain = plainBuffer.toString('utf8');
 
-            console.log(`************** ${i++} *******************`);
-            console.log('msg: ', msg);
-            console.log('cipher: ', cipher);
-            console.log('plain: ', plain);
-
             expect(plain === msg).toBeTruthy();
         }
+    });
+
+    test('test decrypt cipher from python sdk', () => {
+        const insA = new Ecies(curvename);
+        const insB = new Ecies(curvename);
+        insA.generateKeyPair();
+
+        insB.setKeyPair(python_sdk_case.priv);
+
+        // console.log(insB.getKeyPair().pub);
+
+        const plainBuffer = insB.dec(
+            python_sdk_case.cipher.msgCipher,
+            python_sdk_case.cipher.out,
+            python_sdk_case.cipher.iv,
+            32
+        );
+
+        const plain = plainBuffer.toString('utf8');
+
+        expect(plain === python_sdk_case.msg).toBeTruthy();
     });
 });

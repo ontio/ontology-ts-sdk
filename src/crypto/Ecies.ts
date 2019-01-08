@@ -52,6 +52,13 @@ export class Ecies {
     keyPair: any;
 
     /**
+     * if true, the pubkey will be
+     * in compressed format, begin with '02' or '03'.
+     * if false, begin with '04'
+     */
+    compact: boolean;
+
+    /**
      * for curve name,
      * go https://github.com/indutny/elliptic
      * for reference
@@ -62,6 +69,7 @@ export class Ecies {
         this.hashAlg = 'sha256';
         this.digestSize = 32;
         this.keyFormat = 'hex';
+        this.compact = true;
 
         // const curve = Curve || 'secp256r1';
         const curve = Curve || 'p256';
@@ -77,7 +85,7 @@ export class Ecies {
         this.keyPair = this.ec.genKeyPair();
         return {
             priv: this.keyPair.getPrivate('hex'),
-            pub: this.keyPair.getPublic('hex')
+            pub: this.keyPair.getPublic(this.compact, 'hex')
         };
     }
     /**
@@ -95,7 +103,7 @@ export class Ecies {
     getKeyPair(): any {
         return {
             priv: this.keyPair.getPrivate('hex'),
-            pub: this.keyPair.getPublic('hex')
+            pub: this.keyPair.getPublic(this.compact, 'hex')
         };
     }
 
@@ -107,11 +115,17 @@ export class Ecies {
      * @param msg byte buffer of message
      * @param keylen byte length of kdf's output.
      */
-    enc(pubkey: string, msg: Buffer, keylen: number): any {
+    // tslint:disable-next-line:variable-name
+    enc(pubkey: string, msg: Buffer, keylen: number, _iv?: string): any {
         const publicB = this.ec.keyFromPublic(pubkey, 'hex').getPublic();
 
-        const gTilde = this.keyPair.getPublic();
-        const hTilde = publicB.mul(this.keyPair.getPrivate());
+        // generate a random number
+        // r = (0, order)
+        const tmpKP = this.ec.genKeyPair();
+        const r = tmpKP.getPrivate();
+
+        const gTilde = tmpKP.getPublic();
+        const hTilde = publicB.mul(r);
 
         const out = gTilde.encode('hex');
         const PEH = hTilde.getX().toString('hex');
@@ -128,9 +142,13 @@ export class Ecies {
         }
         const derivedKey = Buffer.concat(derivedKeyArray);
 
-        // generate a random iv, fixed size
-        const iv = Buffer.alloc(16);
-        crypto.randomFillSync(iv);
+        let iv = Buffer.alloc(16);
+        if (!_iv) {
+            // generate a random iv, fixed size
+            crypto.randomFillSync(iv);
+        } else {
+            iv = Buffer.from(_iv, 'hex');
+        }
 
         const algorithm = this.encAlg;
 
