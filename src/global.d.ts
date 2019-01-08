@@ -28,4 +28,5 @@ declare module 'wif';
 declare module 'bip39';
 declare module 'websocket-as-promised';
 declare module 'milagro-crypto-js';
+declare module 'base-58';
 declare module 'pkcs7';

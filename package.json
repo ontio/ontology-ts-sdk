@@ -21,7 +21,7 @@
             "\\.(ts|tsx)$": "./node_modules/ts-jest/preprocessor.js"
         },
         "testEnvironment": "node",
-        "testRegex": "/test/ecies.*\\.(ts|tsx|js)$"
+        "testRegex": "/test/.*\\.(ts|tsx|js)$"
     },
     "author": "ontologyNetwork",
     "license": "ISC",
