@@ -229,14 +229,16 @@ export class Ecies {
             const h = hashIns
                 .update(Buffer.concat([seed, this.I2OSP(counter, 4)]))
                 .digest();
-            key[counter - 1] = Buffer.from(h, 0, offset);
+            key[counter - 1] = Buffer.alloc(offset);
+            key[counter - 1].copy(h, 0, 0, offset);
             counter++;
         }
         hashIns = crypto.createHash(hashFunc);
         const hEnd = hashIns
             .update(Buffer.concat([seed, this.I2OSP(counter, 4)]))
             .digest();
-        key[counter - 1] = Buffer.from(hEnd, 0, offset);
+        key[counter - 1] = Buffer.alloc(offset);
+        key[counter - 1].copy(hEnd, 0, 0, offset);
 
         return key;
     }
