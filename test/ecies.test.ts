@@ -1,28 +1,27 @@
 /*
-* Copyright (C) 2018 The ontology Authors
-* This file is part of The ontology library.
-*
-* The ontology is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* The ontology is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 // tslint:disable:no-console
 import { Ecies } from '../src/crypto';
 
 describe('test ECIES', () => {
-
     // const case = {
-    const seed =  Buffer.from('0102', 'hex');
+    const seed = Buffer.from('0102', 'hex');
     const bitlen = 512;
 
     // tslint:disable:variable-name
@@ -39,8 +38,7 @@ describe('test ECIES', () => {
         '一去二三里'
     ];
 
-    const curvename = 'secp256k1';
-    const ins = new Ecies(curvename, new Buffer(''));
+    const curvename = 'p256';
 
     beforeAll(() => {
         // console.log( crypto.getCurves() );
@@ -48,45 +46,43 @@ describe('test ECIES', () => {
 
     // tslint:disable-next-line:no-empty
     test('test kdf', () => {
-
-        const key = ins.kdf2(seed, bitlen, ins.DigestSize, ins.hash);
+        const ins = new Ecies(curvename);
+        const key = ins.kdf2(seed, bitlen, ins.digestSize, ins.hashAlg);
 
         console.log('************************************');
         console.log('key: ', key[0].toString('hex'));
         console.log('key: ', key[1].toString('hex'));
 
-        expect(
-            key[0].toString('hex')
-            === supposed_output[0]
-            ).toBeTruthy();
-        expect(
-            key[1].toString('hex')
-            === supposed_output[1]
-            ).toBeTruthy();
-
+        expect(key[0].toString('hex') === supposed_output[0]).toBeTruthy();
+        expect(key[1].toString('hex') === supposed_output[1]).toBeTruthy();
     });
 
     // tslint:disable-next-line:no-empty
     test('test enc & dec', () => {
         let i = 0;
         for (const msg of test_case) {
-            const keyB = ins.generateKeyPair();
-            const keyA = ins.generateKeyPair();
-            const iv = '';
+            const insA = new Ecies(curvename);
+            const insB = new Ecies(curvename);
+            const keyA = insA.generateKeyPair();
+            const keyB = insB.generateKeyPair();
 
-            ins.setKeyPair(keyA.priv);
-            const cipher = ins.enc(keyB.pub, msg, iv);
+            const cipher = insA.enc(keyB.pub, Buffer.from(msg, 'utf8'), 32);
 
-            ins.setKeyPair(keyB.priv);
-            const plain = ins.dec(cipher.msgCipher, cipher.out,  cipher.iv);
+            const plainBuffer = insB.dec(
+                cipher.msgCipher,
+                cipher.out,
+                cipher.iv,
+                32
+            );
+
+            const plain = plainBuffer.toString('utf8');
 
             console.log(`************** ${i++} *******************`);
             console.log('msg: ', msg);
             console.log('cipher: ', cipher);
             console.log('plain: ', plain);
 
-            expect(plain  === msg).toBeTruthy();
+            expect(plain === msg).toBeTruthy();
         }
-
     });
 });

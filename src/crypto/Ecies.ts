@@ -21,65 +21,94 @@ import * as elliptic from 'elliptic';
 import * as pkcs7 from 'pkcs7';
 
 export class Ecies {
-    alg = 'aes-256-cbc';
-    hash = 'sha256';
-    code = 'ascii';
-    DigestSize = 32;
-    keyFormat = 'hex';
-    iv = crypto.randomBytes(16);
-    ec = new elliptic.ec('secp256k1');
-    keyPair = this.ec.genKeyPair();
+    /**
+     * Algorithm used for encryption.
+     */
+    encAlg: string;
+    /**
+     * Hash Algorithm used for kdf.
+     */
+    hashAlg: string;
+    /**
+     * Hash digest byte size.
+     */
+    digestSize: number;
+    /**
+     * Key input and out put format.
+     */
+    keyFormat: string;
+    /**
+     * Initialized Vector
+     */
+    iv: Buffer;
+    /**
+     * Elliptic Curve instance
+     */
+    ec: any;
+    /**
+     * key pair from
+     * ec instance
+     */
+    keyPair: any;
 
-    constructor(Curve = 'secp256k1', iv: Buffer, privHex?: string) {
-        this.ec = new elliptic.ec(Curve);
-        if (!this.iv) {
-            this.iv = new Buffer('');
-        } else {
-            this.iv.copy(iv);
-        }
+    /**
+     * for curve name,
+     * go https://github.com/indutny/elliptic
+     * for reference
+     */
+    constructor(Curve: string) {
+        // default setting
+        this.encAlg = 'aes-256-cbc';
+        this.hashAlg = 'sha256';
+        this.digestSize = 32;
+        this.keyFormat = 'hex';
 
-        if (privHex) {
-            this.setKeyPair(privHex);
-        }
+        // const curve = Curve || 'secp256r1';
+        const curve = Curve || 'p256';
+
+        this.ec = new elliptic.ec(curve);
+        this.keyPair = this.ec.genKeyPair();
+        this.iv = Buffer.alloc(0);
     }
-
-    generateKeyPair() {
+    /**
+     * generate random key pair
+     */
+    generateKeyPair(): any {
         this.keyPair = this.ec.genKeyPair();
         return {
             priv: this.keyPair.getPrivate('hex'),
             pub: this.keyPair.getPublic('hex')
         };
     }
-
+    /**
+     * set key pair with private key
+     * @param privHex private key in hex coding.
+     */
     setKeyPair(privHex: string) {
         this.keyPair = this.ec.keyFromPrivate(privHex, 'hex');
     }
-
-    getKeyPair() {
+    /**
+     * get key pair in use
+     * @return = {pri, pub}
+     * all in hex coding.
+     */
+    getKeyPair(): any {
         return {
             priv: this.keyPair.getPrivate('hex'),
             pub: this.keyPair.getPublic('hex')
         };
     }
 
-    setCurve(curve: string) {
-        this.ec = new elliptic.ec(curve);
-    }
-
-    getCurve() {
-        return this.ec.curve;
-    }
-
-    setHash(hashFunc: string) {
-        this.hash = hashFunc;
-    }
-
-    getHash() {
-        return this.hash;
-    }
-
-    enc(H: string, msg: string, iv: any) {
-        const publicB = this.ec.keyFromPublic(H, 'hex').getPublic();
+    /**
+     * encrypt a message with given
+     * public key and initialized vector
+     *
+     * @param pubkey hex string of public key
+     * @param msg byte buffer of message
+     * @param keylen byte length of kdf's output.
+     */
+    enc(pubkey: string, msg: Buffer, keylen: number): any {
+        const publicB = this.ec.keyFromPublic(pubkey, 'hex').getPublic();
 
         const gTilde = this.keyPair.getPublic();
         const hTilde = publicB.mul(this.keyPair.getPrivate());
@@ -88,23 +117,29 @@ export class Ecies {
         const PEH = hTilde.getX().toString('hex');
         const seed = Buffer.from(out + PEH, 'hex');
 
-        const derivedKeyArray = this.kdf2(seed, 256, this.DigestSize, this.hash);
+        const derivedKeyArray = this.kdf2(
+            seed,
+            keylen * 8,
+            this.digestSize,
+            this.hashAlg
+        );
         if (!derivedKeyArray) {
             return;
         }
         const derivedKey = Buffer.concat(derivedKeyArray);
 
-        iv = iv || this.iv;
+        // generate a random iv, fixed size
+        const iv = Buffer.alloc(16);
+        crypto.randomFillSync(iv);
 
-        const algorithm = this.alg;
+        const algorithm = this.encAlg;
+
         const cipher = crypto.createCipheriv(algorithm, derivedKey, iv);
         cipher.setAutoPadding(false);
 
-        const msgCipher = cipher.update(
-                pkcs7.pad(Buffer.from(msg, 'utf8')),
-                'binary',
-                'hex'
-            ) + cipher.final('hex');
+        const msgCipher =
+            cipher.update(pkcs7.pad(msg), 'binary', 'hex') +
+            cipher.final('hex');
 
         return {
             iv: iv.toString('hex'),
@@ -112,50 +147,77 @@ export class Ecies {
             msgCipher
         };
     }
-
-    dec(msgCipher: string, out: string, iv: any) {
+    /**
+     * encrypt a message with given
+     * public key and initialized vector
+     *
+     * @param msgCipher
+     * @param out
+     * @param iv
+     * @param keylen
+     */
+    dec(msgCipher: string, out: string, iv: any, keylen: number): Buffer {
         const gTilde = this.ec.keyFromPublic(out, 'hex').getPublic();
 
         const hTilde = gTilde.mul(this.keyPair.getPrivate());
         const PEH = hTilde.getX().toString('hex');
         const seed = Buffer.from(out + PEH, 'hex');
 
-        const derivedKeyArray = this.kdf2(seed, 256, this.DigestSize, this.hash);
+        const derivedKeyArray = this.kdf2(
+            seed,
+            keylen * 8,
+            this.digestSize,
+            this.hashAlg
+        );
         if (!derivedKeyArray) {
-            return;
+            return Buffer.alloc(0);
         }
         const derivedKey = Buffer.concat(derivedKeyArray);
         const iv2 = Buffer.from(iv, 'hex');
 
-        const algorithm = this.alg;
+        const algorithm = this.encAlg;
         const decipher = crypto.createDecipheriv(algorithm, derivedKey, iv2);
         decipher.setAutoPadding(false);
-        const plain = decipher.update(msgCipher, 'hex', 'binary') + decipher.final('binary');
+        const plain =
+            decipher.update(msgCipher, 'hex', 'binary') +
+            decipher.final('binary');
 
-        return Buffer.from(pkcs7.unpad(Buffer.from(plain, 'binary'))).toString('utf8');
+        // un padding
+        const unpad = pkcs7.unpad(Buffer.from(plain, 'binary'));
+
+        return Buffer.from(unpad);
     }
 
     /* utils */
-    kdf2(seed: Buffer, len: number, DigestSize: number, hashFunc: string): Buffer[] {
-        if (len < 0) { return []; }
+    kdf2(
+        seed: Buffer,
+        len: number,
+        digestSize: number,
+        hashFunc: string
+    ): Buffer[] {
+        if (len < 0) {
+            return [];
+        }
         const byteLen = Math.ceil(len / 8);
-        const b = Math.ceil(byteLen / DigestSize);
+        const b = Math.ceil(byteLen / digestSize);
         const key = [];
-        const offset = byteLen - (b - 1) * DigestSize; // byte offset
+        const offset = byteLen - (b - 1) * digestSize; // byte offset
 
         let counter = 1; // 1 for pbkdf2, 0 for pbkdf1
 
         let hashIns;
         while (counter < b) {
             hashIns = crypto.createHash(hashFunc);
-            const h = hashIns.update(Buffer.concat([seed, this.I2OSP(counter, 4)]))
+            const h = hashIns
+                .update(Buffer.concat([seed, this.I2OSP(counter, 4)]))
                 .digest();
             key[counter - 1] = Buffer.from(h, 0, offset);
             counter++;
         }
         hashIns = crypto.createHash(hashFunc);
-        const hEnd = hashIns.update(Buffer.concat([seed, this.I2OSP(counter, 4)]))
-        .digest();
+        const hEnd = hashIns
+            .update(Buffer.concat([seed, this.I2OSP(counter, 4)]))
+            .digest();
         key[counter - 1] = Buffer.from(hEnd, 0, offset);
 
         return key;
