@@ -33,6 +33,8 @@ describe('test ECIES', () => {
     const python_sdk_case = {
         priv:
             '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3',
+        pub:
+            '021401156f187ec23ce631a489c3fa17f292171009c6c3162ef642406d3d09c74d',
         cipher: {
             iv: '577b04f22c6edcc67c0a864a8d9ba4ee',
             out:
@@ -96,7 +98,7 @@ describe('test ECIES', () => {
 
         insB.setKeyPair(python_sdk_case.priv);
 
-        // console.log(insB.getKeyPair().pub);
+        expect(insB.getKeyPair().pub === python_sdk_case.pub).toBeTruthy();
 
         const plainBuffer = insB.dec(
             python_sdk_case.cipher.msgCipher,
