@@ -230,7 +230,7 @@ export class Ecies {
                 .update(Buffer.concat([seed, this.I2OSP(counter, 4)]))
                 .digest();
             key[counter - 1] = Buffer.alloc(offset);
-            key[counter - 1].copy(h, 0, 0, offset);
+            key[counter - 1] = h;
             counter++;
         }
         hashIns = crypto.createHash(hashFunc);
@@ -238,7 +238,7 @@ export class Ecies {
             .update(Buffer.concat([seed, this.I2OSP(counter, 4)]))
             .digest();
         key[counter - 1] = Buffer.alloc(offset);
-        key[counter - 1].copy(hEnd, 0, 0, offset);
+        key[counter - 1] = hEnd;
 
         return key;
     }
