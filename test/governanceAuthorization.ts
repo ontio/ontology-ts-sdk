@@ -7,7 +7,9 @@ import { ParameterType } from './../src/smartcontract/abi/parameter';
 import { RestClient } from '../src/index';
 import { Parameter } from '../src/smartcontract/abi/parameter';
 import { getAttributes, getAuthorizeInfo, getGlobalParam, getGovernanceView,
-    getPeerPoolMap, getPeerUnboundOng, getSplitFeeAddress, getTotalStake, makeAuthorizeForPeerTx, makeChangeAuthorizationTx, makeSetPeerCostTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawTx, PeerAttributes, makeWithdrawPeerUnboundOngTx
+    getPeerPoolMap, getPeerUnboundOng, getSplitFeeAddress, getTotalStake,
+    makeAuthorizeForPeerTx, makeChangeAuthorizationTx, makeSetPeerCostTx,
+    makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawTx, makeWithdrawPeerUnboundOngTx
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
 import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
 import { reverseHex, StringReader, calcUnboundOng } from '../src/utils';
@@ -141,7 +143,7 @@ describe('test governance authorization', () => {
     });
 
     test('getAttributes', async () => {
-        const pk = '031554b64b4145fb33e83f686081e9148188c2176aaf6a55c874b38fd093e1bc0c';
+        const pk = '03cb9417260995baf9781a58cb63db7e8bab2f8fdac193c27477e8e1b9eadecfae';
         const url = 'http://dappnode1.ont.io:20334';
         const res = await getAttributes(pk, url);
         console.log(res);

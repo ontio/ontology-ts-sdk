@@ -456,12 +456,15 @@ export function buildParamsByJson(json: any) {
     return paramsList;
 }
 
-export function makeTransactionByJson(json: any) {
+export function makeTransactionsByJson(json: any) {
     if (!json) {
         throw new Error('Invalid parameter. Expect JSON object');
     }
-    if (!json.action || json.action !== 'invoke') {
-        throw new Error('Invalid parameter. The action type must be "invoke."');
+    if (!json.action ||
+        (json.action !== 'invoke' &&
+        json.action !== 'invokeRead' &&
+        json.action !== 'invokePasswordFree')) {
+        throw new Error('Invalid parameter. The action type must be "invoke or invokeRead"');
     }
     if (!json.params || !json.params.invokeConfig) {
         throw new Error('Invalid parameter. The params can not be empty.');

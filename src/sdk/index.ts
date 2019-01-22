@@ -37,8 +37,9 @@ import { NeoRpc } from '../neocore/NeoRpc';
 import { Program } from '../neocore/Program';
 import { SmartContract } from '../neocore/SmartContract';
 import RestClient from '../network/rest/restClient';
-import { ScryptParams } from '../scrypt';
+import { WebsocketClient } from '../network/websocket/websocketClient';
 import * as scrypt from '../scrypt';
+import { ScryptParams } from '../scrypt';
 import AbiInfo from '../smartcontract/abi/abiInfo';
 import { Parameter } from '../smartcontract/abi/parameter';
 import { makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT } from '../smartcontract/nativevm/ontAssetTxBuilder';
@@ -57,6 +58,7 @@ import { generateMnemonic, hexstr2str, isBase64, isHexString, now, reverseHex,
     sendBackResult2Native, str2hexstr, StringReader } from '../utils';
 import { Wallet } from '../wallet';
 import { ParameterType } from './../smartcontract/abi/parameter';
+import { Oep4TxBuilder } from './../smartcontract/neovm/oep4TxBuilder';
 
 // tslint:disable-next-line:no-var-requires
 const HDKey = require('@ont-community/hdkey-secp256r1');
@@ -81,6 +83,7 @@ export class SDK {
     static REST_PORT: string = HTTP_REST_PORT;
     static SOCKET_PORT: string = HTTP_WS_PORT;
     static restClient: RestClient = new RestClient();
+    static socketClient: WebsocketClient = new WebsocketClient();
 
     static setServerNode(node: string) {
         if (node) {
@@ -110,6 +113,7 @@ export class SDK {
     static setSocketPort(port: string) {
         if (port) {
             SDK.SOCKET_PORT = port;
+            SDK.socketClient = new WebsocketClient(`ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`);
             return;
         }
         throw new Error('Can not set ' + port + 'as socket port');
@@ -181,6 +185,108 @@ export class SDK {
                 return errResult;
             }
         }).catch((err: any) => {
+            obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            };
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(obj), callback);
+            }
+        });
+    }
+
+    static importIdentityWithPrivateKey(
+        label: string = '',
+        privateKey: string,
+        password: string,
+        callback?: string
+    ) {
+        privateKey = privateKey.trim();
+        password = this.transformPassword(password);
+        if (!privateKey || privateKey.length !== 64 || !isHexString(privateKey)) {
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        }
+        let obj: any;
+        const pri = new PrivateKey(privateKey);
+        const identity = Identity.create(pri, password, label);
+        obj = {
+            error: ERROR_CODE.SUCCESS,
+            result: identity.toJson()
+        };
+        const tx = buildGetDDOTx(identity.ontid);
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+            const result = res.Result;
+            if (result.Result) {
+                //
+            } else {
+                obj.error = ERROR_CODE.UNKNOWN_ONTID;
+                obj.result = '';
+            }
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(obj), callback);
+            }
+            return obj;
+        }).catch((err) => {
+            obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            };
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(obj), callback);
+            }
+        });
+    }
+
+    static importIdentityWithWif(
+        label: string = '',
+        wif: string,
+        password: string,
+        callback?: string
+    ) {
+        wif = wif.trim();
+        password = this.transformPassword(password);
+        let obj: any;
+        let pri: PrivateKey;
+        try {
+            pri = PrivateKey.deserializeWIF(wif);
+        } catch (err) {
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        }
+        const identity = Identity.create(pri, password, label);
+        obj = {
+            error: ERROR_CODE.SUCCESS,
+            result: identity.toJson()
+        };
+        const tx = buildGetDDOTx(identity.ontid);
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+            const result = res.Result;
+            if (result.Result) {
+                //
+            } else {
+                obj.error = ERROR_CODE.UNKNOWN_ONTID;
+                obj.result = '';
+            }
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(obj), callback);
+            }
+            return obj;
+        }).catch((err) => {
             obj = {
                 error: ERROR_CODE.NETWORK_ERROR,
                 result: ''
@@ -960,7 +1066,10 @@ export class SDK {
         let wif = privateKey.serializeWIF();
         const result = {
             error: ERROR_CODE.SUCCESS,
-            result: wif
+            result: {
+                wif,
+                privateKey: privateKey.key
+            }
         };
         callback && sendBackResult2Native(JSON.stringify(result), callback);
         // clear privateKey and password
@@ -1328,6 +1437,29 @@ export class SDK {
         });
     }
 
+    static sendTransactionWithWebsocket(txData: string, callback?: string) {
+        const socketClient = new WebsocketClient(`ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`);
+        return socketClient.sendRawTransaction(txData, false, true).then((res) => {
+            const obj = {
+                error: ERROR_CODE.SUCCESS,
+                result: res
+            };
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(obj), callback);
+            }
+            return obj;
+        }).catch((err) => {
+            const result = {
+                error: err.Error,
+                result: ''
+            };
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        });
+    }
+
     // ope8 apis for ONTO
     static queryOep8Balance(
         contractHash: string,
@@ -1490,6 +1622,82 @@ export class SDK {
         const contractAddr = new Address(reverseHex(contractHash));
         const oep8 = new Oep8TxBuilder(contractAddr);
         const tx = oep8.makeCompoundTx(addr, compoundNum, gasPrice, gasLimit, addr);
+        signTransaction(tx, privateKey);
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: '',
+            tx: tx.serialize(),
+            txHash: reverseHex(tx.getSignContent())
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
+    }
+
+    // ope4 apis for ONTO
+    static queryOep4Balance(
+        contractHash: string,
+        account: string,
+        callback?: string
+    ) {
+        const contractAddr = new Address(reverseHex(contractHash));
+        const oep4 = new Oep4TxBuilder(contractAddr);
+        const addr = new Address(account);
+        const tx = oep4.queryBalanceOf(addr);
+        return SDK.restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
+            const result = {
+                error: ERROR_CODE.SUCCESS,
+                result: 0
+            };
+            if (res.Result.Result) {
+                result.result = parseInt(reverseHex(res.Result.Result), 16);
+            }
+            callback && sendBackResult2Native(JSON.stringify(result), callback);
+            return result;
+        });
+    }
+
+    static transferOep4(
+        contractHash: string,
+        from: string,
+        to: string,
+        value: string,
+        encryptedPrivateKey: string,
+        password: string,
+        salt: string,
+        gasPrice: string,
+        gasLimit: string,
+        callback?: string
+    ) {
+        let fromAddress: Address;
+        let toAddress: Address;
+        password = this.transformPassword(password);
+        try {
+            fromAddress = new Address(from);
+            toAddress = new Address(to);
+        } catch (err) {
+            const result = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            return result;
+        }
+
+        let privateKey: PrivateKey;
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        try {
+            const addr = new Address(from);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+            return result;
+        }
+        const contractAddr = new Address(reverseHex(contractHash));
+        const oep4 = new Oep4TxBuilder(contractAddr);
+        const tx = oep4.makeTransferTx(fromAddress, toAddress, value, gasPrice, gasLimit, fromAddress);
         signTransaction(tx, privateKey);
         const result = {
             error: ERROR_CODE.SUCCESS,
