@@ -128,7 +128,7 @@ describe('test smarct contract params', () => {
         const hex = '820600036b6579000668656c6c6f3200046b6579320002aabb00046b65793302016400046b657934010100046b6579358002000568656c6c6f02016400046b657936820300036b6579000668656c6c6f3200046b657931010100046b657933020164';
         const sr = new StringReader(hex);
         const val = deserializeItem(sr);
-        expect(val.get('key5').length).toEqual
+        expect(val.get('key5').length).toEqual;
         console.log(val);
     });
 
@@ -147,10 +147,6 @@ describe('test smarct contract params', () => {
         const res = await socketClient.sendRawTransaction(tx.serialize(), true, false);
         console.log(JSON.stringify(res));
     });
-
-    
-
-
 
     test('fomo3dBuy', async () => {
         console.log('hex: ' + str2hexstr(''));

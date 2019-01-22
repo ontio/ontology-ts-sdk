@@ -145,7 +145,11 @@ export default class RpcClient {
         const req = this.makeRequest('getblockcount');
 
         return axios.post(this.url, req).then((res) => {
-            return res.data;
+            if (res.data && res.data.result) {
+                return res.data.result - 1;
+            } else {
+                return 0;
+            }
         });
     }
 

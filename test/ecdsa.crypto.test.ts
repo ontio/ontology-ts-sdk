@@ -1,3 +1,4 @@
+import { Address } from '../src/crypto';
 import { PrivateKey } from '../src/crypto/PrivateKey';
 import { Signature } from '../src/crypto/Signature';
 import { str2hexstr } from '../src/utils';
@@ -34,4 +35,26 @@ describe('test sign and verify with ECDSAwithSHA256', () => {
         const result = pub.verify(hexStr, sig);
         expect(result).toBeTruthy();
     });
+
+    test('tt', () => {
+        const pri4 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b98');
+        const pub4 = pri4.getPublicKey();
+        const address = Address.fromPubKey(pub4).toBase58();
+        const ontid4 = 'did:ont:' + address;
+
+        console.log('did: ' + ontid4);
+        const req = {
+            'timestamp': 1535336885,
+            'ontId': address,
+            'nonce': 45348391,
+            'deviceCode': 'deviceCOde',
+            'sig': ''
+        };
+        const msg = 'deviceCode=' + req.deviceCode + '&nonce=' + req.nonce +
+        '&ontId=' + req.ontId + '&timestamp=' + req.timestamp;
+        const hexMsg = str2hexstr(msg);
+        const sig = pri4.sign(hexMsg).serializeHex();
+        req.sig = sig;
+        console.log(req);
+    })
 });
