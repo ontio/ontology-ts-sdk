@@ -24,7 +24,7 @@
         "testRegex": "/test/.*\\.(ts|tsx|js)$"
     },
     "author": "ontologyNetwork",
-    "license": "ISC",
+    "license": "LGPL-3.0",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/ontio/ontology-ts-sdk"
@@ -95,5 +95,4 @@
         "wif": "^2.0.6",
         "ws": "^4.1.0"
     }
-
 }
