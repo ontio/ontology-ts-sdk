@@ -22,6 +22,8 @@ import { PublicKey } from '../crypto/PublicKey';
 import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter } from '../smartcontract/abi/parameter';
+import { makeTransferTx } from '../smartcontract/nativevm/ontAssetTxBuilder';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import {
     num2hexstring,
     reverseHex,
@@ -479,14 +481,46 @@ export function makeTransactionsByJson(json: any) {
     payer = payer ? new Address(payer) : null;
     gasPrice = gasPrice + '' || '500';
     gasLimit = gasLimit + '' || '200000';
-
-    const parameters = buildParamsByJson(invokeConfig);
     const txList = [];
-    for (const list of parameters) {
-        const params = createCodeParamsScript(list);
-        const tx = makeInvokeTransaction('', params, contractAddr, gasPrice, gasLimit, payer);
+    if (contractHash.indexOf('00000000000000000000000000000000000000') > -1) { // native contract
+        const tx = buildNativeTxFromJson(invokeConfig);
         txList.push(tx);
+    } else {
+        const parameters = buildParamsByJson(invokeConfig);
+        for (const list of parameters) {
+            const params = createCodeParamsScript(list);
+            const tx = makeInvokeTransaction('', params, contractAddr, gasPrice, gasLimit, payer);
+            txList.push(tx);
+        }
     }
 
     return txList;
+}
+
+export function buildNativeTxFromJson(json: any) {
+    const funcArgs = json.functions[0];
+    const args = funcArgs.args;
+    if (json.contractHash.indexOf('02') > -1 || json.contractHash.indexOf('01') > -1) { // ONT ONG contract
+        const tokenType = json.contractHash.indexOf('02') > -1 ? 'ONG' : 'ONT';
+        if (funcArgs.operation === 'transfer') {
+            const from = new Address(args[0].value.split(':')[1]);
+            const to = new Address(args[1].value.split(':')[1]);
+            const amount = args[2].value.split(':')[1] + ''; // convert to string
+            const payer = new Address(json.payer);
+            const tx  = makeTransferTx(tokenType, from, to, amount, json.gasPrice, json.gasLimit, payer);
+            return tx;
+        }
+    } else if (json.contractHash.indexOf('03') > -1) { // ONT ID contract
+        if (funcArgs.operation === 'regIDWithPublicKey') {
+            const ontid = args[0].value.substr(args[0].value.indexOf(':') + 1);
+            const pk = new PublicKey(args[1].value.split(':')[1]);
+            const payer = new Address(json.payer);
+            const tx = buildRegisterOntidTx(ontid, pk, json.gasPrice, json.gasLimit, payer);
+            return tx;
+        } else if (funcArgs.operation === 'getDDO') {
+            const ontid = args[0].value.substr(args[0].value.indexOf(':') + 1);
+            const tx = buildGetDDOTx(ontid);
+            return tx;
+        }
+    }
 }

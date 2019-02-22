@@ -1,5 +1,3 @@
-import { Address, PrivateKey } from '../src/crypto';
-import RestClient from '../src/network/rest/restClient';
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -17,8 +15,12 @@ import RestClient from '../src/network/rest/restClient';
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { makeTransactionByJson } from '../src/transaction/transactionBuilder';
+import { Address, PrivateKey } from '../src/crypto';
+import RestClient from '../src/network/rest/restClient';
+import { WebsocketClient } from '../src/network/websocket/websocketClient';
+import { makeTransactionsByJson } from '../src/transaction/transactionBuilder';
 import { signTransaction } from './../src/transaction/transactionBuilder';
+import { DDO } from '../src';
 
 describe('test AbiInfo', () => {
 
@@ -55,9 +57,123 @@ describe('test AbiInfo', () => {
                 }
             }
         };
-        const txs = makeTransactionByJson(json);
+        const txs = makeTransactionsByJson(json);
         signTransaction(txs[0], private2);
         const res = await restClient.sendRawTransaction(txs[0].serialize(), false);
         console.log(res);
     });
+
+    test('makeTxFromJSON_transferONT', async () => {
+        const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
+        const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+        const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+        // tslint:disable:align
+        const json = {
+            "action": "invoke",
+            "version": "v1.0.0",
+            "id": "10ba038e-48da-487b-96e8-8d3b99b6d18a",
+            "params": {
+                "invokeConfig": {
+                    "contractHash": "0200000000000000000000000000000000000000",
+                    "functions": [{
+                        "operation": "transfer",
+                        "args": [{
+                            "name": "arg0-from",
+                            "value": "Address:AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz"
+                        },
+                        {
+                            "name": "arg1-to",
+                            "value": "Address:AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX"
+                        },
+                        {
+                            "name": "arg2-amount",
+                            "value": "Long:1000000000"
+                        }
+                        ]
+                    }],
+                    "payer": "AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz",
+                    "gasLimit": 20000,
+                    "gasPrice": 500
+                }
+            }
+        };
+        const txs = makeTransactionsByJson(json);
+        signTransaction(txs[0], adminPrivateKey);
+        const res = await socketClient.sendRawTransaction(txs[0].serialize(), false);
+        console.log(res);
+        expect(res.Error).toEqual(0);
+    });
+
+    test('makeTxFromJSON_regOntid', async () => {
+        const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
+        const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+        const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+        const pk = adminPrivateKey.getPublicKey().key;
+        // tslint:disable:align
+        const json = {
+            "action": "invoke",
+            "version": "v1.0.0",
+            "id": "10ba038e-48da-487b-96e8-8d3b99b6d18a",
+            "params": {
+                "invokeConfig": {
+                    "contractHash": "0300000000000000000000000000000000000000",
+                    "functions": [{
+                        "operation": "regIDWithPublicKey",
+                        "args": [{
+                            "name": "arg0-ontid",
+                            "value": "String:did:ont:AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz"
+                        },
+                        {
+                            "name": "arg1-publickey",
+                            "value": "ByteArray:" + pk
+                        }
+                        ]
+                    }],
+                    "payer": "AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz",
+                    "gasLimit": 20000,
+                    "gasPrice": 500
+                }
+            }
+        };
+        const txs = makeTransactionsByJson(json);
+        signTransaction(txs[0], adminPrivateKey);
+        const res = await socketClient.sendRawTransaction(txs[0].serialize(), false);
+        console.log(res);
+        expect(res.Error).toEqual(0);
+    });
+
+    test('makeTxFromJSON_getDDO', async () => {
+        const restClient = new RestClient();
+        const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+        const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+        const pk = adminPrivateKey.getPublicKey().key;
+        // tslint:disable:align
+        const json = {
+            "action": "invoke",
+            "version": "v1.0.0",
+            "id": "10ba038e-48da-487b-96e8-8d3b99b6d18a",
+            "params": {
+                "invokeConfig": {
+                    "contractHash": "0300000000000000000000000000000000000000",
+                    "functions": [{
+                        "operation": "getDDO",
+                        "args": [{
+                            "name": "arg0-ontid",
+                            "value": "String:did:ont:AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz"
+                        }
+                        ]
+                    }],
+                    "payer": "AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz",
+                    "gasLimit": 20000,
+                    "gasPrice": 500
+                }
+            }
+        };
+        const txs = makeTransactionsByJson(json);
+        const res = await restClient.sendRawTransaction(txs[0].serialize(), true);
+        const ddo = DDO.deserialize(res.Result.Result);
+        console.log(ddo);
+        expect(res.Error).toEqual(0);
+    });
+
 });
