@@ -63,7 +63,7 @@ export class Ecies {
      * go https://github.com/indutny/elliptic
      * for reference
      */
-    constructor(Curve: string) {
+    constructor(Curve?: string) {
         // default setting
         this.encAlg = 'aes-256-cbc';
         this.hashAlg = 'sha256';

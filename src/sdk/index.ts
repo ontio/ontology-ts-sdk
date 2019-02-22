@@ -57,6 +57,7 @@ import {
 import { generateMnemonic, hexstr2str, isBase64, isHexString, now, reverseHex,
     sendBackResult2Native, str2hexstr, StringReader } from '../utils';
 import { Wallet } from '../wallet';
+import { Ecies } from './../crypto/Ecies';
 import { ParameterType } from './../smartcontract/abi/parameter';
 import { Oep4TxBuilder } from './../smartcontract/neovm/oep4TxBuilder';
 
@@ -296,6 +297,37 @@ export class SDK {
                 sendBackResult2Native(JSON.stringify(obj), callback);
             }
         });
+    }
+
+    static importIdentityWithWifOffChain(
+        label: string = '',
+        wif: string,
+        password: string,
+        callback?: string
+    ) {
+        wif = wif.trim();
+        password = this.transformPassword(password);
+        let obj: any;
+        let pri: PrivateKey;
+        try {
+            pri = PrivateKey.deserializeWIF(wif);
+        } catch (err) {
+            const obj = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+            callback && sendBackResult2Native(JSON.stringify(obj), callback);
+            return obj;
+        }
+        const identity = Identity.create(pri, password, label);
+        obj = {
+            error: ERROR_CODE.SUCCESS,
+            result: identity.toJson()
+        };
+        if (callback) {
+            sendBackResult2Native(JSON.stringify(obj), callback);
+        }
+        return obj;
     }
 
     static importIdentityWithWallet(
@@ -1710,6 +1742,50 @@ export class SDK {
         privateKey.key = '';
         password = '';
         return result;
+    }
+
+    static eciesDecrypt(
+        encryptedPrivateKey: string,
+        password: string,
+        address: string,
+        salt: string,
+        cipher: string,
+        callback?: string
+    ) {
+        password = this.transformPassword(password);
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        let pri;
+        try {
+            const addr = new Address(address);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            pri = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+        const ins = new Ecies();
+        const cipherContent = cipher.split('.');
+        ins.setKeyPair(pri.key);
+        const plainBuffer = ins.dec(
+            cipherContent[0],
+            cipherContent[1],
+            cipherContent[2],
+            32
+        );
+
+        const plain = plainBuffer.toString('utf8');
+        const obj = {
+            error: 0,
+            result: plain
+        };
+        if (callback) {
+            sendBackResult2Native(JSON.stringify(obj), callback);
+        }
+        return obj;
     }
 
 }
