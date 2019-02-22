@@ -45,6 +45,21 @@ describe('test ECIES', () => {
         msg: 'Attack!'
     };
 
+    const java_sdk_case = {
+        priv:
+            '9a31d585431ce0aa0aab1f0a432142e98a92afccb7bcbcaff53f758df82acdb3',
+        pub:
+            '021401156f187ec23ce631a489c3fa17f292171009c6c3162ef642406d3d09c74d',
+        cipher: {
+            iv: 'f88305e04df4bdc491ca6ff65d222386',
+            out:
+                '0480a0e5157874371c32cdb01e7e0938d155eaed8f50eecbc6d39b71685d5c' +
+                '69cbb3f5b5c497d2e34ab47f105f85fc39edf0588d32b7e87403d65ff1e181800590',
+            msgCipher: '8e7f8f37c16a712f7360c5eebcb0b01a'
+        },
+        msg: '1234567890'
+    };
+
     const curvename = 'p256';
 
     beforeAll(() => {});
@@ -110,5 +125,25 @@ describe('test ECIES', () => {
         const plain = plainBuffer.toString('utf8');
 
         expect(plain === python_sdk_case.msg).toBeTruthy();
+    });
+    test('test decrypt cipher from java sdk', () => {
+        const insA = new Ecies(curvename);
+        const insB = new Ecies(curvename);
+        insA.generateKeyPair();
+
+        insB.setKeyPair(java_sdk_case.priv);
+
+        expect(insB.getKeyPair().pub === java_sdk_case.pub).toBeTruthy();
+
+        const plainBuffer = insB.dec(
+            java_sdk_case.cipher.msgCipher,
+            java_sdk_case.cipher.out,
+            java_sdk_case.cipher.iv,
+            32
+        );
+
+        const plain = plainBuffer.toString('utf8');
+
+        expect(plain === java_sdk_case.msg).toBeTruthy();
     });
 });
