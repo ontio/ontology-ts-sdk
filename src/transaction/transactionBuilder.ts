@@ -16,14 +16,13 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import Fixed64 from '../common/fixed64';
-import { NATIVE_INVOKE_NAME, REST_API, TX_MAX_SIG_SIZE } from '../consts';
+import { REST_API, TX_MAX_SIG_SIZE } from '../consts';
 import { Address, PrivateKey, SignatureScheme } from '../crypto';
 import { PublicKey } from '../crypto/PublicKey';
 import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter } from '../smartcontract/abi/parameter';
-import { makeTransferTx } from '../smartcontract/nativevm/ontAssetTxBuilder';
-import { buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
+
 import {
     num2hexstring,
     reverseHex,
@@ -34,9 +33,11 @@ import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { comparePublicKeys } from './program';
-import { createCodeParamsScript, pushHexString, pushInt, serializeAbiFunction } from './scriptBuilder';
+import { createCodeParamsScript, serializeAbiFunction } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
-import { Transfer } from './transfer';
+
+import { makeTransferTx } from '../smartcontract/nativevm/ontAssetTxBuilder';
+import { buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { TxSignature } from './txSignature';
 
 // tslint:disable-next-line:variable-name
@@ -151,54 +152,6 @@ export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
     sig.sigData = [privateKey.sign(tx, scheme).serializeHex()];
     tx.sigs.push(sig);
 };
-
-/**
- * Creates transaction to invoke native contract
- * @param funcName Function name of contract to call
- * @param params Parameters serialized in hex string
- * @param contractAddr Adderss of contract
- * @param gasPrice Gas price
- * @param gasLimit Gas limit
- * @param payer Address to pay for transaction gas
- */
-export function makeNativeContractTx(
-    funcName: string,
-    params: string,
-    contractAddr: Address,
-    gasPrice?: string,
-    gasLimit?: string,
-    payer?: Address
-) {
-    let code = '';
-    code += params;
-    code += pushHexString(str2hexstr(funcName));
-    code += pushHexString(contractAddr.serialize());
-    code += pushInt(0);
-    code += num2hexstring(opcode.SYSCALL);
-    code += pushHexString(str2hexstr(NATIVE_INVOKE_NAME));
-    const payload = new InvokeCode();
-    payload.code = code;
-
-    let tx: Transaction;
-    if (funcName === 'transfer' || funcName === 'transferFrom') {
-        tx = new Transfer();
-    } else {
-        tx = new Transaction();
-    }
-
-    tx.type = TxType.Invoke;
-    tx.payload = payload;
-    if (gasLimit) {
-        tx.gasLimit = new Fixed64(gasLimit);
-    }
-    if (gasPrice) {
-        tx.gasPrice = new Fixed64(gasPrice);
-    }
-    if (payer) {
-        tx.payer = payer;
-    }
-    return tx;
-}
 
 /**
  * Creates transaction to inovke smart contract
@@ -507,7 +460,7 @@ export function buildNativeTxFromJson(json: any) {
             const to = new Address(args[1].value.split(':')[1]);
             const amount = args[2].value.split(':')[1] + ''; // convert to string
             const payer = new Address(json.payer);
-            const tx  = makeTransferTx(tokenType, from, to, amount, json.gasPrice, json.gasLimit, payer);
+            const tx = makeTransferTx(tokenType, from, to, amount, json.gasPrice, json.gasLimit, payer);
             return tx;
         }
     } else if (json.contractHash.indexOf('03') > -1) { // ONT ID contract
