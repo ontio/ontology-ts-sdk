@@ -18,7 +18,7 @@
 */
 
 import { Address } from '../../crypto';
-import { makeNativeContractTx } from '../../transaction/transactionBuilder';
+import { makeNativeContractTx } from '../../transaction/transactionUtils';
 import { hex2VarBytes, str2hexstr, varifyPositiveInt } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';

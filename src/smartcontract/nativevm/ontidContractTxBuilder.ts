@@ -18,7 +18,7 @@
 import { Address, PublicKey } from '../../crypto';
 import { DDOAttribute } from '../../transaction/ddo';
 import { Transaction } from '../../transaction/transaction';
-import { makeNativeContractTx } from '../../transaction/transactionBuilder';
+import { makeNativeContractTx } from '../../transaction/transactionUtils';
 import { num2hexstring, str2hexstr } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';

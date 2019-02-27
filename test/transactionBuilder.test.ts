@@ -63,7 +63,7 @@ describe('test AbiInfo', () => {
         console.log(res);
     });
 
-    test('makeTxFromJSON_transferONT', async () => {
+    test('makeTxFromJSON_transferONG', async () => {
         const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
         const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
         const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');

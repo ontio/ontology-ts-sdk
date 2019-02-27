@@ -23,7 +23,7 @@ import { ERROR_CODE } from '../../error';
 import { Transaction } from '../../transaction/transaction';
 import { Transfer } from '../../transaction/transfer';
 import { hex2VarBytes, hexstr2str, StringReader } from '../../utils';
-import { makeNativeContractTx } from './../../transaction/transactionBuilder';
+import { makeNativeContractTx } from './../../transaction/transactionUtils';
 import { buildNativeCodeScript } from './../abi/nativeVmParamsBuilder';
 import Struct from './../abi/struct';
 
