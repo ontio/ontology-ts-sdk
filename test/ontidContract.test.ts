@@ -116,11 +116,11 @@ describe('test ONT ID contract', () => {
         // tx.payer = account.address;
         tx.payer = new Address('ATGJSGzm2poCB8N44BgrAccJcZ64MFf187');
         console.log(tx.serialize());
-        // signTransaction(tx, privateKey);
-        // addSign(tx, privateKey);
-        // const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // console.log(res);
-        // expect(res.Error).toEqual(0);
+        signTransaction(tx, privateKey);
+        addSign(tx, privateKey);
+        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        console.log(res);
+        expect(res.Error).toEqual(0);
     }, 10000);
 
     test('testDDOTx', async () => {
