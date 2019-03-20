@@ -29,9 +29,10 @@ import RestClient from '../src/network/rest/restClient';
 import RpcClient from '../src/network/rpc/rpcClient';
 import * as scrypt from '../src/scrypt';
 import { deserializeTransferTx, makeQueryAllowanceTx,
-    makeQueryBalanceTx, makeTransferTx, makeWithdrawOngTx, ONG_CONTRACT, ONT_CONTRACT
+    makeQueryBalanceTx, makeTransferToMany, makeTransferTx, makeWithdrawOngTx, ONG_CONTRACT, ONT_CONTRACT
 } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/nativevm/token';
+import { comparePublicKeys } from '../src/transaction/program';
 import { Transaction } from '../src/transaction/transaction';
 import { addSign, buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
 import TxSender from '../src/transaction/txSender';
@@ -39,7 +40,6 @@ import TxSender from '../src/transaction/txSender';
 import { ab2hexstring, generateRandomArray, isBase64, num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
 import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
-import { comparePublicKeys } from '../src/transaction/program';
 
 describe('test transfer asset', () => {
     const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
@@ -73,7 +73,7 @@ describe('test transfer asset', () => {
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     }, 10000);
-    
+
     test('test_transfer_asset_ONG', async () => {
         const from = adminAddress;
         const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
@@ -87,7 +87,7 @@ describe('test transfer asset', () => {
     }, 10000);
 
     test('test get balance', async () => {
-        const to = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+        const to = new Address('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
         const result = await restClient.getBalance(to);
         console.log(result);
         expect(result).toBeTruthy();
@@ -210,4 +210,15 @@ describe('test transfer asset', () => {
         const add2 = Address.fromMultiPubKeys(2, [pk2, pk1]);
         console.log('add2: ' + add2.toBase58());
     });
+
+    test('transferToMulti', async () => {
+        const address1 = new Address('AQ8P6sqpGMFkUeypt8z43iUUDsvexVrF5C');
+        const address2 = new Address('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
+        const tx = makeTransferToMany('ONG', adminAddress, [address1, address2], [0.01 * 1e9, 0.02 * 1e9], gasPrice, gasLimit);
+        signTransaction(tx, adminPrivateKey);
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log(JSON.stringify(response));
+        expect(response.Result.State).toEqual(1);
+    }, 10000);
 });

@@ -97,16 +97,16 @@ export function buildNativeCodeScript(list: any[]) {
                 result += num2hexstring(opcode.APPEND);
             }
             result += num2hexstring(opcode.FROMALTSTACK);
-        } else if (Array.isArray(val) && isTypedArray(val, Struct)) {
-            result += pushInt(0);
-            result += num2hexstring(opcode.NEWSTRUCT);
-            result += num2hexstring(opcode.TOALTSTACK);
-            for (const s of val) {
-                result += createCodeParamScript(s);
-            }
-            result += num2hexstring(opcode.FROMALTSTACK);
-            result += pushInt(val.length);
-            result += num2hexstring(opcode.PACK);
+        // } else if (Array.isArray(val) && isTypedArray(val, Struct)) {
+        //     result += pushInt(0);
+        //     result += num2hexstring(opcode.NEWSTRUCT);
+        //     result += num2hexstring(opcode.TOALTSTACK);
+        //     for (const s of val) {
+        //         result += createCodeParamScript(s);
+        //     }
+        //     result += num2hexstring(opcode.FROMALTSTACK);
+        //     result += pushInt(val.length);
+        //     result += num2hexstring(opcode.PACK);
         } else if (Array.isArray(val)) {
             result += buildNativeCodeScript(val);
             result += pushInt(val.length);

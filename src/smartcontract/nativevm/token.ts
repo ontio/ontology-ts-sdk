@@ -105,9 +105,9 @@ export class State {
     // 20 bytes address
     from: Address;
     to: Address;
-    value: string;
+    value: string | number;
 
-    constructor(from: Address, to: Address, value: string) {
+    constructor(from: Address, to: Address, value: string | number) {
         const bi = new BigNumber(value);
         if (!bi.isInteger() || bi.isNegative()) {
             throw ERROR_CODE.INVALID_PARAMS;

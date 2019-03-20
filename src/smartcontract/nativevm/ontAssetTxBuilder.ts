@@ -142,35 +142,36 @@ export function makeTransferTx(
  * @param to
  * @param amounts
  */
-/* export function makeTransferToMany(
+export function makeTransferToMany(
     tokenType: string,
     from: Address,
     to: Address[],
-    amounts: string[],
+    amounts: string | number [],
     gasPrice: string,
     gasLimit: string
 ): Transaction {
-    const states = new Array<State>(to.length);
 
     if (to.length !== amounts.length) {
         throw new Error('Params error.');
     }
 
+    const structs = [];
     for (let i = 0; i < to.length; i++) {
         verifyAmount(amounts[i]);
-        const s = new State(from, to[i], amounts[i]);
-        states[i] = s;
+        const s = new Struct();
+        s.add(from, to[i], new BigNumber(amounts[i]));
+        structs.push(s);
     }
 
-    const transfers = new Transfers();
-    transfers.states = states;
+    const list = [];
+    list.push(structs);
 
     const contract = getTokenContract(tokenType);
-    const params = transfers.serialize();
-    const tx = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit);
+    const params = buildNativeCodeScript(list);
+    const tx: Transfer = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit) as any;
     tx.payer = from;
     return tx;
-} */
+}
 
 /**
  * Withdraw ong from sender's address and send to receiver's address
