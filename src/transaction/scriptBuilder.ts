@@ -159,6 +159,8 @@ export const pushParam = (p: any) => {
         result += pushBool(Boolean(p.value));
         result += num2hexstring(opcode.PUSH0);
         result += num2hexstring(opcode.BOOLOR);
+    } else if (p.type === ParameterType.Map) {
+        result += pushMap(convertMap(p));
     } else if (p instanceof Map) {
         result += pushMap(p);
     } else if (p.type === ParameterType.Array) {
