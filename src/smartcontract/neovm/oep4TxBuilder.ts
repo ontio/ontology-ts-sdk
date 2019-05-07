@@ -22,6 +22,7 @@ import { str2hexstr } from '../../utils';
 import { Parameter, ParameterType } from '../abi/parameter';
 import { Address } from './../../crypto/address';
 import { makeInvokeTransaction } from './../../transaction/transactionBuilder';
+import { reverseHex } from './../../utils';
 
 const functionNames = {
     Init: 'init',
@@ -37,15 +38,25 @@ const functionNames = {
     Name: 'name'
 };
 
+export const formatBigNumParameter = (amount: string): Parameter => {
+    let val = new BigNumber(amount).toString(16);
+    if (val.length % 2 === 1) {
+        val = '0' + val;
+    }
+    const valHex = reverseHex(val);
+    const p = new Parameter('value', ParameterType.ByteArray, valHex);
+    return p;
+};
+
 export class Oep4State  {
     from: string;
     to: string;
-    amount: BigNumber;
+    amount: string;
 
     constructor(from: Address, to: Address, amount: string) {
         this.from = from.serialize();
         this.to = to.serialize();
-        this.amount = new BigNumber(amount);
+        this.amount = formatBigNumParameter(amount).value;
     }
 }
 /**
@@ -90,7 +101,7 @@ export class Oep4TxBuilder {
         const funcName = functionNames.Transfer;
         const p1 = new Parameter('from', ParameterType.ByteArray, from.serialize());
         const p2 = new Parameter('to', ParameterType.ByteArray, to.serialize());
-        const p3 = new Parameter('value', ParameterType.Long, amount);
+        const p3 = formatBigNumParameter(amount);
         return makeInvokeTransaction(funcName, [p1, p2, p3], this.contractAddr, gasPrice, gasLimit, payer);
     }
 
@@ -144,7 +155,7 @@ export class Oep4TxBuilder {
         const params = [
             new Parameter('owner', ParameterType.ByteArray, owner.serialize()),
             new Parameter('spender', ParameterType.ByteArray, spender.serialize()),
-            new Parameter('amount', ParameterType.Long, amount)
+            formatBigNumParameter(amount)
         ];
         return makeInvokeTransaction(funcName, params, this.contractAddr, gasPrice, gasLimit, payer);
     }
@@ -163,7 +174,7 @@ export class Oep4TxBuilder {
             new Parameter('owner', ParameterType.ByteArray, sender.serialize()),
             new Parameter('from', ParameterType.ByteArray, from.serialize()),
             new Parameter('to', ParameterType.ByteArray, to.serialize()),
-            new Parameter('amount', ParameterType.Long, amount)
+            formatBigNumParameter(amount)
         ];
         return makeInvokeTransaction(funcName, params, this.contractAddr, gasPrice, gasLimit, payer);
     }
