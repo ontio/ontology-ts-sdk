@@ -1,6 +1,6 @@
 
 <h1 align="center">TypeScript SDK For Ontology blockchain </h1>
-<h4 align="center">Version V1.0.12 </h4>
+<h4 align="center">Version V1.0.13 </h4>
 
 ## Overview
 
