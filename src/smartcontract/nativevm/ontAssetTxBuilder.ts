@@ -26,6 +26,7 @@ import { hex2VarBytes, hexstr2str, StringReader } from '../../utils';
 import { makeNativeContractTx } from './../../transaction/transactionUtils';
 import { buildNativeCodeScript } from './../abi/nativeVmParamsBuilder';
 import Struct from './../abi/struct';
+import { State } from './token';
 
 export const ONT_CONTRACT = '0000000000000000000000000000000000000001';
 export const ONG_CONTRACT = '0000000000000000000000000000000000000002';
@@ -106,34 +107,31 @@ export function makeTransferTx(
  * @param to receiver's address
  * @param amounts
  */
-/* export function makeTransferFromManyTx(
+export function makeTransferStateTx(
     tokenType: string,
-    from: Address[],
-    to: Address,
-    amounts: string[],
+    states: State[],
     gasPrice: string,
-    gasLimit: string
+    gasLimit: string,
+    payer?: Address
 ): Transaction {
-    const states = new Array<State>(from.length);
-
-    if (from.length !== amounts.length) {
-        throw new Error('Params error.');
-    }
-    for (let i = 0; i < from.length; i++) {
-        verifyAmount(amounts[i]);
-        const s = new State(from[i], to, amounts[i]);
-        states[i] = s;
+    const structs = [];
+    for (const state of states) {
+        verifyAmount(state.value);
+        const s = new Struct();
+        s.add(state.from, state.to, new BigNumber(state.value));
+        structs.push(s);
     }
 
-    const transfers = new Transfers();
-    transfers.states = states;
-
+    const list = [];
+    list.push(structs);
+    const params = buildNativeCodeScript(list);
     const contract = getTokenContract(tokenType);
-    const params = transfers.serialize();
     const tx = makeNativeContractTx('transfer', params, contract, gasPrice, gasLimit);
-    tx.payer = from[0];
+    if (payer) {
+        tx.payer = payer;
+    }
     return tx;
-} */
+}
 
 /**
  * transfer from one sender to multiple receivers
