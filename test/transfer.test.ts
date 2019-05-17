@@ -16,28 +16,18 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import axios from 'axios';
-import { BigNumber } from 'bignumber.js';
-import { Account } from '../src/account';
-import BigInt from '../src/common/bigInt';
-import Fixed64 from '../src/common/fixed64';
-import { HTTP_REST_PORT, ONT_NETWORK, REST_API, TEST_NODE, TEST_ONT_URL } from '../src/consts';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey } from '../src/crypto';
 import { PublicKey } from '../src/crypto/PublicKey';
 import { SignatureScheme } from '../src/crypto/SignatureScheme';
 import RestClient from '../src/network/rest/restClient';
-import RpcClient from '../src/network/rpc/rpcClient';
-import * as scrypt from '../src/scrypt';
 import { deserializeTransferTx, makeQueryAllowanceTx,
-    makeQueryBalanceTx, makeTransferToMany, makeTransferTx, makeWithdrawOngTx, ONG_CONTRACT, ONT_CONTRACT
+    makeTransferStateTx, makeTransferToMany, makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT
 } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { State } from '../src/smartcontract/nativevm/token';
 import { comparePublicKeys } from '../src/transaction/program';
-import { Transaction } from '../src/transaction/transaction';
-import { addSign, buildRestfulParam, buildRpcParam, buildTxParam } from '../src/transaction/transactionBuilder';
-import TxSender from '../src/transaction/txSender';
+import { addSign } from '../src/transaction/transactionBuilder';
 // tslint:disable-next-line:max-line-length
-import { ab2hexstring, generateRandomArray, isBase64, num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
+import { reverseHex } from '../src/utils';
 import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
 
@@ -158,7 +148,6 @@ describe('test transfer asset', () => {
 
     test('test get allowance with tx', async () => {
         const from = adminAddress;
-        const to = new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP');
         const tx = makeQueryAllowanceTx('ong', new Address(ONT_CONTRACT), from);
         const result = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(result);
@@ -170,7 +159,7 @@ describe('test transfer asset', () => {
     }, 10000);
 
     test('test get ongs to withdraw with rest api', async () => {
-        const addr = adminAddress;
+        const addr = new Address('AMAqR8Y8JWngDk5QsoGpa7vPhu5Tu5KKeS');
         const result = await restClient.getAllowance('ong', new Address(ONT_CONTRACT), addr);
         console.log(result);
         expect(result).toBeTruthy();
@@ -221,4 +210,40 @@ describe('test transfer asset', () => {
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     }, 10000);
+
+    test('transferStateTx', async () => {
+        const pris = [new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b91'),
+            new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b92'),
+            new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'),
+            new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b94'),
+            new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95'),
+            new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b96')
+        ];
+        const addrs = [
+            new Address('AKBnqmBSTfDPvBv9J8TACDhh5r2FY1T5y9'),
+            new Address('AYEvXsBZcQEvWt98M2jUe7wZjxvAviPNmN'),
+            new Address('AJkkLbouowk6teTaxz1F2DYKfJh24PVk3r'),
+            new Address('AMQAMPhji1bGUX3JQSETdfn5ttKGQ7bkbu'),
+            new Address('ALaRqCkXSWaHMDc5sLEEMVMWqCNDFi5eRZ'),
+            new Address('AX7PwwRCe3C2ZmX43JEb3PSoDFUJU6yeV6')
+        ];
+        // for (let i = 0; i < 6; i++) {
+        //     const addr = Address.fromPubKey(pris[i].getPublicKey());
+        //     console.log(addr.toBase58());
+        // }
+        const states = [
+            new State(addrs[0], addrs[3], 1 * 1e9),
+            new State(addrs[1], addrs[4], 1 * 1e9),
+            new State(addrs[2], addrs[5], 1 * 1e9)
+        ];
+        const payer = addrs[0];
+        const tx = makeTransferStateTx('ONG', states, gasPrice, gasLimit, payer);
+        signTransaction(tx, pris[0]);
+        addSign(tx, pris[1]);
+        addSign(tx, pris[2]);
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log(JSON.stringify(response));
+        expect(response.Result.State).toEqual(1);
+    });
 });

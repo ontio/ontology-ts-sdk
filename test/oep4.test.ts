@@ -1,3 +1,5 @@
+import { BigNumber } from 'bignumber.js';
+import { Account } from '../src';
 import RestClient from '../src/network/rest/restClient';
 import { Address } from './../src/crypto/address';
 import { PrivateKey } from './../src/crypto/PrivateKey';
@@ -39,7 +41,7 @@ describe('test oep4', () => {
     const gasPrice = '500';
     const gasLimit = '200000';
     // const url = TEST_ONT_URL.REST_URL;
-    const url = 'http://polaris1.ont.io:';
+    const url = 'http://polaris2.ont.io:';
     const restClient = new RestClient(url + '20334');
     const socketClient = new WebsocketClient(url + '20335');
 
@@ -61,7 +63,7 @@ describe('test oep4', () => {
         expect(val).toBeGreaterThan(0);
     });
 
-    test('test_transfer', async () => {
+    test('1_test_transfer', async () => {
         const tx = oep4.makeTransferTx(address1, address2, '10000', gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
@@ -154,4 +156,25 @@ describe('test oep4', () => {
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     });
+
+    test('bigDecimal_oep4_transfer', async () => {
+        const newOep4 = new Oep4TxBuilder(new Address(reverseHex('55e02438c938f6f4eb15a9cb315b26d0169b7fd7')));
+        const tx = newOep4.makeTransferTx(address1, address2,
+            '10000000000000000000000000', gasPrice, gasLimit, address1);
+        signTransaction(tx, private1);
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log(JSON.stringify(response));
+        const notify = response.Result.Notify.find((item) => item.ContractAddress !== '0200000000000000000000000000000000000000');
+        if (notify) {
+            const val = new BigNumber(reverseHex(notify.States[3]), 16).toString();
+            console.log('val: ', val);
+        }
+
+        const tx2 = newOep4.queryBalanceOf(address2);
+        const res = await restClient.sendRawTransaction(tx2.serialize(), true);
+        console.log('balance after transfer: ', res.Result);
+        const val2 = res.Result.Result ? new BigNumber(reverseHex(res.Result.Result), 16).toString() : 0;
+        console.log('balance : ', val2);
+    }, 10000);
 });
