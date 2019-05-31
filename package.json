@@ -1,6 +1,6 @@
 {
     "name": "ontology-ts-sdk",
-    "version": "1.0.15",
+    "version": "1.0.16",
     "description": "Comprehensive TypeScript library for the Ontology blockchain.",
     "main": "./lib/index.js",
     "types": "./lib/types/index.d.ts",
@@ -71,7 +71,7 @@
     "dependencies": {
         "@ont-community/hdkey-secp256r1": "^1.0.1",
         "@ont-community/html5-websocket": "^2.0.2",
-        "axios": "^0.17.1",
+        "axios": "^0.19.0",
         "babel-polyfill": "^6.26.0",
         "base-58": "^0.0.1",
         "base64-url": "^2.2.0",
