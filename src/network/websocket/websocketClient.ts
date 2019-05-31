@@ -352,7 +352,8 @@ export class WebsocketClient {
     }
 
     private notifyListener(result: any) {
-        if (result.Action === 'Notify') {
+         // Fixme: Log message cause Notify message to disappear
+        if (result.Action === 'Notify' || result.Action === 'Log') {
             const txHash: string | undefined = result.Result.TxHash;
 
             if (txHash !== undefined) {
