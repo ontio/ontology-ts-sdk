@@ -21,7 +21,7 @@ import * as Long from 'long';
 import { ERROR_CODE } from './../error';
 import { bigIntToBytes, reverseHex } from './../utils';
 
-// const SIZE = 8;
+const SIZE = 8;
 /**
  * Big positive integer base on BigNumber
  */
@@ -51,7 +51,10 @@ export default class BigInt {
      */
     toHexstr(): string {
         const bi = Long.fromValue(this.value);
-        const hex = bigIntToBytes(bi);
+        let hex = bigIntToBytes(bi);
+        if (hex.length % 2 !== 0 || hex.length < 16) {
+            hex = hex + '0'.repeat(SIZE * 2 - hex.length);
+        }
         return hex;
     }
 }
