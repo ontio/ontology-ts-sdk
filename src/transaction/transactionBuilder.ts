@@ -320,10 +320,12 @@ export function sendRawTxRestfulUrl(url: string, preExec: boolean = false) {
 
 export function transferStringParameter(value: string): Parameter {
     const strs = value.split(':');
-    if (strs.length !== 2) {
+    if (strs.length < 2) {
         throw new Error('Invalid parameter. ' + value);
     }
-    const p = new Parameter('', strs[0] as ParameterType, strs[1]);
+    const pType = value.substring(0, value.indexOf(':'));
+    const pVal = value.substring(value.indexOf(':') + 1);
+    const p = new Parameter('', pType as ParameterType, pVal);
     if (p.type === ParameterType.Address) {
         p.type = ParameterType.ByteArray;
         p.value = new Address(p.value).serialize();

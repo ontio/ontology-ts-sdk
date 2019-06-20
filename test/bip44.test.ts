@@ -51,4 +51,12 @@ describe('test bip44', () => {
 
         expect(address.toBase58()).toBe('AM57cppabEf4JeBXXGAPvRSLmYpqTmQ3sS');
     });
+
+    test('derive_pri', () => {
+        const seed = '7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97';
+        const hdk = HDKey.fromMasterSeed(Buffer.from(seed, 'hex'));
+        const path = "m/44'/1024'/0'/0/0";
+        const derive = hdk.derive(path);
+        console.log(Buffer.from(derive.privateKey).toString('hex'));
+    });
 });
