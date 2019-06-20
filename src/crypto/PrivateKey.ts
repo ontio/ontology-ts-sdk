@@ -280,11 +280,8 @@ export class PrivateKey extends Key {
      */
     computeEdDSASignature(hash: string): string {
         const eddsa = new elliptic.eddsa(this.parameters.curve.preset);
-        const signed = eddsa.sign(hash, this.key, null);
-        return Buffer.concat([
-            signed.R.toArrayLike(Buffer, 'be', 32),
-            signed.S.toArrayLike(Buffer, 'be', 32)
-        ]).toString('hex');
+        const signed = eddsa.sign(hash, this.key);
+        return signed.toHex().toLowerCase();
     }
 
     /**
