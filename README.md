@@ -2,11 +2,26 @@
 <h1 align="center">Ontology TypeScript SDK</h1>
 <h4 align="center">Version V1.0.18 </h4>
 
+- [Overview](#overview)
+- [Getting Started](#getting started)
+- [Installation](#installation)
+  - [NPM/Yarn](#download-through-npm/yarn)
+  - [Build from Source](#build-from-source-code)
+    - [Downloading](#download)
+    - [Compiling](#compile)
+    - [Testing](#test)
+  - [Using](#use-in-project)
+    - [Import](#importing)
+    - [Require](#require)
+    - [In the Browser](#in-the-browser)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Overview
 
 This project is a comprehensive TypeScript library for the [Ontology blockchain](https://ont.io). It currently supports management of  wallets, digital identities and digital assets - as well as the deployment and invocation of smart contracts.
 
-## Getting started
+## Getting Started
 
 * 进入 [中文版](https://ontio.github.io/documentation/ontology_ts_sdk_zh.html).
 * Enter [English Version](https://ontio.github.io/documentation/ontology_ts_sdk_en.html).
@@ -27,7 +42,7 @@ yarn add 'ontology-ts-sdk'
 
 ### Build from Source Code
 
-#### Download
+#### Downloading
 
 ```
 git clone 'https://github.com/ontio/ontology-ts-sdk.git'
@@ -45,7 +60,7 @@ or
 yarn
 ```
 
-#### Compile
+#### Compiling
 
 Compile the project with the:
 
@@ -61,7 +76,7 @@ yarn run build:dev // or yarn run build:prod
 
 This will create a compiled version of the SDK in the `lib` directory.
 
-#### Test
+#### Testing
 
 To run the tests in the `test` directory, use:
 
@@ -95,7 +110,7 @@ var Ont = require('ontology-ts-sdk');
 var wallet = Ont.Wallet.create('test');
 ````
 
-#### Browser
+#### In the Browser
 
 To use in the browser you must use the compiled version (as listed above).
 The `browser.js` file is located in the `lib` directory.
