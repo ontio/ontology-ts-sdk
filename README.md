@@ -111,28 +111,12 @@ Everything will be available under the `Ont` variable, just like in the `require
 var wallet = Ont.Wallet.create('test');
 ```
 
-# Contributing
-Please open a pull request with signed-off commits. We appreciate your help! You can also send your codes as emails to the developer mailing list. You're welcomed to join the Ontology mailing list or developer forum.
+## Contributing
 
-Please provide detailed submission information when you want to contribute code for this project. The format is as follows:
+Contributors are welcome to the `ontology-ts-sdk`. Before beginning, please take a look at our [contributing guidelines](CONTRIBUTING.md). You can open an issue by [clicking here](https://github.com/ontio/ontology-ts-sdk/issues/new).
 
-Header line: explain the commit in one line (use the imperative).
-
-Body of commit message is a few lines of text, explaining things  in more detail, possibly giving some background about the issue  being fixed, etc.
-
-The body of the commit message can be several paragraphs, and  please do proper word-wrap and keep columns shorter than about 74 characters or so. That way "git log" will show things  nicely even when it's indented.
-
-Make sure you explain your solution and why you're doing what you're  doing, as opposed to describing what you're doing. Reviewers and your future self can read the patch, but might not understand why a particular solution was implemented.
-
-Reported-by: whoever-reported-it
-Signed-off-by: Your Name [youremail@yourhost.com](mailto:youremail@yourhost.com)
-
-## Community
-
-## Site
-
-* https://ont.io/
+If you have any issues getting setup, open an issue or reach out in the [Ontology Discord](https://discordapp.com/invite/4TQujHj).
 
 ## License
 
-The Ontology library (i.e. all code outside of the cmd directory) is licensed under the GNU Lesser General Public License v3.0, also included in our repository in the License file
+The Ontology TypeScript SDK is availabl under the [LGPL-3.0 License](LICENSE).
