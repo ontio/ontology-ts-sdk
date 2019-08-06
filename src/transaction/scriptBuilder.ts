@@ -35,7 +35,7 @@ export const pushBool = (param: boolean) => {
     return result;
 };
 
-export const pushInt = (param: number, ledgerCompatible: bool = true) => {
+export const pushInt = (param: number, ledgerCompatible: boolean = true) => {
     let result = '';
     if (param === -1) {
         result = num2hexstring(opcode.PUSHM1);
@@ -52,7 +52,7 @@ export const pushInt = (param: number, ledgerCompatible: bool = true) => {
     return result;
 };
 
-export const pushBigNum = (param: BigNumber, ledgerCompatible: bool = true) => {
+export const pushBigNum = (param: BigNumber, ledgerCompatible: boolean = true) => {
     let result = '';
     if (param.isEqualTo(-1)) {
         result = num2hexstring(opcode.PUSHM1);
@@ -132,7 +132,7 @@ export const getMapBytes = (val: Map<string, Parameter>) => {
     return result;
 };
 
-export const pushMap = (val: Map<string, any>, ledgerCompatible: bool) => {
+export const pushMap = (val: Map<string, any>, ledgerCompatible: boolean) => {
     let result = '';
     result += num2hexstring(opcode.NEWMAP);
     result += num2hexstring(opcode.TOALTSTACK);
@@ -146,7 +146,7 @@ export const pushMap = (val: Map<string, any>, ledgerCompatible: bool) => {
     return result;
 };
 
-export const pushParam = (p: any, ledgerCompatible: bool) => {
+export const pushParam = (p: any, ledgerCompatible: boolean) => {
     if (!p) {
         throw Error('Parameter can not be undefined');
     }
@@ -183,7 +183,7 @@ export const pushParam = (p: any, ledgerCompatible: bool) => {
     return result;
 };
 
-export const serializeAbiFunction = (abiFunction: AbiFunction, ledgerCompatible: bool = true) => {
+export const serializeAbiFunction = (abiFunction: AbiFunction, ledgerCompatible: boolean = true) => {
     const list = [];
     list.push(str2hexstr(abiFunction.name));
     const tmp = [];
@@ -272,7 +272,7 @@ export function deserializeItem(sr: StringReader): any {
     }
 }
 
-export const createCodeParamsScript = (list: any[], ledgerCompatible: bool = true) => {
+export const createCodeParamsScript = (list: any[], ledgerCompatible: boolean = true) => {
     let result = '';
     for (let i = list.length - 1; i >= 0; i--) {
         const val = list[i];

@@ -37,9 +37,9 @@ export default class BigInt {
     }
 
     value: string | number;
-    ledgerCompatible: bool;
+    ledgerCompatible: boolean;
 
-    constructor(value: string | number, ledgerCompatible: bool = true) {
+    constructor(value: string | number, ledgerCompatible: boolean = true) {
         const bi = new BigNumber(value);
         if (!bi.isInteger() || bi.isNegative()) {
             throw ERROR_CODE.INVALID_PARAMS;
