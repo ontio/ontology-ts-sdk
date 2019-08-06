@@ -19,7 +19,7 @@
 
 ## Overview
 
-This project is a comprehensive TypeScript library for the [Ontology blockchain](https://ont.io). It currently supports management of  wallets, digital identities and digital assets - as well as the deployment and invocation of smart contracts.
+This is the official Ontology TypeScript SDK - a comprehensive library for developing with the [Ontology blockchain](https://ont.io) in both TypeScript and JavaScript. It currently supports management of wallets, digital identities and digital assets - as well as the deployment and invocation of smart contracts.
 
 ## Getting Started
 
