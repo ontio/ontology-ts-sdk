@@ -169,7 +169,7 @@ export const makeInvokeTransaction = (
     gasPrice?: string,
     gasLimit?: string,
     payer?: Address,
-    ledgerCompatible?: Bool = true
+    ledgerCompatible: boolean = true
 ) => {
     const tx = new Transaction();
     tx.type = TxType.Invoke;
@@ -414,7 +414,7 @@ export function buildParamsByJson(json: any) {
     return paramsList;
 }
 
-export function makeTransactionsByJson(json: any, ledgerCompatible: bool = true) {
+export function makeTransactionsByJson(json: any, ledgerCompatible: boolean = true) {
     if (!json) {
         throw new Error('Invalid parameter. Expect JSON object');
     }
