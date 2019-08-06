@@ -168,7 +168,8 @@ export const makeInvokeTransaction = (
     contractAddr: Address,
     gasPrice?: string,
     gasLimit?: string,
-    payer?: Address
+    payer?: Address,
+    ledgerCompatible?: Bool = true
 ) => {
     const tx = new Transaction();
     tx.type = TxType.Invoke;
@@ -178,7 +179,7 @@ export const makeInvokeTransaction = (
         args = params;
     } else {
         const abiFunc = new AbiFunction(funcName, '', params);
-        args = serializeAbiFunction(abiFunc);
+        args = serializeAbiFunction(abiFunc, ledgerCompatible);
     }
 
     let code = args + num2hexstring(opcode.APPCALL);
@@ -413,7 +414,7 @@ export function buildParamsByJson(json: any) {
     return paramsList;
 }
 
-export function makeTransactionsByJson(json: any) {
+export function makeTransactionsByJson(json: any, ledgerCompatible: bool = true) {
     if (!json) {
         throw new Error('Invalid parameter. Expect JSON object');
     }
@@ -443,8 +444,8 @@ export function makeTransactionsByJson(json: any) {
     } else {
         const parameters = buildParamsByJson(invokeConfig);
         for (const list of parameters) {
-            const params = createCodeParamsScript(list);
-            const tx = makeInvokeTransaction('', params, contractAddr, gasPrice, gasLimit, payer);
+            const params = createCodeParamsScript(list, ledgerCompatible);
+            const tx = makeInvokeTransaction('', params, contractAddr, gasPrice, gasLimit, payer, ledgerCompatible);
             txList.push(tx);
         }
     }
