@@ -1,10 +1,10 @@
 
-<h1 align="center">TypeScript SDK For Ontology blockchain </h1>
+<h1 align="center">Ontology TypeScript SDK</h1>
 <h4 align="center">Version V1.0.18 </h4>
 
 ## Overview
 
-The project is a comprehensive TypeScript library for the Ontology blockchain. Currently, it supports local wallet management, digital identity management, digital asset management,  deployment, and envoke for Smart Contract. In the future there will also be support for more functions and applications.
+This project is a comprehensive TypeScript library for the [Ontology blockchain](https://ont.io). It currently supports management of  wallets, digital identities and digital assets - as well as the deployment and invocation of smart contracts.
 
 ## Getting started
 
@@ -13,45 +13,73 @@ The project is a comprehensive TypeScript library for the Ontology blockchain. C
 
 ## Installation
 
+### Download Through npm/Yarn
+
+````
+npm install 'ontology-ts-sdk' --save
+````
+
+or
+
+```
+yarn add 'ontology-ts-sdk'
+```
+
+### Build from Source Code
+
 #### Download
 
 ```
 git clone 'https://github.com/ontio/ontology-ts-sdk.git'
 ```
 
-Then please install the packges.
+Then install the dependencies with:
 
 ```
-npm install (or yarn)
+npm install
 ```
 
-#### Use in your project
+or
 
-````
-npm install 'ontology-ts-sdk' --save
-````
+```
+yarn
+```
 
 #### Compile
 
-Get into the 'ontology-ts-sdk' directory and run:
+Compile the project with the:
 
 ````
 npm run build:dev // or npm run build:prod
 ````
 
-You will get the packaged code under '/lib'
+or
+
+```
+yarn run build:dev // or yarn run build:prod
+```
+
+This will create a compiled version of the SDK in the `lib` directory.
 
 #### Test
 
-Test code of the project is in directory '/test'. Run:
+To run the tests in the `test` directory, use:
 
 ```
 npm run test
 ```
 
+or
+
+```
+yarn run test
+```
+
+### Use in Project
+
 #### Import
 
-Modules library export by 'ontology-ts-sdk'
+Using `import` to include the modules from `'ontology-ts-sdk'`:
 
 ```
 import {Wallet} from 'ontology-ts-sdk';
@@ -60,20 +88,24 @@ var wallet = Wallet.create('test');
 
 #### Require
 
+Using `require` to include the modules from `'ontology-ts-sdk'`:
+
 ````
 var Ont = require('ontology-ts-sdk');
 var wallet = Ont.Wallet.create('test');
 ````
 
-#### Web require
+#### Browser
 
-The browser.js file under the '/lib' folder need referenced to the page:
+To use in the browser you must use the compiled version (as listed above).
+The `browser.js` file is located in the `lib` directory.
+Include it into the project with a `<script>` tag:
 
 ````
 <script src="./lib/browser.js"></script>
 ````
 
-The use of the code is required under the global namespace of Ont.
+Everything will be available under the `Ont` variable, just like in the `require` example above.
 
 ```
 var wallet = Ont.Wallet.create('test');
