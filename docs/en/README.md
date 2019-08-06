@@ -2,7 +2,7 @@
 [中文](../cn/README.md) | English
 
 <h1 align="center">Ontology TypeScript SDK Developer Guide</h1>
-<h4 align="center">Version V0.7.0 </h4>
+<h4 align="center">Version V1.0.18 </h4>
 
 ## Overview
 
@@ -16,4 +16,3 @@ The Ontology official TypeScript SDK is a comprehensive SDK which also supports 
 - [Digtal Assets](asset.md)
 - [Deploy and Invoke Smart Contract](smart_contract.md)
 - [Error Code](errorcode.md)
-
