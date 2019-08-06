@@ -35,7 +35,7 @@ export const pushBool = (param: boolean) => {
     return result;
 };
 
-export const pushInt = (param: number) => {
+export const pushInt = (param: number, ledgerCompatible: bool = true) => {
     let result = '';
     if (param === -1) {
         result = num2hexstring(opcode.PUSHM1);
@@ -45,14 +45,14 @@ export const pushInt = (param: number) => {
         const num = opcode.PUSH1 - 1 + param;
         result = num2hexstring(num);
     } else {
-        const biHex = new BigInt(param.toString()).toHexstr();
+        const biHex = new BigInt(param.toString(), ledgerCompatible).toHexstr();
         result = pushHexString(biHex);
     }
 
     return result;
 };
 
-export const pushBigNum = (param: BigNumber) => {
+export const pushBigNum = (param: BigNumber, ledgerCompatible: bool = true) => {
     let result = '';
     if (param.isEqualTo(-1)) {
         result = num2hexstring(opcode.PUSHM1);
@@ -62,7 +62,7 @@ export const pushBigNum = (param: BigNumber) => {
         const num = opcode.PUSH1 - 1 + param.toNumber();
         result = num2hexstring(num);
     } else {
-        const biHex = new BigInt(param.toString()).toHexstr();
+        const biHex = new BigInt(param.toString(), ledgerCompatible).toHexstr();
         result = pushHexString(biHex);
     }
     return result;
@@ -132,21 +132,21 @@ export const getMapBytes = (val: Map<string, Parameter>) => {
     return result;
 };
 
-export const pushMap = (val: Map<string, any>) => {
+export const pushMap = (val: Map<string, any>, ledgerCompatible: bool) => {
     let result = '';
     result += num2hexstring(opcode.NEWMAP);
     result += num2hexstring(opcode.TOALTSTACK);
     for (const k of val.keys()) {
         result += num2hexstring(opcode.DUPFROMALTSTACK);
         result += pushHexString(str2hexstr(k));
-        result += pushParam(val.get(k));
+        result += pushParam(val.get(k), ledgerCompatible);
         result += num2hexstring(opcode.SETITEM);
     }
     result += num2hexstring(opcode.FROMALTSTACK);
     return result;
 };
 
-export const pushParam = (p: any) => {
+export const pushParam = (p: any, ledgerCompatible: bool) => {
     if (!p) {
         throw Error('Parameter can not be undefined');
     }
@@ -160,21 +160,21 @@ export const pushParam = (p: any) => {
         result += num2hexstring(opcode.PUSH0);
         result += num2hexstring(opcode.BOOLOR);
     } else if (p.type === ParameterType.Map) {
-        result += pushMap(convertMap(p));
+        result += pushMap(convertMap(p), ledgerCompatible);
     } else if (p instanceof Map) {
-        result += pushMap(p);
+        result += pushMap(p, ledgerCompatible);
     } else if (p.type === ParameterType.Array) {
         for (let i = p.value.length - 1; i > -1; i--) {
-            result += pushParam(p.value[i]);
+            result += pushParam(p.value[i], ledgerCompatible);
         }
-        result += pushInt(p.value.length);
+        result += pushInt(p.value.length, ledgerCompatible);
         result += num2hexstring(opcode.PACK);
     } else if (p.type === ParameterType.Integer) {
-        result += pushInt(p.value);
+        result += pushInt(p.value, ledgerCompatible);
         result += num2hexstring(opcode.PUSH0);
         result += num2hexstring(opcode.ADD);
     } else if (p.type === ParameterType.Long) {
-        result += pushBigNum(new BigNumber(p.value));
+        result += pushBigNum(new BigNumber(p.value), ledgerCompatible);
         result += num2hexstring(opcode.PUSH0);
         result += num2hexstring(opcode.ADD);
     } else {
@@ -183,7 +183,7 @@ export const pushParam = (p: any) => {
     return result;
 };
 
-export const serializeAbiFunction = (abiFunction: AbiFunction) => {
+export const serializeAbiFunction = (abiFunction: AbiFunction, ledgerCompatible: bool = true) => {
     const list = [];
     list.push(str2hexstr(abiFunction.name));
     const tmp = [];
@@ -201,7 +201,7 @@ export const serializeAbiFunction = (abiFunction: AbiFunction) => {
     if (list.length > 0) {
         list.push(tmp);
     }
-    const result = createCodeParamsScript(list);
+    const result = createCodeParamsScript(list, ledgerCompatible);
     return result;
 };
 
@@ -272,28 +272,28 @@ export function deserializeItem(sr: StringReader): any {
     }
 }
 
-export const createCodeParamsScript = (list: any[]) => {
+export const createCodeParamsScript = (list: any[], ledgerCompatible: bool = true) => {
     let result = '';
     for (let i = list.length - 1; i >= 0; i--) {
         const val = list[i];
         if (typeof val === 'string') {
             result += pushHexString(val);
         } else if (typeof val === 'number') {
-            result += pushInt(val);
+            result += pushInt(val, ledgerCompatible);
         } else if (typeof val === 'boolean') {
             result += pushBool(val);
         } else if (val instanceof BigNumber) {
-            result += pushBigNum(val);
+            result += pushBigNum(val, ledgerCompatible);
         } else if (val instanceof Map) {
-            result += pushMap(val);
+            result += pushMap(val, ledgerCompatible);
             // const mapBytes = getMapBytes(val);
             // result += pushHexString(mapBytes);
         } else if (val instanceof Struct) {
             const structBytes = getStructBytes(val);
             result += pushHexString(structBytes);
         } else if (val instanceof Array) {
-            result += createCodeParamsScript(convertArray(val));
-            result += pushInt(val.length);
+            result += createCodeParamsScript(convertArray(val), ledgerCompatible);
+            result += pushInt(val.length, ledgerCompatible);
             result += num2hexstring(opcode.PACK);
         }
     }

@@ -18,9 +18,12 @@
 import { Address, PrivateKey } from '../src/crypto';
 import RestClient from '../src/network/rest/restClient';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { makeTransactionsByJson } from '../src/transaction/transactionBuilder';
-import { signTransaction } from './../src/transaction/transactionBuilder';
+import { makeTransactionsByJson, makeInvokeTransaction } from '../src/transaction/transactionBuilder';
+import { Transaction } from '../src/transaction/transaction';
+import { signTransaction } from '../src/transaction/transactionBuilder';
 import { DDO } from '../src';
+import { Parameter, ParameterType } from '../src/smartcontract/abi/parameter';
+import { reverseHex } from '../src/utils';
 
 describe('test AbiInfo', () => {
 
@@ -48,7 +51,7 @@ describe('test AbiInfo', () => {
                             value: 'Address:AecaeSEBkt5GcBCxwz1F41TvdjX3dnKBkJ'
                         }, {
                             name: 'arg3',
-                            value: 10
+                            value: 1000000000
                         }]
                     }],
                     gasLimit: 20000,
@@ -59,8 +62,91 @@ describe('test AbiInfo', () => {
         };
         const txs = makeTransactionsByJson(json);
         signTransaction(txs[0], private2);
+
+        const raw = "00d16009495df401000000000000204e000000000000aa6e06c79f864152ab7f3139074aad822ffea8555e0400ca9a3b14fa88f5244be19659bbd24477caeeacac7cbf781b14aa6e06c79f864152ab7f3139074aad822ffea855036f6e7454c1137472616e736665724e6174697665417373657467e9f31031588538c9404149f5d411cfff408394cd0001414043443452de4b5374af440118b0a0c9f25fc31324ea23e9c5754fa335cfac776a795893d3accb6386a8d54ef616b2c9ead411704e3328a3e124584be8b174e5de232102df6f28e327352a44720f2b384e55034c1a7f54ba31785aa3a338f613a5b7cc26ac";
+        const expectedTx = Transaction.deserialize(raw);
+        const match = txs[0].payload.code === expectedTx.payload.code;
+        expect(match).toEqual(false);
+
         const res = await restClient.sendRawTransaction(txs[0].serialize(), false);
         console.log(res);
+    });
+
+    test('makeTransactionByJsonLedgerIncompatible', async () => {
+        const private2 = new PrivateKey('49855b16636e70f100cc5f4f42bc20a6535d7414fb8845e7310f8dd065a97221');
+        const address2 = new Address('AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX');
+        const restClient = new RestClient();
+        const json = {
+            action: 'invoke',
+            params: {
+                login: true,
+                message: 'invoke smart contract test',
+                invokeConfig: {
+                    contractHash: 'cd948340ffcf11d4f5494140c93885583110f3e9',
+                    functions: [{
+                        operation: 'transferNativeAsset',
+                        args: [{
+                            name: 'arg0',
+                            value: 'String:ont'
+                        }, {
+                            name: 'arg1',
+                            value: 'Address:AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX'
+                        }, {
+                            name: 'arg2',
+                            value: 'Address:AecaeSEBkt5GcBCxwz1F41TvdjX3dnKBkJ'
+                        }, {
+                            name: 'arg3',
+                            value: 1000000000
+                        }]
+                    }],
+                    gasLimit: 20000,
+                    gasPrice: 500,
+                    payer: 'AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX'
+                }
+            }
+        };
+        const txs = makeTransactionsByJson(json, false);
+        signTransaction(txs[0], private2);
+
+        const raw = "00d16009495df401000000000000204e000000000000aa6e06c79f864152ab7f3139074aad822ffea8555e0400ca9a3b14fa88f5244be19659bbd24477caeeacac7cbf781b14aa6e06c79f864152ab7f3139074aad822ffea855036f6e7454c1137472616e736665724e6174697665417373657467e9f31031588538c9404149f5d411cfff408394cd0001414043443452de4b5374af440118b0a0c9f25fc31324ea23e9c5754fa335cfac776a795893d3accb6386a8d54ef616b2c9ead411704e3328a3e124584be8b174e5de232102df6f28e327352a44720f2b384e55034c1a7f54ba31785aa3a338f613a5b7cc26ac";
+        const expectedTx = Transaction.deserialize(raw);
+        const match = txs[0].payload.code === expectedTx.payload.code;
+        expect(match).toEqual(true);
+
+        const res = await restClient.sendRawTransaction(txs[0].serialize(), false);
+        console.log(res);
+    });
+
+    test('makeInvokeTransaction', async () => {
+        const privateKey = new PrivateKey('49855b16636e70f100cc5f4f42bc20a6535d7414fb8845e7310f8dd065a97221');
+        const address = "AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX";
+
+        const addressParam1 = new Address(address);
+        const addressParam2 = new Address("AecaeSEBkt5GcBCxwz1F41TvdjX3dnKBkJ");
+
+        const param = new Parameter('arg0', ParameterType.String, "ont");
+        const param2 = new Parameter('arg1', ParameterType.ByteArray, addressParam1.serialize());
+        const param3 = new Parameter('arg2', ParameterType.ByteArray, addressParam2.serialize());
+        const param4 = new Parameter('arg3', ParameterType.Integer, 1000000000);
+
+        const args = [param, param2, param3, param4];
+
+        const contractHash = "cd948340ffcf11d4f5494140c93885583110f3e9";
+        const contractAddr = new Address(reverseHex(contractHash));;
+
+        const tx = makeInvokeTransaction("transferNativeAsset", args, contractAddr, 500, 20000, addressParam1);
+        const tx2 = makeInvokeTransaction("transferNativeAsset", args, contractAddr, 500, 20000, addressParam1, false);
+
+        signTransaction(tx, privateKey);
+        signTransaction(tx2, privateKey);
+
+        const raw = "00d16009495df401000000000000204e000000000000aa6e06c79f864152ab7f3139074aad822ffea8555e0400ca9a3b14fa88f5244be19659bbd24477caeeacac7cbf781b14aa6e06c79f864152ab7f3139074aad822ffea855036f6e7454c1137472616e736665724e6174697665417373657467e9f31031588538c9404149f5d411cfff408394cd0001414043443452de4b5374af440118b0a0c9f25fc31324ea23e9c5754fa335cfac776a795893d3accb6386a8d54ef616b2c9ead411704e3328a3e124584be8b174e5de232102df6f28e327352a44720f2b384e55034c1a7f54ba31785aa3a338f613a5b7cc26ac";
+        const expectedTx = Transaction.deserialize(raw);
+        const match = tx.payload.code === expectedTx.payload.code;
+        expect(match).toEqual(false);
+
+        const match2 = tx2.payload.code === expectedTx.payload.code;
+        expect(match2).toEqual(true);
     });
 
     test('makeTxFromJSON_transferONG', async () => {

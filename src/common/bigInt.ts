@@ -37,13 +37,15 @@ export default class BigInt {
     }
 
     value: string | number;
+    ledgerCompatible: bool;
 
-    constructor(value: string | number) {
+    constructor(value: string | number, ledgerCompatible: bool = true) {
         const bi = new BigNumber(value);
         if (!bi.isInteger() || bi.isNegative()) {
             throw ERROR_CODE.INVALID_PARAMS;
         }
         this.value = value;
+        this.ledgerCompatible = ledgerCompatible;
     }
 
     /**
@@ -52,7 +54,7 @@ export default class BigInt {
     toHexstr(): string {
         const bi = Long.fromValue(this.value);
         let hex = bigIntToBytes(bi);
-        if (hex.length % 2 !== 0 || hex.length < 16) {
+        if (this.ledgerCompatible && (hex.length % 2 !== 0 || hex.length < 16)) {
             hex = hex + '0'.repeat(SIZE * 2 - hex.length);
         }
         return hex;
