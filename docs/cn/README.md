@@ -1,7 +1,7 @@
 [English](../en/README.md) | 中文
 
 <h1 align="center">Ontology TypeScript SDK 开发者手册</h1>
-<h4 align="center">Version V0.7.0 </h4>
+<h4 align="center">Version V1.0.18 </h4>
 
 ## 总体介绍
 
@@ -16,4 +16,3 @@
 - [数字资产](asset.md)
 - [智能合约的部署和调用](smart_contract.md)
 - [错误码](errorcode.md)
-
