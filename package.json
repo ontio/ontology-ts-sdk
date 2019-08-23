@@ -1,6 +1,6 @@
 {
     "name": "ontology-ts-sdk",
-    "version": "1.0.18",
+    "version": "1.0.21",
     "description": "Comprehensive TypeScript library for the Ontology blockchain.",
     "main": "./lib/index.js",
     "types": "./lib/types/index.d.ts",
@@ -9,7 +9,7 @@
         "lint": "tslint --project ./",
         "build:dev": "cross-env NODE_ENV=development webpack --mode development --display-error-details --progress --color",
         "build:prod": "cross-env NODE_ENV=production webpack --mode production --progress --color",
-        "prepublish": "npm run lint && npm run build:dev"
+        "prepublish": "npm run lint && npm run build:prod"
     },
     "jest": {
         "moduleFileExtensions": [
@@ -51,6 +51,7 @@
         "@types/uuid": "^3.4.3",
         "babel-core": "^6.26.3",
         "babel-loader": "^7.1.4",
+        "babel-plugin-transform-runtime": "^6.23.0",
         "babel-preset-env": "^1.7.0",
         "babel-preset-stage-3": "^6.24.1",
         "clean-webpack-plugin": "^0.1.19",

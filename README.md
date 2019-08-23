@@ -1,16 +1,16 @@
 
-<h1 align="center">Ontology TypeScript SDK</h1>
-<h4 align="center">Version V1.0.18 </h4>
+<h1 align="center">Ontology TypeScript SDK </h1>
+<h4 align="center">Version V1.0.21 </h4>
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
 - [Installation](#installation)
-  - [NPM/Yarn](#download-through-npmyarn)
-  - [Build from Source](#build-from-source-code)
+  - [Download Through npm/Yarn](#download-through-npmyarn)
+  - [Build from Source Code](#build-from-source-code)
     - [Downloading](#downloading)
     - [Compiling](#compiling)
     - [Testing](#testing)
-  - [Using](#use-in-project)
+  - [Use in Project](#use-in-project)
     - [Import](#import)
     - [Require](#require)
     - [In the Browser](#in-the-browser)
