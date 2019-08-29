@@ -15,14 +15,13 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { BigNumber } from 'bignumber.js';
+import * as Long from 'long';
 import { createCodeParamsScript } from '../../transaction/scriptBuilder';
 import { Transaction } from '../../transaction/transaction';
-import { str2hexstr } from '../../utils';
+import { bigIntToBytes, str2hexstr } from '../../utils';
 import { Parameter, ParameterType } from '../abi/parameter';
 import { Address } from './../../crypto/address';
 import { makeInvokeTransaction } from './../../transaction/transactionBuilder';
-import { reverseHex } from './../../utils';
 
 const functionNames = {
     Init: 'init',
@@ -39,11 +38,12 @@ const functionNames = {
 };
 
 export const formatBigNumParameter = (amount: string): Parameter => {
-    let val = new BigNumber(amount).toString(16);
-    if (val.length % 2 === 1) {
-        val = '0' + val;
-    }
-    const valHex = reverseHex(val);
+    // let val = new BigNumber(amount).toString(16);
+    // if (val.length % 2 === 1) {
+    //     val = '0' + val;
+    // }
+    // const valHex = reverseHex(val);
+    const valHex = bigIntToBytes(Long.fromString(amount));
     const p = new Parameter('value', ParameterType.ByteArray, valHex);
     return p;
 };
