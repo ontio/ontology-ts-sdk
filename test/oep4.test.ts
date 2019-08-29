@@ -34,7 +34,7 @@ describe('test oep4', () => {
     const address2 = new Address('AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX');
     const address3 = new Address('AVXf5w8WD2y6jV1Lzi36oSKYNif1C7Surc');
 
-    const codeHash = 'b0bc9d8eb833c9903fa2e794f8413f6366f721ce';
+    const codeHash = '78ac3965410c552609b691bbfe30469110c71485';
 
     const contractAddr = new Address(reverseHex(codeHash));
     const oep4 = new Oep4TxBuilder(contractAddr);
@@ -160,7 +160,7 @@ describe('test oep4', () => {
     test('bigDecimal_oep4_transfer', async () => {
         const newOep4 = new Oep4TxBuilder(new Address(reverseHex('55e02438c938f6f4eb15a9cb315b26d0169b7fd7')));
         const tx = newOep4.makeTransferTx(address1, address2,
-            '10000000000000000000000000', gasPrice, gasLimit, address1);
+            '65530', gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         // tslint:disable:no-console
