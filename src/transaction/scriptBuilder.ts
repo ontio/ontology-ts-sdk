@@ -22,8 +22,9 @@ import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter, ParameterType, ParameterTypeVal } from '../smartcontract/abi/parameter';
 import Struct from '../smartcontract/abi/struct';
-import { bigIntFromBytes, hexstr2str, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../utils';
+import { bigIntFromBytes, hexstr2str, num2hexstring, num2VarInt, str2hexstr, StringReader, writeString, writeI128, writeVarBytes, writeAddress, writeBool, writeVarUint } from '../utils';
 import opcode from './opcode';
+import { I128FromInt, I128FromBigInt } from '../common/int128';
 
 export const pushBool = (param: boolean) => {
     let result = '';
@@ -350,52 +351,38 @@ export const buildSmartContractParam = (functionName: string, params: Parameter[
     return result;
 };
 
-export const buildWasmContractParam = (params: Parameter[]) => {
-    const pList = [];
+export function buildWasmContractParam(params: Parameter[]): string {
+    let result = '';
 
     for (const p of params) {
         const type = p.getType();
-        let o;
 
         switch (type) {
         case ParameterType.String:
-            o = {
-                type: 'string',
-                value: p.getValue()
-            };
+            result += writeString(p.value);
             break;
         case ParameterType.Int:
-            o = {
-                type: 'int',
-                value: p.getValue().toString()
-            };
+            result += writeI128(I128FromInt(p.value));
             break;
         case ParameterType.Long:
-            o = {
-                type: 'int64',
-                value: p.getValue()
-            };
+            result += writeI128(I128FromBigInt(new BigInt(p.value)));
             break;
-        case ParameterType.IntArray:
-            o = {
-                type: 'int_array',
-                value: p.getValue()
-            };
+        case ParameterType.ByteArray:
+            result += writeVarBytes(p.value);
             break;
-        case ParameterType.LongArray:
-            o = {
-                type: 'int_array',
-                value: p.getValue()
-            };
+        case ParameterType.Address:
+            result += writeAddress(p.value);
             break;
+        case ParameterType.Boolean:
+            result += writeBool(p.value);
+            break;
+        case ParameterType.Array:
+            result += writeVarUint(p.value.length);
+            result += buildWasmContractParam(p.value);
         default:
-            break;
+            throw new Error(`Not a supported type: ${p.type}`);
         }
-        pList.push(o);
     }
 
-    const result = {
-        Params: pList
-    };
-    return str2hexstr(JSON.stringify(result));
-};
+    return result;
+}

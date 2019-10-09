@@ -33,7 +33,8 @@ export enum TxType  {
     Deploy          = 0xd0,
     Invoke          = 0xd1,
     Enrollment      = 0x04,
-    Vote            = 0x05
+    Vote            = 0x05,
+    InvokeWasm      = 0xd2
 }
 
 export const TxName = {

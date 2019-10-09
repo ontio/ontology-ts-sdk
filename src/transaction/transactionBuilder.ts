@@ -38,6 +38,7 @@ import { Transaction, TxType } from './transaction';
 
 import { makeTransferTx } from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
+import { VmType } from './payload/deployCode';
 import { TxSignature } from './txSignature';
 
 // tslint:disable-next-line:variable-name
@@ -209,7 +210,7 @@ export const makeInvokeTransaction = (
  * @param author Author of contract
  * @param email Email of author
  * @param desp Description of contract
- * @param needStorage Decides if the contract needs storage
+ * @param vmType Decides the vm type
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Address to pay for gas
@@ -220,7 +221,7 @@ export function makeDeployCodeTransaction(
     codeVersion: string= '1.0',
     author: string= '',
     email: string= '',
-    desp: string= '', needStorage: boolean= true, gasPrice: string, gasLimit: string, payer?: Address) {
+    desp: string= '', vmType: VmType | boolean, gasPrice: string, gasLimit: string, payer?: Address) {
     const dc = new DeployCode();
     dc.author = author;
     // const vmCode = new VmCode();
@@ -232,7 +233,11 @@ export function makeDeployCodeTransaction(
     dc.description = desp;
     dc.email = email;
     dc.name = name;
-    dc.needStorage = needStorage;
+    if (typeof vmType === 'boolean') { // to be compatible with old api
+        dc.vmType = VmType.NEOVM_TYPE;
+    } else {
+        dc.vmType = vmType;
+    }
 
     const tx = new Transaction();
     tx.version = 0x00;

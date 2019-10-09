@@ -21,7 +21,9 @@ import * as cryptoJS from 'crypto-js';
 import * as Long from 'long';
 import * as secureRandom from 'secure-random';
 import { ONT_TOTAL_SUPPLY, UNBOUND_GENERATION_AMOUNT, UNBOUND_TIME_INTERVAL, WEBVIEW_SCHEME } from './consts';
+import { Address } from './crypto';
 import { ERROR_CODE } from './error';
+import { I128 } from './common/int128';
 /**
  * Turn hex string into array buffer
  * @param str hex string
@@ -56,10 +58,10 @@ export function ab2hexstring(arr: any): string {
     return result;
 }
 
- /**
-  * Turn ArrayBuffer or array-like oject into normal string
-  * @param buf
-  */
+/**
+ * Turn ArrayBuffer or array-like oject into normal string
+ * @param buf
+ */
 export function ab2str(buf: ArrayBuffer | number[]): string {
     return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
@@ -288,7 +290,7 @@ export class StringReader {
     }
 
     unreadBytes(bytes: number) {
-        if ( (this.pos - bytes * 2) < 0 ) {
+        if ((this.pos - bytes * 2) < 0) {
             throw new Error('Can not unread too many bytes.');
         }
         this.pos -= bytes * 2;
@@ -307,6 +309,10 @@ export class StringReader {
         const out = this.str.substring(this.pos, index);
         this.pos = index + 2;
         return out;
+    }
+
+    readNextByte() {
+        return this.read(1);
     }
 
     /**
@@ -339,6 +345,10 @@ export class StringReader {
         return len;
     }
 
+    readVarUint() {
+        return this.readNextLen();
+    }
+
     /**
      * Read Uint8
      */
@@ -361,6 +371,13 @@ export class StringReader {
     }
 
     /**
+     * Read 8 bytes as uint64 in littleEndian
+     */
+    readUint64() {
+        return parseInt(reverseHex(this.read(8)), 16);
+    }
+
+    /**
      * Read 4 bytes as int in littleEndian
      */
     readInt() {
@@ -379,6 +396,78 @@ export class StringReader {
     }
 }
 
+export function writeUint16(data: number): string {
+    return num2hexstring(data, 2, true);
+}
+
+export function writeUint32(data: number): string {
+    return num2hexstring(data, 4, true);
+}
+
+export function writeUint64(data: number): string {
+    return num2hexstring(data, 8, true);
+}
+
+// data is hexstring;
+export function writeVarBytes(data: string): string {
+    if (!isHexString(data)) {
+        throw new Error('[writeVarBytes] The param is not hex string.');
+    }
+    let result = '';
+    result += num2VarInt(data.length / 2);
+    result += data;
+    return result;
+}
+
+export function writeString(data: string): string {
+    return writeVarBytes(str2hexstr(data));
+}
+
+export function writeAddress(data: Address): string {
+    return data.serialize();
+}
+
+export function writeI128(data: I128): string {
+    return data.serialize();
+}
+
+export function writeBool(data: boolean): string {
+    if (data) {
+        return '01';
+    } else {
+        return '00';
+    }
+}
+
+export function writeVarUint(data: number): string {
+    const buf = [];
+    let size;
+    if (data < 0xFD) {
+        buf[0] = data;
+        size = 1;
+    } else if (data <= 0xFFFF) {
+        buf[0] = 0xFD;
+        putLittleEndianUint(buf, 1, 2, data);
+        size = 3;
+    } else if (data <= 0xFFFFFFFF) {
+        buf[0] = 0xFE;
+        putLittleEndianUint(buf, 1, 4, data);
+        size = 5;
+    } else {
+        buf[0] = 0xFF;
+        putLittleEndianUint(buf, 1, 8, data);
+        size = 9;
+    }
+    return ab2hexstring(buf);
+}
+
+function putLittleEndianUint(buf: number[], start: number, size: number, data: number) {
+    buf[start] = data;
+    for (let i = start + 1; i <= size; i++) {
+        data = data >> (8 * (i - 1));
+        buf[i] = data & 0xFF;
+    }
+}
 export class EventEmitter {
     handlers: any = {};
 
@@ -518,7 +607,7 @@ export function unboundDeadline() {
     count *= UNBOUND_TIME_INTERVAL;
     const numInterval = UNBOUND_GENERATION_AMOUNT.length;
     if (UNBOUND_GENERATION_AMOUNT[numInterval - 1] !== 1 ||
-        ! ((count - UNBOUND_TIME_INTERVAL < ONT_TOTAL_SUPPLY) && ONT_TOTAL_SUPPLY <= count)) {
+        !((count - UNBOUND_TIME_INTERVAL < ONT_TOTAL_SUPPLY) && ONT_TOTAL_SUPPLY <= count)) {
         throw new Error('incompatible constants setting');
     }
     return UNBOUND_TIME_INTERVAL * numInterval - (count - ONT_TOTAL_SUPPLY);
