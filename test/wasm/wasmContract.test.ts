@@ -47,11 +47,10 @@ describe('test deploy contract', () => {
     test('invokeAdd', async () => {
         const contractAddress = new Address('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
         const params = [
-            new Parameter('method', ParameterType.String, 'add'),
             new Parameter('param1', ParameterType.Integer, 1),
             new Parameter('param2', ParameterType.Integer, 2)
         ];
-        const tx = makeWasmVmInvokeTransaction(contractAddress, params, '500', '20000', account.address);
+        const tx = makeWasmVmInvokeTransaction('add', params, contractAddress, '500', '20000', account.address);
         console.log(tx.payload.serialize());
         signTransaction(tx, privateKey);
         const result = await wsClient.sendRawTransaction(tx.serialize(), true);
@@ -61,10 +60,7 @@ describe('test deploy contract', () => {
 
     test('invokeNotify', async () => {
         const contractAddress = new Address('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
-        const params = [
-            new Parameter('method', ParameterType.String, 'notify')
-        ];
-        const tx = makeWasmVmInvokeTransaction(contractAddress, params, '500', '20000', account.address);
+        const tx = makeWasmVmInvokeTransaction('notify', [], contractAddress, '500', '20000', account.address);
         console.log(tx.payload.serialize());
         signTransaction(tx, privateKey);
         const result = await wsClient.sendRawTransaction(tx.serialize(), true);
@@ -78,10 +74,8 @@ describe('test deploy contract', () => {
             'current_txhash', 'current_blockhash'];
         const contractAddress = new Address('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
         for (const method of methods) {
-            const params = [
-                new Parameter('method', ParameterType.String, method)
-            ];
-            const tx = makeWasmVmInvokeTransaction(contractAddress, params, '500', '20000', account.address);
+            const params = [];
+            const tx = makeWasmVmInvokeTransaction(method, params, contractAddress, '500', '20000', account.address);
             signTransaction(tx, privateKey);
             const result = await restClient.sendRawTransaction(tx.serialize(), true);
             console.log(result);
@@ -93,11 +87,11 @@ describe('test deploy contract', () => {
     test('invokeStorageWrite', async () => {
         const contractAddress = new Address('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
         const params = [
-            new Parameter('method', ParameterType.String, 'storage_write'),
             new Parameter('param1', ParameterType.String, 'abc'),
             new Parameter('param2', ParameterType.String, '123')
         ];
-        const tx = makeWasmVmInvokeTransaction(contractAddress, params, '500', '20000', account.address);
+        const tx = makeWasmVmInvokeTransaction('storage_write', params, contractAddress,
+            '500', '20000', account.address);
         signTransaction(tx, privateKey);
         const result = await wsClient.sendRawTransaction(tx.serialize(), false);
         console.log(result);
@@ -107,10 +101,10 @@ describe('test deploy contract', () => {
     test('invokeStorageRead', async () => {
         const contractAddress = new Address('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
         const params = [
-            new Parameter('method', ParameterType.String, 'storage_read'),
             new Parameter('param1', ParameterType.String, 'abc')
         ];
-        const tx = makeWasmVmInvokeTransaction(contractAddress, params, '500', '20000', account.address);
+        const tx = makeWasmVmInvokeTransaction('storage_read', params, contractAddress,
+            '500', '20000', account.address);
         signTransaction(tx, privateKey);
         const result = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(result);
@@ -121,10 +115,10 @@ describe('test deploy contract', () => {
     test('invokeStorageDelete', async () => {
         const contractAddress = new Address('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
         const params = [
-            new Parameter('method', ParameterType.String, 'storage_delete'),
             new Parameter('param1', ParameterType.String, 'abc')
         ];
-        const tx = makeWasmVmInvokeTransaction(contractAddress, params, '500', '20000', account.address);
+        const tx = makeWasmVmInvokeTransaction('storage_delete', params, contractAddress,
+            '500', '20000', account.address);
         signTransaction(tx, privateKey);
         const result = await wsClient.sendRawTransaction(tx.serialize(), false);
         console.log(result);
