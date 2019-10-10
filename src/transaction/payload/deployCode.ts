@@ -1,4 +1,3 @@
-import { num2hexstring } from './../../utils';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -17,12 +16,12 @@ import { num2hexstring } from './../../utils';
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import {
-    bool2VarByte,
     hex2VarBytes,
     hexstr2str,
     str2VarBytes,
     StringReader
 } from '../../utils';
+import { num2hexstring } from './../../utils';
 import Payload from './payload';
 
 export enum VmType  {

@@ -26,14 +26,15 @@ import { Parameter } from '../smartcontract/abi/parameter';
 import {
     num2hexstring,
     reverseHex,
-    str2hexstr
+    str2hexstr,
+    writeVarBytes
 } from '../utils';
 import { ParameterType } from './../smartcontract/abi/parameter';
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { comparePublicKeys } from './program';
-import { createCodeParamsScript, serializeAbiFunction } from './scriptBuilder';
+import { buildWasmContractParam, createCodeParamsScript, serializeAbiFunction } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 
 import { makeTransferTx } from '../smartcontract/nativevm/ontAssetTxBuilder';
@@ -201,6 +202,53 @@ export const makeInvokeTransaction = (
     }
     return tx;
 };
+
+export function buildWasmVmInvokeCode(contractaddress: Address, params: Parameter[]): string {
+    let result = '';
+    result += contractaddress.serialize();
+    const args = buildWasmContractParam(params);
+    result += writeVarBytes(args);
+    return result;
+}
+
+/**
+ * Creates transaction to inovke wasm vm smart contract
+ * @param funcName Function name of smart contract
+ * @param params Array of Parameters or serialized parameters
+ * @param contractAddress Address of contract
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Address to pay for gas
+ */
+export function makeWasmVmInvokeTransaction(
+    funcName: string,
+    params: Parameter[],
+    contractAddress: Address,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
+    const tx = new Transaction();
+    tx.type = TxType.InvokeWasm;
+
+    const paramFunc = new Parameter('method', ParameterType.String, funcName);
+    const paramsAll = [paramFunc, ...params];
+    const code = buildWasmVmInvokeCode(contractAddress, paramsAll);
+    const payload = new InvokeCode();
+    payload.code = code;
+    tx.payload = payload;
+
+    if (gasLimit) {
+        tx.gasLimit = new Fixed64(gasLimit);
+    }
+    if (gasPrice) {
+        tx.gasPrice = new Fixed64(gasPrice);
+    }
+    if (payer) {
+        tx.payer = payer;
+    }
+    return tx;
+}
 
 /**
  * Creates transaction to deploy smart contract

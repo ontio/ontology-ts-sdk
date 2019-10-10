@@ -1,7 +1,8 @@
 import { RestClient } from '../../src';
 import { PrivateKey } from '../../src/crypto';
-import { makeWasmVmInvokeTransaction } from '../../src/smartcontract/wasm/transactionBuilder';
-import { makeDeployCodeTransaction, signTransaction } from '../../src/transaction/transactionBuilder';
+import {
+    makeDeployCodeTransaction, makeWasmVmInvokeTransaction, signTransaction
+} from '../../src/transaction/transactionBuilder';
 import { hexstr2str } from '../../src/utils';
 import { Account } from './../../src/account';
 import { Address } from './../../src/crypto/address';
