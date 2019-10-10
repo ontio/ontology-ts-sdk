@@ -18,8 +18,8 @@
 
 import { sm2 } from 'sm.js';
 import { CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey, Signature, SignatureScheme } from '../src/crypto';
-import { ab2hexstring, ab2str, str2ab, str2hexstr } from '../src/utils';
 import { Address } from '../src/crypto/address';
+import { ab2hexstring, ab2str, str2ab, str2hexstr } from '../src/utils';
 
 describe('SM2 and SM3 cryptographics functions tests', () => {
     test('test SM3 hash', () => {
@@ -71,7 +71,7 @@ describe('SM2 and SM3 cryptographics functions tests', () => {
     });
 
     test('verifySSS', () => {
-        const signature = Signature.deserializeHex('01cf157a48216bfcd455a97a39c0ad65bd1b27d1da07965b19848146045c9f2e5a12f905a5ee0923412d589e615a5d6954c58cade367dce67fcf13eaa82c12e87a')
+        const signature = Signature.deserializeHex('01cf157a48216bfcd455a97a39c0ad65bd1b27d1da07965b19848146045c9f2e5a12f905a5ee0923412d589e615a5d6954c58cade367dce67fcf13eaa82c12e87a');
         const msg = str2hexstr('sss');
         const pk = new PublicKey('035384561673e76c7e3003e705e4aa7aee67714c8b68d62dd1fb3221f48c5d3da0');
         const result = pk.verify(msg, signature);

@@ -259,7 +259,7 @@ describe('test ONT ID contract', () => {
 
     test('nodeId', async () => {
         const socket = new WebsocketClient('ws://139.219.128.220:20335');
-        const keystore = { "country": "", "claimArray": [], "address": "ARTH2zCmyQp8RVMqXE6HaWNqmBjsYL9r21", "salt": "AKApq2LPAPL1J182gr7soQ==", "label": "节点1", "type": "I", "parameters": { "curve": "secp256r1" }, "scrypt": { "dkLen": 64, "n": 4096, "p": 8, "r": 8 }, "key": "6idIWIBRT5tJUPDGwGoNihjlfcXeAAId227H8pU6besfojWyhjqOQo7pzGDWlObq", "algorithm": "ECDSA" };
+        const keystore = { country: '', claimArray: [], address: 'ARTH2zCmyQp8RVMqXE6HaWNqmBjsYL9r21', salt: 'AKApq2LPAPL1J182gr7soQ==', label: '节点1', type: 'I', parameters: { curve: 'secp256r1' }, scrypt: { dkLen: 64, n: 4096, p: 8, r: 8 }, key: '6idIWIBRT5tJUPDGwGoNihjlfcXeAAId227H8pU6besfojWyhjqOQo7pzGDWlObq', algorithm: 'ECDSA' };
         const did = 'did:ont:' + keystore.address;
         const enc = new PrivateKey(keystore.key);
         const addr = new Address(keystore.address);

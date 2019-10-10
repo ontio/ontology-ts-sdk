@@ -44,7 +44,6 @@ describe('test nep5', () => {
     const restClient = new RestClient('http://127.0.0.1:20334');
     const socketClient = new WebsocketClient('http://127.0.0.1:20335');
 
-
     test('test_init', async () => {
         const tx = Nep5TxBuilder.init(contractAddr, gasPrice, gasLimit, account1.address);
         signTransaction(tx, private1);

@@ -21,7 +21,7 @@ import { ADDR_VERSION } from '../consts';
 import { ERROR_CODE } from '../error';
 import opcode from '../transaction/opcode';
 import { comparePublicKeys, programFromPubKey, pushBigInt } from '../transaction/program';
-import { pushHexString } from '../transaction/scriptBuilder';
+import { pushHexString } from '../transaction/program';
 import { ab2hexstring, hash160, num2hexstring, sha256, StringReader } from '../utils';
 import { reverseHex } from './../utils';
 import { PublicKey } from './PublicKey';

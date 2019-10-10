@@ -26,15 +26,14 @@ import { Parameter } from '../smartcontract/abi/parameter';
 import {
     num2hexstring,
     reverseHex,
-    str2hexstr,
-    writeVarBytes
+    str2hexstr
 } from '../utils';
 import { ParameterType } from './../smartcontract/abi/parameter';
 import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { comparePublicKeys } from './program';
-import { buildWasmContractParam, createCodeParamsScript, serializeAbiFunction } from './scriptBuilder';
+import { buildWasmContractParam, createCodeParamsScript, serializeAbiFunction, writeVarBytes } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 
 import { makeTransferTx } from '../smartcontract/nativevm/ontAssetTxBuilder';

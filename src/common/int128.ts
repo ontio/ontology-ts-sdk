@@ -1,5 +1,3 @@
-import { BigNumber } from 'bignumber.js';
-import * as Long from 'long';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -18,7 +16,8 @@ import * as Long from 'long';
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ab2hexstring, hex2VarBytes, hexstring2ab, reverseHex, StringReader } from '../utils';
+import { BigNumber } from 'bignumber.js';
+import { ab2hexstring, hexstring2ab, reverseHex, StringReader } from '../utils';
 import BigInt from './bigInt';
 
 const I128_SIZE = 16;

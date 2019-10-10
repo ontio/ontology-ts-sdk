@@ -41,6 +41,7 @@ describe('test claim', () => {
     let serialized: string;
     let signed: string;
 
+    // tslint:disable:no-console
     console.log('did:' + ontid);
     /**
      * Registers new ONT ID to create transaction with Events and new block
@@ -162,13 +163,11 @@ describe('test claim', () => {
         const res = await claim.attest(socketUrl, '500', '20000', adminAddress, adminPrivateKey);
         console.log(res);
 
-        let signed = claim.serialize();
-
-
+        const signed = claim.serialize();
 
         const msg = Claim.deserialize(signed);
         const result = await msg.verify(restUrl, false);
 
-        console.log("Info: ", signed, result, claim);
+        console.log('Info: ', signed, result, claim);
     });
 });

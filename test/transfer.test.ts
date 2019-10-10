@@ -66,7 +66,7 @@ describe('test transfer asset', () => {
 
     test('test_transfer_asset_ONG', async () => {
         const from = adminAddress;
-        const to = new Address("AVDEiCVQzm7EffYH6vBQNXKYXR7RdVGNsA");
+        const to = new Address('AVDEiCVQzm7EffYH6vBQNXKYXR7RdVGNsA');
         const tx = makeTransferTx('ONG', from, to, 0.00003321 * 1e9, gasPrice, gasLimit);
         console.log(tx.serializeUnsignedData());
         signTransaction(tx, adminPrivateKey);

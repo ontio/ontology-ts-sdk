@@ -16,38 +16,37 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-import { Parameter, ParameterType } from '../src/smartcontract/abi/parameter'
+import { Parameter, ParameterType } from '../src/smartcontract/abi/parameter';
 
 describe('test smartcontract.abi.parameter', () => {
-	test('test setValue with 0', () => {
-		var p = new Parameter("test", ParameterType.Integer, 123)
-		var result = p.setValue({
-			name: "test",
-			type: ParameterType.Integer,
-			value: 0
-		})
-		expect(result).toBeTruthy()
-		expect(p.getValue()).toEqual(0)
-	})
-	test('test setValue with false', () => {
-		var p = new Parameter("test", ParameterType.Boolean, true)
-		var result = p.setValue({
-			name: "test",
-			type: ParameterType.Boolean,
-			value: false
-		})
-		expect(result).toBeTruthy()
-		expect(p.getValue()).toEqual(false)
-	})
-	test('test setValue with null', () => {
-		var p = new Parameter("test", ParameterType.Integer, 123)
-		var result = p.setValue({
-			name: "test",
-			type: ParameterType.Integer,
-			value: null
-		})
-		expect(result).toBeFalsy()
-		expect(p.getValue()).toEqual(123)
-	})
-})
+    test('test setValue with 0', () => {
+        const p = new Parameter('test', ParameterType.Integer, 123);
+        const result = p.setValue({
+            name: 'test',
+            type: ParameterType.Integer,
+            value: 0
+        });
+        expect(result).toBeTruthy();
+        expect(p.getValue()).toEqual(0);
+    });
+    test('test setValue with false', () => {
+        const p = new Parameter('test', ParameterType.Boolean, true);
+        const result = p.setValue({
+            name: 'test',
+            type: ParameterType.Boolean,
+            value: false
+        });
+        expect(result).toBeTruthy();
+        expect(p.getValue()).toEqual(false);
+    });
+    test('test setValue with null', () => {
+        const p = new Parameter('test', ParameterType.Integer, 123);
+        const result = p.setValue({
+            name: 'test',
+            type: ParameterType.Integer,
+            value: null
+        });
+        expect(result).toBeFalsy();
+        expect(p.getValue()).toEqual(123);
+    });
+});
