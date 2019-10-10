@@ -37,6 +37,7 @@ describe('test Anonymous Crendential', () => {
     test('test create', () => {
 
         /* issuer setup */
+        // tslint:disable:no-console
         console.log('I.GenerateSk()');
         I.GenerateSk();
         console.log('I.GenerateKeyPair()');

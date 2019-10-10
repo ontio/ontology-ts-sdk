@@ -61,6 +61,9 @@ export function makeRegisterCandidateTx(
     gasPrice: string,
     gasLimit: string
 ): Transaction {
+    if (typeof initPos !== 'number') {
+        throw new Error('Parameter initPos must be number!');
+    }
     varifyPositiveInt(initPos);
     if (ontid.substr(0, 3) === 'did') {
         ontid = str2hexstr(ontid);

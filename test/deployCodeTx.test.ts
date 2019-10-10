@@ -1,3 +1,4 @@
+import { VmType } from './../src/transaction/payload/deployCode';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -25,7 +26,7 @@ import { buildRestfulParam, buildRpcParam, buildTxParam, Default_params, makeDep
 import { ab2hexstring, ab2str, num2hexstring , reverseHex, str2hexstr } from '../src/utils';
 
 import axios from 'axios';
-import { ONT_NETWORK, TEST_NODE, TEST_ONT_URL, MAIN_NODE, MAIN_ONT_URL } from '../src/consts';
+import { MAIN_NODE, MAIN_ONT_URL, ONT_NETWORK, TEST_NODE, TEST_ONT_URL } from '../src/consts';
 import AbiFunction from '../src/smartcontract/abi/abiFunction';
 import AbiInfo from '../src/smartcontract/abi/abiInfo';
 import { Parameter } from '../src/smartcontract/abi/parameter';
@@ -34,9 +35,11 @@ import TxSender from '../src/transaction/txSender';
 import { Address } from '../src/crypto';
 import { RestClient } from '../src/index';
 import json from '../src/smartcontract/data/idContract.abi';
-import { VmCode, VmType } from '../src/transaction/vmcode';
+import { VmCode } from '../src/transaction/vmcode';
 import { Account } from './../src/account';
 import { PrivateKey } from './../src/crypto/PrivateKey';
+// tslint:disable-next-line:no-var-requires
+const fs = require('fs');
 
 describe('test deploy contract', () => {
 
@@ -62,8 +65,10 @@ describe('test deploy contract', () => {
         tx.payer = account.address;
         signTransaction(tx, privateKey);
         const result = await restClient.sendRawTransaction(tx.serialize());
+        // tslint:disable:no-console
+        console.log(result);
         expect(result.Error).toEqual(0);
-    }, 10000 );
+    }, 10000);
 
     test('get_contract', async () => {
         const contract = Address.fromVmCode(attestClaimAvmCode);

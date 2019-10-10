@@ -1,3 +1,4 @@
+import { pushHexString } from './program';
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -18,11 +19,16 @@
 
 import { BigNumber } from 'bignumber.js';
 import BigInt from '../common/bigInt';
+import { I128, I128FromBigInt, I128FromInt } from '../common/int128';
+import { Address } from '../crypto';
 import { ERROR_CODE } from '../error';
 import AbiFunction from '../smartcontract/abi/abiFunction';
 import { Parameter, ParameterType, ParameterTypeVal } from '../smartcontract/abi/parameter';
 import Struct from '../smartcontract/abi/struct';
-import { bigIntFromBytes, hexstr2str, num2hexstring, num2VarInt, str2hexstr, StringReader } from '../utils';
+import {
+    // tslint:disable-next-line:max-line-length
+    ab2hexstring, bigIntFromBytes, hexstr2str, isHexString, num2hexstring, num2VarInt, str2hexstr, StringReader
+} from '../utils';
 import opcode from './opcode';
 
 export const pushBool = (param: boolean) => {
@@ -65,25 +71,6 @@ export const pushBigNum = (param: BigNumber, ledgerCompatible: boolean = true) =
         const biHex = new BigInt(param.toString(), ledgerCompatible).toHexstr();
         result = pushHexString(biHex);
     }
-    return result;
-};
-
-export const pushHexString = (param: string) => {
-    let result = '';
-    const len = param.length / 2;
-    if (len <= opcode.PUSHBYTES75) {
-        result += num2hexstring(len);
-    } else if (len < 0x100) {
-        result += num2hexstring(opcode.PUSHDATA1);
-        result += num2hexstring(len);
-    } else if (len < 0x10000) {
-        result += num2hexstring(opcode.PUSHDATA2);
-        result += num2hexstring(len, 2, true);
-    } else {
-        result += num2hexstring(opcode.PUSHDATA4);
-        result += num2hexstring(len, 4, true);
-    }
-    result += param;
     return result;
 };
 
@@ -350,52 +337,106 @@ export const buildSmartContractParam = (functionName: string, params: Parameter[
     return result;
 };
 
-export const buildWasmContractParam = (params: Parameter[]) => {
-    const pList = [];
+export function buildWasmContractParam(params: Parameter[]): string {
+    let result = '';
 
     for (const p of params) {
         const type = p.getType();
-        let o;
 
         switch (type) {
         case ParameterType.String:
-            o = {
-                type: 'string',
-                value: p.getValue()
-            };
+            result += writeString(p.value);
             break;
         case ParameterType.Int:
-            o = {
-                type: 'int',
-                value: p.getValue().toString()
-            };
+            result += I128FromInt(p.value).serialize();
             break;
         case ParameterType.Long:
-            o = {
-                type: 'int64',
-                value: p.getValue()
-            };
+            result += I128FromBigInt(new BigInt(p.value)).serialize();
             break;
-        case ParameterType.IntArray:
-            o = {
-                type: 'int_array',
-                value: p.getValue()
-            };
+        case ParameterType.ByteArray:
+            result += writeVarBytes(p.value);
             break;
-        case ParameterType.LongArray:
-            o = {
-                type: 'int_array',
-                value: p.getValue()
-            };
+        case ParameterType.Address:
+            result += writeAddress(p.value);
             break;
+        case ParameterType.Boolean:
+            result += writeBool(p.value);
+            break;
+        case ParameterType.Array:
+            result += writeVarUint(p.value.length);
+            result += buildWasmContractParam(p.value);
         default:
-            break;
+            throw new Error(`Not a supported type: ${p.type}`);
         }
-        pList.push(o);
     }
 
-    const result = {
-        Params: pList
-    };
-    return str2hexstr(JSON.stringify(result));
-};
+    return result;
+}
+
+export function writeUint16(data: number): string {
+    return num2hexstring(data, 2, true);
+}
+
+export function writeUint32(data: number): string {
+    return num2hexstring(data, 4, true);
+}
+
+export function writeUint64(data: number): string {
+    return num2hexstring(data, 8, true);
+}
+
+// data is hexstring;
+export function writeVarBytes(data: string): string {
+    if (!isHexString(data)) {
+        throw new Error('[writeVarBytes] The param is not hex string.');
+    }
+    let result = '';
+    result += num2VarInt(data.length / 2);
+    result += data;
+    return result;
+}
+
+export function writeString(data: string): string {
+    return writeVarBytes(str2hexstr(data));
+}
+
+export function writeAddress(data: Address): string {
+    return data.serialize();
+}
+
+export function writeI128(data: I128): string {
+    return data.serialize();
+}
+
+export function writeBool(data: boolean): string {
+    if (data) {
+        return '01';
+    } else {
+        return '00';
+    }
+}
+
+export function writeVarUint(data: number): string {
+    const buf = [];
+    if (data < 0xFD) {
+        buf[0] = data;
+    } else if (data <= 0xFFFF) {
+        buf[0] = 0xFD;
+        putLittleEndianUint(buf, 1, 2, data);
+    } else if (data <= 0xFFFFFFFF) {
+        buf[0] = 0xFE;
+        putLittleEndianUint(buf, 1, 4, data);
+    } else {
+        buf[0] = 0xFF;
+        putLittleEndianUint(buf, 1, 8, data);
+    }
+    return ab2hexstring(buf);
+}
+
+function putLittleEndianUint(buf: number[], start: number, size: number, data: number) {
+    buf[start] = data;
+    for (let i = start + 1; i <= size; i++) {
+        data = data >> (8 * (i - 1));
+        buf[i] = data & 0xFF;
+    }
+}

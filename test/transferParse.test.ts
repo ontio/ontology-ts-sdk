@@ -1,17 +1,14 @@
-import { PublicKey } from './../src/crypto/PublicKey';
-import { WebsocketClient } from './../src/network/websocket/websocketClient';
-import { Transaction } from './../src/transaction/transaction';
-import { PrivateKey } from './../src/crypto/PrivateKey';
+import { Signature } from '../src/crypto';
 import { Address } from '../src/crypto/address';
 import { deserializeTransferTx,
     makeTransferTx, makeWithdrawOngTx } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import opcode from '../src/transaction/opcode';
-import { pushHexString, pushInt } from '../src/transaction/scriptBuilder';
+import { addSign, signTransaction } from '../src/transaction/transactionBuilder';
 import { num2hexstring, str2hexstr, StringReader } from '../src/utils';
-import { signTransaction, addSign } from '../src/transaction/transactionBuilder';
-import { Signature } from '../src/crypto';
-
-
+import { PrivateKey } from './../src/crypto/PrivateKey';
+import { PublicKey } from './../src/crypto/PublicKey';
+import { WebsocketClient } from './../src/network/websocket/websocketClient';
+import { Transaction } from './../src/transaction/transaction';
 
 describe('parse transfer tx', () => {
     const from = new Address('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
@@ -72,11 +69,11 @@ describe('parse transfer tx', () => {
         const address1 = new Address('AQf4Mzu1YJrhz9f3aRkkwSm9n3qhXGSh4p');
         const address2 = new Address('AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX');
 
-        //make tx
+        // make tx
         const tx = makeTransferTx('ONT', address1, address2, 1, '500', '20000', address1);
         signTransaction(tx, private2);
         const txStr = tx.serialize();
-        //deserialize tx
+        // deserialize tx
         const txObj = Transaction.deserialize(txStr);
         console.log(txObj.sigs);
         for (const sig of txObj.sigs) {
@@ -91,16 +88,16 @@ describe('parse transfer tx', () => {
                 }
             }
         }
-        //add sig
+        // add sig
         addSign(tx, private1);
 
-        //send tx
+        // send tx
         const socketClient = new WebsocketClient();
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
     }, 5000);
 
-    test('hex', ()=>{
+    test('hex', () => {
         const res = Buffer.from('AZ+qwfuOR6zlBfXbYr4N/TKzjUMKExB0bZsSN1MaDGR+aMpmwpDOYiMefCdDMVQzKkvy05+cW4EJmBycFuB/FdI=', 'base64').toString('hex');
         console.log(res);
     });
@@ -116,6 +113,6 @@ describe('parse transfer tx', () => {
         const sig = Signature.deserializeHex(sigData);
         const res = pk.verify('505c316ac990aaab268ce5f402a02198a686531d2af5d1eace055ed2d21a9962', sig);
         console.log('veeify: ' + res);
-    })
+    });
 
 });

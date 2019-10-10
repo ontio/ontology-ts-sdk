@@ -9,10 +9,10 @@ import { Parameter } from '../src/smartcontract/abi/parameter';
 import { getAttributes, getAuthorizeInfo, getGlobalParam, getGovernanceView,
     getPeerPoolMap, getPeerUnboundOng, getSplitFeeAddress, getTotalStake,
     makeAuthorizeForPeerTx, makeChangeAuthorizationTx, makeSetPeerCostTx,
-    makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawTx, makeWithdrawPeerUnboundOngTx
+    makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
 import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
-import { reverseHex, StringReader, calcUnboundOng } from '../src/utils';
+import { calcUnboundOng, reverseHex, StringReader } from '../src/utils';
 import { Key } from './../src/crypto/Key';
 
 describe('test governance authorization', () => {
@@ -37,8 +37,7 @@ describe('test governance authorization', () => {
         address: 'ANYR5cPbKfSeHJXHrK1fP6q5uzqXsg1MmF',
         addrPass: '123456'
     };
-    const stake2Account = { "address": "ANYR5cPbKfSeHJXHrK1fP6q5uzqXsg1MmF", "label": "qqqq", "lock": false, "algorithm": "ECDSA", "parameters": { "curve": "P-256" }, "key": "CjO1FcDRCq/aT7kcWZAsv3mOLxtDnJ+enFdLHKhLLLHI8JK9ivuL2e1RXfSWy0gZ", "enc-alg": "aes-256-gcm", "salt": "pztdtlWov/o2GKH4SSU3nQ==", "isDefault": true, "publicKey": "02f4c0a18ae38a65b070820e3e51583fd3aea06fee2dc4c03328e4b4115c622567", "signatureScheme": "SHA256withECDSA" };
-
+    const stake2Account = { 'address': 'ANYR5cPbKfSeHJXHrK1fP6q5uzqXsg1MmF', 'label': 'qqqq', 'lock': false, 'algorithm': 'ECDSA', 'parameters': { curve: 'P-256' }, 'key': 'CjO1FcDRCq/aT7kcWZAsv3mOLxtDnJ+enFdLHKhLLLHI8JK9ivuL2e1RXfSWy0gZ', 'enc-alg': 'aes-256-gcm', 'salt': 'pztdtlWov/o2GKH4SSU3nQ==', 'isDefault': true, 'publicKey': '02f4c0a18ae38a65b070820e3e51583fd3aea06fee2dc4c03328e4b4115c622567', 'signatureScheme': 'SHA256withECDSA' };
 
     const account1 = { 'address': 'AaMHKcpRUuFbhDtrc2raf6K2629LkLWEfL', 'label': 'testHex64', 'lock': false, 'algorithm': 'ECDSA', 'parameters': { curve: 'P-256' }, 'key': 'FCmwz1ukdUkhqnJThCYAgxf6Xx2oZ/PSBPi/wl4w32IR+RMrMzwDrIGNbNBhnd1c', 'enc-alg': 'aes-256-gcm', 'salt': 'ku63qE/TwEAlEyTxJTSHkg==', 'isDefault': true, 'publicKey': '02301589d59d6b78ca23dcc0f674a5210a4745d8e42d5b42ee1c4e720d3e05f4b3', 'signatureScheme': 'SHA256withECDSA' };
     const account2 = { 'address': 'ATfw74wvyQGSxbA7EZNXYN9wj74GNnTtXT', 'label': '托尔斯泰', 'lock': false, 'algorithm': 'ECDSA', 'parameters': { curve: 'P-256' }, 'key': '6B1j4kkclNgJMBYiYJ74Ogh0PJ4f7UA8alAVk58kkotMC7u/VVjKJ9159RMO/C9Y', 'enc-alg': 'aes-256-gcm', 'salt': 'rhZrBuUgGM5iMGX/nmuz+Q==', 'isDefault': true, 'publicKey': '02815af6fc10ec59ac387287265d6a9cb963b8c6fb446ae4ba3e00eb479d83a6c8', 'signatureScheme': 'SHA256withECDSA' };

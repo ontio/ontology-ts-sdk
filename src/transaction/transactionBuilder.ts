@@ -33,11 +33,12 @@ import opcode from './opcode';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import { comparePublicKeys } from './program';
-import { createCodeParamsScript, serializeAbiFunction } from './scriptBuilder';
+import { buildWasmContractParam, createCodeParamsScript, serializeAbiFunction, writeVarBytes } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 
 import { makeTransferTx } from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
+import { VmType } from './payload/deployCode';
 import { TxSignature } from './txSignature';
 
 // tslint:disable-next-line:variable-name
@@ -201,6 +202,53 @@ export const makeInvokeTransaction = (
     return tx;
 };
 
+export function buildWasmVmInvokeCode(contractaddress: Address, params: Parameter[]): string {
+    let result = '';
+    result += contractaddress.serialize();
+    const args = buildWasmContractParam(params);
+    result += writeVarBytes(args);
+    return result;
+}
+
+/**
+ * Creates transaction to inovke wasm vm smart contract
+ * @param funcName Function name of smart contract
+ * @param params Array of Parameters or serialized parameters
+ * @param contractAddress Address of contract
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Address to pay for gas
+ */
+export function makeWasmVmInvokeTransaction(
+    funcName: string,
+    params: Parameter[],
+    contractAddress: Address,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
+    const tx = new Transaction();
+    tx.type = TxType.InvokeWasm;
+
+    const paramFunc = new Parameter('method', ParameterType.String, funcName);
+    const paramsAll = [paramFunc, ...params];
+    const code = buildWasmVmInvokeCode(contractAddress, paramsAll);
+    const payload = new InvokeCode();
+    payload.code = code;
+    tx.payload = payload;
+
+    if (gasLimit) {
+        tx.gasLimit = new Fixed64(gasLimit);
+    }
+    if (gasPrice) {
+        tx.gasPrice = new Fixed64(gasPrice);
+    }
+    if (payer) {
+        tx.payer = payer;
+    }
+    return tx;
+}
+
 /**
  * Creates transaction to deploy smart contract
  * @param code Avm code of contract to deploy
@@ -209,7 +257,7 @@ export const makeInvokeTransaction = (
  * @param author Author of contract
  * @param email Email of author
  * @param desp Description of contract
- * @param needStorage Decides if the contract needs storage
+ * @param vmType Decides the vm type
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Address to pay for gas
@@ -220,7 +268,7 @@ export function makeDeployCodeTransaction(
     codeVersion: string= '1.0',
     author: string= '',
     email: string= '',
-    desp: string= '', needStorage: boolean= true, gasPrice: string, gasLimit: string, payer?: Address) {
+    desp: string= '', vmType: VmType | boolean, gasPrice: string, gasLimit: string, payer?: Address) {
     const dc = new DeployCode();
     dc.author = author;
     // const vmCode = new VmCode();
@@ -232,7 +280,11 @@ export function makeDeployCodeTransaction(
     dc.description = desp;
     dc.email = email;
     dc.name = name;
-    dc.needStorage = needStorage;
+    if (typeof vmType === 'boolean') { // to be compatible with old api
+        dc.vmType = VmType.NEOVM_TYPE;
+    } else {
+        dc.vmType = vmType;
+    }
 
     const tx = new Transaction();
     tx.version = 0x00;

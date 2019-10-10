@@ -56,10 +56,10 @@ export function ab2hexstring(arr: any): string {
     return result;
 }
 
- /**
-  * Turn ArrayBuffer or array-like oject into normal string
-  * @param buf
-  */
+/**
+ * Turn ArrayBuffer or array-like oject into normal string
+ * @param buf
+ */
 export function ab2str(buf: ArrayBuffer | number[]): string {
     return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
@@ -288,7 +288,7 @@ export class StringReader {
     }
 
     unreadBytes(bytes: number) {
-        if ( (this.pos - bytes * 2) < 0 ) {
+        if ((this.pos - bytes * 2) < 0) {
             throw new Error('Can not unread too many bytes.');
         }
         this.pos -= bytes * 2;
@@ -307,6 +307,10 @@ export class StringReader {
         const out = this.str.substring(this.pos, index);
         this.pos = index + 2;
         return out;
+    }
+
+    readNextByte() {
+        return this.read(1);
     }
 
     /**
@@ -339,6 +343,10 @@ export class StringReader {
         return len;
     }
 
+    readVarUint() {
+        return this.readNextLen();
+    }
+
     /**
      * Read Uint8
      */
@@ -358,6 +366,13 @@ export class StringReader {
      */
     readUint32() {
         return parseInt(reverseHex(this.read(4)), 16);
+    }
+
+    /**
+     * Read 8 bytes as uint64 in littleEndian
+     */
+    readUint64() {
+        return parseInt(reverseHex(this.read(8)), 16);
     }
 
     /**
@@ -518,7 +533,7 @@ export function unboundDeadline() {
     count *= UNBOUND_TIME_INTERVAL;
     const numInterval = UNBOUND_GENERATION_AMOUNT.length;
     if (UNBOUND_GENERATION_AMOUNT[numInterval - 1] !== 1 ||
-        ! ((count - UNBOUND_TIME_INTERVAL < ONT_TOTAL_SUPPLY) && ONT_TOTAL_SUPPLY <= count)) {
+        !((count - UNBOUND_TIME_INTERVAL < ONT_TOTAL_SUPPLY) && ONT_TOTAL_SUPPLY <= count)) {
         throw new Error('incompatible constants setting');
     }
     return UNBOUND_TIME_INTERVAL * numInterval - (count - ONT_TOTAL_SUPPLY);

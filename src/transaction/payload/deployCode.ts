@@ -16,13 +16,18 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import {
-    bool2VarByte,
     hex2VarBytes,
     hexstr2str,
     str2VarBytes,
     StringReader
 } from '../../utils';
+import { num2hexstring } from './../../utils';
 import Payload from './payload';
+
+export enum VmType  {
+    NEOVM_TYPE = 1,
+    WASMVM_TYPE = 3
+}
 
 /**
  * Describes the payload of deploy code
@@ -34,9 +39,11 @@ export default class DeployCode extends Payload {
     code: string;
 
     /**
-     * Decides if the contract need storage
+     * Decides if the contract need storage(Deprecated)
+     * Change to VmType to support wasm vm
      */
-    needStorage: boolean;
+    // needStorage: boolean;
+    vmType: VmType;
     /**
      * Name of the smart contract
      */
@@ -67,7 +74,7 @@ export default class DeployCode extends Payload {
         // result += this.code.serialize();
         result += hex2VarBytes(this.code);
 
-        result += bool2VarByte(this.needStorage);
+        result += num2hexstring(this.vmType);
 
         result += str2VarBytes(this.name);
 
@@ -92,8 +99,8 @@ export default class DeployCode extends Payload {
         const code = sr.readNextBytes();
         this.code = code;
 
-        const boolValue = sr.read(1);
-        this.needStorage = boolValue === '00' ? false : true;
+        const type = sr.readUint8();
+        this.vmType = type;
 
         const name = sr.readNextBytes();
         this.name = hexstr2str(name);

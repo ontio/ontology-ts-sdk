@@ -13,7 +13,6 @@ describe('test sign and verify with ECDSAwithSHA256', () => {
         console.log('hex: ' + signature.serializeHex());
         console.log('pk: ' + pri.getPublicKey().key);
 
-
         const pub = pri.getPublicKey();
         const result = pub.verify(msg, signature);
         expect(result).toBeTruthy();
@@ -44,11 +43,11 @@ describe('test sign and verify with ECDSAwithSHA256', () => {
 
         console.log('did: ' + ontid4);
         const req = {
-            'timestamp': 1535336885,
-            'ontId': address,
-            'nonce': 45348391,
-            'deviceCode': 'deviceCOde',
-            'sig': ''
+            timestamp: 1535336885,
+            ontId: address,
+            nonce: 45348391,
+            deviceCode: 'deviceCOde',
+            sig: ''
         };
         const msg = 'deviceCode=' + req.deviceCode + '&nonce=' + req.nonce +
         '&ontId=' + req.ontId + '&timestamp=' + req.timestamp;
@@ -56,5 +55,5 @@ describe('test sign and verify with ECDSAwithSHA256', () => {
         const sig = pri4.sign(hexMsg).serializeHex();
         req.sig = sig;
         console.log(req);
-    })
+    });
 });

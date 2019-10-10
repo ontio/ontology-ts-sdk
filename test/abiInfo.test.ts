@@ -54,12 +54,13 @@ describe('test AbiInfo', () => {
 
     });
 
-	   test('test getFunction throws error if not found', () => {
-       expect(() => a.getFunction('not_a_function')).toThrowError('not found');
-   });
+    // tslint:disable-next-line:indent
+    test('test getFunction throws error if not found', () => {
+        expect(() => a.getFunction('not_a_function')).toThrowError('not found');
+    });
 
     test('test make invokecode tx', () => {
-        tx = makeInvokeTransaction( f.name, f.parameters, new Address(a.getHash()), '0');
+        tx = makeInvokeTransaction(f.name, f.parameters, new Address(a.getHash()), '0');
         // tslint:disable-next-line:no-console
         console.log(tx);
 

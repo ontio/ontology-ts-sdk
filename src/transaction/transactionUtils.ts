@@ -5,7 +5,8 @@ import { Address } from '../crypto';
 import { num2hexstring, str2hexstr } from '../utils';
 import OPCODE from './opcode';
 import InvokeCode from './payload/invokeCode';
-import { pushHexString, pushInt } from './scriptBuilder';
+import { pushHexString } from './program';
+import { pushInt } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 import { Transfer } from './transfer';
 

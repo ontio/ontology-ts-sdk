@@ -227,7 +227,6 @@ describe('test oep8', () => {
         expect(res.Result.State).toEqual(1);
     });
 
-
     test('test_compound', async () => {
         const tx = oep8.makeCompoundTx(address1, 100000, gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
