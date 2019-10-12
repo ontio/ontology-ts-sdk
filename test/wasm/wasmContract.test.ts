@@ -1,3 +1,4 @@
+import { reverseHex } from './../../src/utils';
 import { RestClient } from '../../src';
 import { PrivateKey } from '../../src/crypto';
 import {
@@ -40,7 +41,8 @@ describe('test deploy contract', () => {
         // tslint:disable:no-console
         console.log('contract address: ' + contract.serialize());
         console.log('codeHash: ' + codeHash);
-        const result = await restClient.getContract(codeHash);
+        const rest = new RestClient('http://13.57.184.209:20334');
+        const result = await rest.getContract('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
         console.log(result);
         expect(result.Result).toBeTruthy();
     }, 10000);
@@ -125,4 +127,46 @@ describe('test deploy contract', () => {
         console.log(result);
         expect(result.Error).toEqual(0);
     }, 10000);
+
+    test('balanceOf', async () => {
+        const contractAddress = new Address(reverseHex('44d451cb5ef516eac96c5a1bd32b51f1385e4931'));
+        const params = [
+            // tslint:disable-next-line:max-line-length
+            // wasm 合约Address类型的值不能传对应ByteArray的值
+            new Parameter('param1', ParameterType.Address, new Address('AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ')
+        ];
+        const tx = makeWasmVmInvokeTransaction('balanceOf', params, contractAddress,
+            '500', '20000', account.address);
+        console.log(tx.payload.serialize());
+        signTransaction(tx, privateKey);
+        const wsClient = new WebsocketClient('ws://13.57.184.209:20335');
+        const result = await wsClient.sendRawTransaction(tx.serialize(), true);
+        console.log(result);
+        console.log(hexstr2str(result.Result.Result));
+        expect(result.Error).toEqual(0);
+    }, 10000);
+
+    test('transfer', async () => {
+        const contractAddress = new Address(reverseHex('44d451cb5ef516eac96c5a1bd32b51f1385e4931'));
+        const params = [
+            new Parameter('param1', ParameterType.Address, new Address('AJkkLbouowk6teTaxz1F2DYKfJh24PVk3r')),
+            new Parameter('param1', ParameterType.Address, new Address('AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ')),
+            new Parameter('param1', ParameterType.Integer, 10)
+        ];
+        const tx = makeWasmVmInvokeTransaction('transfer', params, contractAddress,
+            '500', '300000', account.address);
+        console.log(tx.payload.serialize());
+        signTransaction(tx, privateKey);
+        const wsClient = new WebsocketClient('ws://13.57.184.209:20335');
+        const result = await wsClient.sendRawTransaction(tx.serialize(), false);
+        console.log(JSON.stringify(result));
+        console.log(hexstr2str(result.Result.Result));
+        expect(result.Error).toEqual(0);
+    }, 10000);
+    test('smartCodeEvent', async () => {
+        const rest = new RestClient('http://13.57.184.209:20334');
+        const res = await rest.getSmartCodeEvent('2ccffa83b4444803ac884900c5882cfc6a4e1fe239c0be8732332856133eeccb');
+        console.log(res);
+        expect(res.Result).toBeTruthy();
+    });
 });

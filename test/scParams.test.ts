@@ -15,7 +15,7 @@ describe('test smarct contract params', () => {
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93');
     const account = Account.create(privateKey, '123456', 'test');
     console.log(account.address.serialize());
-    test('test params Array', async () => {
+    test('test_params_Array', async () => {
         const contract = reverseHex('ab01641c418af066402075c78dc8cb8279a7c074');
         const contractAddr = new Address(contract);
         const method = 'testHello';
@@ -26,7 +26,8 @@ describe('test smarct contract params', () => {
                 [
                     new Parameter('arg1', ParameterType.Boolean, false),
                     new Parameter('arg2', ParameterType.Integer, 3),
-                    new Parameter('arg3', ParameterType.ByteArray, account.address.serialize()),
+                    // new Parameter('arg3', ParameterType.ByteArray, account.address.serialize()),
+                    new Parameter('arg3', ParameterType.Address, account.address),
                     new Parameter('arg4', ParameterType.String, 'arg4')
                 ]
             )

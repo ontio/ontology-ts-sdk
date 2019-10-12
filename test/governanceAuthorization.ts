@@ -162,10 +162,10 @@ describe('test governance authorization', () => {
 
     test('getAuthorizeInfo', async () => {
         // const pk = stake2.peerPubkey;
-        const pk = '030a34dcb075d144df1f65757b85acaf053395bb47b019970607d2d1cdd222525c';
+        const pk = '02e172320fd25ffffc25a3580cd3dc8b3be921ae5b8973530f939acfdd3c250ca3';
         // const userAddr = new Address(account4.address);
-        const userAddr = new Address('AZBNZLy6KyxVWjSsZk5NBHgG4yQP7KQ2QP');
-        const nodeUrl = 'http://polaris1.ont.io:20334';
+        const userAddr = new Address('Ady2XfVZGPp1K2ZuTtx6GJmPADxkChyUDh');
+        const nodeUrl = 'http://dappnode1.ont.io:20334';
         const res = await getAuthorizeInfo(pk, userAddr, nodeUrl);
         console.log(res);
     }, 10000);
@@ -187,8 +187,8 @@ describe('test governance authorization', () => {
     }, 1000);
 
     test('getTotalStake', async () => {
-        const addr = new Address(stake2.address);
-        const nodeUrl = 'http://polaris1.ont.io:20334';
+        const addr = new Address('Ady2XfVZGPp1K2ZuTtx6GJmPADxkChyUDh');
+        const nodeUrl = 'http://dappnode1.ont.io:20334';
         const ts = await getTotalStake(addr, nodeUrl);
         console.log(ts);
     });

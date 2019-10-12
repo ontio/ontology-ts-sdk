@@ -140,6 +140,8 @@ export const pushParam = (p: any, ledgerCompatible: boolean) => {
     let result = '';
     if (p.type === ParameterType.ByteArray) {
         result += pushHexString(p.value);
+    } else if (p.type === ParameterType.Address) {
+        result += pushHexString(p.value.serialize());
     } else if (p.type === ParameterType.String) {
         result += pushHexString(str2hexstr(p.value));
     } else if (p.type === ParameterType.Boolean) {
@@ -181,6 +183,8 @@ export const serializeAbiFunction = (abiFunction: AbiFunction, ledgerCompatible:
             tmp.push(new BigNumber(p.getValue()));
         } else if (p.getType() === ParameterType.Map) {
             tmp.push(convertMap(p));
+        } else if (p.getType() === ParameterType.Address) {
+            tmp.push(p.getValue().serialize());
         } else {
             tmp.push(p.getValue());
         }
@@ -203,6 +207,8 @@ export function convertArray(list: Parameter[]): any {
             tmp.push(convertArray(p.value));
         } else if (p.getType && p.getType() === ParameterType.Map) {
             tmp.push(convertMap(p));
+        } else if (p.getType && p.getType() === ParameterType.Address) {
+            tmp.push(p.getValue().serialize());
         } else {
             tmp.push(p.getValue ? p.getValue() : p);
         }
