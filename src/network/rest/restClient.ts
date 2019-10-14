@@ -356,7 +356,7 @@ export default class RestClient {
         });
     }
 
-    getGrangOng(address: Address): Promise<any> {
+    getGrantOng(address: Address): Promise<any> {
         const url = this.url + UrlConsts.Url_get_grant_ong + address.toBase58();
         return axios.get(url).then((res) => {
             return res.data;

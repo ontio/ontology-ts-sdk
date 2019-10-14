@@ -160,13 +160,15 @@ describe('test deploy contract', () => {
         const wsClient = new WebsocketClient('ws://13.57.184.209:20335');
         const result = await wsClient.sendRawTransaction(tx.serialize(), false);
         console.log(JSON.stringify(result));
-        console.log(hexstr2str(result.Result.Result));
+        if (result.Result && result.Result.Result) {
+            console.log(hexstr2str(result.Result.Result));
+        }
         expect(result.Error).toEqual(0);
     }, 10000);
     test('smartCodeEvent', async () => {
         const rest = new RestClient('http://13.57.184.209:20334');
-        const res = await rest.getSmartCodeEvent('2ccffa83b4444803ac884900c5882cfc6a4e1fe239c0be8732332856133eeccb');
-        console.log(res);
+        const res = await rest.getSmartCodeEvent('e798e6299059a6a7f362a0ea90b62f997befb8d1bc1e626ce5996095be4fc2bf');
+        console.log(JSON.stringify(res));
         expect(res.Result).toBeTruthy();
     });
 });
