@@ -173,8 +173,7 @@ export function I128FromBigInt(val: BigInt) {
         throw new Error('The value is out of I128 range');
     }
     const buf = val.toHexstr();
-    const bufR = reverseHex(buf);
-    const bufRArray = hexstring2ab(bufR);
+    const bufRArray = hexstring2ab(buf);
     const i128 = new I128();
     const value = new Array(I128_SIZE).fill(0);
     for (let i = 0; i < bufRArray.length; i++) {

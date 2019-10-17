@@ -232,7 +232,7 @@ describe('test smarct contract params', () => {
 
         ];
 
-        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr);
+        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr, '500', '20000', null, false);
         const rest = new RestClient();
         const res = await rest.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
