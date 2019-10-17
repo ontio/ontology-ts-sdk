@@ -232,10 +232,43 @@ describe('test smarct contract params', () => {
 
         ];
 
-        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr);
+        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr, '500', '20000', null, false);
         const rest = new RestClient();
         const res = await rest.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
     }, 10000);
 
+    test('PutItem', async () => {
+        const contract = reverseHex('033e526d9dd78b2e2b4199174fb95d2eb9222b0b');
+        const contractAddr = new Address(contract);
+
+        const params = [
+            new Parameter('', ParameterType.String, 'hello'),
+            new Parameter('', ParameterType.String, 'world')
+
+        ];
+
+        const tx = makeInvokeTransaction('PutItem', params, contractAddr, '500', '20000', account.address);
+        signTransaction(tx, privateKey);
+        const socket = new WebsocketClient('ws://13.57.184.209:20335');
+        const res = await socket.sendRawTransaction(tx.serialize(), false, true);
+        console.log(JSON.stringify(res));
+    }, 10000);
+
+    test('balanceOf', async () => {
+        const contract = reverseHex('5dcca7e97fa4bb2fa7fca183a7dd251ec011f5cd');
+        const contractAddr = new Address(contract);
+
+        const params = [
+            new Parameter('', ParameterType.Address, new Address('AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ'))
+
+        ];
+
+        const tx = makeInvokeTransaction('balanceOf', params, contractAddr, '500', '20000', account.address);
+        console.log(tx.payload.code);
+        signTransaction(tx, privateKey);
+        const socket = new WebsocketClient('ws://13.57.184.209:20335');
+        const res = await socket.sendRawTransaction(tx.serialize(), true);
+        console.log(JSON.stringify(res));
+    }, 10000);
 });

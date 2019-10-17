@@ -1,15 +1,17 @@
-import { reverseHex } from './../../src/utils';
 import { RestClient } from '../../src';
+import BigInt from '../../src/common/bigInt';
 import { PrivateKey } from '../../src/crypto';
 import {
     makeDeployCodeTransaction, makeWasmVmInvokeTransaction, signTransaction
 } from '../../src/transaction/transactionBuilder';
 import { hexstr2str } from '../../src/utils';
 import { Account } from './../../src/account';
+import { I128, I128FromBigInt, I128FromInt } from './../../src/common/int128';
 import { Address } from './../../src/crypto/address';
 import { WebsocketClient } from './../../src/network/websocket/websocketClient';
 import { Parameter, ParameterType } from './../../src/smartcontract/abi/parameter';
 import { VmType } from './../../src/transaction/payload/deployCode';
+import { reverseHex } from './../../src/utils';
 // tslint:disable-next-line:no-var-requires
 const fs = require('fs');
 
@@ -151,7 +153,7 @@ describe('test deploy contract', () => {
         const params = [
             new Parameter('param1', ParameterType.Address, new Address('AJkkLbouowk6teTaxz1F2DYKfJh24PVk3r')),
             new Parameter('param1', ParameterType.Address, new Address('AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ')),
-            new Parameter('param1', ParameterType.Integer, 10)
+            new Parameter('param1', ParameterType.Long, '10')
         ];
         const tx = makeWasmVmInvokeTransaction('transfer', params, contractAddress,
             '500', '300000', account.address);
@@ -160,13 +162,20 @@ describe('test deploy contract', () => {
         const wsClient = new WebsocketClient('ws://13.57.184.209:20335');
         const result = await wsClient.sendRawTransaction(tx.serialize(), false);
         console.log(JSON.stringify(result));
-        console.log(hexstr2str(result.Result.Result));
+        if (result.Result && result.Result.Result) {
+            console.log(hexstr2str(result.Result.Result));
+        }
         expect(result.Error).toEqual(0);
     }, 10000);
     test('smartCodeEvent', async () => {
         const rest = new RestClient('http://13.57.184.209:20334');
-        const res = await rest.getSmartCodeEvent('2ccffa83b4444803ac884900c5882cfc6a4e1fe239c0be8732332856133eeccb');
-        console.log(res);
+        const res = await rest.getSmartCodeEvent('377617131b99c4472e174e53b939234df278a23e705cfafacce5702dcd0f2c4e');
+        console.log(JSON.stringify(res));
         expect(res.Result).toBeTruthy();
+    });
+    test('i128', async () => {
+        const i128 = I128FromBigInt(new BigInt('9007199254740993'));
+        console.log(i128.serialize());
+        expect(i128.serialize()).toEqual('01000000000020000000000000000000');
     });
 });

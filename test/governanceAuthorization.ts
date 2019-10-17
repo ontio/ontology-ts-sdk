@@ -187,7 +187,7 @@ describe('test governance authorization', () => {
     }, 1000);
 
     test('getTotalStake', async () => {
-        const addr = new Address('Ady2XfVZGPp1K2ZuTtx6GJmPADxkChyUDh');
+        const addr = new Address('AKuiqSoKR2UVRPCBofsrmudF1CdZw4Y8mm');
         const nodeUrl = 'http://dappnode1.ont.io:20334';
         const ts = await getTotalStake(addr, nodeUrl);
         console.log(ts);
