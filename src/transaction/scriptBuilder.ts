@@ -371,6 +371,7 @@ export function buildWasmContractParam(params: Parameter[]): string {
         case ParameterType.Array:
             result += writeVarUint(p.value.length);
             result += buildWasmContractParam(p.value);
+            break;
         default:
             throw new Error(`Not a supported type: ${p.type}`);
         }
