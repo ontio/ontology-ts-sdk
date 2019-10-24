@@ -1,6 +1,6 @@
 {
     "name": "ontology-ts-sdk",
-    "version": "1.0.25",
+    "version": "1.0.26",
     "description": "Comprehensive TypeScript library for the Ontology blockchain.",
     "main": "./lib/index.js",
     "types": "./lib/types/index.d.ts",
