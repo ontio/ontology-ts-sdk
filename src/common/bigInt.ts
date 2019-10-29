@@ -19,7 +19,7 @@
 import { BigNumber } from 'bignumber.js';
 import * as Long from 'long';
 import { ERROR_CODE } from './../error';
-import { bigIntToBytes, reverseHex } from './../utils';
+import { bigIntFromBytes, bigIntToBytes } from './../utils';
 
 const SIZE = 8;
 /**
@@ -31,9 +31,11 @@ export default class BigInt {
      * @param hex Byte string value
      */
     static fromHexstr(hex: string): BigInt {
-        hex = reverseHex(hex);
-        const bi = new BigNumber(hex, 16).toString();
-        return new BigInt(bi);
+        // hex = reverseHex(hex);
+        // const bi = new BigNumber(hex, 16).toString();
+        // return new BigInt(bi);
+        const long = bigIntFromBytes(hex);
+        return new BigInt(long.toString());
     }
 
     value: string | number;
@@ -41,8 +43,8 @@ export default class BigInt {
 
     constructor(value: string | number, ledgerCompatible: boolean = true) {
         const bi = new BigNumber(value);
-        if (!bi.isInteger() || bi.isNegative()) {
-            throw ERROR_CODE.INVALID_PARAMS;
+        if (!bi.isInteger()) {
+            throw new Error(String(ERROR_CODE.INVALID_PARAMS));
         }
         this.value = value;
         this.ledgerCompatible = ledgerCompatible;

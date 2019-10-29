@@ -63,26 +63,6 @@ export class I128 {
         return hex;
     }
 
-    putInt(val: number) {
-        const value = new Array(I128_SIZE).fill(0);
-        value[0] = val & 0xFF;
-        val = val >> 8;
-        value[1] = val & 0xFF;
-        val = val >> 8;
-        value[2] = val & 0xFF;
-        val = val >> 8;
-        value[3] = val & 0xFF;
-        val = val >> 8;
-        value[4] = val & 0xFF;
-        val = val >> 8;
-        value[5] = val & 0xFF;
-        val = val >> 8;
-        value[6] = val & 0xFF;
-        val = val >> 8;
-        value[7] = val & 0xFF;
-        this.value = value;
-    }
-
 }
 
 // little endian u128
@@ -149,8 +129,10 @@ export function oneBits128() {
 }
 
 export function bigPow(a: number, b: number): BigNumber {
-    return new BigNumber(Math.pow(a, b).toString());
+    return new BigNumber(a).pow(b);
 }
+
+export const pow128 = bigPow(2, 128);
 
 export const maxBigU128 = bigPow(2, 128).minus(1);
 
@@ -159,21 +141,29 @@ export const maxI128 = bigPow(2, 127).minus(1);
 export const minI128 = bigPow(2, 127).negated();
 
 export function I128FromInt(val: number) {
+    let i128 = new I128();
     if (val < 0) {
-        return oneBits128();
+        i128 = oneBits128();
     }
-    const i128 = new I128();
-    i128.putInt(val);
+    putUint64(i128.value, val);
     return i128;
 }
 
-export function I128FromBigInt(val: BigInt) {
-    const valB = new BigNumber(val.value);
-    if (valB.isGreaterThan(maxI128) || valB.isLessThan(minI128)) {
+export function I128FromBigInt(val: string) {
+    let valBN = new BigNumber(val);
+    if (valBN.isGreaterThan(maxI128) || valBN.isLessThan(minI128)) {
         throw new Error('The value is out of I128 range');
     }
-    const buf = val.toHexstr();
-    const bufRArray = hexstring2ab(buf);
+
+    if (valBN.isLessThan(0)) {
+        valBN = valBN.plus(pow128);
+    }
+    const size = I128_SIZE * 2;
+    let hexstring = valBN.toString(16);
+    hexstring = hexstring.length % size === 0 ? hexstring : ('0'.repeat(size) + hexstring).substring(hexstring.length);
+    hexstring = reverseHex(hexstring);
+    const bufRArray = hexstring2ab(hexstring);
+
     const i128 = new I128();
     const value = new Array(I128_SIZE).fill(0);
     for (let i = 0; i < bufRArray.length; i++) {
@@ -181,4 +171,22 @@ export function I128FromBigInt(val: BigInt) {
     }
     i128.value = value;
     return i128;
+}
+
+export function putUint64(value: number[], val: number) {
+    value[0] = val & 0xFF;
+    val = val >> 8;
+    value[1] = val & 0xFF;
+    val = val >> 8;
+    value[2] = val & 0xFF;
+    val = val >> 8;
+    value[3] = val & 0xFF;
+    val = val >> 8;
+    value[4] = val & 0xFF;
+    val = val >> 8;
+    value[5] = val & 0xFF;
+    val = val >> 8;
+    value[6] = val & 0xFF;
+    val = val >> 8;
+    value[7] = val & 0xFF;
 }

@@ -6,7 +6,7 @@ import {
 } from '../../src/transaction/transactionBuilder';
 import { hexstr2str } from '../../src/utils';
 import { Account } from './../../src/account';
-import { I128, I128FromBigInt, I128FromInt } from './../../src/common/int128';
+import { I128, I128FromBigInt, I128FromInt, maxBigU128, maxI128, minI128 } from './../../src/common/int128';
 import { Address } from './../../src/crypto/address';
 import { WebsocketClient } from './../../src/network/websocket/websocketClient';
 import { Parameter, ParameterType } from './../../src/smartcontract/abi/parameter';
@@ -22,8 +22,8 @@ describe('test deploy contract', () => {
     console.log(account.address.toBase58());
 
     const contractCode = fs.readFileSync(__dirname + '/helloworld.wasm').toString('hex');
-    const restClient = new RestClient('http://127.0.0.1:20334');
-    const wsClient = new WebsocketClient('http://127.0.0.1:20335');
+    const restClient = new RestClient();
+    const wsClient = new WebsocketClient();
 
     test('deployWasmContract', async () => {
 
@@ -52,7 +52,9 @@ describe('test deploy contract', () => {
     test('invokeAdd', async () => {
         const contractAddress = new Address('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
         const params = [
-            new Parameter('param1', ParameterType.Integer, 1),
+            // new Parameter('param1', ParameterType.Long, '-1'),
+            // new Parameter('param2', ParameterType.Long, '2')
+            new Parameter('param1', ParameterType.Integer, -1),
             new Parameter('param2', ParameterType.Integer, 2)
         ];
         const tx = makeWasmVmInvokeTransaction('add', params, contractAddress, '500', '20000', account.address);
@@ -174,8 +176,41 @@ describe('test deploy contract', () => {
         expect(res.Result).toBeTruthy();
     });
     test('i128', async () => {
-        const i128 = I128FromBigInt(new BigInt('9007199254740993'));
+        const i128 = I128FromBigInt('9007199254740993');
         console.log(i128.serialize());
         expect(i128.serialize()).toEqual('01000000000020000000000000000000');
+    });
+
+    test('max128', () => {
+        console.log(maxI128.toString(16));
+    });
+
+    test('transformNumber', () => {
+        const data = {
+            'minI128': '00000000000000000000000000000080',
+            'maxI128': 'ffffffffffffffffffffffffffffff7f',
+            '-2': 'feffffffffffffffffffffffffffffff',
+            '-1': 'ffffffffffffffffffffffffffffffff',
+            '0': '00000000000000000000000000000000',
+            '1': '01000000000000000000000000000000',
+            '2': '02000000000000000000000000000000'
+        };
+        const bmin = minI128.toString();
+        const bminI128 = I128FromBigInt(bmin).serialize();
+        expect(bminI128).toEqual(data.minI128);
+        const bmax = maxI128.toString();
+        const bmaxI128 = I128FromBigInt(bmax).serialize();
+        expect(bmaxI128).toEqual(data.maxI128);
+        expect(I128FromInt(-2).serialize()).toEqual(data['-2']);
+        expect(I128FromInt(-1).serialize()).toEqual(data['-1']);
+        expect(I128FromInt(0).serialize()).toEqual(data['0']);
+        expect(I128FromInt(1).serialize()).toEqual(data['1']);
+        expect(I128FromInt(2).serialize()).toEqual(data['2']);
+        console.log(I128FromInt(-2).serialize());
+        console.log(I128FromInt(-1).serialize());
+        console.log(I128FromInt(0).serialize());
+        console.log(I128FromInt(1).serialize());
+        console.log(I128FromInt(2).serialize());
+
     });
 });

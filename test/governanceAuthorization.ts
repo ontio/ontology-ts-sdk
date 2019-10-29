@@ -142,7 +142,7 @@ describe('test governance authorization', () => {
     });
 
     test('getAttributes', async () => {
-        const pk = '03cb9417260995baf9781a58cb63db7e8bab2f8fdac193c27477e8e1b9eadecfae';
+        const pk = '032f6464df7c42b5a80953680165a23cb98453a1fcb5770f233664909847faf36f';
         const url = 'http://dappnode1.ont.io:20334';
         const res = await getAttributes(pk, url);
         console.log(res);
@@ -155,16 +155,17 @@ describe('test governance authorization', () => {
     }, 10000);
 
     test('getPeerPoolMap', async () => {
-        const res = await getPeerPoolMap();
-        const pk = stake1.peerPubkey;
+        const nodeUrl = 'http://dappnode1.ont.io:20334';
+        const res = await getPeerPoolMap(nodeUrl);
+        const pk = '032f6464df7c42b5a80953680165a23cb98453a1fcb5770f233664909847faf36f';
         console.log(res[pk]);
     }, 10000);
 
     test('getAuthorizeInfo', async () => {
         // const pk = stake2.peerPubkey;
-        const pk = '02e172320fd25ffffc25a3580cd3dc8b3be921ae5b8973530f939acfdd3c250ca3';
+        const pk = '032f6464df7c42b5a80953680165a23cb98453a1fcb5770f233664909847faf36f';
         // const userAddr = new Address(account4.address);
-        const userAddr = new Address('Ady2XfVZGPp1K2ZuTtx6GJmPADxkChyUDh');
+        const userAddr = new Address('ALaDrS5ZwMKZgTS3a8okgDDz84k3ttfP4x');
         const nodeUrl = 'http://dappnode1.ont.io:20334';
         const res = await getAuthorizeInfo(pk, userAddr, nodeUrl);
         console.log(res);
