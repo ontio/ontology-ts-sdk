@@ -1,4 +1,3 @@
-import { pushHexString } from './program';
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -30,6 +29,7 @@ import {
     ab2hexstring, bigIntFromBytes, hexstr2str, isHexString, num2hexstring, num2VarInt, str2hexstr, StringReader
 } from '../utils';
 import opcode from './opcode';
+import { pushHexString } from './program';
 
 export const pushBool = (param: boolean) => {
     let result = '';
@@ -357,7 +357,7 @@ export function buildWasmContractParam(params: Parameter[]): string {
             result += I128FromInt(p.value).serialize();
             break;
         case ParameterType.Long:
-            result += I128FromBigInt(new BigInt(p.value)).serialize();
+            result += I128FromBigInt(p.value).serialize();
             break;
         case ParameterType.ByteArray:
             result += writeVarBytes(p.value);
