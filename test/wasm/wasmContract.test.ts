@@ -44,7 +44,7 @@ describe('test deploy contract', () => {
         console.log('contract address: ' + contract.serialize());
         console.log('codeHash: ' + codeHash);
         const rest = new RestClient('http://13.57.184.209:20334');
-        const result = await rest.getContract('5daf0ec53b21abfab6459c7ba7f760c376e18ebf');
+        const result = await restClient.getContractJson('d26bd5624d5fd809fdccd865cffaac766c61b6a0');
         console.log(result);
         expect(result.Result).toBeTruthy();
     }, 10000);
@@ -139,7 +139,8 @@ describe('test deploy contract', () => {
             // wasm 合约Address类型的值不能传对应ByteArray的值
             new Parameter('param1', ParameterType.Address, new Address('AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ')
         ];
-        const tx = makeWasmVmInvokeTransaction('balanceOf', params, contractAddress,
+        // 没有decimal 方法？
+        const tx = makeWasmVmInvokeTransaction('decimal', params, contractAddress,
             '500', '20000', account.address);
         console.log(tx.payload.serialize());
         signTransaction(tx, privateKey);
