@@ -23,7 +23,7 @@ import RestClient from '../../network/rest/restClient';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
 import { calcUnboundOng, hex2VarBytes, hexstr2str,
-    num2hexstring, str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../../utils';
+    num2hexstring, str2hexstr, str2VarBytes, StringReader, varifyPositiveInt, bigIntFromBytes } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
@@ -33,6 +33,7 @@ const SPLIT_FEE_ADDRESS = 'splitFeeAddress';
 const AUTHORIZE_INFO_POOL = 'voteInfoPool';
 const GLOBAL_PARAM = 'globalParam';
 const TOTAL_STAKE = 'totalStake';
+const VBFT_CONFIG = 'vbftConfig';
 const contractAddress = new Address(GOVERNANCE_CONTRACT);
 
 /* TODO: Test */
@@ -564,6 +565,18 @@ export async function getPeerUnboundOng(userAddr: Address, url?: string) {
     return calcUnboundOng(totalStake.stake, totalStake.timeOffset, timeStamp);
 }
 
+export async function getConfiguration(url?: string) {
+    const restClient = new RestClient(url);
+    const codeHash = contractAddress.toHexString();
+    const key = str2hexstr(VBFT_CONFIG);
+    const res = await restClient.getStorage(codeHash, key);
+    if (res.Result) {
+        return Configuration.deserialize(new StringReader(res.Result));
+    } else {
+        return new Configuration();
+    }
+}
+
 /**
  * Use to store governance state.
  */
@@ -743,4 +756,28 @@ export class TotalStake {
     address: Address;
     stake: number;
     timeOffset: number;
+}
+
+export class Configuration {
+
+    static deserialize(sr: StringReader): Configuration {
+        const config = new Configuration();
+        config.N = bigIntFromBytes(sr.readNextBytes()).toInt();
+        config.C = bigIntFromBytes(sr.readNextBytes()).toInt();
+        config.K = bigIntFromBytes(sr.readNextBytes()).toInt();
+        config.L = bigIntFromBytes(sr.readNextBytes()).toInt();
+        config.BlockMsgDelay = bigIntFromBytes(sr.readNextBytes()).toInt();
+        config.HashMsgDelay = bigIntFromBytes(sr.readNextBytes()).toInt();
+        config.PeerHandShakeTimeout = bigIntFromBytes(sr.readNextBytes()).toInt();
+        config.MaxBlockChangeView = bigIntFromBytes(sr.readNextBytes()).toInt();
+        return config;
+    }
+    N: number;
+    C: number;
+    K: number;
+    L: number;
+    BlockMsgDelay: number;
+    HashMsgDelay: number;
+    PeerHandShakeTimeout: number;
+    MaxBlockChangeView: number;
 }

@@ -9,7 +9,7 @@ import { Parameter } from '../src/smartcontract/abi/parameter';
 import { getAttributes, getAuthorizeInfo, getGlobalParam, getGovernanceView,
     getPeerPoolMap, getPeerUnboundOng, getSplitFeeAddress, getTotalStake,
     makeAuthorizeForPeerTx, makeChangeAuthorizationTx, makeSetPeerCostTx,
-    makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx
+    makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx, getConfiguration
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
 import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
 import { calcUnboundOng, reverseHex, StringReader } from '../src/utils';
@@ -209,4 +209,11 @@ describe('test governance authorization', () => {
         // tslint:disable:no-console
         console.log(JSON.stringify(response));
     });
+
+    test('getConfiguration', async () => {
+        const url = 'http://dappnode1.ont.io:20334';
+        const config = await getConfiguration(url);
+        console.log(config);
+    });
+
 });
