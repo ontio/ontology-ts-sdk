@@ -94,7 +94,7 @@ describe('test transfer asset', () => {
         expect(result.Error).toEqual(0);
     }, 10000);
 
-    test('test transfer with multi assign address', async () => {
+    test('test transfer with multi ssign address', async () => {
         // tslint:disable:max-line-length
         const w = [{ name: 'MyWallet', version: '1.1', scrypt: { p: 8, n: 16384, r: 8, dkLen: 64 }, identities: null, accounts: [{ 'address': 'AXmQDzzvpEtPkNwBEFsREzApTTDZFW6frD', 'enc-alg': 'aes-256-gcm', 'key': 'YfOr9im4rOciy3cV7JkVo9QCfrRT4IGLa/CZKUJfL29pM6Zi1oVEM67+8MezMIro', 'algorithm': 'ECDSA', 'salt': 'RCIo60eCJAwzkTYmIfp3GA==', 'parameters': { curve: 'P-256' }, 'label': '', 'publicKey': '037c9e6c6a446b6b296f89b722cbf686b81e0a122444ef05f0f87096777663284b', 'signatureScheme': 'SHA256withECDSA', 'isDefault': true, 'lock': false }], extra: '' },
         { name: 'MyWallet', version: '1.1', scrypt: { p: 8, n: 16384, r: 8, dkLen: 64 }, identities: null, accounts: [{ 'address': 'AY5W6p4jHeZG2jjW6nS1p4KDUhcqLkU6jz', 'enc-alg': 'aes-256-gcm', 'key': 'gpgMejEHzawuXG+ghLkZ8/cQsOJcs4BsFgFjSaqE7SC8zob8hqc6cDNhJI/NBkk+', 'algorithm': 'ECDSA', 'salt': 'tuLGZOimilSnypT91WrenQ==', 'parameters': { curve: 'P-256' }, 'label': '', 'publicKey': '03dff4c63267ae5e23da44ace1bc47d0da1eb8d36fd71181dcccf0e872cb7b31fa', 'signatureScheme': 'SHA256withECDSA', 'isDefault': true, 'lock': false }], extra: '' },
