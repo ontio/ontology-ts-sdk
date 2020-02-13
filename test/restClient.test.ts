@@ -31,16 +31,16 @@ describe('test restClient', () => {
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
-    beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-        tx.payer = adminAddress;
-        signTransaction(tx, adminPrivateKey);
-        addSign(tx, privateKey);
+    // beforeAll(async () => {
+    //     const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+    //     tx.payer = adminAddress;
+    //     signTransaction(tx, adminPrivateKey);
+    //     addSign(tx, privateKey);
 
-        const client = new WebsocketClient();
-        const result = await client.sendRawTransaction(tx.serialize(), false, true);
-        txHash = result.Result.TxHash;
-    }, 5000);
+    //     const client = new WebsocketClient();
+    //     const result = await client.sendRawTransaction(tx.serialize(), false, true);
+    //     txHash = result.Result.TxHash;
+    // }, 5000);
 
     test('test sendRawTransaction', async () => {
         const tx = buildGetDDOTx(ontid);
@@ -133,8 +133,8 @@ describe('test restClient', () => {
     });
 
     test('test smartCodeEvent by hash', async () => {
-        const res = await rest.getSmartCodeEvent(txHash);
-        console.log(res);
+        const res = await rest.getSmartCodeEvent('f1981bb6fa488ab8732efd62bc968a29f53fe42cff66b17b8a92c47bb475c2d5');
+        console.log(JSON.stringify(res));
         expect(res.Result).toBeTruthy();
     });
 

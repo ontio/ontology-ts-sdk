@@ -37,6 +37,7 @@ describe('test smarct contract params', () => {
         signTransaction(tx, privateKey);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
+        
     }, 10000);
 
     test('test_list', async () => {
