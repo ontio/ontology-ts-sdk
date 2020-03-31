@@ -71,7 +71,7 @@
   },
   "dependencies": {
     "@ont-community/hdkey-secp256r1": "^1.0.1",
-    "@ont-community/html5-websocket": "^2.0.2",
+    "@ont-community/html5-websocket": "^2.0.3",
     "axios": "^0.19.0",
     "babel-polyfill": "^6.26.0",
     "base-58": "^0.0.1",
@@ -91,8 +91,8 @@
     "secure-random": "^1.1.1",
     "sm.js": "0.1.7",
     "uuid": "^3.2.1",
-    "websocket-as-promised": "^0.8.0",
+    "websocket-as-promised": "^1.0.1",
     "wif": "^2.0.6",
-    "ws": "^4.1.0"
+    "ws": "^7.2.3"
   }
 }
