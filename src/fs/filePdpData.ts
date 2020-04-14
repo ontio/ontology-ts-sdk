@@ -1,6 +1,6 @@
-import { Address } from "../crypto";
-import { hex2VarBytes } from "../utils";
-import { serializeUint64 } from "./utils";
+import { Address } from '../crypto';
+import { hex2VarBytes } from '../utils';
+import { serializeUint64 } from './utils';
 
 export class FilePdpData {
     public constructor(
@@ -8,7 +8,7 @@ export class FilePdpData {
         public readonly fileHash: string,
         public readonly proveData: string,
         public readonly challengeHeight: number
-    ) {}
+    ) { }
 
     public serializeHex(): string {
         let str = '';

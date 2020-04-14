@@ -34,6 +34,7 @@ import Struct from './smartcontract/abi/struct';
 import * as GovernanceTxBuilder from './smartcontract/nativevm/governanceContractTxBuilder';
 import * as OntAssetTxBuilder from './smartcontract/nativevm/ontAssetTxBuilder';
 import * as OntidContract from './smartcontract/nativevm/ontidContractTxBuilder';
+import * as OntfsContractTxBuilder from './smartcontract/nativevm/ontfsContractTxBuilder';
 import * as Token from './smartcontract/nativevm/token';
 import * as Oep4 from './smartcontract/neovm/oep4TxBuilder';
 import * as Oep5 from './smartcontract/neovm/oep5TxBuilder';
@@ -70,6 +71,7 @@ class ONT {
     Token: any;
     OntidContract: any;
     GovernanceTxBuilder: any;
+    OntfsContractTxBuilder: any;
     RestClient: any;
     RpcClient: any;
     WebsocketClient: any;
@@ -93,6 +95,7 @@ class ONT {
         this.TransactionBuilder = TransactionBuilder;
         this.OntAssetTxBuilder = OntAssetTxBuilder;
         this.GovernanceTxBuilder = GovernanceTxBuilder;
+        this.OntfsContractTxBuilder = OntfsContractTxBuilder;
         this.Parameter = Parameter;
         this.ParameterType = ParameterType;
         this.AbiFunction = AbiFunction;
@@ -150,6 +153,7 @@ export {
     TransactionBuilder,
     OntAssetTxBuilder,
     GovernanceTxBuilder,
+    OntfsContractTxBuilder,
     utils,
     scrypt,
     CONST,

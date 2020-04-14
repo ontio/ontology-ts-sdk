@@ -1,4 +1,4 @@
-import { Address } from "../crypto";
+import { Address } from '../crypto';
 
 export interface FileStore {
     fileHash: string;

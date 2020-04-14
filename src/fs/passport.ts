@@ -1,6 +1,6 @@
-import { Address, PublicKey, Signature, PrivateKey } from "../crypto";
-import { serializeUint64 } from "./utils";
-import { hex2VarBytes, str2VarBytes } from "../utils";
+import { Address, PublicKey, Signature, PrivateKey } from '../crypto';
+import { serializeAddress, serializeVarUint } from './utils';
+import { hex2VarBytes } from '../utils';
 
 export class Passport {
 
@@ -23,13 +23,13 @@ export class Passport {
         public readonly walletAddr: Address,
         public readonly publicKey: PublicKey,
         public signature?: Signature
-    ) {}
+    ) { }
 
     public serialzieHex() {
-        return serializeUint64(this.blockHeight)
-            + str2VarBytes(this.blockHash)
-            + this.walletAddr.serialize()
-            + this.publicKey.serializeHex()
-            + (this.signature ? this.signature.serializeHex() : '0');
+        return serializeVarUint(this.blockHeight)
+            + hex2VarBytes(this.blockHash)
+            + serializeAddress(this.walletAddr)
+            + hex2VarBytes(this.publicKey.serializeHex())
+            + (this.signature ? hex2VarBytes(this.signature.value) : '00');
     }
 }

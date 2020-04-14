@@ -1,20 +1,20 @@
 /*
-* Copyright (C) 2018 The ontology Authors
-* This file is part of The ontology library.
-*
-* The ontology is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* The ontology is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import { Address, PrivateKey } from '../../crypto';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
@@ -24,7 +24,6 @@ import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import { FilePdpData } from '../../fs/filePdpData';
 import { GetReadPledge } from '../../fs/getReadPledge';
 import { FileReadSettleSlice } from '../../fs/fileReadSettleSlice';
-import { hex2VarBytes } from '../../utils';
 import { serializeUint64 } from '../../fs/utils';
 import { Challenge } from '../../fs/challenge';
 import { SpaceInfo, SpaceUpdate } from '../../fs/space';
@@ -47,38 +46,38 @@ const DefaultMinPdpInterval = 600;
 /**
  * Method names in ONT FS contract
  */
-const ONTFS_METHOD  = {
-    fsGetGlobalParam: 'fsGetGlobalParam',
-    fsNodeRegister: 'fsNodeRegister',
-    fsNodeQuery: 'fsNodeQuery',
-    fsNodeUpdate: 'fsNodeUpdate',
-    fsNodeCancel: 'fsNodeCancel',
-    fsFileProve: 'fsFileProve',
-    fsNodeWithDrawProfit: 'fsNodeWithDrawProfit',
-    fsGetNodeInfoList: 'fsGetNodeInfoList',
-    fsGetPdpInfoList: 'fsGetPdpInfoList',
-    fsChallenge: 'fsChallenge',
-    fsResponse: 'fsResponse',
-    fsJudge: 'fsJudge',
-    fsGetChallenge: 'fsGetChallenge',
-    fsGetFileChallengeList: 'fsGetFileChallengeList',
-    fsGetNodeChallengeList: 'fsGetNodeChallengeList',
-    fsStoreFiles: 'fsStoreFiles',
-    fsRenewFiles: 'fsRenewFiles',
-    fsDeleteFiles: 'fsDeleteFiles',
-    fsTransferFiles: 'fsTransferFiles',
-    fsGetFileInfo: 'fsGetFileInfo',
-    fsGetFileHashList: 'fsGetFileHashList',
-    fsReadFilePledge: 'fsReadFilePledge',
-    fsReadFileSettle: 'fsReadFileSettle',
-    fsGetReadPledge: 'fsGetReadPledge',
-    fsCancelFileRead: 'fsCancelFileRead',
-    fsSetWhiteList: 'fsSetWhiteList',
-    fsGetWhiteList: 'fsGetWhiteList',
-    fsCreateSpace: 'fsCreateSpace',
-    fsDeleteSpace: 'fsDeleteSpace',
-    fsUpdateSpace: 'fsUpdateSpace',
-    fsGetSpaceInfo: 'fsGetSpaceInfo'
+const ONTFS_METHOD = {
+    fsGetGlobalParam: 'FsGetGlobalParam',
+    fsNodeRegister: 'FsNodeRegister',
+    fsNodeQuery: 'FsNodeQuery',
+    fsNodeUpdate: 'FsNodeUpdate',
+    fsNodeCancel: 'FsNodeCancel',
+    fsFileProve: 'FsFileProve',
+    fsNodeWithDrawProfit: 'FsNodeWithDrawProfit',
+    fsGetNodeInfoList: 'FsGetNodeList',
+    fsGetPdpInfoList: 'FsGetPdpInfoList',
+    fsChallenge: 'FsChallenge',
+    fsResponse: 'FsResponse',
+    fsJudge: 'FsJudge',
+    fsGetChallenge: 'FsGetChallenge',
+    fsGetFileChallengeList: 'FsGetFileChallengeList',
+    fsGetNodeChallengeList: 'FsGetNodeChallengeList',
+    fsStoreFiles: 'FsStoreFiles',
+    fsRenewFiles: 'FsRenewFiles',
+    fsDeleteFiles: 'FsDeleteFiles',
+    fsTransferFiles: 'FsTransferFiles',
+    fsGetFileInfo: 'FsGetFileInfo',
+    fsGetFileHashList: 'FsGetFileList',
+    fsReadFilePledge: 'FsReadFilePledge',
+    fsReadFileSettle: 'FsReadFileSettle',
+    fsGetReadPledge: 'FsGetReadPledge',
+    fsCancelFileRead: 'FsCancelFileRead',
+    fsSetWhiteList: 'FsSetWhiteList',
+    fsGetWhiteList: 'FsGetWhiteList',
+    fsCreateSpace: 'FsCreateSpace',
+    fsDeleteSpace: 'FsDeleteSpace',
+    fsUpdateSpace: 'FsUpdateSpace',
+    fsGetSpaceInfo: 'FsGetSpaceInfo'
 };
 
 export function buildGetGlobalParamTx() {
@@ -189,7 +188,8 @@ export function buildGetFileReadPledgeTx(
 ) {
     const getReadPledge = new GetReadPledge(fileHash, downloader);
     const struct = new Struct();
-    struct.add(getReadPledge.serializeHex());
+    struct.add(getReadPledge.fileHash)
+    struct.add(getReadPledge.downloader.serialize())
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetReadPledge, params, contractAddress);
 }
@@ -214,7 +214,7 @@ export function buildGetFilePdpRecordListTx(
     fileHash: string
 ) {
     const struct = new Struct();
-    struct.add(hex2VarBytes(fileHash));
+    struct.add(fileHash);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetPdpInfoList, params, contractAddress);
 }
@@ -384,7 +384,7 @@ export function buildGetFileInfoTx(
     fileHash: string
 ) {
     const struct = new Struct();
-    struct.add(hex2VarBytes(fileHash));
+    struct.add(fileHash);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetFileInfo, params, contractAddress);
 }
@@ -459,6 +459,7 @@ export function buildRenewFilesTx(
         const fsFileRenew = new FileRenew(fileHash, newFileOwner, newPayer, renewTime);
         fileRenewList.filesRenew.push(fsFileRenew);
     }
+    console.log('fileRenewList', fileRenewList)
     const struct = new Struct();
     struct.add(fileRenewList.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -507,7 +508,8 @@ export function buildCancelFileReadTx(
 ) {
     const getReadPledge = new GetReadPledge(fileHash, downloader);
     const struct = new Struct();
-    struct.add(getReadPledge.serializeHex());
+    struct.add(getReadPledge.fileHash)
+    struct.add(getReadPledge.downloader.serialize())
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsCancelFileRead, params, contractAddress, gasPrice, gasLimit, payer);
 }
