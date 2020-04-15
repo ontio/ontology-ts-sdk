@@ -1,5 +1,5 @@
 import { Address } from '../crypto';
-import { str2VarBytes, StringReader } from '../utils';
+import { str2VarBytes } from '../utils';
 import { serializeUint64 } from './utils';
 
 export class FsNodeInfo {

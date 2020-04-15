@@ -36,6 +36,7 @@ import { FileRenewList, FileRenew } from '../../fs/fileRenew';
 import { FileDelList, FileDel } from '../../fs/fileDel';
 import { ReadPlan } from '../../fs/readPlan';
 import { ReadPledge } from '../../fs/readPledge';
+import { Transaction } from '../../transaction/transaction';
 
 /**
  * Address of ONT FS Contract
@@ -47,7 +48,7 @@ const DefaultMinPdpInterval = 600;
 /**
  * Method names in ONT FS contract
  */
-const ONTFS_METHOD  = {
+export const ONTFS_METHOD  = {
     fsGetGlobalParam: 'fsGetGlobalParam',
     fsNodeRegister: 'fsNodeRegister',
     fsNodeQuery: 'fsNodeQuery',
@@ -81,7 +82,17 @@ const ONTFS_METHOD  = {
     fsGetSpaceInfo: 'fsGetSpaceInfo'
 };
 
-export function buildGetGlobalParamTx() {
+export function buildTxByParamsHash(
+    method: keyof typeof ONTFS_METHOD,
+    paramsHash: string,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+) {
+    return makeNativeContractTx(method, paramsHash, contractAddress, gasPrice, gasLimit, payer);
+}
+
+export function buildGetGlobalParamTx(): Transaction {
     return makeNativeContractTx(ONTFS_METHOD.fsGetGlobalParam, '', contractAddress);
 }
 
@@ -94,7 +105,7 @@ export function buildFsNodeRegisterTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const fsNodeInfo = new FsNodeInfo(0, 0, volume, 0, serviceTime, minPdpInterval, nodeAddr, nodeNetAddr);
     const struct = new Struct();
     struct.add(fsNodeInfo.serializeHex());
@@ -104,7 +115,7 @@ export function buildFsNodeRegisterTx(
 
 export function buildNodeQueryTx(
     nodeAddr: Address
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(nodeAddr.serialize());
     const params = buildNativeCodeScript([struct]);
@@ -120,7 +131,7 @@ export function buildNodeUpdateTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const fsNodeInfo = new FsNodeInfo(0, 0, volume, 0, serviceTime, minPdpInterval, nodeAddr, nodeNetAddr);
     const struct = new Struct();
     struct.add(fsNodeInfo.serializeHex());
@@ -133,7 +144,7 @@ export function buildNodeCancelTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(nodeAddr.serialize());
     const params = buildNativeCodeScript([struct]);
@@ -145,7 +156,7 @@ export function buildNodeWithdrawoProfitTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(nodeAddr.serialize());
     const params = buildNativeCodeScript([struct]);
@@ -170,7 +181,7 @@ export function buildFileProveTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const pdpData = new FilePdpData(nodeAddr, fileHash, proveData, blockHeight);
     const struct = new Struct();
     struct.add(pdpData.serializeHex());
@@ -186,7 +197,7 @@ export function buildFileProveTx(
 export function buildGetFileReadPledgeTx(
     fileHash: string,
     downloader: Address
-) {
+): Transaction {
     const getReadPledge = new GetReadPledge(fileHash, downloader);
     const struct = new Struct();
     struct.add(getReadPledge.serializeHex());
@@ -199,7 +210,7 @@ export function buildFileReadProfitSettleTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(fileReadSettleSlice.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -212,7 +223,7 @@ export function buildFileReadProfitSettleTx(
  */
 export function buildGetFilePdpRecordListTx(
     fileHash: string
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(hex2VarBytes(fileHash));
     const params = buildNativeCodeScript([struct]);
@@ -221,11 +232,11 @@ export function buildGetFilePdpRecordListTx(
 
 // export function buildGetNodeInfoTx(
 //     nodeAddr: Address
-// ) {}
+// ): Transaction {}
 
 export function buildGetNodeInfoListTx(
     count: number
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(serializeUint64(count));
     const params = buildNativeCodeScript([struct]);
@@ -239,7 +250,7 @@ export function buildChallengeTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const chanllege = new Challenge(fileHash, fileOwner, nodeAddr);
     const struct = new Struct();
     struct.add(chanllege.serializeHex());
@@ -251,7 +262,7 @@ export function buildGetChanllengeTx(
     fileHash: string,
     fileOwner: Address,
     nodeAddr: Address
-) {
+): Transaction {
     const challengeReq = new Challenge(fileHash, fileOwner, nodeAddr);
     const struct = new Struct();
     struct.add(challengeReq.serializeHex());
@@ -267,7 +278,7 @@ export function buildResponseTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const pdpData = new FilePdpData(nodeAddr, fileHash, proveData, blockHeight);
     const struct = new Struct();
     struct.add(pdpData.serializeHex());
@@ -282,7 +293,7 @@ export function buildJudgeTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const challenge = new Challenge(fileHash, fileOwner, nodeAddr);
     const struct = new Struct();
     struct.add(challenge.serializeHex());
@@ -293,7 +304,7 @@ export function buildJudgeTx(
 export function buildGetFileChallengeListTx(
     fileHash: string,
     fileOwner: Address
-) {
+): Transaction {
     const challengeReq = new Challenge(fileHash, fileOwner);
     const struct = new Struct();
     struct.add(challengeReq.serializeHex());
@@ -303,7 +314,7 @@ export function buildGetFileChallengeListTx(
 
 export function buildGetNodeChallengeListTx(
     fileOwner: Address
-) {
+): Transaction {
     const struct = new Struct()
     struct.add(fileOwner.serialize());
     const params = buildNativeCodeScript([struct]);
@@ -319,7 +330,7 @@ export function buildCreateSpaceTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     if (pdpInterval < DefaultMinPdpInterval) {
         throw new Error(`pdpInterval value should be no smaller than ${DefaultMinPdpInterval}`);
     }
@@ -333,7 +344,7 @@ export function buildCreateSpaceTx(
 
 export function buildGetSpaceInfoTx(
     spaceOwner: Address
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(spaceOwner.serialize());
     const params = buildNativeCodeScript([struct]);
@@ -348,7 +359,7 @@ export function buildUpdateSpaceTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const spaceUdpate = new SpaceUpdate(spaceOwner, spacePayer, volume, timeExpired);
     const struct = new Struct();
     struct.add(spaceUdpate.serializeHex());
@@ -361,7 +372,7 @@ export function buildDeleteSpaceTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(spaceOwner.serialize());
     const params = buildNativeCodeScript([struct]);
@@ -372,7 +383,7 @@ export function buildGetFileListTx(
     blockHeight: number,
     blockHash: string,
     privateKey: PrivateKey
-) {
+): Transaction {
     const passport = Passport.genPassport(blockHeight, blockHash, privateKey);
     const struct = new Struct();
     struct.add(passport.serialzieHex());
@@ -382,7 +393,7 @@ export function buildGetFileListTx(
 
 export function buildGetFileInfoTx(
     fileHash: string
-) {
+): Transaction {
     const struct = new Struct();
     struct.add(hex2VarBytes(fileHash));
     const params = buildNativeCodeScript([struct]);
@@ -395,7 +406,7 @@ export function buildStoreFilesTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const fileInfoList = new FileInfoList();
     for (
         const {
@@ -434,7 +445,7 @@ export function buildTransferFilesTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const fileTransferList = new FileTransferList();
     for (const { fileHash, newOwner } of fileTransfers) {
         const fsFileTransfer = new FileTransfer(fileHash, originOwner, newOwner);
@@ -453,7 +464,7 @@ export function buildRenewFilesTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const fileRenewList = new FileRenewList();
     for (const { fileHash, renewTime } of filesRenew) {
         const fsFileRenew = new FileRenew(fileHash, newFileOwner, newPayer, renewTime);
@@ -470,7 +481,7 @@ export function buildDeleteFilesTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const fileDelList = new FileDelList();
     for (const fileHash of fileHashes) {
         fileDelList.filesDel.push(
@@ -490,7 +501,7 @@ export function buildFileReadPledgeTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const fileReadPledge = new ReadPledge(fileHash, downloader, 0, 0, 0, readPlans);
     const struct = new Struct();
     struct.add(fileReadPledge.serializeHex());
@@ -504,7 +515,7 @@ export function buildCancelFileReadTx(
     gasPrice: string,
     gasLimit: string,
     payer?: Address
-) {
+): Transaction {
     const getReadPledge = new GetReadPledge(fileHash, downloader);
     const struct = new Struct();
     struct.add(getReadPledge.serializeHex());

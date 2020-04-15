@@ -1,6 +1,6 @@
-import { Address, PublicKey, Signature, PrivateKey } from "../crypto";
-import { serializeUint64 } from "./utils";
-import { hex2VarBytes, str2VarBytes } from "../utils";
+import { Address, PrivateKey, PublicKey, Signature } from '../crypto';
+import { str2VarBytes } from '../utils';
+import { serializeUint64 } from './utils';
 
 export class Passport {
 
