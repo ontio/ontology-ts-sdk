@@ -1,6 +1,6 @@
-import { Address } from "../crypto";
-import { hex2VarBytes } from "../utils";
-import { serializeUint64 } from "./utils";
+import { Address } from '../crypto';
+import { hex2VarBytes } from '../utils';
+import { serializeUint64 } from './utils';
 
 export class FileTransfer {
     public constructor(

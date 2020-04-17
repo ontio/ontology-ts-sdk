@@ -1,5 +1,5 @@
-import { hex2VarBytes } from "../utils";
-import { serializeUint64 } from "./utils";
+import { hex2VarBytes } from '../utils';
+import { serializeUint64 } from './utils';
 
 export class FileDel {
     public constructor(

@@ -14,8 +14,8 @@ export class FileReadSettleSlice {
         const payFrom = Address.fromPubKey(pubKey);
         const settleSlice = new FileReadSettleSlice(fileHash, payFrom, payTo, sliceId, pledgeHeight);
         const signData = privateKey.sign(settleSlice.serializeHex());
-        settleSlice.sig = signData;
-        settleSlice.pubKey = pubKey;
+        settleSlice.signature = signData;
+        settleSlice.publicKey = pubKey;
         return settleSlice;
     }
 
@@ -25,15 +25,15 @@ export class FileReadSettleSlice {
         public readonly payTo: Address,
         public readonly sliceId: number,
         public readonly pledgeHeight: number,
-        public sig?: Signature,
-        public pubKey?: PublicKey
+        public signature?: Signature,
+        public publicKey?: PublicKey
     ) {}
 
     public verify(): boolean {
-        if (!this.pubKey || !this.sig) {
+        if (!this.publicKey || !this.signature) {
             return false;
         }
-        return this.pubKey.verify(this.serializeHexWithoutVerifyInfo(), this.sig);
+        return this.publicKey.verify(this.serializeHexWithoutVerifyInfo(), this.signature);
     }
 
     public serializeHexWithoutVerifyInfo(): string {
@@ -46,7 +46,7 @@ export class FileReadSettleSlice {
 
     public serializeHex(): string {
         return this.serializeHexWithoutVerifyInfo()
-            + (this.sig ? this.sig.serializeHex() : '0')
-            + (this.pubKey ? this.pubKey.serializeHex() : '0');
+            + (this.signature ? this.signature.serializeHex() : '0')
+            + (this.publicKey ? this.publicKey.serializeHex() : '0');
     }
 }

@@ -1,7 +1,7 @@
-import { Address } from "../crypto";
-import { hex2VarBytes } from "../utils";
-import { serializeUint64 } from "./utils";
-import { pushBool } from "../transaction/scriptBuilder";
+import { Address } from '../crypto';
+import { pushBool } from '../transaction/scriptBuilder';
+import { hex2VarBytes } from '../utils';
+import { serializeUint64 } from './utils';
 
 export class FileInfo {
     public constructor(

@@ -1,5 +1,5 @@
-import { Address } from "../crypto";
-import { hex2VarBytes } from "../utils";
+import { Address } from '../crypto';
+import { hex2VarBytes } from '../utils';
 
 export class GetReadPledge {
     public constructor(

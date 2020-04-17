@@ -1,6 +1,6 @@
-import { Address } from "../crypto";
-import { serializeUint64 } from "./utils";
-import { pushBool } from "../transaction/scriptBuilder";
+import { Address } from '../crypto';
+import { pushBool } from '../transaction/scriptBuilder';
+import { serializeUint64 } from './utils';
 
 export class SpaceInfo {
     public constructor(

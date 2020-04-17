@@ -14,10 +14,6 @@ export class FsNodeInfo {
         public readonly nodeNetAddr: string
     ) {}
 
-    static deserializeHex() {
-
-    }
-
     public serializeHex(): string {
         let str = '';
         str += serializeUint64(this.pledge)
@@ -35,8 +31,4 @@ export class FsNodeInfoList {
     constructor(
         public readonly nodesInfo: FsNodeInfo[]
     ) {}
-
-    serialzieHex() {
-        
-    }
 }

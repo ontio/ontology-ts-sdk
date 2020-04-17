@@ -1,7 +1,7 @@
-import { Address } from "../crypto";
-import { hex2VarBytes } from "../utils";
-import { ReadPlan } from "./readPlan";
-import { serializeUint64 } from "./utils";
+import { Address } from '../crypto';
+import { hex2VarBytes } from '../utils';
+import { ReadPlan } from './readPlan';
+import { serializeUint64 } from './utils';
 
 export class ReadPledge {
     public constructor(
@@ -12,10 +12,6 @@ export class ReadPledge {
         public readonly restMoney: number,
         public readonly readPlans: ReadPlan[]
     ) {}
-
-    static getReadPledge(downloader: Address, fileHash: string) {
-        
-    }
 
     public serializeHex(): string {
         let str = '';

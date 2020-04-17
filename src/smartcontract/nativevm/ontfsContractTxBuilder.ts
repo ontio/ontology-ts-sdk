@@ -16,27 +16,27 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Address, PrivateKey } from '../../crypto';
-import { makeNativeContractTx } from '../../transaction/transactionUtils';
-import Struct from '../abi/struct';
-import { FsNodeInfo } from '../../fs/nodeInfo';
-import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
-import { FilePdpData } from '../../fs/filePdpData';
-import { GetReadPledge } from '../../fs/getReadPledge';
-import { FileReadSettleSlice } from '../../fs/fileReadSettleSlice';
-import { hex2VarBytes } from '../../utils';
-import { serializeUint64 } from '../../fs/utils';
+import { Address, PrivateKey, PublicKey, Signature } from '../../crypto';
 import { Challenge } from '../../fs/challenge';
-import { SpaceInfo, SpaceUpdate } from '../../fs/space';
+import { FileDel, FileDelList } from '../../fs/fileDel';
+import { FileInfo, FileInfoList } from '../../fs/fileInfo';
+import { FilePdpData } from '../../fs/filePdpData';
+import { FileReadSettleSlice } from '../../fs/fileReadSettleSlice';
+import { FileRenew, FileRenewList } from '../../fs/fileRenew';
+import { FileTransfer, FileTransferList } from '../../fs/fileTransfer';
+import { GetReadPledge } from '../../fs/getReadPledge';
+import { FsNodeInfo } from '../../fs/nodeInfo';
 import { Passport } from '../../fs/passport';
-import { FileStore, FileTransferInterface, FileRenewInterface } from '../../fs/type';
-import { FileInfoList, FileInfo } from '../../fs/fileInfo';
-import { FileTransferList, FileTransfer } from '../../fs/fileTransfer';
-import { FileRenewList, FileRenew } from '../../fs/fileRenew';
-import { FileDelList, FileDel } from '../../fs/fileDel';
-import { ReadPlan } from '../../fs/readPlan';
+import { ReadPlan, ReadPlanLike } from '../../fs/readPlan';
 import { ReadPledge } from '../../fs/readPledge';
+import { SpaceInfo, SpaceUpdate } from '../../fs/space';
+import { FileRenewInterface, FileStore, FileTransferInterface } from '../../fs/type';
+import { serializeUint64 } from '../../fs/utils';
 import { Transaction } from '../../transaction/transaction';
+import { makeNativeContractTx } from '../../transaction/transactionUtils';
+import { hex2VarBytes, str2hexstr, StringReader } from '../../utils';
+import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
+import Struct from '../abi/struct';
 
 /**
  * Address of ONT FS Contract
@@ -315,7 +315,7 @@ export function buildGetFileChallengeListTx(
 export function buildGetNodeChallengeListTx(
     fileOwner: Address
 ): Transaction {
-    const struct = new Struct()
+    const struct = new Struct();
     struct.add(fileOwner.serialize());
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetNodeChallengeList, params, contractAddress);
@@ -379,14 +379,51 @@ export function buildDeleteSpaceTx(
     return makeNativeContractTx(ONTFS_METHOD.fsDeleteSpace, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
-export function buildGetFileListTx(
+export function genPassport(
     blockHeight: number,
     blockHash: string,
     privateKey: PrivateKey
+): Passport {
+    return Passport.genPassport(blockHeight, blockHash, privateKey);
+}
+
+export function genFileReadSettleSlice(
+    fileHash: string,
+    payTo: Address,
+    sliceId: number,
+    pledgeHeight: number,
+    privateKey: PrivateKey
+): FileReadSettleSlice {
+    return FileReadSettleSlice.genFileReadSettleSlice(
+        fileHash, payTo, sliceId, pledgeHeight, privateKey
+    );
+}
+
+export function verifyFileReadSettleSlice(
+    {
+        fileHash, payFrom, payTo, sliceId, pledgeHeight, signature, publicKey
+    }: {
+        fileHash: string;
+        payFrom: string;
+        payTo: string;
+        sliceId: number;
+        pledgeHeight: number;
+        signature: string;
+        publicKey: string;
+    }
+): boolean {
+    const settleSlice = new FileReadSettleSlice(
+        fileHash, new Address(payFrom), new Address(payTo), sliceId, pledgeHeight,
+        Signature.deserializeHex(signature), PublicKey.deserializeHex(new StringReader(publicKey))
+    );
+    return settleSlice.verify();
+}
+
+export function buildGetFileListTx(
+    passport: Passport | string
 ): Transaction {
-    const passport = Passport.genPassport(blockHeight, blockHash, privateKey);
     const struct = new Struct();
-    struct.add(passport.serialzieHex());
+    struct.add(typeof passport === 'string' ? passport : passport.serialzieHex());
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetFileHashList, params, contractAddress);
 }
@@ -427,7 +464,7 @@ export function buildStoreFilesTx(
         }
 
         const fsFileInfo = new FileInfo(
-            fileHash, fileOwner, fileDesc, fileBlockCount, realFileSize, copyNumber,
+            fileHash, fileOwner, str2hexstr(fileDesc), fileBlockCount, realFileSize, copyNumber,
             0, 0, 0, firstPdp, pdpInterval, 0, timeExpired, pdpParam, false, storageType
         );
         fileInfoList.filesI.push(fsFileInfo);
@@ -496,13 +533,15 @@ export function buildDeleteFilesTx(
 
 export function buildFileReadPledgeTx(
     fileHash: string,
-    readPlans: ReadPlan[],
+    readPlans: ReadPlanLike[],
     downloader: Address,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
 ): Transaction {
-    const fileReadPledge = new ReadPledge(fileHash, downloader, 0, 0, 0, readPlans);
+    const fileReadPledge = new ReadPledge(
+        fileHash, downloader, 0, 0, 0, readPlans.map((plan) => ReadPlan.fromReadPlanLike(plan))
+    );
     const struct = new Struct();
     struct.add(fileReadPledge.serializeHex());
     const params = buildNativeCodeScript([struct]);
