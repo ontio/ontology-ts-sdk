@@ -281,7 +281,7 @@ export default class RestClient {
         const url = this.url + UrlConsts.Url_get_merkleproof + hash;
 
             // tslint:disable-next-line:no-console
-        console.log('url: ' + url);
+        // console.log('url: ' + url);
 
         return axios.get(url).then((res) => {
             return res.data;

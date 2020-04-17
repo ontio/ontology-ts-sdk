@@ -21,6 +21,7 @@ import { Claim } from './claim';
 import * as CONST from './consts';
 import * as Crypto from './crypto';
 import { Identity } from './identity';
+import * as Merkle from './merkle';
 import * as NeoCore from './neocore';
 import RestClient from './network/rest/restClient';
 import RpcClient from './network/rpc/rpcClient';
@@ -80,6 +81,7 @@ class ONT {
     Oep4: any;
     Oep8: any;
     Oep5: any;
+    Merkle: any;
 
     constructor() {
         this.Account = Account;
@@ -114,6 +116,7 @@ class ONT {
         this.Oep4 = Oep4;
         this.Oep8 = Oep8;
         this.Oep5 = Oep5;
+        this.Merkle = Merkle;
     }
     setNode(url: string) {
         this.CONST.TEST_NODE = url;
@@ -166,5 +169,6 @@ export {
     NeoCore,
     Oep4,
     Oep8,
-    Oep5
+    Oep5,
+    Merkle
 };

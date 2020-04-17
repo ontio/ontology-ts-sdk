@@ -22,14 +22,15 @@ import { PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } fr
 import RestClient from '../network/rest/restClient';
 import { buildGetDDOTx, buildGetPublicKeyStateTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { DDO } from '../transaction/ddo';
-import { now } from '../utils';
+import { now, str2hexstr } from '../utils';
 
 /**
  * Factory method type used for creating concrete instances of Message.
  */
 export type MessageFactory<T extends Message> = (
     metadata: Metadata,
-    signature: Signature | undefined
+    signature: Signature | undefined,
+    useProof: boolean | undefined
 ) => T;
 
 /**
@@ -79,7 +80,7 @@ export abstract class Message {
      * @param creator Factory method
      */
     protected static deserializeInternal<T extends Message>(jwt: string, creator: MessageFactory<T>): T {
-        const parts = jwt.split('.', 3);
+        const parts = jwt.split('.', 4);
 
         if (parts.length < 2) {
             throw new Error('Invalid message.');
@@ -96,8 +97,11 @@ export abstract class Message {
                 throw new Error('Signature scheme was not specified.');
             }
         }
-
-        const msg = creator(payload.metadata, signature);
+        let useProof: boolean | undefined;
+        if (parts.length === 4) {
+            useProof = true;
+        }
+        const msg = creator(payload.metadata, signature, useProof);
         msg.payloadFromJSON(payload.rest);
         return msg;
     }
@@ -131,7 +135,7 @@ export abstract class Message {
     private static deserializeHeader(encoded: string) {
         const stringified = b64.decode(encoded);
         const header = JSON.parse(stringified);
-
+        // console.log('header: ' + JSON.stringify(header));
         return {
             algorithm: header.alg !== undefined ? SignatureScheme.fromLabelJWS(header.alg) : undefined,
             publicKeyId: header.kid
@@ -173,7 +177,8 @@ export abstract class Message {
         }
 
         const msg = this.serializeUnsigned(algorithm, publicKeyId);
-        this.signature = await privateKey.signAsync(msg, algorithm, publicKeyId);
+        const msgHex = str2hexstr(msg);
+        this.signature = await privateKey.signAsync(msgHex, algorithm, publicKeyId);
     }
 
     /**
@@ -196,14 +201,15 @@ export abstract class Message {
                 }
 
                 const state = await retrievePublicKeyState(signature.publicKeyId, url);
+
                 if (state === PublicKeyStatus.REVOKED) {
                     return false;
                 }
 
                 const publicKey = await retrievePublicKey(signature.publicKeyId, url);
-
                 const msg = this.serializeUnsigned(signature.algorithm, signature.publicKeyId);
-                return publicKey.verify(msg, signature);
+                const msgHex = str2hexstr(msg);
+                return publicKey.verify(msgHex, signature);
             } catch (e) {
                 return false;
             }
@@ -367,7 +373,6 @@ export async function retrievePublicKeyState(publicKeyId: string, url: string): 
     const client = new RestClient(url);
     const tx = buildGetPublicKeyStateTx(ontId, keyId);
     const response = await client.sendRawTransaction(tx.serialize(), true);
-
     if (response.Result && response.Result.Result) {
         return PublicKeyStatus.fromHexLabel(response.Result.Result);
     } else {

@@ -103,12 +103,16 @@ describe('test scrypt', () => {
     });
 
     test('test_scrypt', () => {
-        const pri = new PrivateKey('6717c0df45159d5b5ef383521e5d8ed8857a02cdbbfdefeeeb624f9418b0895e');
+        const pri = new PrivateKey('5v1oz5r2JoR9YP5BHeFEVKJM6Z2epPZbT5bu7gttbn48a1Z1XqpVaxaMiFSnwQ0A');
         // const key = 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd'
-        const salt = Buffer.from('sJwpxe1zDsBt9hI2iA2zKQ==', 'base64').toString('hex');
-        const address = new Address('AakBoSAJapitE4sMPmW7bs8tfT4YqPeZEU');
-        const encrypt = pri.encrypt('11111111', address, salt);
-        console.log('encrypt: ' + encrypt);
+        const salt = Buffer.from('8HBtr187Xxp+4NszE3HemQ==', 'base64').toString('hex');
+        const address = new Address('ASyPjn3xyGPMhHZqszd1aziAmU7b4859Nz');
+        const decrypted = pri.decrypt('Nz8?DR_]aC,,z}Pj', address, salt, {
+            cost: 16384, // 除以2时间减半
+            blockSize: 8,
+            parallel: 8,
+            size: 64});
+        console.log('decrypted: ' + decrypted.serializeWIF());
         const params = {
 
         };

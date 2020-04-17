@@ -66,7 +66,7 @@ export interface Revocation {
  */
 export class Claim extends Message {
     static deserialize(jwt: string): Claim {
-        return super.deserializeInternal(jwt, (m: any, s: any) => new Claim(m, s));
+        return super.deserializeInternal(jwt, (m: any, s: any, u: any) => new Claim(m, s, u));
     }
 
     version: string;
@@ -136,7 +136,7 @@ export class Claim extends Message {
      * @param payer payer
      */
     async attest(url: string, gasPrice: string, gasLimit: string,
-                 payer: Address, privateKey: PrivateKey): Promise<boolean> {
+                 payer: Address, privateKey: PrivateKey): Promise<AttestNotifyEvent> {
         const attesterId = this.metadata.issuer;
         const subjectId = this.metadata.subject;
         const claimId = this.metadata.messageId;
@@ -152,7 +152,8 @@ export class Claim extends Message {
         const event = AttestNotifyEvent.deserialize(response);
         // tslint:disable-next-line:no-console
         console.log(JSON.stringify(event));
-        return event.Result.Notify[0].States[0] === 'Push';
+        // return event.Result.Notify[0].States[0] === 'Push';
+        return event;
     }
 
     /**
@@ -201,8 +202,7 @@ export class Claim extends Message {
         const response = await client.sendRawTransaction(tx.serialize(), true);
 
         const result = GetStatusResponse.deserialize(response);
-        // tslint:disable-next-line:no-console
-        console.log(result);
+        // console.log('status: ' + JSON.stringify(result));
 
         return result.status === Status.ATTESTED && result.issuerId === attesterId;
     }

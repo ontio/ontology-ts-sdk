@@ -25,7 +25,10 @@ import { SignatureScheme } from './SignatureScheme';
  */
 export class Signature {
     static deserializeJWT(encoded: string, algorithm: SignatureScheme, publicKeyId: string): Signature {
-        const decoded = b64.decode(encoded, 'hex');
+        let decoded = b64.decode(encoded, 'hex');
+        if (decoded.startsWith('01')) {
+            decoded = decoded.substring(2);
+        }
 
         return new Signature(
         algorithm,
@@ -109,7 +112,9 @@ export class Signature {
      * Serializes signature to base64url format.
      */
     serializeJWT(): string {
-        return b64.encode(this.value, 'hex');
+        // return b64.encode(this.value, 'hex');
+        return new Buffer(this.serializeHex(), 'hex').toString('base64');
+        // return b64.encode(this.serializeHex(), 'hex');
     }
 }
 

@@ -72,7 +72,7 @@ export class SignatureScheme {
      * @param label Label
      */
     static fromLabelJWS(label: string): SignatureScheme {
-        const item = SignatureScheme.values.find((v) => v.labelJWS === label);
+        const item = SignatureScheme.values.find((v) => v.labelJWS === label || label.indexOf(v.labelJWS) > -1);
         if (item === undefined) {
             throw new Error('Enum value not found');
         }

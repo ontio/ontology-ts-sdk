@@ -48,7 +48,6 @@ describe('test rpc client', () => {
     test('test getBlockHeight', async () => {
         const res = await rpcClient.getBlockHeight();
         console.log(res);
-        expect(res.desc).toEqual('SUCCESS');
         expect(res.result).toBeDefined();
         height = res.result - 1;
     });
@@ -135,14 +134,30 @@ describe('test rpc client', () => {
     });
 
     test('test getSmartCodeEvent by height', async () => {
-        const res = await rpcClient.getSmartCodeEvent(height);
-        expect(res.desc).toEqual('SUCCESS');
+        const result = await rpcClient.getSmartCodeEvent(12400231);
+        console.log(JSON.stringify(result));
+        const temp_txs = [];
+        if (result && result.error === 0) {
+            const txs = result.result;
+            if (Array.isArray(txs) && txs.length > 0) {
+                for (const item of txs) {
+                    if (item && item.Notify) {
+                        const notify = item.Notify.find((it) => it.ContractAddress === 'f0c0f68795cac1b501be66499e449933c11a7b6e');
+                        if (notify) {
+                            temp_txs.push(item);
+                        }
+                    }
+                }
+            }
+        }
+        console.log('temp_txs: ', temp_txs);
+        expect(result.desc).toEqual('SUCCESS');
     });
 
     test('test getSmartCodeEvent by hash', async () => {
-        const res = await rpcClient.getSmartCodeEvent('a9041ee31f2dae1c773a92fc5adea964845f6130ee07e02c51c2d41ae3bfe035');
-        console.log(JSON.stringify(res))
-        expect(res.desc).toEqual('SUCCESS');
+        const result = await rpcClient.getSmartCodeEvent('a9041ee31f2dae1c773a92fc5adea964845f6130ee07e02c51c2d41ae3bfe035');
+
+        expect(result.desc).toEqual('SUCCESS');
     });
 
     test('test getBlockHeightByTxHash', async () => {
