@@ -1,6 +1,6 @@
 import { Address } from '../crypto';
-import { str2VarBytes, StringReader, hexstr2str } from '../utils';
-import { serializeUint64, decodeVarUint, decodeVarBytes, decodeAddress } from './utils';
+import { str2VarBytes, StringReader, hexstr2str, num2VarInt } from '../utils';
+import { serializeUint64, decodeVarUint, decodeVarBytes, decodeAddress, serializeVarUint } from './utils';
 
 export class FsNodeInfo {
     public constructor(
@@ -58,7 +58,13 @@ export class FsNodeInfoList {
         return list
     }
 
-    serialzieHex() {
-
+    public serializeHex(): string {
+        let str = serializeVarUint(this.nodesInfo.length);
+        for (const nodeInfo of this.nodesInfo) {
+            const nodeInfoHex = nodeInfo.serializeHex()
+            const hexLen = num2VarInt(nodeInfoHex.length / 2)
+            str += hexLen + nodeInfoHex;
+        }
+        return str;
     }
 }

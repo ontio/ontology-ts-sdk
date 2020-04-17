@@ -1,6 +1,6 @@
 import { Address } from '../crypto';
-import { hex2VarBytes } from '../utils';
-import { serializeVarUint, serializeAddress } from './utils';
+import { hex2VarBytes, StringReader } from '../utils';
+import { decodeAddress, decodeVarBytes, decodeVarUint, serializeAddress, serializeVarUint } from './utils';
 
 export class FileTransfer {
     public constructor(
@@ -13,6 +13,13 @@ export class FileTransfer {
         return hex2VarBytes(this.fileHash)
             + serializeAddress(this.oriOwner)
             + serializeAddress(this.newOwner);
+    }
+    static deserializeHex(hex: string): FileTransfer {
+        let sr: StringReader = new StringReader(hex)
+        const fileHash = decodeVarBytes(sr)
+        const oriOwner = decodeAddress(sr)
+        const newOwner = decodeAddress(sr)
+        return new FileTransfer(fileHash, oriOwner, newOwner)
     }
 }
 
@@ -29,5 +36,15 @@ export class FileTransferList {
         }
 
         return str;
+    }
+    static deserializeHex(hex: string): FileTransferList {
+        let list: FileTransfer[] = []
+        let sr: StringReader = new StringReader(hex)
+        const count = decodeVarUint(sr)
+        for (let i = 0; i < count; i++) {
+            let item = FileTransfer.deserializeHex(sr.readNextBytes())
+            list.push(item)
+        }
+        return new FileTransferList(list)
     }
 }

@@ -1,5 +1,5 @@
-import { StringReader } from '../utils';
-import { decodeBool, decodeVarBytes } from './utils';
+import { StringReader, hex2VarBytes } from '../utils';
+import { decodeVarBytes, decodeBool, serializeBool } from './utils';
 
 export class FsResult {
     public constructor(
@@ -13,5 +13,8 @@ export class FsResult {
         const success = decodeBool(sr)
         const data = decodeVarBytes(sr)
         return new FsResult(success, data)
+    }
+    public serializeHex(): string {
+        return serializeBool(this.success) + hex2VarBytes(this.data);
     }
 }

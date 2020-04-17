@@ -5,6 +5,14 @@ export class FileHash {
     public constructor(
         public readonly fHash: string
     ) { }
+    public serializeHex(): string {
+        return hex2VarBytes(this.fHash);
+    }
+    static deserializeHex(hex: string): FileHash {
+        let sr: StringReader = new StringReader(hex);
+        const fileHash = decodeVarBytes(sr);
+        return new FileHash(fileHash)
+    }
 }
 
 export class FileHashList {

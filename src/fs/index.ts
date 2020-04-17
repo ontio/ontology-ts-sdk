@@ -7,3 +7,5 @@ export { ReadPlan } from './readPlan'
 export { ReadPledge } from './readPledge'
 export { PdpRecordList, PdpRecord } from './pdpRecord'
 export { ChallengeList, Challenge } from './challenge'
+export { FileReadSettleSlice } from "./fileReadSettleSlice"
+export { Passport } from './passport'

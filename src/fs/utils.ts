@@ -24,9 +24,13 @@ export function serializeVarUint(num: number): string {
     return hex2VarBytes(hex)
 }
 
-
 export function serializeAddress(addr: Address): string {
     return hex2VarBytes(addr.serialize())
+}
+
+
+export function serializeBool(bool: boolean): string {
+    return bool ? '01' : '00'
 }
 
 export function decodeBool(sr: StringReader): boolean {

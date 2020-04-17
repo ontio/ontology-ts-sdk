@@ -1,7 +1,6 @@
 import { Address, PrivateKey, PublicKey, Signature } from '../crypto';
-import { hex2VarBytes } from '../utils';
-import { serializeUint64 } from './utils';
-
+import { serializeVarUint, serializeAddress, decodeVarBytes, decodeAddress, decodeVarUint } from './utils';
+import { hex2VarBytes, StringReader } from '../utils'
 export class FileReadSettleSlice {
     static genFileReadSettleSlice(
         fileHash: string,
@@ -27,26 +26,40 @@ export class FileReadSettleSlice {
         public readonly pledgeHeight: number,
         public sig?: Signature,
         public pubKey?: PublicKey
-    ) {}
+    ) { }
 
     public verify(): boolean {
         if (!this.pubKey || !this.sig) {
             return false;
         }
-        return this.pubKey.verify(this.serializeHexWithoutVerifyInfo(), this.sig);
+        return this.pubKey.verify(this.serializeHexWithoutVerifyInfo() + '00' + '00', this.sig);
     }
 
     public serializeHexWithoutVerifyInfo(): string {
         return hex2VarBytes(this.fileHash)
-            + this.payFrom.serialize()
-            + this.payTo.serialize()
-            + serializeUint64(this.sliceId)
-            + serializeUint64(this.pledgeHeight);
+            + serializeAddress(this.payFrom)
+            + serializeAddress(this.payTo)
+            + serializeVarUint(this.sliceId)
+            + serializeVarUint(this.pledgeHeight)
     }
 
     public serializeHex(): string {
         return this.serializeHexWithoutVerifyInfo()
-            + (this.sig ? this.sig.serializeHex() : '0')
-            + (this.pubKey ? this.pubKey.serializeHex() : '0');
+            + (this.sig ? hex2VarBytes(this.sig.value) : '00')
+            + (this.pubKey ? this.pubKey.serializeHex() : '00');
+    }
+    static deserializeHex(hex: string): FileReadSettleSlice {
+        let sr: StringReader = new StringReader(hex)
+        const fileHash = decodeVarBytes(sr)
+        const payFrom = decodeAddress(sr)
+        const payTo = decodeAddress(sr)
+        const sliceId = decodeVarUint(sr)
+        const pledgeHeight = decodeVarUint(sr)
+        const sigHex = decodeVarBytes(sr)
+        const pubKeyHex = decodeVarBytes(sr)
+        const sig = Signature.deserializeHex(sigHex)
+        const pubKey = PublicKey.deserializeHex(new StringReader(pubKeyHex))
+        return new FileReadSettleSlice(fileHash, payFrom, payTo, sliceId, pledgeHeight,
+            sig, pubKey)
     }
 }

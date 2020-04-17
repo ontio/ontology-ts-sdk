@@ -1,5 +1,5 @@
-import { hex2VarBytes } from '../utils';
-import { serializeVarUint } from './utils';
+import { hex2VarBytes, StringReader } from '../utils';
+import { serializeVarUint, decodeVarBytes, decodeVarUint } from './utils';
 
 export class FileDel {
     public constructor(
@@ -8,6 +8,11 @@ export class FileDel {
 
     public serializeHex(): string {
         return hex2VarBytes(this.fileHash);
+    }
+    static deserializeHex(hex: string): FileDel {
+        let sr: StringReader = new StringReader(hex);
+        const fileHash = decodeVarBytes(sr);
+        return new FileDel(fileHash)
     }
 }
 
@@ -22,5 +27,15 @@ export class FileDelList {
             str += hex2VarBytes(fileDel.serializeHex());
         }
         return str;
+    }
+    static deserializeHex(hex: string): FileDelList {
+        let list: FileDel[] = []
+        let sr: StringReader = new StringReader(hex)
+        const count = decodeVarUint(sr)
+        for (let i = 0; i < count; i++) {
+            let del = FileDel.deserializeHex(sr.readNextBytes())
+            list.push(del)
+        }
+        return new FileDelList(list)
     }
 }

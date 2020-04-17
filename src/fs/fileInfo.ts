@@ -77,4 +77,14 @@ export class FileInfoList {
         }
         return str;
     }
+    static deserializeHex(hex: string): FileInfoList {
+        let list: FileInfo[] = []
+        let sr: StringReader = new StringReader(hex)
+        const count = decodeVarUint(sr)
+        for (let i = 0; i < count; i++) {
+            let item = FileInfo.deserializeHex(sr.readNextBytes())
+            list.push(item)
+        }
+        return new FileInfoList(list)
+    }
 }

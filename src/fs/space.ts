@@ -60,4 +60,13 @@ export class SpaceUpdate {
             + serializeVarUint(this.newVolume)
             + serializeVarUint(this.newTimeExpired);
     }
+    static deserializeHex(hex: string): SpaceUpdate {
+        let sr: StringReader = new StringReader(hex)
+        const spaceOwner = decodeAddress(sr)
+        const payer = decodeAddress(sr)
+        const newVolume = decodeVarUint(sr)
+        const newTimeExpired = decodeVarUint(sr)
+
+        return new SpaceUpdate(spaceOwner, payer, newVolume, newTimeExpired)
+    }
 }
