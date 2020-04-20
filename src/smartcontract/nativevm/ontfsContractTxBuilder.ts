@@ -1,20 +1,20 @@
 /*
-* Copyright (C) 2018 The ontology Authors
-* This file is part of The ontology library.
-*
-* The ontology is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* The ontology is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright (C) 2018 The ontology Authors
+ * This file is part of The ontology library.
+ *
+ * The ontology is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The ontology is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import { Address, PrivateKey, PublicKey, Signature } from '../../crypto';
 import { Challenge } from '../../fs/challenge';
@@ -200,7 +200,8 @@ export function buildGetFileReadPledgeTx(
 ): Transaction {
     const getReadPledge = new GetReadPledge(fileHash, downloader);
     const struct = new Struct();
-    struct.add(getReadPledge.serializeHex());
+    struct.add(getReadPledge.fileHash)
+    struct.add(getReadPledge.downloader.serialize())
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetReadPledge, params, contractAddress);
 }
@@ -225,7 +226,7 @@ export function buildGetFilePdpRecordListTx(
     fileHash: string
 ): Transaction {
     const struct = new Struct();
-    struct.add(hex2VarBytes(fileHash));
+    struct.add(fileHash);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetPdpInfoList, params, contractAddress);
 }
@@ -423,7 +424,7 @@ export function buildGetFileListTx(
     passport: Passport | string
 ): Transaction {
     const struct = new Struct();
-    struct.add(typeof passport === 'string' ? passport : passport.serialzieHex());
+    struct.add(typeof passport === 'string' ? passport : passport.serializeHex());
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetFileHashList, params, contractAddress);
 }
@@ -432,7 +433,7 @@ export function buildGetFileInfoTx(
     fileHash: string
 ): Transaction {
     const struct = new Struct();
-    struct.add(hex2VarBytes(fileHash));
+    struct.add(fileHash);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetFileInfo, params, contractAddress);
 }
@@ -507,6 +508,7 @@ export function buildRenewFilesTx(
         const fsFileRenew = new FileRenew(fileHash, newFileOwner, newPayer, renewTime);
         fileRenewList.filesRenew.push(fsFileRenew);
     }
+    console.log('fileRenewList', fileRenewList)
     const struct = new Struct();
     struct.add(fileRenewList.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -557,7 +559,8 @@ export function buildCancelFileReadTx(
 ): Transaction {
     const getReadPledge = new GetReadPledge(fileHash, downloader);
     const struct = new Struct();
-    struct.add(getReadPledge.serializeHex());
+    struct.add(getReadPledge.fileHash)
+    struct.add(getReadPledge.downloader.serialize())
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsCancelFileRead, params, contractAddress, gasPrice, gasLimit, payer);
 }

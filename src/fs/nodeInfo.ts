@@ -1,6 +1,6 @@
 import { Address } from '../crypto';
-import { str2VarBytes } from '../utils';
-import { serializeUint64 } from './utils';
+import { str2VarBytes, StringReader, hexstr2str, num2VarInt } from '../utils';
+import { serializeUint64, decodeVarUint, decodeVarBytes, decodeAddress, serializeVarUint } from './utils';
 
 export class FsNodeInfo {
     public constructor(
@@ -12,7 +12,21 @@ export class FsNodeInfo {
         public readonly minPdpInterval: number,
         public readonly nodeAddr: Address,
         public readonly nodeNetAddr: string
-    ) {}
+    ) { }
+
+    static deserializeHex(hex: string): FsNodeInfo {
+        let sr: StringReader = new StringReader(hex)
+        const pledge = decodeVarUint(sr)
+        const profit = decodeVarUint(sr)
+        const volume = decodeVarUint(sr)
+        const restVol = decodeVarUint(sr)
+        const serviceTime = decodeVarUint(sr)
+        const minPdpInterval = decodeVarUint(sr)
+        const nodeAddr = decodeAddress(sr)
+        const nodeNetAddr = hexstr2str(decodeVarBytes(sr))
+        return new FsNodeInfo(pledge, profit, volume, restVol, serviceTime,
+            minPdpInterval, nodeAddr, nodeNetAddr)
+    }
 
     public serializeHex(): string {
         let str = '';
@@ -30,5 +44,27 @@ export class FsNodeInfo {
 export class FsNodeInfoList {
     constructor(
         public readonly nodesInfo: FsNodeInfo[]
-    ) {}
+    ) { }
+
+    static deserializeHex(hex: string): FsNodeInfoList {
+        let nodeInfos: FsNodeInfo[] = []
+        let sr: StringReader = new StringReader(hex)
+        const count = decodeVarUint(sr)
+        for (let i = 0; i < count; i++) {
+            let nodeInfo = FsNodeInfo.deserializeHex(sr.readNextBytes())
+            nodeInfos.push(nodeInfo)
+        }
+        let list = new FsNodeInfoList(nodeInfos)
+        return list
+    }
+
+    public serializeHex(): string {
+        let str = serializeVarUint(this.nodesInfo.length);
+        for (const nodeInfo of this.nodesInfo) {
+            const nodeInfoHex = nodeInfo.serializeHex()
+            const hexLen = num2VarInt(nodeInfoHex.length / 2)
+            str += hexLen + nodeInfoHex;
+        }
+        return str;
+    }
 }

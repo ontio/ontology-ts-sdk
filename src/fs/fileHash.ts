@@ -1,16 +1,24 @@
-import { hex2VarBytes } from '../utils';
-import { serializeUint64 } from './utils';
+import { serializeUint64, decodeVarUint, decodeVarBytes } from './utils';
+import { hex2VarBytes, StringReader, hexstr2str } from '../utils';
 
 export class FileHash {
     public constructor(
         public readonly fHash: string
-    ) {}
+    ) { }
+    public serializeHex(): string {
+        return hex2VarBytes(this.fHash);
+    }
+    static deserializeHex(hex: string): FileHash {
+        let sr: StringReader = new StringReader(hex);
+        const fileHash = decodeVarBytes(sr);
+        return new FileHash(fileHash)
+    }
 }
 
 export class FileHashList {
     public constructor(
         public readonly filesH: FileHash[]
-    ) {}
+    ) { }
 
     public serializeHex(): string {
         let str = serializeUint64(this.filesH.length);
@@ -18,5 +26,14 @@ export class FileHashList {
             str += hex2VarBytes(fileHash.fHash);
         }
         return str;
+    }
+    static deserializeHex(hex: string): FileHashList {
+        let sr: StringReader = new StringReader(hex)
+        const count = decodeVarUint(sr)
+        let hashes: FileHash[] = []
+        for (let i = 0; i < count; i++) {
+            hashes.push(new FileHash(hexstr2str(decodeVarBytes(sr))))
+        }
+        return new FileHashList(hashes)
     }
 }
