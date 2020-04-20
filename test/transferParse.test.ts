@@ -26,7 +26,7 @@ describe('parse transfer tx', () => {
     test('transfer 10000 ONT', () => {
         const tx = makeTransferTx('ONT', from, to, 10000, '500', '20000', from);
         const transfer = deserializeTransferTx(tx.serialize());
-        expect(transfer.amount).toEqual(10000);
+        expect(transfer.amount).toEqual('10000');
         expect(transfer.from.toBase58()).toEqual('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
         expect(transfer.to.toBase58()).toEqual('ALFZykMAYibLoj66jcBdbpTnrBCyczf4CL');
         expect(transfer.tokenType).toEqual('ONT');

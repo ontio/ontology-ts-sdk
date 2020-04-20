@@ -1,19 +1,19 @@
 import { Address } from '../src/crypto/address';
 import { PrivateKey } from '../src/crypto/PrivateKey';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { PublicKey } from './../src/crypto/PublicKey';
-import { ParameterType } from './../src/smartcontract/abi/parameter';
+import { PublicKey } from '../src/crypto/PublicKey';
+import { ParameterType } from '../src/smartcontract/abi/parameter';
 
 import { RestClient } from '../src/index';
 import { Parameter } from '../src/smartcontract/abi/parameter';
-import { getAttributes, getAuthorizeInfo, getGlobalParam, getGovernanceView,
-    getPeerPoolMap, getPeerUnboundOng, getSplitFeeAddress, getTotalStake,
-    makeAuthorizeForPeerTx, makeChangeAuthorizationTx, makeSetPeerCostTx,
-    makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx, getConfiguration
+import { getAttributes, getAuthorizeInfo, getConfiguration, getGlobalParam,
+    getGovernanceView, getPeerPoolMap, getPeerUnboundOng, getSplitFeeAddress,
+    getTotalStake, makeAuthorizeForPeerTx, makeChangeAuthorizationTx,
+    makeSetPeerCostTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
 import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
 import { calcUnboundOng, reverseHex, StringReader } from '../src/utils';
-import { Key } from './../src/crypto/Key';
+import { Key } from '../src/crypto/Key';
 
 describe('test governance authorization', () => {
     const socketClient = new WebsocketClient('ws://139.219.128.220:20335');
@@ -155,17 +155,18 @@ describe('test governance authorization', () => {
     }, 10000);
 
     test('getPeerPoolMap', async () => {
-        const nodeUrl = 'http://dappnode1.ont.io:20334';
+        const nodeUrl = 'http://polaris1.ont.io:20334';
         const res = await getPeerPoolMap(nodeUrl);
-        const pk = '032f6464df7c42b5a80953680165a23cb98453a1fcb5770f233664909847faf36f';
-        console.log(res[pk]);
+        console.log(res);
+        // const pk = '032f6464df7c42b5a80953680165a23cb98453a1fcb5770f233664909847faf36f';
+        // console.log(res[pk]);
     }, 10000);
 
     test('getAuthorizeInfo', async () => {
         // const pk = stake2.peerPubkey;
-        const pk = '032f6464df7c42b5a80953680165a23cb98453a1fcb5770f233664909847faf36f';
+        const pk = '037acf1bb88200138b44f5d645d0e0c063043addc30db0102eea508db2585f9171';
         // const userAddr = new Address(account4.address);
-        const userAddr = new Address('ALaDrS5ZwMKZgTS3a8okgDDz84k3ttfP4x');
+        const userAddr = new Address('ARZacyMxji4pBjP1X7KswbdiBWBhkQ3rgr');
         const nodeUrl = 'http://dappnode1.ont.io:20334';
         const res = await getAuthorizeInfo(pk, userAddr, nodeUrl);
         console.log(res);
@@ -188,8 +189,8 @@ describe('test governance authorization', () => {
     }, 1000);
 
     test('getTotalStake', async () => {
-        const addr = new Address('AKuiqSoKR2UVRPCBofsrmudF1CdZw4Y8mm');
-        const nodeUrl = 'http://dappnode1.ont.io:20334';
+        const addr = new Address('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve');
+        const nodeUrl = 'http://polaris1.ont.io:20334';
         const ts = await getTotalStake(addr, nodeUrl);
         console.log(ts);
     });

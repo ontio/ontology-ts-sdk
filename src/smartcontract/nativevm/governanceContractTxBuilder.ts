@@ -22,8 +22,8 @@ import { ERROR_CODE } from '../../error';
 import RestClient from '../../network/rest/restClient';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
-import { calcUnboundOng, hex2VarBytes, hexstr2str,
-    num2hexstring, str2hexstr, str2VarBytes, StringReader, varifyPositiveInt, bigIntFromBytes } from '../../utils';
+import { bigIntFromBytes, calcUnboundOng, hex2VarBytes,
+    hexstr2str, num2hexstring, str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 

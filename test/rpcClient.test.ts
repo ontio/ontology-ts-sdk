@@ -10,7 +10,7 @@ import { addSign } from './../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console
 describe('test rpc client', () => {
-    const rpcClient = new RpcClient('http://139.219.128.220:20336');
+    const rpcClient = new RpcClient('http://polaris1.ont.io:20336');
 
     const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
 
@@ -31,16 +31,16 @@ describe('test rpc client', () => {
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
-    beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-        tx.payer = adminAddress;
-        signTransaction(tx, adminPrivateKey);
-        addSign(tx, privateKey);
+    // beforeAll(async () => {
+    //     const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+    //     tx.payer = adminAddress;
+    //     signTransaction(tx, adminPrivateKey);
+    //     addSign(tx, privateKey);
 
-        const client = new WebsocketClient();
-        const result = await client.sendRawTransaction(tx.serialize(), false, true);
-        txHash = result.Result.TxHash;
-    }, 10000);
+    //     const client = new WebsocketClient();
+    //     const result = await client.sendRawTransaction(tx.serialize(), false, true);
+    //     txHash = result.Result.TxHash;
+    // }, 10000);
 
     /**
      * Gets current block height to be used by following tests.
@@ -48,7 +48,6 @@ describe('test rpc client', () => {
     test('test getBlockHeight', async () => {
         const res = await rpcClient.getBlockHeight();
         console.log(res);
-        expect(res.desc).toEqual('SUCCESS');
         expect(res.result).toBeDefined();
         height = res.result - 1;
     });
@@ -135,13 +134,30 @@ describe('test rpc client', () => {
     });
 
     test('test getSmartCodeEvent by height', async () => {
-        const res = await rpcClient.getSmartCodeEvent(height);
-        expect(res.desc).toEqual('SUCCESS');
+        const result = await rpcClient.getSmartCodeEvent(12400231);
+        console.log(JSON.stringify(result));
+        const temp_txs = [];
+        if (result && result.error === 0) {
+            const txs = result.result;
+            if (Array.isArray(txs) && txs.length > 0) {
+                for (const item of txs) {
+                    if (item && item.Notify) {
+                        const notify = item.Notify.find((it) => it.ContractAddress === 'f0c0f68795cac1b501be66499e449933c11a7b6e');
+                        if (notify) {
+                            temp_txs.push(item);
+                        }
+                    }
+                }
+            }
+        }
+        console.log('temp_txs: ', temp_txs);
+        expect(result.desc).toEqual('SUCCESS');
     });
 
     test('test getSmartCodeEvent by hash', async () => {
-        const res = await rpcClient.getSmartCodeEvent(txHash);
-        expect(res.desc).toEqual('SUCCESS');
+        const result = await rpcClient.getSmartCodeEvent('a9041ee31f2dae1c773a92fc5adea964845f6130ee07e02c51c2d41ae3bfe035');
+
+        expect(result.desc).toEqual('SUCCESS');
     });
 
     test('test getBlockHeightByTxHash', async () => {

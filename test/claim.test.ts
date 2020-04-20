@@ -18,12 +18,17 @@
 
 import { Account } from '../src/account';
 import { Claim, RevocationType } from '../src/claim/claim';
+import { ClaimProof } from '../src/claim/claimProof';
 import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
+import { constructMerkleProof } from '../src/merkle';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { addSign, signTransaction } from '../src/transaction/transactionBuilder';
 
+import * as b64 from 'base64-url';
+import { Base64  } from 'js-base64';
+import { str2hexstr } from '../src/utils';
 describe('test claim', () => {
     const restUrl = 'http://polaris1.ont.io:20334';
 
@@ -131,23 +136,29 @@ describe('test claim', () => {
     });
 
     test('test verify with missing attest', async () => {
-        const msg = Claim.deserialize(signed);
+        const claimSigned = 'eyJraWQiOiJkaWQ6b250OkFScjZBcEsyNEVVN251Zk5ENHMxU1dwd1VMSEJlcnRwSmIja2V5cy0xIiwidHlwIjoiSldULVgiLCJhbGciOiJPTlQtRVMyNTYifQ==.eyJjbG0tcmV2Ijp7InR5cCI6IkF0dGVzdENvbnRyYWN0IiwiYWRkciI6IjM2YmI1YzA1M2I2YjgzOWM4ZjZiOTIzZmU4NTJmOTEyMzliOWZjY2MifSwic3ViIjoiZGlkOm9udDpBSHpVZnJxcE53SEJmWEE3MkQ5SGNpTkFLdUNyODNTekRHIiwidmVyIjoidjEuMCIsImNsbSI6eyJBdmF0YXIiOiJodHRwczovL21lZGlhLmxpY2RuLmNvbS9tcHIvbXByeC8wXy1IT21wMXU5ek5DeGJGM2lLb1lqcGxtOWNsTlA1M0FpeXVvQXBsZ0xITjhDczU2X1lhYUN0QWRJSjBxUzY2cmYxSXBLMTlfZ2FqWmEiLCJCaW8iOiJCbG9ja2NoYWluIEFwcCBEZXZlbG9wZXIiLCJGaXJzdE5hbWUiOiJmZW5nIiwiSG9tZVBhZ2UiOiJodHRwczovL3d3dy5saW5rZWRpbi5jb20vaW4vJUU0JUJBJTlBJUU1JUIzJUIwLSVFNiU5RCU4RS1iNTZiOGI3OSIsIklkIjoieUw1RmRYQi11bSIsIklzc3Vlck5hbWUiOiJPbnRvbG9neSIsIkxhc3ROYW1lIjoibGkiLCJOYW1lIjoibGlmZW5nIn0sImlzcyI6ImRpZDpvbnQ6QVJyNkFwSzI0RVU3bnVmTkQ0czFTV3B3VUxIQmVydHBKYiIsImV4cCI6MTYxODY0OTQ0MSwiaWF0IjoxNTg3MTEzNDQzLCJAY29udGV4dCI6ImNsYWltOmxpbmtlZGluX2F1dGhlbnRpY2F0aW9uIiwianRpIjoiY2UwYmMwMjdjYzAyZWQ1MzdiYTdiZWEwZWY5NzZmYTg3ZDkzMTQ5NjA1MmEwNmFlNmNkOTE3NjIxZjg3ZTcxOCJ9.AfFnvhBfbzrXDDuk1W0VY5XT7+GadWmSRrszsfk5iLePEpHrkOSGGmiRJMf1lBSFG0SYDR32aQdspYRURW4HHMA=.eyJUeXBlIjoiTWVya2xlUHJvb2YiLCJNZXJrbGVSb290IjoiOTM0Nzk2YmUzNjdiNzhlODI2OTM5NjJiZDFjYTE3MWYzYWI1YmU1YzJmZDFmYjI1ZGQxNWNmNTQxNWY4ZTJiYSIsIlR4bkhhc2giOiJiY2ZlMDQyMDIzMDdiMDYxNzA2MjA4YjZhMDY3MmFkNDkyZTYzZGU1YzgzZTEzOTk5ODRhMjg1OTk1N2YwNzU5IiwiQmxvY2tIZWlnaHQiOjExNTMxMzI4LCJOb2RlcyI6W3siVGFyZ2V0SGFzaCI6IjhmNDAxNTZjMzkyMjAxYmQzMGM0M2Y5NzJjZTA3NGQwZDYyZjdkYjk4NGI1ZjIyMmJiZWQ1MmEyNDhmODg3ODkiLCJEaXJlY3Rpb24iOiJSaWdodCJ9LHsiVGFyZ2V0SGFzaCI6IjQ1NjczODQyOTVkZTRlNTFlMWMwOGRhZDFjY2IwOGE0Y2M3MjA1MmU0OGU3OTdmYjYyM2JmMGJjNTg1NjBiZTAiLCJEaXJlY3Rpb24iOiJSaWdodCJ9LHsiVGFyZ2V0SGFzaCI6ImVkN2VjZTM1ZTE5YmVmMDg2ZjU2Y2ExODhmYWQ0Y2MwN2NjNmY5ZjczNDQ3YmQ1ZDUxNjA3YTJhMGZiM2U1YjgiLCJEaXJlY3Rpb24iOiJMZWZ0In0seyJUYXJnZXRIYXNoIjoiZDk3YTAxZTAyYTk2ZDQ2NzY3MmRjMzQ5ZmZiYmZjYzcwYjAxMjE1NzMzNDllOGVhNjc0ZjQ5ODcwNWZlODZlOCIsIkRpcmVjdGlvbiI6IkxlZnQifSx7IlRhcmdldEhhc2giOiJkNmE4ZDQ5YTk3MDUxNDFkNjU2YzU4MDJlYmJkYTg1ZGNkMGFhYTY0Y2JiYzRkZTBiNTBmOWNmY2U0ZDdjYjcwIiwiRGlyZWN0aW9uIjoiTGVmdCJ9LHsiVGFyZ2V0SGFzaCI6IjEzYTFhMTk3NDkyMjI4ODE1MWY2OGFhZGQ3NTZiNWIxODI2MTdjN2ExZjBiMmYwYmFmNmNmNGQzMDdhMjJhYjYiLCJEaXJlY3Rpb24iOiJMZWZ0In0seyJUYXJnZXRIYXNoIjoiMWEyZTdkNTViODQyZDAwODgxMGZmNGEzMDI5YWJiOGEyMDZhZGE4YWE3MThkZTA4YmRkYmFlOWZhZmMwMjVkYSIsIkRpcmVjdGlvbiI6IkxlZnQifSx7IlRhcmdldEhhc2giOiJmZjYyOTUwZTk0NDE1ZGM1NGM1N2QzN2FkNTBkODY1NjE3ZTQ1ZDE3ZDE4M2YwYWZlYTU3OWIzYzkzNjI2NmVlIiwiRGlyZWN0aW9uIjoiTGVmdCJ9LHsiVGFyZ2V0SGFzaCI6Ijg5NTY3NzViZGRlMmFkY2IxYWM4OTcxYzVhNWViOTBiZDE2N2ZiNTkwMzdjZjg1YTM3YjUyZGIxZTcxZDgxMTEiLCJEaXJlY3Rpb24iOiJMZWZ0In0seyJUYXJnZXRIYXNoIjoiODBiZjhhN2VlMmI3YjkzNGRjNTU1ODEyY2ViZDEzNWJmOWFhOTQyZTY2ZTQ0MDExMDllOTdhOTVkODMzMDM1YiIsIkRpcmVjdGlvbiI6IkxlZnQifSx7IlRhcmdldEhhc2giOiI5ZmVjZGJiNTRhMjUzM2Q0NDBiOWY0NDBhNGRlZDBiYzkwZjllMGMyZDZlMzhlYzg0NTkzODRjYjE2MWQzZmRkIiwiRGlyZWN0aW9uIjoiTGVmdCJ9LHsiVGFyZ2V0SGFzaCI6IjJlNDdiZTAyYjYxMzkzYWYwNzU4OWE4MjkwZjI4MDMxYzFmOTk4YjUzNjI1ZjAxNjAxZjExYmNhM2I4Y2YyODEiLCJEaXJlY3Rpb24iOiJMZWZ0In0seyJUYXJnZXRIYXNoIjoiMmQxNjVhMmU4YTIyOGVkMWQxYTQ1YmU5ZDZmMTQ3MDhiM2Y5NGZmMzNlNmU0YzFlZTYzYzE5MWJiMGJiMWE4NyIsIkRpcmVjdGlvbiI6IkxlZnQifSx7IlRhcmdldEhhc2giOiI4ZWUwZGEzNmY5MThhMTMzZWNkMmI2MWJkNGQ3YWMyZDY1NjFmMDhhYWJlMWU2NDllMWI5MTEwYmVhN2Q2NDc1IiwiRGlyZWN0aW9uIjoiTGVmdCJ9XSwiQ29udHJhY3RBZGRyIjoiMzZiYjVjMDUzYjZiODM5YzhmNmI5MjNmZTg1MmY5MTIzOWI5ZmNjYyJ';
 
-        const result = await msg.verify(restUrl, true);
-
-        expect(result).toBeFalsy();
+        const msg = Claim.deserialize(claimSigned);
+        // console.log('not useProof: ' + msg.serializeUnsigned());
+        // console.log('not useProof: ' + msg.signature.serializeJWT());
+        // msg.useProof = true;
+        console.log(msg);
+        const result = await msg.verify(restUrl, false);
+        expect(result).toBeTruthy();
     });
-    test('claim', async () => {
+
+    
+    test('test_claim', async () => {
         const restUrl = 'http://polaris1.ont.io:20334';
-        const ontid = 'did:ont:AN88DMMBZr5X9ChpMHX3LqRvQHqGxk2c3r';
+        const ontid = 'did:ont:AeXrnQ7jvo3HbSPgiThkgJ7ifPQkzXhtpL';
         const publicKeyId = ontid + '#keys-1';
         const privateKey = new PrivateKey('4a8d6d61060998cf83acef4d6e7976d538b16ddeaa59a96752a4a7c0f7ec4860');
         const claim = new Claim({
-            messageId: '1',
+            messageId: '2020/04/17',
             issuer: ontid,
             subject: ontid,
             issuedAt: 1525800823
-        }, undefined, false);
+        }, undefined, true);
         claim.version = '0.7.0';
         claim.context = 'https://example.com/template/v1';
         claim.content = {
@@ -158,16 +169,27 @@ describe('test claim', () => {
             type: RevocationType.AttestContract,
             addr: '8055b362904715fd84536e754868f4c8d27ca3f6'
         };
+
         await claim.sign(restUrl, publicKeyId, privateKey);
         const socketUrl = 'ws://polaris1.ont.io:20335';
         const res = await claim.attest(socketUrl, '500', '20000', adminAddress, adminPrivateKey);
-        console.log(res);
+        const contract = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
+        const proof = await constructMerkleProof(restUrl, res.Result.TxHash, contract);
+        claim.proof = proof;
+        // console.log(proof);
 
         const signed = claim.serialize();
-
         const msg = Claim.deserialize(signed);
-        const result = await msg.verify(restUrl, false);
+       
+        const result = await msg.verify(restUrl, true);
+        const pk = privateKey.getPublicKey();
+        const strs = signed.split('.');
 
-        console.log('Info: ', signed, result, claim);
+        const signData = str2hexstr(strs[0] + '.' + strs[1]);
+        const result2 = pk.verify(signData, msg.signature);
+        console.log('result1: ' + result);
+        console.log( 'result2: ' + result2);
+        
+        // console.log('Info: ', signed, result, claim);
     });
 });

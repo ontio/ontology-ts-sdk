@@ -17,6 +17,7 @@
  */
 
 import * as cryptoJS from 'crypto-js';
+import { ClaimProof } from './claim/claimProof';
 import RestClient from './network/rest/restClient';
 
 /*
@@ -118,12 +119,12 @@ export function getProofNodes(leafIndex: number, treeSize: number, proof: string
     return nodes;
 }
 
-export async function constructClaimProof(txHash: string, contractAddr: string) {
-    const restClient = new RestClient();
+export async function constructMerkleProof(restUrl: string, txHash: string, contractAddr: string) {
+    const restClient = new RestClient(restUrl);
     const res = await restClient.getMerkleProof(txHash);
 
     // tslint:disable-next-line:no-console
-    console.log(res.Result);
+    // console.log(res.Result);
 
     const merkleProof = res.Result;
     const proof = merkleProof.TargetHashes;
@@ -133,7 +134,6 @@ export async function constructClaimProof(txHash: string, contractAddr: string) 
     // const pathLen = proof.length;
 
     const nodes = getProofNodes(leafIndex, treeSize, proof);
-
     const claimProof = {
         Type: 'MerkleProof',
         TxnHash: txHash,
@@ -141,7 +141,7 @@ export async function constructClaimProof(txHash: string, contractAddr: string) 
         BlockHeight: merkleProof.BlockHeight,
         MerkleRoot: merkleProof.CurBlockRoot,
         Nodes: nodes
-    };
+    } as ClaimProof;
 
     return claimProof;
 }

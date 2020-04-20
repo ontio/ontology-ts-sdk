@@ -19,7 +19,7 @@ import { Address, PublicKey } from '../../crypto';
 import { DDOAttribute } from '../../transaction/ddo';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
-import { num2hexstring, str2hexstr } from '../../utils';
+import { str2hexstr } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
@@ -461,12 +461,12 @@ export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
     }
 
     // tslint:disable-next-line:no-console
-    console.log('did: ' + ontid);
+    // console.log('did: ' + ontid);
 
-    const index = num2hexstring(pkId, 4, true);
+    // const index = num2hexstring(pkId, 4, true);
 
     // tslint:disable-next-line:no-console
-    console.log('index: ' + index);
+    // console.log('index: ' + index);
 
     const struct = new Struct();
     struct.add(ontid, pkId);

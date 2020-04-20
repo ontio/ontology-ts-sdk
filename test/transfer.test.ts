@@ -61,6 +61,7 @@ describe('test transfer asset', () => {
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         // tslint:disable:no-console
         console.log(JSON.stringify(response));
+        console.log(tx.getHash());
         expect(response.Result.State).toEqual(1);
     }, 10000);
 
@@ -72,6 +73,7 @@ describe('test transfer asset', () => {
         signTransaction(tx, adminPrivateKey);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         // tslint:disable:no-console
+        console.log(tx.getHash());
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     }, 10000);

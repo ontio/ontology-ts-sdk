@@ -77,6 +77,7 @@ describe('test ONT ID contract', () => {
     // tslint:disable:no-console
 
     privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
+    console.log('wif: ' + privateKey.serializeWIF());
     const account = Account.create(privateKey, '123456', '');
     console.log('account: ' + account.address.toBase58());
     publicKey = privateKey.getPublicKey();
@@ -124,8 +125,8 @@ describe('test ONT ID contract', () => {
     }, 10000);
 
     test('testDDOTx', async () => {
-        const tx = buildGetDDOTx('did:ont:ANs2CwqK5qPFHyvnr78ke6218z9pwqwusi');
-        const restClient = new RestClient(MAIN_ONT_URL.REST_URL);
+        const tx = buildGetDDOTx(ontid);
+        const restClient = new RestClient();
         const response = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(response);
         const ddo = DDO.deserialize(response.Result.Result);

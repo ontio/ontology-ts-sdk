@@ -1,5 +1,5 @@
 import { PrivateKey } from '../src/crypto/PrivateKey';
-import { RestClient, Struct } from '../src/index';
+import { RestClient, RpcClient, Struct } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { createCodeParamsScript, deserializeItem } from '../src/transaction/scriptBuilder';
 import { num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
@@ -37,6 +37,7 @@ describe('test smarct contract params', () => {
         signTransaction(tx, privateKey);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
+
     }, 10000);
 
     test('test_list', async () => {
@@ -256,7 +257,7 @@ describe('test smarct contract params', () => {
     }, 10000);
 
     test('balanceOf', async () => {
-        const contract = reverseHex('5dcca7e97fa4bb2fa7fca183a7dd251ec011f5cd');
+        const contract = reverseHex('b1e8b6485ac1a5426b4dbe4c9b3c7b1988a00e3f');
         const contractAddr = new Address(contract);
 
         const params = [
@@ -264,11 +265,13 @@ describe('test smarct contract params', () => {
 
         ];
 
-        const tx = makeInvokeTransaction('balanceOf', params, contractAddr, '500', '20000', account.address);
-        console.log(tx.payload.code);
-        signTransaction(tx, privateKey);
+        const tx = makeInvokeTransaction('getActivityTime', [], contractAddr, '500', '20000', account.address);
+        // console.log(tx.payload.code);
+        // signTransaction(tx, privateKey);
         const socket = new WebsocketClient('ws://13.57.184.209:20335');
-        const res = await socket.sendRawTransaction(tx.serialize(), true);
+        const rpcClient = new RpcClient('http://dappnode1.ont.io:20336');
+        // const res = await socket.sendRawTransaction(tx.serialize(), true);
+        const res = await rpcClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
     }, 10000);
 });
