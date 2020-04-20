@@ -20,6 +20,7 @@ import { Account } from './account';
 import { Claim } from './claim';
 import * as CONST from './consts';
 import * as Crypto from './crypto';
+import * as FS from './fs';
 import { Identity } from './identity';
 import * as NeoCore from './neocore';
 import RestClient from './network/rest/restClient';
@@ -54,6 +55,7 @@ class ONT {
     Claim: any;
     DDO: any;
     DDOAttribute: any;
+    FS: any;
     Transaction: any;
     Transfer: any;
     TxSignature: any;
@@ -89,6 +91,7 @@ class ONT {
         this.Claim = Claim;
         this.DDO = DDO;
         this.DDOAttribute = DDOAttribute;
+        this.FS = FS;
         this.Transaction = Transaction;
         this.Transfer = Transfer;
         this.TxSignature = TxSignature;
@@ -143,6 +146,7 @@ export {
     Claim,
     DDO,
     DDOAttribute,
+    FS,
     Transaction,
     Transfer,
     TxSignature,

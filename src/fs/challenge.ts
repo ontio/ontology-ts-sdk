@@ -30,14 +30,14 @@ export class Challenge {
     );
     }
     public constructor(
-    public readonly fileHash: string,
-    public readonly fileOwner: Address = new Address('0'.repeat(40)),
-    public readonly nodeAddr: Address = new Address('0'.repeat(40)),
-    public readonly challengeHeight: number = 0,
-    public readonly reward: number = 0,
-    public readonly expiredTime: number = 0,
-    public readonly state: number = 0
-  ) { }
+      public readonly fileHash: string,
+      public readonly fileOwner: Address = new Address('0'.repeat(40)),
+      public readonly nodeAddr: Address = new Address('0'.repeat(40)),
+      public readonly challengeHeight: number = 0,
+      public readonly reward: number = 0,
+      public readonly expiredTime: number = 0,
+      public readonly state: number = 0
+    ) { }
 
     public serializeHex(): string {
         return (
@@ -49,6 +49,18 @@ export class Challenge {
           serializeVarUint(this.expiredTime) +
           serializeVarUint(this.state)
         );
+    }
+
+    public export() {
+        return {
+            fileHash: this.fileHash,
+            fileOwner: this.fileOwner.value,
+            nodeAddr: this.nodeAddr.value,
+            challengeHeight: this.challengeHeight,
+            reward: this.reward,
+            expiredTime: this.expiredTime,
+            state: this.state
+        };
     }
 }
 
@@ -73,5 +85,11 @@ export class ChallengeList {
             str += hex2VarBytes(challenge.serializeHex());
         }
         return str;
+    }
+
+    public export() {
+        return {
+            challenges: this.challenges.map((challenge) => challenge.export())
+        };
     }
 }

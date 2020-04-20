@@ -62,4 +62,16 @@ export class FileReadSettleSlice {
             + (this.signature ? hex2VarBytes(this.signature.value) : '00')
             + (this.publicKey ? this.publicKey.serializeHex() : '00');
     }
+
+    public export() {
+        return {
+            fileHash: this.fileHash,
+            payFrom: this.payFrom.value,
+            payTo: this.payTo.value,
+            sliceId: this.sliceId,
+            pledgeHeight: this.pledgeHeight,
+            signature: this.signature ? this.signature.serializeHex() : '',
+            publicKey: this.publicKey ? this.publicKey.serializeHex() : ''
+        };
+    }
 }

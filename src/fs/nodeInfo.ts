@@ -39,6 +39,19 @@ export class FsNodeInfo {
             + str2VarBytes(this.nodeNetAddr);
         return str;
     }
+
+    public export() {
+        return {
+            pledge: this.pledge,
+            profit: this.profit,
+            volume: this.volume,
+            restVol: this.restVol,
+            serviceTime: this.serviceTime,
+            minPdpInterval: this.minPdpInterval,
+            nodeAddr: this.nodeAddr.value,
+            nodeNetAddr: this.nodeNetAddr
+        };
+    }
 }
 
 export class FsNodeInfoList {
@@ -66,5 +79,11 @@ export class FsNodeInfoList {
             str += hexLen + nodeInfoHex;
         }
         return str;
+    }
+
+    public export() {
+        return {
+            nodesInfo: this.nodesInfo.map((info) => info.export())
+        };
     }
 }

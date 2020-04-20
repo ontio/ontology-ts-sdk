@@ -10,8 +10,15 @@ export class FileHash {
     public constructor(
         public readonly fHash: string
     ) { }
+
     public serializeHex(): string {
         return hex2VarBytes(this.fHash);
+    }
+
+    public export() {
+        return {
+            fHash: this.fHash
+        };
     }
 }
 
@@ -35,5 +42,11 @@ export class FileHashList {
             str += hex2VarBytes(fileHash.fHash);
         }
         return str;
+    }
+
+    public export() {
+        return {
+            filesH: this.filesH.map((fileHash) => fileHash.export())
+        };
     }
 }

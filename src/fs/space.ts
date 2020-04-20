@@ -44,6 +44,21 @@ export class SpaceInfo {
             + serializeVarUint(this.timeExpired)
             + bool2VarByte(this.validFlag);
     }
+
+    public export() {
+        return {
+            spaceOwner: this.spaceOwner.value,
+            volume: this.volume,
+            restVol: this.restVol,
+            copyNumber: this.copyNumber,
+            payAmount: this.payAmount,
+            restAmount: this.restAmount,
+            pdpInterval: this.pdpInterval,
+            timeStart: this.timeStart,
+            timeExpired: this.timeExpired,
+            validFlag: this.validFlag
+        };
+    }
 }
 
 export class SpaceUpdate {

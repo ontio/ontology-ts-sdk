@@ -32,4 +32,12 @@ export class ReadPlan {
             + serializeVarUint(this.maxReadBlockNum)
             + serializeVarUint(this.haveReadBlockNum);
     }
+
+    public export() {
+        return {
+            nodeAddr: this.nodeAddr.value,
+            maxReadBlockNum: this.maxReadBlockNum,
+            haveReadBlockNum: this.haveReadBlockNum
+        };
+    }
 }

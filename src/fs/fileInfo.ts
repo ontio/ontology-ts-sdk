@@ -61,6 +61,27 @@ export class FileInfo {
             + bool2VarByte(this.validFlag)
             + serializeVarUint(this.storageType);
     }
+
+    public export() {
+        return {
+            fileHash: this.fileHash,
+            fileOwner: this.fileOwner.value,
+            fileDesc: this.fileDesc,
+            fileBlockCount: this.fileBlockCount,
+            realFileSize: this.realFileSize,
+            copyNumber: this.copyNumber,
+            payAmount: this.payAmount,
+            restAmount: this.restAmount,
+            fileCost: this.fileCost,
+            firstPdp: this.firstPdp,
+            pdpInterval: this.pdpInterval,
+            timeStart: this.timeStart,
+            timeExpired: this.timeExpired,
+            pdpParam: this.pdpParam,
+            validFlag: this.validFlag,
+            storageType: this.storageType
+        };
+    }
 }
 
 export class FileInfoList {
@@ -86,5 +107,11 @@ export class FileInfoList {
             str += hexLen + fileInfoHex;
         }
         return str;
+    }
+
+    public export() {
+        return {
+            filesI: this.filesI.map((fileInfo) => fileInfo.export())
+        };
     }
 }

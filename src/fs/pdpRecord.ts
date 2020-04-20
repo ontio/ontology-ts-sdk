@@ -38,6 +38,18 @@ export class PdpRecord {
             + bool2VarByte(this.settleFlag);
         return str;
     }
+
+    public export() {
+        return {
+            nodeAddr: this.nodeAddr.value,
+            fileHash: this.fileHash,
+            fileOwner: this.fileOwner.value,
+            pdpCount: this.pdpCount,
+            lastPdpTime: this.lastPdpTime,
+            nextHeight: this.nextHeight,
+            settleFlag: this.settleFlag
+        };
+    }
 }
 
 export class PdpRecordList {
@@ -61,5 +73,11 @@ export class PdpRecordList {
             str += hex2VarBytes(pdpRecord.serializeHex());
         }
         return str;
+    }
+
+    public export() {
+        return {
+            pdpRecords: this.pdpRecords.map((record) => record.export())
+        };
     }
 }

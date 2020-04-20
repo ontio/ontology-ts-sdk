@@ -17,20 +17,13 @@
  */
 
 import { Address, PrivateKey, PublicKey, Signature } from '../../crypto';
-import { Challenge } from '../../fs/challenge';
-import { FileDel, FileDelList } from '../../fs/fileDel';
-import { FileInfo, FileInfoList } from '../../fs/fileInfo';
-import { FilePdpData } from '../../fs/filePdpData';
-import { FileReadSettleSlice } from '../../fs/fileReadSettleSlice';
-import { FileRenew, FileRenewList } from '../../fs/fileRenew';
-import { FileTransfer, FileTransferList } from '../../fs/fileTransfer';
-import { GetReadPledge } from '../../fs/getReadPledge';
-import { FsNodeInfo } from '../../fs/nodeInfo';
-import { Passport } from '../../fs/passport';
-import { ReadPlan, ReadPlanLike } from '../../fs/readPlan';
-import { ReadPledge } from '../../fs/readPledge';
-import { SpaceInfo, SpaceUpdate } from '../../fs/space';
-import { FileRenewInterface, FileStore, FileTransferInterface } from '../../fs/type';
+import {
+    Challenge, FileDel, FileDelList, FileInfo, FileInfoList, FilePdpData,
+    FileReadSettleSlice, FileRenew, FileRenewInterface, FileRenewList,
+    FileStore, FileTransfer, FileTransferInterface, FileTransferList,
+    FsNodeInfo, GetReadPledge, Passport, ReadPlan, ReadPlanLike,
+    ReadPledge, SpaceInfo, SpaceUpdate
+} from '../../fs';
 import { serializeUint64 } from '../../fs/utils';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';

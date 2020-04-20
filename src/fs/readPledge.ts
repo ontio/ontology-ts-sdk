@@ -43,4 +43,15 @@ export class ReadPledge {
 
         return str;
     }
+
+    public export() {
+        return {
+            fileHash: this.fileHash,
+            downloader: this.downloader.value,
+            blockHeight: this.blockHeight,
+            expireHeight: this.expireHeight,
+            restMoney: this.restMoney,
+            readPlans: this.readPlans.map((plan) => plan.export())
+        };
+    }
 }
