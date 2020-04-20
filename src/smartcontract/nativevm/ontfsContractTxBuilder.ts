@@ -34,7 +34,7 @@ import { FileRenewInterface, FileStore, FileTransferInterface } from '../../fs/t
 import { serializeUint64 } from '../../fs/utils';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
-import { hex2VarBytes, str2hexstr, StringReader } from '../../utils';
+import { str2hexstr, StringReader } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
@@ -200,8 +200,8 @@ export function buildGetFileReadPledgeTx(
 ): Transaction {
     const getReadPledge = new GetReadPledge(fileHash, downloader);
     const struct = new Struct();
-    struct.add(getReadPledge.fileHash)
-    struct.add(getReadPledge.downloader.serialize())
+    struct.add(getReadPledge.fileHash);
+    struct.add(getReadPledge.downloader.serialize());
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetReadPledge, params, contractAddress);
 }
@@ -508,7 +508,6 @@ export function buildRenewFilesTx(
         const fsFileRenew = new FileRenew(fileHash, newFileOwner, newPayer, renewTime);
         fileRenewList.filesRenew.push(fsFileRenew);
     }
-    console.log('fileRenewList', fileRenewList)
     const struct = new Struct();
     struct.add(fileRenewList.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -559,8 +558,8 @@ export function buildCancelFileReadTx(
 ): Transaction {
     const getReadPledge = new GetReadPledge(fileHash, downloader);
     const struct = new Struct();
-    struct.add(getReadPledge.fileHash)
-    struct.add(getReadPledge.downloader.serialize())
+    struct.add(getReadPledge.fileHash);
+    struct.add(getReadPledge.downloader.serialize());
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsCancelFileRead, params, contractAddress, gasPrice, gasLimit, payer);
 }

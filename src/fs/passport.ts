@@ -1,6 +1,6 @@
-import { Address, PublicKey, Signature, PrivateKey } from '../crypto';
-import { serializeAddress, serializeVarUint } from './utils';
+import { Address, PrivateKey, PublicKey, Signature } from '../crypto';
 import { hex2VarBytes, StringReader } from '../utils';
+import { serializeAddress, serializeVarUint } from './utils';
 import { decodeAddress, decodeVarBytes, decodeVarUint } from './utils';
 
 export class Passport {
@@ -17,6 +17,17 @@ export class Passport {
         passport.signature = signData;
         return passport;
     }
+    static deserializeHex(hex: string): Passport {
+        const sr: StringReader = new StringReader(hex);
+        const blockHeight = decodeVarUint(sr);
+        const blockHash = decodeVarBytes(sr);
+        const walletAddr = decodeAddress(sr);
+        const pubKeyHex = decodeVarBytes(sr);
+        const sigHex = decodeVarBytes(sr);
+        const sig = Signature.deserializeHex(sigHex);
+        const pubKey = PublicKey.deserializeHex(new StringReader(pubKeyHex));
+        return new Passport(blockHeight, blockHash, walletAddr, pubKey, sig);
+    }
 
     public constructor(
         public readonly blockHeight: number,
@@ -32,16 +43,5 @@ export class Passport {
             + serializeAddress(this.walletAddr)
             + hex2VarBytes(this.publicKey.serializeHex())
             + (this.signature ? hex2VarBytes(this.signature.value) : '00');
-    }
-    static deserializeHex(hex: string): Passport {
-        let sr: StringReader = new StringReader(hex)
-        const blockHeight = decodeVarUint(sr)
-        const blockHash = decodeVarBytes(sr)
-        const walletAddr = decodeAddress(sr)
-        const pubKeyHex = decodeVarBytes(sr)
-        const sigHex = decodeVarBytes(sr)
-        const sig = Signature.deserializeHex(sigHex)
-        const pubKey = PublicKey.deserializeHex(new StringReader(pubKeyHex))
-        return new Passport(blockHeight, blockHash, walletAddr, pubKey, sig)
     }
 }

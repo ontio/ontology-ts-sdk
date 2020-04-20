@@ -1,9 +1,24 @@
 import { Address } from '../crypto';
 import { hex2VarBytes, StringReader } from '../utils';
 import { ReadPlan } from './readPlan';
-import { serializeVarUint, serializeAddress, decodeVarBytes, decodeAddress, decodeVarUint } from './utils';
+import { decodeAddress, decodeVarBytes, decodeVarUint, serializeAddress, serializeVarUint } from './utils';
 
 export class ReadPledge {
+    static deserializeHex(hex: string): ReadPledge {
+        const sr: StringReader = new StringReader(hex);
+        const fileHash = decodeVarBytes(sr);
+        const downloader = decodeAddress(sr);
+        const blockHeight = decodeVarUint(sr);
+        const expireHeight = decodeVarUint(sr);
+        const restMoney = decodeVarUint(sr);
+        const readPlans: ReadPlan[] = [];
+        const count = decodeVarUint(sr);
+        for (let i = 0; i < count; i++) {
+            const plan = ReadPlan.deserializeHex(decodeVarBytes(sr));
+            readPlans.push(plan);
+        }
+        return new ReadPledge(fileHash, downloader, blockHeight, expireHeight, restMoney, readPlans);
+    }
     public constructor(
         public readonly fileHash: string,
         public readonly downloader: Address,
@@ -27,22 +42,5 @@ export class ReadPledge {
         }
 
         return str;
-    }
-
-
-    static deserializeHex(hex: string): ReadPledge {
-        let sr: StringReader = new StringReader(hex)
-        const fileHash = decodeVarBytes(sr)
-        const downloader = decodeAddress(sr)
-        const blockHeight = decodeVarUint(sr)
-        const expireHeight = decodeVarUint(sr)
-        const restMoney = decodeVarUint(sr)
-        let readPlans: ReadPlan[] = []
-        let count = decodeVarUint(sr)
-        for (let i = 0; i < count; i++) {
-            const plan = ReadPlan.deserializeHex(decodeVarBytes(sr))
-            readPlans.push(plan)
-        }
-        return new ReadPledge(fileHash, downloader, blockHeight, expireHeight, restMoney, readPlans)
     }
 }

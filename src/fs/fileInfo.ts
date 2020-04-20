@@ -1,8 +1,29 @@
 import { Address } from '../crypto';
-import { serializeVarUint, serializeAddress, decodeVarBytes, decodeAddress, decodeVarUint, decodeBool } from './utils';
-import { num2VarInt, StringReader, bool2VarByte, hex2VarBytes } from '../utils'
+import { bool2VarByte, hex2VarBytes, num2VarInt, StringReader } from '../utils';
+import { decodeAddress, decodeBool, decodeVarBytes, decodeVarUint, serializeAddress, serializeVarUint } from './utils';
 
 export class FileInfo {
+    static deserializeHex(hex: string): FileInfo {
+        const sr: StringReader = new StringReader(hex);
+        const fileHash = decodeVarBytes(sr);
+        const fileOwner = decodeAddress(sr);
+        const fileDesc = decodeVarBytes(sr);
+        const fileBlockCount = decodeVarUint(sr);
+        const realFileSize = decodeVarUint(sr);
+        const copyNumber = decodeVarUint(sr);
+        const payAmount = decodeVarUint(sr);
+        const restAmount = decodeVarUint(sr);
+        const fileCost = decodeVarUint(sr);
+        const firstPdp = decodeBool(sr);
+        const pdpInterval = decodeVarUint(sr);
+        const timeStart = decodeVarUint(sr);
+        const timeExpired = decodeVarUint(sr);
+        const pdpParam = decodeVarBytes(sr);
+        const validFlag = decodeBool(sr);
+        const storageType = decodeVarUint(sr);
+        return new FileInfo(fileHash, fileOwner, fileDesc, fileBlockCount, realFileSize, copyNumber, payAmount,
+            restAmount, fileCost, firstPdp, pdpInterval, timeStart, timeExpired, pdpParam, validFlag, storageType);
+    }
     public constructor(
         public readonly fileHash: string,
         public readonly fileOwner: Address,
@@ -40,30 +61,19 @@ export class FileInfo {
             + bool2VarByte(this.validFlag)
             + serializeVarUint(this.storageType);
     }
-    static deserializeHex(hex: string): FileInfo {
-        let sr: StringReader = new StringReader(hex)
-        const fileHash = decodeVarBytes(sr)
-        const fileOwner = decodeAddress(sr)
-        const fileDesc = decodeVarBytes(sr)
-        const fileBlockCount = decodeVarUint(sr)
-        const realFileSize = decodeVarUint(sr)
-        const copyNumber = decodeVarUint(sr)
-        const payAmount = decodeVarUint(sr)
-        const restAmount = decodeVarUint(sr)
-        const fileCost = decodeVarUint(sr)
-        const firstPdp = decodeBool(sr)
-        const pdpInterval = decodeVarUint(sr)
-        const timeStart = decodeVarUint(sr)
-        const timeExpired = decodeVarUint(sr)
-        const pdpParam = decodeVarBytes(sr)
-        const validFlag = decodeBool(sr)
-        const storageType = decodeVarUint(sr)
-        return new FileInfo(fileHash, fileOwner, fileDesc, fileBlockCount, realFileSize, copyNumber, payAmount,
-            restAmount, fileCost, firstPdp, pdpInterval, timeStart, timeExpired, pdpParam, validFlag, storageType)
-    }
 }
 
 export class FileInfoList {
+    static deserializeHex(hex: string): FileInfoList {
+        const list: FileInfo[] = [];
+        const sr: StringReader = new StringReader(hex);
+        const count = decodeVarUint(sr);
+        for (let i = 0; i < count; i++) {
+            const item = FileInfo.deserializeHex(sr.readNextBytes());
+            list.push(item);
+        }
+        return new FileInfoList(list);
+    }
     public constructor(
         public readonly filesI: FileInfo[] = []
     ) { }
@@ -71,20 +81,10 @@ export class FileInfoList {
     public serializeHex(): string {
         let str = serializeVarUint(this.filesI.length);
         for (const fileInfo of this.filesI) {
-            const fileInfoHex = fileInfo.serializeHex()
-            const hexLen = num2VarInt(fileInfoHex.length / 2)
+            const fileInfoHex = fileInfo.serializeHex();
+            const hexLen = num2VarInt(fileInfoHex.length / 2);
             str += hexLen + fileInfoHex;
         }
         return str;
-    }
-    static deserializeHex(hex: string): FileInfoList {
-        let list: FileInfo[] = []
-        let sr: StringReader = new StringReader(hex)
-        const count = decodeVarUint(sr)
-        for (let i = 0; i < count; i++) {
-            let item = FileInfo.deserializeHex(sr.readNextBytes())
-            list.push(item)
-        }
-        return new FileInfoList(list)
     }
 }

@@ -1,8 +1,24 @@
 import { Address } from '../crypto';
-import { serializeVarUint, serializeAddress, decodeAddress, decodeVarUint, decodeBool } from './utils';
-import { StringReader, bool2VarByte } from '../utils';
+import { bool2VarByte, StringReader } from '../utils';
+import { decodeAddress, decodeBool, decodeVarUint, serializeAddress, serializeVarUint } from './utils';
 
 export class SpaceInfo {
+
+    static deserializeHex(hex: string): SpaceInfo {
+        const sr: StringReader = new StringReader(hex);
+        const spaceOwner = decodeAddress(sr);
+        const volume = decodeVarUint(sr);
+        const restVol = decodeVarUint(sr);
+        const copyNumber = decodeVarUint(sr);
+        const payAmount = decodeVarUint(sr);
+        const restAmount = decodeVarUint(sr);
+        const pdpInterval = decodeVarUint(sr);
+        const timeStart = decodeVarUint(sr);
+        const timeExpired = decodeVarUint(sr);
+        const validFlag = decodeBool(sr);
+        return new SpaceInfo(spaceOwner, volume, restVol, copyNumber, payAmount,
+            restAmount, pdpInterval, timeStart, timeExpired, validFlag);
+    }
     public constructor(
         public readonly spaceOwner: Address,
         public readonly volume: number,
@@ -28,25 +44,18 @@ export class SpaceInfo {
             + serializeVarUint(this.timeExpired)
             + bool2VarByte(this.validFlag);
     }
-
-    static deserializeHex(hex: string): SpaceInfo {
-        let sr: StringReader = new StringReader(hex)
-        const spaceOwner = decodeAddress(sr)
-        const volume = decodeVarUint(sr)
-        const restVol = decodeVarUint(sr)
-        const copyNumber = decodeVarUint(sr)
-        const payAmount = decodeVarUint(sr)
-        const restAmount = decodeVarUint(sr)
-        const pdpInterval = decodeVarUint(sr)
-        const timeStart = decodeVarUint(sr)
-        const timeExpired = decodeVarUint(sr)
-        const validFlag = decodeBool(sr)
-        return new SpaceInfo(spaceOwner, volume, restVol, copyNumber, payAmount,
-            restAmount, pdpInterval, timeStart, timeExpired, validFlag)
-    }
 }
 
 export class SpaceUpdate {
+    static deserializeHex(hex: string): SpaceUpdate {
+        const sr: StringReader = new StringReader(hex);
+        const spaceOwner = decodeAddress(sr);
+        const payer = decodeAddress(sr);
+        const newVolume = decodeVarUint(sr);
+        const newTimeExpired = decodeVarUint(sr);
+
+        return new SpaceUpdate(spaceOwner, payer, newVolume, newTimeExpired);
+    }
     public constructor(
         public readonly spaceOwner: Address,
         public readonly payer: Address,
@@ -59,14 +68,5 @@ export class SpaceUpdate {
             + serializeAddress(this.payer)
             + serializeVarUint(this.newVolume)
             + serializeVarUint(this.newTimeExpired);
-    }
-    static deserializeHex(hex: string): SpaceUpdate {
-        let sr: StringReader = new StringReader(hex)
-        const spaceOwner = decodeAddress(sr)
-        const payer = decodeAddress(sr)
-        const newVolume = decodeVarUint(sr)
-        const newTimeExpired = decodeVarUint(sr)
-
-        return new SpaceUpdate(spaceOwner, payer, newVolume, newTimeExpired)
     }
 }

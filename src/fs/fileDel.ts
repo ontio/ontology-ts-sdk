@@ -1,7 +1,12 @@
 import { hex2VarBytes, StringReader } from '../utils';
-import { serializeVarUint, decodeVarBytes, decodeVarUint } from './utils';
+import { decodeVarBytes, decodeVarUint, serializeVarUint } from './utils';
 
 export class FileDel {
+    static deserializeHex(hex: string): FileDel {
+        const sr: StringReader = new StringReader(hex);
+        const fileHash = decodeVarBytes(sr);
+        return new FileDel(fileHash);
+    }
     public constructor(
         public readonly fileHash: string
     ) { }
@@ -9,14 +14,19 @@ export class FileDel {
     public serializeHex(): string {
         return hex2VarBytes(this.fileHash);
     }
-    static deserializeHex(hex: string): FileDel {
-        let sr: StringReader = new StringReader(hex);
-        const fileHash = decodeVarBytes(sr);
-        return new FileDel(fileHash)
-    }
 }
 
 export class FileDelList {
+    static deserializeHex(hex: string): FileDelList {
+        const list: FileDel[] = [];
+        const sr: StringReader = new StringReader(hex);
+        const count = decodeVarUint(sr);
+        for (let i = 0; i < count; i++) {
+            const del = FileDel.deserializeHex(sr.readNextBytes());
+            list.push(del);
+        }
+        return new FileDelList(list);
+    }
     public constructor(
         public readonly filesDel: FileDel[] = []
     ) { }
@@ -27,15 +37,5 @@ export class FileDelList {
             str += hex2VarBytes(fileDel.serializeHex());
         }
         return str;
-    }
-    static deserializeHex(hex: string): FileDelList {
-        let list: FileDel[] = []
-        let sr: StringReader = new StringReader(hex)
-        const count = decodeVarUint(sr)
-        for (let i = 0; i < count; i++) {
-            let del = FileDel.deserializeHex(sr.readNextBytes())
-            list.push(del)
-        }
-        return new FileDelList(list)
     }
 }
