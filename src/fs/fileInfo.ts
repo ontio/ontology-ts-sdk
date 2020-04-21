@@ -1,6 +1,7 @@
 import { Address } from '../crypto';
 import { bool2VarByte, hex2VarBytes, num2VarInt, StringReader } from '../utils';
-import { decodeAddress, decodeBool, decodeVarBytes, decodeVarUint, serializeAddress, serializeVarUint } from './utils';
+import { dateToUnixTime, decodeAddress, decodeBool, decodeVarBytes,
+    decodeVarUint, serializeAddress, serializeVarUint, unixTimeToDate } from './utils';
 
 export class FileInfo {
     static deserializeHex(hex: string): FileInfo {
@@ -16,8 +17,8 @@ export class FileInfo {
         const fileCost = decodeVarUint(sr);
         const firstPdp = decodeBool(sr);
         const pdpInterval = decodeVarUint(sr);
-        const timeStart = decodeVarUint(sr);
-        const timeExpired = decodeVarUint(sr);
+        const timeStart = unixTimeToDate(decodeVarUint(sr));
+        const timeExpired = unixTimeToDate(decodeVarUint(sr));
         const pdpParam = decodeVarBytes(sr);
         const validFlag = decodeBool(sr);
         const storageType = decodeVarUint(sr);
@@ -36,8 +37,8 @@ export class FileInfo {
         public readonly fileCost: number,
         public readonly firstPdp: boolean,
         public readonly pdpInterval: number,
-        public readonly timeStart: number,
-        public readonly timeExpired: number,
+        public readonly timeStart: Date,
+        public readonly timeExpired: Date,
         public readonly pdpParam: string,
         public readonly validFlag: boolean,
         public readonly storageType: number
@@ -55,8 +56,8 @@ export class FileInfo {
             + serializeVarUint(this.fileCost)
             + bool2VarByte(this.firstPdp)
             + serializeVarUint(this.pdpInterval)
-            + serializeVarUint(this.timeStart)
-            + serializeVarUint(this.timeExpired)
+            + serializeVarUint(dateToUnixTime(this.timeStart))
+            + serializeVarUint(dateToUnixTime(this.timeExpired))
             + hex2VarBytes(this.pdpParam)
             + bool2VarByte(this.validFlag)
             + serializeVarUint(this.storageType);

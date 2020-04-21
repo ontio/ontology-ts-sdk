@@ -1,6 +1,7 @@
 import { Address } from '../crypto';
 import { hex2VarBytes, StringReader } from '../utils';
-import { decodeAddress, decodeVarBytes, decodeVarUint, serializeAddress, serializeVarUint } from './utils';
+import { dateToUnixTime, decodeAddress, decodeVarBytes, decodeVarUint,
+    serializeAddress, serializeVarUint, unixTimeToDate } from './utils';
 
 export class FileRenew {
     static deserializeHex(hex: string): FileRenew {
@@ -8,21 +9,21 @@ export class FileRenew {
         const fileHash = decodeVarBytes(sr);
         const fileOwner = decodeAddress(sr);
         const payer = decodeAddress(sr);
-        const newTimeExpired = decodeVarUint(sr);
+        const newTimeExpired = unixTimeToDate(decodeVarUint(sr));
         return new FileRenew(fileHash, fileOwner, payer, newTimeExpired);
     }
     public constructor(
         public readonly fileHash: string,
         public readonly fileOwner: Address,
         public readonly payer: Address,
-        public readonly newTimeExpired: number
+        public readonly newTimeExpired: Date
     ) { }
 
     public serializeHex(): string {
         return hex2VarBytes(this.fileHash)
             + serializeAddress(this.fileOwner)
             + serializeAddress(this.payer)
-            + serializeVarUint(this.newTimeExpired);
+            + serializeVarUint(dateToUnixTime(this.newTimeExpired));
     }
 }
 

@@ -1,6 +1,7 @@
 import { Address } from '../crypto';
 import { bool2VarByte, hex2VarBytes, StringReader } from '../utils';
-import { decodeAddress, decodeBool, decodeVarBytes, decodeVarUint, serializeAddress, serializeVarUint } from './utils';
+import { dateToUnixTime, decodeAddress, decodeBool, decodeVarBytes,
+    decodeVarUint, serializeAddress, serializeVarUint, unixTimeToDate } from './utils';
 
 export class PdpRecord {
 
@@ -10,7 +11,7 @@ export class PdpRecord {
         const fileHash = decodeVarBytes(sr);
         const fileOwner = decodeAddress(sr);
         const pdpCount = decodeVarUint(sr);
-        const lastPdpTime = decodeVarUint(sr);
+        const lastPdpTime = unixTimeToDate(decodeVarUint(sr));
         const nextHeight = decodeVarUint(sr);
         const settleFlag = decodeBool(sr);
 
@@ -22,7 +23,7 @@ export class PdpRecord {
         public readonly fileHash: string,
         public readonly fileOwner: Address,
         public readonly pdpCount: number,
-        public readonly lastPdpTime: number,
+        public readonly lastPdpTime: Date,
         public readonly nextHeight: number,
         public readonly settleFlag: boolean
     ) { }
@@ -33,7 +34,7 @@ export class PdpRecord {
             + hex2VarBytes(this.fileHash)
             + serializeAddress(this.fileOwner)
             + serializeVarUint(this.pdpCount)
-            + serializeVarUint(this.lastPdpTime)
+            + serializeVarUint(dateToUnixTime(this.lastPdpTime))
             + serializeVarUint(this.nextHeight)
             + bool2VarByte(this.settleFlag);
         return str;

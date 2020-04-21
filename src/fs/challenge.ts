@@ -1,11 +1,13 @@
 import { Address } from '../crypto';
 import { hex2VarBytes, StringReader } from '../utils';
 import {
+  dateToUnixTime,
   decodeAddress,
   decodeVarBytes,
   decodeVarUint,
   serializeAddress,
-  serializeVarUint
+  serializeVarUint,
+  unixTimeToDate
 } from './utils';
 
 export class Challenge {
@@ -16,18 +18,18 @@ export class Challenge {
         const nodeAddr = decodeAddress(sr);
         const challengeHeight = decodeVarUint(sr);
         const reward = decodeVarUint(sr);
-        const expiredTime = decodeVarUint(sr);
+        const expiredTime = unixTimeToDate(decodeVarUint(sr));
         const state = decodeVarUint(sr);
 
         return new Challenge(
-      fileHash,
-      fileOwner,
-      nodeAddr,
-      challengeHeight,
-      reward,
-      expiredTime,
-      state
-    );
+          fileHash,
+          fileOwner,
+          nodeAddr,
+          challengeHeight,
+          reward,
+          expiredTime,
+          state
+        );
     }
     public constructor(
       public readonly fileHash: string,
@@ -35,7 +37,7 @@ export class Challenge {
       public readonly nodeAddr: Address = new Address('0'.repeat(40)),
       public readonly challengeHeight: number = 0,
       public readonly reward: number = 0,
-      public readonly expiredTime: number = 0,
+      public readonly expiredTime: Date = new Date(),
       public readonly state: number = 0
     ) { }
 
@@ -46,7 +48,7 @@ export class Challenge {
           serializeAddress(this.nodeAddr) +
           serializeVarUint(this.challengeHeight) +
           serializeVarUint(this.reward) +
-          serializeVarUint(this.expiredTime) +
+          serializeVarUint(dateToUnixTime(this.expiredTime)) +
           serializeVarUint(this.state)
         );
     }

@@ -1,6 +1,7 @@
 import { Address } from '../crypto';
 import { hexstr2str, num2VarInt, str2VarBytes, StringReader } from '../utils';
-import { decodeAddress, decodeVarBytes, decodeVarUint, serializeUint64, serializeVarUint } from './utils';
+import { dateToUnixTime, decodeAddress, decodeVarBytes, decodeVarUint,
+    serializeUint64, serializeVarUint, unixTimeToDate } from './utils';
 
 export class FsNodeInfo {
 
@@ -10,7 +11,7 @@ export class FsNodeInfo {
         const profit = decodeVarUint(sr);
         const volume = decodeVarUint(sr);
         const restVol = decodeVarUint(sr);
-        const serviceTime = decodeVarUint(sr);
+        const serviceTime = unixTimeToDate(decodeVarUint(sr));
         const minPdpInterval = decodeVarUint(sr);
         const nodeAddr = decodeAddress(sr);
         const nodeNetAddr = hexstr2str(decodeVarBytes(sr));
@@ -22,7 +23,7 @@ export class FsNodeInfo {
         public readonly profit: number,
         public readonly volume: number,
         public readonly restVol: number,
-        public readonly serviceTime: number,
+        public readonly serviceTime: Date,
         public readonly minPdpInterval: number,
         public readonly nodeAddr: Address,
         public readonly nodeNetAddr: string
@@ -34,6 +35,7 @@ export class FsNodeInfo {
             + serializeUint64(this.profit)
             + serializeUint64(this.volume)
             + serializeUint64(this.restVol)
+            + serializeUint64(dateToUnixTime(this.serviceTime))
             + serializeUint64(this.minPdpInterval)
             + this.nodeAddr.serialize()
             + str2VarBytes(this.nodeNetAddr);

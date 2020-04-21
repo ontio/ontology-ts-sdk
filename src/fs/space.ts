@@ -1,6 +1,7 @@
 import { Address } from '../crypto';
 import { bool2VarByte, StringReader } from '../utils';
-import { decodeAddress, decodeBool, decodeVarUint, serializeAddress, serializeVarUint } from './utils';
+import { dateToUnixTime, decodeAddress, decodeBool, decodeVarUint,
+    serializeAddress, serializeVarUint, unixTimeToDate } from './utils';
 
 export class SpaceInfo {
 
@@ -13,8 +14,8 @@ export class SpaceInfo {
         const payAmount = decodeVarUint(sr);
         const restAmount = decodeVarUint(sr);
         const pdpInterval = decodeVarUint(sr);
-        const timeStart = decodeVarUint(sr);
-        const timeExpired = decodeVarUint(sr);
+        const timeStart = unixTimeToDate(decodeVarUint(sr));
+        const timeExpired = unixTimeToDate(decodeVarUint(sr));
         const validFlag = decodeBool(sr);
         return new SpaceInfo(spaceOwner, volume, restVol, copyNumber, payAmount,
             restAmount, pdpInterval, timeStart, timeExpired, validFlag);
@@ -27,8 +28,8 @@ export class SpaceInfo {
         public readonly payAmount: number,
         public readonly restAmount: number,
         public readonly pdpInterval: number,
-        public readonly timeStart: number,
-        public readonly timeExpired: number,
+        public readonly timeStart: Date,
+        public readonly timeExpired: Date,
         public readonly validFlag: boolean
     ) { }
 
@@ -40,8 +41,8 @@ export class SpaceInfo {
             + serializeVarUint(this.payAmount)
             + serializeVarUint(this.restAmount)
             + serializeVarUint(this.pdpInterval)
-            + serializeVarUint(this.timeStart)
-            + serializeVarUint(this.timeExpired)
+            + serializeVarUint(dateToUnixTime(this.timeStart))
+            + serializeVarUint(dateToUnixTime(this.timeExpired))
             + bool2VarByte(this.validFlag);
     }
 

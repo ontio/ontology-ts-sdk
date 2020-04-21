@@ -57,3 +57,11 @@ export function decodeAddress(sr: StringReader): Address {
     const addr = new Address(nextBytes);
     return addr;
 }
+
+export function dateToUnixTime(date: Date): number {
+    return Math.floor(date.getTime() / 1000);
+}
+
+export function unixTimeToDate(unixTime: number): Date {
+    return new Date(unixTime * 1000);
+}

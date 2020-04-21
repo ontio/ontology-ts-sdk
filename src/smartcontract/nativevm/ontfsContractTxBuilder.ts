@@ -91,7 +91,7 @@ export function buildGetGlobalParamTx(): Transaction {
 
 export function buildFsNodeRegisterTx(
     volume: number,
-    serviceTime: number,
+    serviceTime: Date,
     minPdpInterval: number,
     nodeAddr: Address,
     nodeNetAddr: string,
@@ -117,7 +117,7 @@ export function buildNodeQueryTx(
 
 export function buildNodeUpdateTx(
     volume: number,
-    serviceTime: number,
+    serviceTime: Date,
     minPdpInterval: number,
     nodeAddr: Address,
     nodeNetAddr: string,
@@ -320,7 +320,7 @@ export function buildCreateSpaceTx(
     volume: number,
     copyNum: number,
     pdpInterval: number,
-    timeExpired: number,
+    timeExpired: Date,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
@@ -329,7 +329,7 @@ export function buildCreateSpaceTx(
         throw new Error(`pdpInterval value should be no smaller than ${DefaultMinPdpInterval}`);
     }
 
-    const spaceInfo = new SpaceInfo(spaceOwner, volume, 0, copyNum, 0, 0, pdpInterval, 0, timeExpired, false);
+    const spaceInfo = new SpaceInfo(spaceOwner, volume, 0, copyNum, 0, 0, pdpInterval, new Date(0), timeExpired, false);
     const struct = new Struct();
     struct.add(spaceInfo.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -459,7 +459,7 @@ export function buildStoreFilesTx(
 
         const fsFileInfo = new FileInfo(
             fileHash, fileOwner, str2hexstr(fileDesc), fileBlockCount, realFileSize, copyNumber,
-            0, 0, 0, firstPdp, pdpInterval, 0, timeExpired, pdpParam, false, storageType
+            0, 0, 0, firstPdp, pdpInterval, new Date(0), timeExpired, pdpParam, false, storageType
         );
         fileInfoList.filesI.push(fsFileInfo);
     }

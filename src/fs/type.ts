@@ -8,14 +8,14 @@ export interface FileStore {
     copyNumber: number;
     firstPdp: boolean;
     pdpInterval: number;
-    timeExpired: number;
+    timeExpired: Date;
     pdpParam: string;
     storageType: number;
 }
 
 export interface FileRenewInterface {
     fileHash: string;
-    renewTime: number;
+    renewTime: Date;
 }
 
 export interface FileTransferInterface {
