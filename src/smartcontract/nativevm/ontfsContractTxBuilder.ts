@@ -375,7 +375,7 @@ export function buildGetFileListTx(
 ) {
     const passport = Passport.genPassport(blockHeight, blockHash, privateKey);
     const struct = new Struct();
-    struct.add(passport.serialzieHex());
+    struct.add(passport.serializeHex());
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.fsGetFileHashList, params, contractAddress);
 }
