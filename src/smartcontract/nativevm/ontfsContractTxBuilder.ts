@@ -42,37 +42,37 @@ const DefaultMinPdpInterval = 600;
  * Method names in ONT FS contract
  */
 export const ONTFS_METHOD  = {
-    fsGetGlobalParam: 'fsGetGlobalParam',
-    fsNodeRegister: 'fsNodeRegister',
-    fsNodeQuery: 'fsNodeQuery',
-    fsNodeUpdate: 'fsNodeUpdate',
-    fsNodeCancel: 'fsNodeCancel',
-    fsFileProve: 'fsFileProve',
-    fsNodeWithDrawProfit: 'fsNodeWithDrawProfit',
-    fsGetNodeInfoList: 'fsGetNodeInfoList',
-    fsGetPdpInfoList: 'fsGetPdpInfoList',
-    fsChallenge: 'fsChallenge',
-    fsResponse: 'fsResponse',
-    fsJudge: 'fsJudge',
-    fsGetChallenge: 'fsGetChallenge',
-    fsGetFileChallengeList: 'fsGetFileChallengeList',
-    fsGetNodeChallengeList: 'fsGetNodeChallengeList',
-    fsStoreFiles: 'fsStoreFiles',
-    fsRenewFiles: 'fsRenewFiles',
-    fsDeleteFiles: 'fsDeleteFiles',
-    fsTransferFiles: 'fsTransferFiles',
-    fsGetFileInfo: 'fsGetFileInfo',
-    fsGetFileHashList: 'fsGetFileHashList',
-    fsReadFilePledge: 'fsReadFilePledge',
-    fsReadFileSettle: 'fsReadFileSettle',
-    fsGetReadPledge: 'fsGetReadPledge',
-    fsCancelFileRead: 'fsCancelFileRead',
-    fsSetWhiteList: 'fsSetWhiteList',
-    fsGetWhiteList: 'fsGetWhiteList',
-    fsCreateSpace: 'fsCreateSpace',
-    fsDeleteSpace: 'fsDeleteSpace',
-    fsUpdateSpace: 'fsUpdateSpace',
-    fsGetSpaceInfo: 'fsGetSpaceInfo'
+    FsGetGlobalParam: 'FsGetGlobalParam',
+    FsNodeRegister: 'FsNodeRegister',
+    FsNodeQuery: 'FsNodeQuery',
+    FsNodeUpdate: 'FsNodeUpdate',
+    FsNodeCancel: 'FsNodeCancel',
+    FsFileProve: 'FsFileProve',
+    FsNodeWithDrawProfit: 'FsNodeWithDrawProfit',
+    FsGetNodeList: 'FsGetNodeList',
+    FsGetPdpInfoList: 'FsGetPdpInfoList',
+    FsChallenge: 'FsChallenge',
+    FsResponse: 'FsResponse',
+    FsJudge: 'FsJudge',
+    FsGetChallenge: 'FsGetChallenge',
+    FsGetFileChallengeList: 'FsGetFileChallengeList',
+    FsGetNodeChallengeList: 'FsGetNodeChallengeList',
+    FsStoreFiles: 'FsStoreFiles',
+    FsRenewFiles: 'FsRenewFiles',
+    FsDeleteFiles: 'FsDeleteFiles',
+    FsTransferFiles: 'FsTransferFiles',
+    FsGetFileInfo: 'FsGetFileInfo',
+    FsGetFileList: 'FsGetFileList',
+    FsReadFilePledge: 'FsReadFilePledge',
+    FsReadFileSettle: 'FsReadFileSettle',
+    FsGetReadPledge: 'FsGetReadPledge',
+    FsCancelFileRead: 'FsCancelFileRead',
+    FsSetWhiteList: 'FsSetWhiteList',
+    FsGetWhiteList: 'FsGetWhiteList',
+    FsCreateSpace: 'FsCreateSpace',
+    FsDeleteSpace: 'FsDeleteSpace',
+    FsUpdateSpace: 'FsUpdateSpace',
+    FsGetSpaceInfo: 'FsGetSpaceInfo'
 };
 
 export function buildTxByParamsHash(
@@ -86,7 +86,7 @@ export function buildTxByParamsHash(
 }
 
 export function buildGetGlobalParamTx(): Transaction {
-    return makeNativeContractTx(ONTFS_METHOD.fsGetGlobalParam, '', contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetGlobalParam, '', contractAddress);
 }
 
 export function buildFsNodeRegisterTx(
@@ -103,7 +103,7 @@ export function buildFsNodeRegisterTx(
     const struct = new Struct();
     struct.add(fsNodeInfo.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsNodeRegister, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsNodeRegister, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildNodeQueryTx(
@@ -112,7 +112,7 @@ export function buildNodeQueryTx(
     const struct = new Struct();
     struct.add(nodeAddr.serialize());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsNodeQuery, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsNodeQuery, params, contractAddress);
 }
 
 export function buildNodeUpdateTx(
@@ -129,7 +129,7 @@ export function buildNodeUpdateTx(
     const struct = new Struct();
     struct.add(fsNodeInfo.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsNodeUpdate, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsNodeUpdate, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildNodeCancelTx(
@@ -141,7 +141,7 @@ export function buildNodeCancelTx(
     const struct = new Struct();
     struct.add(nodeAddr.serialize());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsNodeCancel, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsNodeCancel, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildNodeWithdrawoProfitTx(
@@ -153,7 +153,7 @@ export function buildNodeWithdrawoProfitTx(
     const struct = new Struct();
     struct.add(nodeAddr.serialize());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsNodeWithDrawProfit, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsNodeWithDrawProfit, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 /**
@@ -179,7 +179,7 @@ export function buildFileProveTx(
     const struct = new Struct();
     struct.add(pdpData.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsFileProve, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsFileProve, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 /**
@@ -196,7 +196,7 @@ export function buildGetFileReadPledgeTx(
     struct.add(getReadPledge.fileHash);
     struct.add(getReadPledge.downloader.serialize());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetReadPledge, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetReadPledge, params, contractAddress);
 }
 
 export function buildFileReadProfitSettleTx(
@@ -208,7 +208,7 @@ export function buildFileReadProfitSettleTx(
     const struct = new Struct();
     struct.add(fileReadSettleSlice.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsReadFileSettle, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsReadFileSettle, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 /**
@@ -221,7 +221,7 @@ export function buildGetFilePdpRecordListTx(
     const struct = new Struct();
     struct.add(fileHash);
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetPdpInfoList, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetPdpInfoList, params, contractAddress);
 }
 
 // export function buildGetNodeInfoTx(
@@ -234,7 +234,7 @@ export function buildGetNodeInfoListTx(
     const struct = new Struct();
     struct.add(serializeUint64(count));
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetNodeInfoList, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetNodeList, params, contractAddress);
 }
 
 export function buildChallengeTx(
@@ -249,7 +249,7 @@ export function buildChallengeTx(
     const struct = new Struct();
     struct.add(chanllege.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsChallenge, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsChallenge, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildGetChanllengeTx(
@@ -261,7 +261,7 @@ export function buildGetChanllengeTx(
     const struct = new Struct();
     struct.add(challengeReq.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetChallenge, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetChallenge, params, contractAddress);
 }
 
 export function buildResponseTx(
@@ -277,7 +277,7 @@ export function buildResponseTx(
     const struct = new Struct();
     struct.add(pdpData.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsResponse, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsResponse, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildJudgeTx(
@@ -292,7 +292,7 @@ export function buildJudgeTx(
     const struct = new Struct();
     struct.add(challenge.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsJudge, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsJudge, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildGetFileChallengeListTx(
@@ -303,7 +303,7 @@ export function buildGetFileChallengeListTx(
     const struct = new Struct();
     struct.add(challengeReq.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetFileChallengeList, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetFileChallengeList, params, contractAddress);
 }
 
 export function buildGetNodeChallengeListTx(
@@ -312,7 +312,7 @@ export function buildGetNodeChallengeListTx(
     const struct = new Struct();
     struct.add(fileOwner.serialize());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetNodeChallengeList, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetNodeChallengeList, params, contractAddress);
 }
 
 export function buildCreateSpaceTx(
@@ -333,7 +333,7 @@ export function buildCreateSpaceTx(
     const struct = new Struct();
     struct.add(spaceInfo.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsCreateSpace, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsCreateSpace, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildGetSpaceInfoTx(
@@ -342,14 +342,14 @@ export function buildGetSpaceInfoTx(
     const struct = new Struct();
     struct.add(spaceOwner.serialize());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetSpaceInfo, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetSpaceInfo, params, contractAddress);
 }
 
 export function buildUpdateSpaceTx(
     spaceOwner: Address,
     spacePayer: Address,
     volume: number,
-    timeExpired: number,
+    timeExpired: Date,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
@@ -358,7 +358,7 @@ export function buildUpdateSpaceTx(
     const struct = new Struct();
     struct.add(spaceUdpate.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsUpdateSpace, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsUpdateSpace, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildDeleteSpaceTx(
@@ -370,7 +370,7 @@ export function buildDeleteSpaceTx(
     const struct = new Struct();
     struct.add(spaceOwner.serialize());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsDeleteSpace, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsDeleteSpace, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function genPassport(
@@ -419,7 +419,7 @@ export function buildGetFileListTx(
     const struct = new Struct();
     struct.add(typeof passport === 'string' ? passport : passport.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetFileHashList, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetFileList, params, contractAddress);
 }
 
 export function buildGetFileInfoTx(
@@ -428,7 +428,7 @@ export function buildGetFileInfoTx(
     const struct = new Struct();
     struct.add(fileHash);
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsGetFileInfo, params, contractAddress);
+    return makeNativeContractTx(ONTFS_METHOD.FsGetFileInfo, params, contractAddress);
 }
 
 export function buildStoreFilesTx(
@@ -467,7 +467,7 @@ export function buildStoreFilesTx(
     const struct = new Struct();
     struct.add(fileInfoList.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsStoreFiles, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsStoreFiles, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildTransferFilesTx(
@@ -485,7 +485,7 @@ export function buildTransferFilesTx(
     const struct = new Struct();
     struct.add(fileTransferList.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsTransferFiles, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsTransferFiles, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildRenewFilesTx(
@@ -504,7 +504,7 @@ export function buildRenewFilesTx(
     const struct = new Struct();
     struct.add(fileRenewList.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsRenewFiles, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsRenewFiles, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildDeleteFilesTx(
@@ -522,7 +522,7 @@ export function buildDeleteFilesTx(
     const struct = new Struct();
     struct.add(fileDelList.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsDeleteFiles, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsDeleteFiles, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildFileReadPledgeTx(
@@ -539,7 +539,7 @@ export function buildFileReadPledgeTx(
     const struct = new Struct();
     struct.add(fileReadPledge.serializeHex());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsReadFilePledge, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsReadFilePledge, params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 export function buildCancelFileReadTx(
@@ -554,5 +554,5 @@ export function buildCancelFileReadTx(
     struct.add(getReadPledge.fileHash);
     struct.add(getReadPledge.downloader.serialize());
     const params = buildNativeCodeScript([struct]);
-    return makeNativeContractTx(ONTFS_METHOD.fsCancelFileRead, params, contractAddress, gasPrice, gasLimit, payer);
+    return makeNativeContractTx(ONTFS_METHOD.FsCancelFileRead, params, contractAddress, gasPrice, gasLimit, payer);
 }

@@ -68,7 +68,7 @@ export class SpaceUpdate {
         const spaceOwner = decodeAddress(sr);
         const payer = decodeAddress(sr);
         const newVolume = decodeVarUint(sr);
-        const newTimeExpired = decodeVarUint(sr);
+        const newTimeExpired = unixTimeToDate(decodeVarUint(sr));
 
         return new SpaceUpdate(spaceOwner, payer, newVolume, newTimeExpired);
     }
@@ -76,13 +76,13 @@ export class SpaceUpdate {
         public readonly spaceOwner: Address,
         public readonly payer: Address,
         public readonly newVolume: number,
-        public readonly newTimeExpired: number
+        public readonly newTimeExpired: Date
     ) { }
 
     public serializeHex(): string {
         return serializeAddress(this.spaceOwner)
             + serializeAddress(this.payer)
             + serializeVarUint(this.newVolume)
-            + serializeVarUint(this.newTimeExpired);
+            + serializeVarUint(dateToUnixTime(this.newTimeExpired));
     }
 }
