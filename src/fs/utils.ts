@@ -6,16 +6,21 @@ export function serializeUint64(num: number): string {
 
 export function serializeVarUint(num: number): string {
     let hex = ''
-    if (num < 0xfd) {
+    if (num < 0x80) {
         hex = num2hexstring(num);
-    } else if (num <= 0xffff) {
-        // uint16
+    } else if (num < 0x8000) {
         hex = num2hexstring(num, 2, true);
-    } else if (num <= 0xffffffff) {
-        // uint32
+    } else if (num < 0x800000) {
+        hex = num2hexstring(num, 3, true);
+    } else if (num < 0x80000000) {
         hex = num2hexstring(num, 4, true);
+    } else if (num < 0x8000000000) {
+        hex = num2hexstring(num, 5, true);
+    } else if (num < 0x800000000000) {
+        hex = num2hexstring(num, 6, true);
+    } else if (num < 0x80000000000000) {
+        hex = num2hexstring(num, 7, true);
     } else {
-        // uint64
         hex = num2hexstring(num, 8, true);
     }
     if (hex == '00') {
