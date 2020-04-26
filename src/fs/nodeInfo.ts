@@ -9,7 +9,6 @@ export class FsNodeInfo {
         public readonly volume: number,
         public readonly restVol: number,
         public readonly serviceTime: number,
-        public readonly minPdpInterval: number,
         public readonly nodeAddr: Address,
         public readonly nodeNetAddr: string
     ) { }
@@ -21,11 +20,10 @@ export class FsNodeInfo {
         const volume = decodeVarUint(sr)
         const restVol = decodeVarUint(sr)
         const serviceTime = decodeVarUint(sr)
-        const minPdpInterval = decodeVarUint(sr)
         const nodeAddr = decodeAddress(sr)
         const nodeNetAddr = hexstr2str(decodeVarBytes(sr))
         return new FsNodeInfo(pledge, profit, volume, restVol, serviceTime,
-            minPdpInterval, nodeAddr, nodeNetAddr)
+            nodeAddr, nodeNetAddr)
     }
 
     public serializeHex(): string {
@@ -34,7 +32,6 @@ export class FsNodeInfo {
             + serializeUint64(this.profit)
             + serializeUint64(this.volume)
             + serializeUint64(this.restVol)
-            + serializeUint64(this.minPdpInterval)
             + this.nodeAddr.serialize()
             + str2VarBytes(this.nodeNetAddr);
         return str;

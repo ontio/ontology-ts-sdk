@@ -12,11 +12,11 @@ export class FileInfo {
         public readonly copyNumber: number,
         public readonly payAmount: number,
         public readonly restAmount: number,
-        public readonly fileCost: number,
         public readonly firstPdp: boolean,
-        public readonly pdpInterval: number,
         public readonly timeStart: number,
         public readonly timeExpired: number,
+        public readonly beginHeight: number,
+        public readonly expiredHeight: number,
         public readonly pdpParam: string,
         public readonly validFlag: boolean,
         public readonly storageType: number
@@ -31,11 +31,11 @@ export class FileInfo {
             + serializeVarUint(this.copyNumber)
             + serializeVarUint(this.payAmount)
             + serializeVarUint(this.restAmount)
-            + serializeVarUint(this.fileCost)
             + bool2VarByte(this.firstPdp)
-            + serializeVarUint(this.pdpInterval)
             + serializeVarUint(this.timeStart)
             + serializeVarUint(this.timeExpired)
+            + serializeVarUint(this.beginHeight)
+            + serializeVarUint(this.expiredHeight)
             + hex2VarBytes(this.pdpParam)
             + bool2VarByte(this.validFlag)
             + serializeVarUint(this.storageType);
@@ -50,16 +50,16 @@ export class FileInfo {
         const copyNumber = decodeVarUint(sr)
         const payAmount = decodeVarUint(sr)
         const restAmount = decodeVarUint(sr)
-        const fileCost = decodeVarUint(sr)
         const firstPdp = decodeBool(sr)
-        const pdpInterval = decodeVarUint(sr)
         const timeStart = decodeVarUint(sr)
         const timeExpired = decodeVarUint(sr)
+        const beginHeight = decodeVarUint(sr)
+        const expiredHeight = decodeVarUint(sr)
         const pdpParam = decodeVarBytes(sr)
         const validFlag = decodeBool(sr)
         const storageType = decodeVarUint(sr)
         return new FileInfo(fileHash, fileOwner, fileDesc, fileBlockCount, realFileSize, copyNumber, payAmount,
-            restAmount, fileCost, firstPdp, pdpInterval, timeStart, timeExpired, pdpParam, validFlag, storageType)
+            restAmount, firstPdp, timeStart, timeExpired, beginHeight, expiredHeight, pdpParam, validFlag, storageType)
     }
 }
 

@@ -41,7 +41,6 @@ import { ReadPledge } from '../../fs/readPledge';
  */
 export const ONTFS_CONTRACT = '0000000000000000000000000000000000000008';
 const contractAddress = new Address(ONTFS_CONTRACT);
-const DefaultMinPdpInterval = 600;
 
 /**
  * Method names in ONT FS contract
@@ -87,14 +86,13 @@ export function buildGetGlobalParamTx() {
 export function buildFsNodeRegisterTx(
     volume: number,
     serviceTime: number,
-    minPdpInterval: number,
     nodeAddr: Address,
     nodeNetAddr: string,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
 ) {
-    const fsNodeInfo = new FsNodeInfo(0, 0, volume, 0, serviceTime, minPdpInterval, nodeAddr, nodeNetAddr);
+    const fsNodeInfo = new FsNodeInfo(0, 0, volume, 0, serviceTime, nodeAddr, nodeNetAddr);
     const struct = new Struct();
     struct.add(fsNodeInfo.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -113,14 +111,13 @@ export function buildNodeQueryTx(
 export function buildNodeUpdateTx(
     volume: number,
     serviceTime: number,
-    minPdpInterval: number,
     nodeAddr: Address,
     nodeNetAddr: string,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
 ) {
-    const fsNodeInfo = new FsNodeInfo(0, 0, volume, 0, serviceTime, minPdpInterval, nodeAddr, nodeNetAddr);
+    const fsNodeInfo = new FsNodeInfo(0, 0, volume, 0, serviceTime, nodeAddr, nodeNetAddr);
     const struct = new Struct();
     struct.add(fsNodeInfo.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -314,17 +311,13 @@ export function buildCreateSpaceTx(
     spaceOwner: Address,
     volume: number,
     copyNum: number,
-    pdpInterval: number,
     timeExpired: number,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
 ) {
-    if (pdpInterval < DefaultMinPdpInterval) {
-        throw new Error(`pdpInterval value should be no smaller than ${DefaultMinPdpInterval}`);
-    }
 
-    const spaceInfo = new SpaceInfo(spaceOwner, volume, 0, copyNum, 0, 0, pdpInterval, 0, timeExpired, false);
+    const spaceInfo = new SpaceInfo(spaceOwner, volume, 0, copyNum, 0, 0, 0, timeExpired, false);
     const struct = new Struct();
     struct.add(spaceInfo.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -405,20 +398,15 @@ export function buildStoreFilesTx(
             realFileSize,
             copyNumber,
             firstPdp,
-            pdpInterval,
             timeExpired,
             pdpParam,
             storageType
         } of filesInfo
     ) {
-        if (pdpInterval < DefaultMinPdpInterval) {
-            throw new Error(`pdpInterval value should be no less than ${DefaultMinPdpInterval}`);
-        }
 
         const fsFileInfo = new FileInfo(
             fileHash, fileOwner, fileDesc, fileBlockCount, realFileSize, copyNumber,
-            0, 0, 0, firstPdp, pdpInterval, 0, timeExpired, pdpParam, false, storageType
-        );
+            0, 0, firstPdp, 0, timeExpired, 0, 0, pdpParam, false, storageType);
         fileInfoList.filesI.push(fsFileInfo);
     }
 

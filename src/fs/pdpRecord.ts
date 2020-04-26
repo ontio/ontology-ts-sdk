@@ -7,9 +7,7 @@ export class PdpRecord {
         public readonly nodeAddr: Address,
         public readonly fileHash: string,
         public readonly fileOwner: Address,
-        public readonly pdpCount: number,
         public readonly lastPdpTime: number,
-        public readonly nextHeight: number,
         public readonly settleFlag: boolean,
     ) { }
 
@@ -18,9 +16,7 @@ export class PdpRecord {
         str += serializeAddress(this.nodeAddr)
             + hex2VarBytes(this.fileHash)
             + serializeAddress(this.fileOwner)
-            + serializeVarUint(this.pdpCount)
             + serializeVarUint(this.lastPdpTime)
-            + serializeVarUint(this.nextHeight)
             + bool2VarByte(this.settleFlag)
         return str;
     }
@@ -30,13 +26,11 @@ export class PdpRecord {
         const nodeAddr = decodeAddress(sr)
         const fileHash = decodeVarBytes(sr)
         const fileOwner = decodeAddress(sr)
-        const pdpCount = decodeVarUint(sr)
         const lastPdpTime = decodeVarUint(sr)
-        const nextHeight = decodeVarUint(sr)
         const settleFlag = decodeBool(sr)
 
-        return new PdpRecord(nodeAddr, fileHash, fileOwner, pdpCount, lastPdpTime,
-            nextHeight, settleFlag)
+        return new PdpRecord(nodeAddr, fileHash, fileOwner, lastPdpTime,
+            settleFlag)
     }
 }
 
