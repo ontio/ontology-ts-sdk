@@ -27,7 +27,7 @@ import {
 } from '../../fs';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
-import { str2hexstr, StringReader } from '../../utils';
+import { StringReader } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
