@@ -16,6 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import BigNumber from 'bignumber.js';
 import { Address, PrivateKey, PublicKey, Signature } from '../../crypto';
 import {
     Challenge, FileDel, FileDelList, FileInfo, FileInfoList, FilePdpData,
@@ -24,7 +25,6 @@ import {
     FsNodeInfo, GetReadPledge, Passport, ReadPlan, ReadPlanLike,
     ReadPledge, SpaceInfo, SpaceUpdate
 } from '../../fs';
-import { serializeUint64 } from '../../fs/utils';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
 import { str2hexstr, StringReader } from '../../utils';
@@ -232,7 +232,7 @@ export function buildGetNodeInfoListTx(
     count: number
 ): Transaction {
     const struct = new Struct();
-    struct.add(serializeUint64(count));
+    struct.add(new BigNumber(count));
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx(ONTFS_METHOD.FsGetNodeList, params, contractAddress);
 }
