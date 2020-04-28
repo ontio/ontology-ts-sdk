@@ -10,21 +10,16 @@ export class PdpRecord {
         const nodeAddr = decodeAddress(sr);
         const fileHash = decodeVarBytes(sr);
         const fileOwner = decodeAddress(sr);
-        const pdpCount = decodeVarUint(sr);
         const lastPdpTime = unixTimeToDate(decodeVarUint(sr));
-        const nextHeight = decodeVarUint(sr);
         const settleFlag = decodeBool(sr);
 
-        return new PdpRecord(nodeAddr, fileHash, fileOwner, pdpCount, lastPdpTime,
-            nextHeight, settleFlag);
+        return new PdpRecord(nodeAddr, fileHash, fileOwner, lastPdpTime, settleFlag);
     }
     public constructor(
         public readonly nodeAddr: Address,
         public readonly fileHash: string,
         public readonly fileOwner: Address,
-        public readonly pdpCount: number,
         public readonly lastPdpTime: Date,
-        public readonly nextHeight: number,
         public readonly settleFlag: boolean
     ) { }
 
@@ -33,9 +28,7 @@ export class PdpRecord {
         str += serializeAddress(this.nodeAddr)
             + hex2VarBytes(this.fileHash)
             + serializeAddress(this.fileOwner)
-            + serializeVarUint(this.pdpCount)
             + serializeVarUint(dateToUnixTime(this.lastPdpTime))
-            + serializeVarUint(this.nextHeight)
             + bool2VarByte(this.settleFlag);
         return str;
     }
@@ -45,9 +38,7 @@ export class PdpRecord {
             nodeAddr: this.nodeAddr.value,
             fileHash: this.fileHash,
             fileOwner: this.fileOwner.value,
-            pdpCount: this.pdpCount,
             lastPdpTime: this.lastPdpTime,
-            nextHeight: this.nextHeight,
             settleFlag: this.settleFlag
         };
     }

@@ -4,7 +4,6 @@ import { dateToUnixTime, decodeAddress, decodeVarBytes, decodeVarUint,
     serializeUint64, serializeVarUint, unixTimeToDate } from './utils';
 
 export class FsNodeInfo {
-
     static deserializeHex(hex: string): FsNodeInfo {
         const sr: StringReader = new StringReader(hex);
         const pledge = decodeVarUint(sr);
@@ -12,11 +11,10 @@ export class FsNodeInfo {
         const volume = decodeVarUint(sr);
         const restVol = decodeVarUint(sr);
         const serviceTime = unixTimeToDate(decodeVarUint(sr));
-        const minPdpInterval = decodeVarUint(sr);
         const nodeAddr = decodeAddress(sr);
         const nodeNetAddr = hexstr2str(decodeVarBytes(sr));
         return new FsNodeInfo(pledge, profit, volume, restVol, serviceTime,
-            minPdpInterval, nodeAddr, nodeNetAddr);
+             nodeAddr, nodeNetAddr);
     }
     public constructor(
         public readonly pledge: number,
@@ -24,7 +22,6 @@ export class FsNodeInfo {
         public readonly volume: number,
         public readonly restVol: number,
         public readonly serviceTime: Date,
-        public readonly minPdpInterval: number,
         public readonly nodeAddr: Address,
         public readonly nodeNetAddr: string
     ) { }
@@ -36,7 +33,6 @@ export class FsNodeInfo {
             + serializeUint64(this.volume)
             + serializeUint64(this.restVol)
             + serializeUint64(dateToUnixTime(this.serviceTime))
-            + serializeUint64(this.minPdpInterval)
             + this.nodeAddr.serialize()
             + str2VarBytes(this.nodeNetAddr);
         return str;
@@ -49,7 +45,6 @@ export class FsNodeInfo {
             volume: this.volume,
             restVol: this.restVol,
             serviceTime: this.serviceTime,
-            minPdpInterval: this.minPdpInterval,
             nodeAddr: this.nodeAddr.value,
             nodeNetAddr: this.nodeNetAddr
         };
