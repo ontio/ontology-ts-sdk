@@ -7,8 +7,6 @@ export class ReadPledge {
     public constructor(
         public readonly fileHash: string,
         public readonly downloader: Address,
-        public readonly blockHeight: number,
-        public readonly expireHeight: number,
         public readonly restMoney: number,
         public readonly readPlans: ReadPlan[]
     ) { }
@@ -21,8 +19,6 @@ export class ReadPledge {
         let str = '';
         str += hex2VarBytes(this.fileHash)
             + serializeAddress(this.downloader)
-            + serializeVarUint(this.blockHeight)
-            + serializeVarUint(this.expireHeight)
             + serializeVarUint(this.restMoney)
             + serializeVarUint(this.readPlans.length);
 
@@ -38,8 +34,6 @@ export class ReadPledge {
         let sr: StringReader = new StringReader(hex)
         const fileHash = decodeVarBytes(sr)
         const downloader = decodeAddress(sr)
-        const blockHeight = decodeVarUint(sr)
-        const expireHeight = decodeVarUint(sr)
         const restMoney = decodeVarUint(sr)
         let readPlans: ReadPlan[] = []
         let count = decodeVarUint(sr)
@@ -47,6 +41,6 @@ export class ReadPledge {
             const plan = ReadPlan.deserializeHex(decodeVarBytes(sr))
             readPlans.push(plan)
         }
-        return new ReadPledge(fileHash, downloader, blockHeight, expireHeight, restMoney, readPlans)
+        return new ReadPledge(fileHash, downloader, restMoney, readPlans)
     }
 }

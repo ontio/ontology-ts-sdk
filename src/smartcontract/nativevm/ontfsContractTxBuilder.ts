@@ -480,7 +480,7 @@ export function buildFileReadPledgeTx(
     gasLimit: string,
     payer?: Address
 ) {
-    const fileReadPledge = new ReadPledge(fileHash, downloader, 0, 0, 0, readPlans);
+    const fileReadPledge = new ReadPledge(fileHash, downloader, 0, readPlans);
     const struct = new Struct();
     struct.add(fileReadPledge.serializeHex());
     const params = buildNativeCodeScript([struct]);
