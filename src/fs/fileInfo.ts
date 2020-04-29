@@ -21,9 +21,12 @@ export class FileInfo {
         const expiredHeight = decodeVarUint(sr);
         const pdpParam = decodeVarBytes(sr);
         const validFlag = decodeBool(sr);
+        const currFeeRate = decodeVarUint(sr)
         const storageType = decodeVarUint(sr);
-        return new FileInfo(fileHash, fileOwner, fileDesc, fileBlockCount, realFileSize, copyNumber, payAmount,
-            restAmount, firstPdp, timeStart, timeExpired, beginHeight, expiredHeight, pdpParam, validFlag, storageType);
+        return new FileInfo(
+            fileHash, fileOwner, fileDesc, fileBlockCount, realFileSize, copyNumber, payAmount, restAmount,
+            firstPdp, timeStart, timeExpired, beginHeight, expiredHeight, pdpParam, validFlag, currFeeRate, storageType
+        );
     }
     public constructor(
         public readonly fileHash: string,
@@ -41,6 +44,7 @@ export class FileInfo {
         public readonly expiredHeight: number,
         public readonly pdpParam: string,
         public readonly validFlag: boolean,
+        public readonly currFeeRate: number,
         public readonly storageType: number
     ) { }
 
@@ -60,6 +64,7 @@ export class FileInfo {
             + serializeVarUint(this.expiredHeight)
             + hex2VarBytes(this.pdpParam)
             + bool2VarByte(this.validFlag)
+            + serializeVarUint(this.currFeeRate)
             + serializeVarUint(this.storageType);
     }
 
@@ -80,6 +85,7 @@ export class FileInfo {
             expiredHeight: this.expiredHeight,
             pdpParam: this.pdpParam,
             validFlag: this.validFlag,
+            currFeeRate: this.currFeeRate,
             storageType: this.storageType
         };
     }

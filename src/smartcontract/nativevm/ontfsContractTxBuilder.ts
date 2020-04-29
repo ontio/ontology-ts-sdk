@@ -322,7 +322,7 @@ export function buildCreateSpaceTx(
     gasLimit: string,
     payer?: Address
 ): Transaction {
-    const spaceInfo = new SpaceInfo(spaceOwner, volume, 0, copyNum, 0, 0, timeStart, timeExpired, false);
+    const spaceInfo = new SpaceInfo(spaceOwner, volume, 0, copyNum, 0, 0, timeStart, timeExpired, 0, false);
     const struct = new Struct();
     struct.add(spaceInfo.serializeHex());
     const params = buildNativeCodeScript([struct]);
@@ -448,7 +448,7 @@ export function buildStoreFilesTx(
     ) {
         const fsFileInfo = new FileInfo(
             fileHash, fileOwner, str2hexstr(fileDesc), fileBlockCount, realFileSize, copyNumber,
-            0, 0, firstPdp, timeStart, timeExpired, 0, 0, pdpParam, false, storageType);
+            0, 0, firstPdp, timeStart, timeExpired, 0, 0, pdpParam, false, 0, storageType);
         fileInfoList.filesI.push(fsFileInfo);
     }
 

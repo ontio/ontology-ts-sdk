@@ -15,9 +15,10 @@ export class SpaceInfo {
         const restAmount = decodeVarUint(sr);
         const timeStart = unixTimeToDate(decodeVarUint(sr));
         const timeExpired = unixTimeToDate(decodeVarUint(sr));
+        const currFeeRate = decodeVarUint(sr)
         const validFlag = decodeBool(sr);
         return new SpaceInfo(spaceOwner, volume, restVol, copyNumber, payAmount,
-            restAmount, timeStart, timeExpired, validFlag);
+            restAmount, timeStart, timeExpired, currFeeRate, validFlag);
     }
     public constructor(
         public readonly spaceOwner: Address,
@@ -28,6 +29,7 @@ export class SpaceInfo {
         public readonly restAmount: number,
         public readonly timeStart: Date,
         public readonly timeExpired: Date,
+        public readonly currFeeRate: number,
         public readonly validFlag: boolean
     ) { }
 
@@ -40,6 +42,7 @@ export class SpaceInfo {
             + serializeVarUint(this.restAmount)
             + serializeVarUint(dateToUnixTime(this.timeStart))
             + serializeVarUint(dateToUnixTime(this.timeExpired))
+            + serializeVarUint(this.currFeeRate)
             + bool2VarByte(this.validFlag);
     }
 
@@ -53,6 +56,7 @@ export class SpaceInfo {
             restAmount: this.restAmount,
             timeStart: this.timeStart,
             timeExpired: this.timeExpired,
+            currFeeRate: this.currFeeRate,
             validFlag: this.validFlag
         };
     }
