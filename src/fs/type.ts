@@ -7,7 +7,6 @@ export interface FileStore {
     realFileSize: number;
     copyNumber: number;
     firstPdp: boolean;
-    pdpInterval: number;
     timeStart: Date;
     timeExpired: Date;
     pdpParam: string;

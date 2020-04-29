@@ -27,7 +27,7 @@ import {
 } from '../../fs';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
-import { StringReader } from '../../utils';
+import { str2hexstr, StringReader } from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
@@ -447,7 +447,7 @@ export function buildStoreFilesTx(
         } of filesInfo
     ) {
         const fsFileInfo = new FileInfo(
-            fileHash, fileOwner, fileDesc, fileBlockCount, realFileSize, copyNumber,
+            fileHash, fileOwner, str2hexstr(fileDesc), fileBlockCount, realFileSize, copyNumber,
             0, 0, firstPdp, timeStart, timeExpired, 0, 0, pdpParam, false, storageType);
         fileInfoList.filesI.push(fsFileInfo);
     }
