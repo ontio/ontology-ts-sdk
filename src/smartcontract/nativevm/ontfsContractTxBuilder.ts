@@ -448,7 +448,7 @@ export function buildStoreFilesTx(
     ) {
         const fsFileInfo = new FileInfo(
             fileHash, fileOwner, str2hexstr(fileDesc), fileBlockCount, realFileSize, copyNumber,
-            0, 0, firstPdp, timeStart, timeExpired, 0, 0, pdpParam, false, 0, storageType);
+            0, 0, firstPdp, new Date(timeStart), new Date(timeExpired), 0, 0, pdpParam, false, 0, storageType);
         fileInfoList.filesI.push(fsFileInfo);
     }
 
