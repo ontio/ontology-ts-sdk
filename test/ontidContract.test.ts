@@ -124,6 +124,19 @@ describe('test ONT ID contract', () => {
         expect(res.Error).toEqual(0);
     }, 10000);
 
+    test('regBountyDid', async () => {
+        const pri = PrivateKey.deserializeWIF('L17A93kdW37qJ9qsPSRGorrrDHbgDXBT9JBt3wT9rcRQoCsTeEcC');
+        const pk = pri.getPublicKey();
+        const addr = Address.fromPubKey(pk);
+        console.log(addr.toBase58());
+        const did = 'did:ont:' + addr.toBase58();
+        const tx1 = buildRegisterOntidTx(did, pk, gasPrice, gasLimit, addr);
+        const sc = new WebsocketClient('http://dappnode1.ont.io:20335');
+        signTransaction(tx1, pri);
+        const res = await sc.sendRawTransaction(tx1.serialize(), false, true);
+        console.log(res);
+    }),
+
     test('testDDOTx', async () => {
         const tx = buildGetDDOTx(ontid);
         const restClient = new RestClient();
