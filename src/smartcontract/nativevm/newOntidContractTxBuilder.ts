@@ -62,16 +62,21 @@ const ONTID_METHOD  = {
     changeRecovery: 'changeRecovery',
     getKeyState: 'getKeyState',
     setKeyAccess: 'setKeyAccess',
-    addAuthKey: 'addAuthKey',
+    addNewAuthKey: 'addNewAuthKey',
     removeAuthKey: 'removeAuthKey',
+    addNewAuthKeyByRecovery: 'addNewAuthKeyByRecovery',
+    removeAuthKeyByRecovery: 'removeAuthKeyByRecovery',
+    addNewAuthKeyByController: 'addNewAuthKeyByController',
+    removeAuthKeyByController: 'removeAuthKeyByController',
+    setAuthKeyByController: 'setAuthKeyByController',
     addService: 'addService',
     updateService: 'updateService',
     removeService: 'removeService',
     addContext: 'addContext',
     removeContext: 'removeContext',
-    getDocument: 'getDocument',
-    getService: 'getService',
-    getController: 'getController',
+    getDocument: 'getDocumentJson',
+    getService: 'getServiceJson',
+    getController: 'getControllerJson',
     verifySignature: 'verifySignature',
     verifyController: 'verifyController'
 };
@@ -85,7 +90,6 @@ const ONTID_METHOD  = {
  * @param publicKey Public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
- * @param access Accesses of public key. Available values: "all", "crud", "use". Default is "all"
  * @param payer Payer
  */
 export function buildRegIDWithPublicKeyTx(
@@ -93,7 +97,6 @@ export function buildRegIDWithPublicKeyTx(
     publicKey: PublicKey,
     gasPrice: string,
     gasLimit: string,
-    access: string = 'all',
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.regIDWithPublicKey;
@@ -102,7 +105,7 @@ export function buildRegIDWithPublicKeyTx(
         ontid = str2hexstr(ontid);
     }
     const struct = new Struct();
-    struct.add(ontid, publicKey.serializeHex(), str2hexstr(access));
+    struct.add(ontid, publicKey.serializeHex());
     const list = [struct];
     const params = buildNativeCodeScript(list);
 
@@ -118,7 +121,7 @@ export function buildRegIDWithPublicKeyTx(
     return tx;
 }
 
-/**
+/** @Deprecated
  * Register one single controller
  *
  * The tx needs the signatures of: signer of the ontid, the controller, payer
@@ -229,7 +232,7 @@ export function buildMakeRevokeIdTx(
     return tx;
 }
 
-/**
+/** @Deprecated
  * Revoke ONT ID by single controller
  * This tx needs the signature of the single controler
  *
@@ -342,7 +345,6 @@ export function buildRemoveControllerTx(
  * @param publicKey User's public key
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
- * @param access Access of ONT ID
  * @param payer Payer
  */
 export function buildRegIdWithAttributesTx(
@@ -351,7 +353,6 @@ export function buildRegIdWithAttributesTx(
     publicKey: PublicKey,
     gasPrice: string,
     gasLimit: string,
-    access: string = 'all',
     payer?: Address
 ) {
     const method = ONTID_METHOD.regIDWithAttributes;
@@ -368,7 +369,6 @@ export function buildRegIdWithAttributesTx(
         const value = str2hexstr(a.value);
         struct.add(key, type, value);
     }
-    struct.add(str2hexstr(access));
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(
         method,
@@ -486,7 +486,7 @@ export function buildGetAttributesTx(ontid: string) {
     return tx;
 }
 
-/**
+/** @Deprecated
  * Adds attribute to ONT ID by single controllers.
  *
  * @param ontid User's ONT ID
@@ -505,11 +505,6 @@ export function buildAddAttributesBySingleControllerTx(
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.addAttributesByController;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
-
     const struct = new Struct();
 
     struct.add(str2hexstr(ontid), attributes.length);
@@ -553,10 +548,6 @@ export function buildAddAttributesByMultiControllerTx(
 ): Transaction {
     const method = ONTID_METHOD.addAttributesByController;
 
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
-
     const struct = new Struct();
 
     struct.add(str2hexstr(ontid), attributes.length);
@@ -599,11 +590,6 @@ export function buildAddAttributesByIndexTx(
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.addAttributesByIndex;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
-
     const struct = new Struct();
 
     struct.add(str2hexstr(ontid), attributes.length);
@@ -627,7 +613,7 @@ export function buildAddAttributesByIndexTx(
     return tx;
 }
 
-/**
+/** @Deprecated
  * remove attribute to ONT ID by single controller.
  *
  * @param ontid User's ONT ID
@@ -646,10 +632,6 @@ export function buildRemoveAttributesBySingleControllerTx(
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.removeAttributesByController;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
 
     const struct = new Struct();
 
@@ -672,9 +654,8 @@ export function buildRemoveAttributesBySingleControllerTx(
  * remove attribute to ONT ID by multi controllers.
  *
  * @param ontid User's ONT ID
- * @param newPk New public key to be added
- * @param controller Controller's ONT ID
- * @param index Index of the public key to verify signature of controller
+ * @param key Key of attribute to remove
+ * @param signers Signers of multi controllers
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer
@@ -688,10 +669,6 @@ export function buildRemoveAttributesByMultiControllerTx(
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.removeAttributesByController;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
 
     const struct = new Struct();
 
@@ -729,10 +706,6 @@ export function buildRemoveAttributesByIndexTx(
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.removeAttributesByController;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
 
     const struct = new Struct();
 
@@ -773,7 +746,8 @@ export function buildGetDDOTx(ontid: string) {
  *
  * @param ontid User's ONT ID
  * @param newPk New public key to be added
- * @param userKey User's public key or address
+ * @param userKey User's public key
+ * @param controller Controller of new pk
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer
@@ -782,6 +756,7 @@ export function buildAddPubKeyTx(
     ontid: string,
     newPk: PublicKey,
     userKey: PublicKey,
+    controller: string,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
@@ -797,6 +772,7 @@ export function buildAddPubKeyTx(
     const p3 = userKey.serializeHex();
     const struct = new Struct();
     struct.add(p1, p2, p3);
+    struct.add(str2hexstr(controller));
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(
         method,
@@ -810,72 +786,24 @@ export function buildAddPubKeyTx(
     return tx;
 }
 
-/**
+/** @Deprecated
  * Adds a new public key to ONT ID by single controller.
  *
  * @param ontid User's ONT ID
  * @param newPk New public key to be added
+ * @param index Index of controller
  * @param controller Controller's ONT ID
- * @param index Index of the public key to verify signature of controller
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer
  */
-export function buildAddPubKeyBySingleControllerTx(
+export function buildAddKeyBySingleControllerTx(
     ontid: string,
     newPk: PublicKey,
     index: number,
     controller: string,
-    access: string = 'all',
     gasPrice: string,
     gasLimit: string,
-
-    payer?: Address
-): Transaction {
-    const method = ONTID_METHOD.addKey;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
-
-    const p1 = ontid;
-    const p2 = newPk.serializeHex();
-    const struct = new Struct();
-    struct.add(p1, p2, index, str2hexstr(controller), str2hexstr(access));
-
-    const params = buildNativeCodeScript([struct]);
-    const tx = makeNativeContractTx(
-        method,
-        params,
-        new Address(ONTID_CONTRACT),
-        gasPrice,
-        gasLimit,
-        payer
-    );
-
-    return tx;
-}
-
-/**
- * Adds a new public key to ONT ID by multi controllers.
- *
- * @param ontid User's ONT ID
- * @param newPk New public key to be added
- * @param controller Controller's ONT ID
- * @param index Index of the public key to verify signature of controller
- * @param gasPrice Gas price
- * @param gasLimit Gas limit
- * @param payer Payer
- */
-export function buildAddKeyByMultiControllerTx(
-    ontid: string,
-    newPk: PublicKey,
-    signers: Signer[],
-    controller: string,
-    access: string = 'all',
-    gasPrice: string,
-    gasLimit: string,
-
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.addKeyByController;
@@ -887,8 +815,53 @@ export function buildAddKeyByMultiControllerTx(
     const p1 = ontid;
     const p2 = newPk.serializeHex();
     const struct = new Struct();
-    struct.add(p1, p2, serializeSigners(signers), str2hexstr(controller), str2hexstr(access));
+    struct.add(p1, p2, index, str2hexstr(controller));
+    const params = buildNativeCodeScript([struct]);
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
+        gasPrice,
+        gasLimit,
+        payer
+    );
 
+    return tx;
+}
+
+/**
+ * Adds a new public key and its controller to ONT ID by multi controllers.
+ *
+ * @param ontid User's ONT ID
+ * @param newPk New public key to be added
+ * @param signers Singers of controllers
+ * @param controller ONT ID of the new pk. Optional
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Payer
+ */
+export function buildAddKeyByMultiControllerTx(
+    ontid: string,
+    newPk: PublicKey,
+    signers: Signer[],
+    controller: string,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+): Transaction {
+    const method = ONTID_METHOD.addKeyByController;
+
+    if (ontid.substr(0, 3) === 'did') {
+        ontid = str2hexstr(ontid);
+    }
+
+    const p1 = ontid;
+    const p2 = newPk.serializeHex();
+    const struct = new Struct();
+    struct.add(p1, p2, serializeSigners(signers));
+    if (controller) {
+        struct.add(str2hexstr(controller));
+    }
     const params = buildNativeCodeScript([struct]);
     const tx = makeNativeContractTx(
         method,
@@ -908,7 +881,7 @@ export function buildAddKeyByMultiControllerTx(
  *
  * @param ontid User's ONT ID
  * @param newRecovery newRecovery
- * @param signers signers
+ * @param index Index of new recovery
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer. Optional.
@@ -916,15 +889,14 @@ export function buildAddKeyByMultiControllerTx(
 export function buildSetRecoveryTx(
     ontid: string,
     newRecovery: Group,
-    signers: Signer[],
+    index: number,
     gasPrice: string,
     gasLimit: string,
-
     payer?: Address
 ): Transaction {
-    const method = ONTID_METHOD.updateRecovery;
+    const method = ONTID_METHOD.setRecovery;
     const struct = new Struct();
-    struct.add(str2hexstr(ontid), newRecovery.serialize(), serializeSigners(signers));
+    struct.add(str2hexstr(ontid), newRecovery.serialize(), index);
     const list = [struct];
     const params = buildNativeCodeScript(list);
 
@@ -945,7 +917,8 @@ export function buildSetRecoveryTx(
  *
  *
  * @param ontid User's ONT ID
- * @param recovery recovery
+ * @param recovery recovery New recovery to add
+ * @param signers Signers of old recovery
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer. Optional.
@@ -953,15 +926,14 @@ export function buildSetRecoveryTx(
 export function buildUpdateRecoveryTx(
     ontid: string,
     recovery: Group,
-    index: number,
+    signers: Signer[],
     gasPrice: string,
     gasLimit: string,
-
     payer?: Address
 ): Transaction {
-    const method = ONTID_METHOD.regIdWithController;
+    const method = ONTID_METHOD.updateRecovery;
     const struct = new Struct();
-    struct.add(str2hexstr(ontid), recovery.serialize(), index);
+    struct.add(str2hexstr(ontid), recovery.serialize(), serializeSigners(signers));
 
     const list = [struct];
     const params = buildNativeCodeScript(list);
@@ -1000,10 +972,6 @@ export function buildAddKeyByRecoveryTx(
 ): Transaction {
     const method = ONTID_METHOD.addKeyByRecovery;
 
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
-
     const struct = new Struct();
     struct.add(str2hexstr(ontid), newPk.serializeHex(), serializeSigners(signers));
 
@@ -1024,9 +992,8 @@ export function buildAddKeyByRecoveryTx(
  * remove a new public key to ONT ID by recovery
  *
  * @param ontid User's ONT ID
- * @param newPk New public key to be added
- * @param controller Controller's ONT ID
- * @param index Index of the public key to verify signature of controller
+ * @param pubkeyIndex Index of pk to remove
+ * @param signers Signers of recovery
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer
@@ -1037,14 +1004,9 @@ export function buildRemoveKeyByRecoveryTx(
     signers: Signer[],
     gasPrice: string,
     gasLimit: string,
-
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.removeKeyByRecovery;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
 
     const struct = new Struct();
     struct.add(str2hexstr(ontid), pubkeyIndex, serializeSigners(signers));
@@ -1062,13 +1024,12 @@ export function buildRemoveKeyByRecoveryTx(
     return tx;
 }
 
-/**
+/** @Deprecated
  * remove a new public key of ONT ID by single controllers.
  *
  * @param ontid User's ONT ID
  * @param pubkeyIndex Index of pubkey to be removed
  * @param controllerIndex Index of Controller's pubkey
- * @param index Index of the public key to verify signature of controller
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer
@@ -1079,14 +1040,9 @@ export function buildRemoveKeyBySingleControllerTx(
     controllerIndex: number,
     gasPrice: string,
     gasLimit: string,
-
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.removeKeyByController;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
 
     const struct = new Struct();
     struct.add(str2hexstr(ontid), pubkeyIndex, controllerIndex);
@@ -1110,27 +1066,22 @@ export function buildRemoveKeyBySingleControllerTx(
  * @param ontid User's ONT ID
  * @param pubkeyIndex Index of pubkey to be removed
  * @param signers Controllers' signers
- * @param index Index of the public key to verify signature of controller
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer
  */
 export function buildRemoveKeyByMultiControllerTx(
     ontid: string,
-    pubkeyIndex: string,
+    pubkeyIndex: number,
     signers: Signer[],
     controller: string,
-    access: string = 'all',
+
     gasPrice: string,
     gasLimit: string,
 
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.removeKeyByController;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
 
     if (!isHexString(pubkeyIndex)) {
         throw new Error('Parameter pubkeyIndex should be hex string');
@@ -1157,15 +1108,15 @@ export function buildRemoveKeyByMultiControllerTx(
  *
  * @param ontid User's ONT ID
  * @param pk2Remove Public key to be removed
- * @param sender User's public key or address
+ * @param Pk(auth key) of ONT ID.
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer
  */
-export function buildRemoveControlKeyTx(
+export function buildRemovePubKeyTx(
     ontid: string,
     pk2Remove: PublicKey,
-    sender: PublicKey | Address,
+    pk: PublicKey,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
@@ -1178,12 +1129,7 @@ export function buildRemoveControlKeyTx(
 
     const p1 = ontid;
     const p2 = pk2Remove.serializeHex();
-    let p3;
-    if (sender instanceof PublicKey) {
-        p3 = sender.serializeHex();
-    } else if (sender instanceof Address) {
-        p3 = sender.serialize();
-    }
+    const p3 = pk.serializeHex();
     const struct = new Struct();
     struct.add(p1, p2, p3);
     const params = buildNativeCodeScript([struct]);
@@ -1215,79 +1161,6 @@ export function buildGetPublicKeysTx(ontid: string) {
     const params = buildNativeCodeScript([struct]);
 
     const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT));
-    return tx;
-}
-
-/**
- * Adds recovery address to ONT ID.
- *
- * @param ontid User's ONT ID
- * @param recovery Recovery address, must have not be set
- * @param publicKey User's public key, must be user's existing public key
- * @param gasPrice Gas price
- * @param gasLimit Gas limit
- * @param payer Payer
- */
-export function buildAddRecoveryTx(
-    ontid: string,
-    recovery: Address,
-    publicKey: PublicKey,
-    gasPrice: string,
-    gasLimit: string,
-    payer?: Address
-): Transaction {
-    const method = ONTID_METHOD.addRecovery;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
-
-    const p1 = ontid;
-    const p2 = recovery;
-    const p3 = publicKey.serializeHex();
-    const struct = new Struct();
-    struct.add(p1, p2, p3);
-    const params = buildNativeCodeScript([struct]);
-    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT), gasPrice, gasLimit, payer);
-    return tx;
-}
-
-/**
- * Changes recovery address of ONT ID.
- *
- * This contract call must be initiated by the original recovery address.
- *
- * @param ontid user's ONT ID
- * @param newrecovery New recovery address
- * @param oldrecovery Original recoevery address
- * @param gasPrice Gas price
- * @param gasLimit Gas limit
- * @param payer Payer
- */
-export function buildChangeRecoveryTx(
-    ontid: string,
-    newrecovery: Address,
-    oldrecovery: Address,
-    gasPrice: string,
-    gasLimit: string,
-    payer?: Address
-): Transaction {
-    const method = ONTID_METHOD.changeRecovery;
-
-    if (ontid.substr(0, 3) === 'did') {
-        ontid = str2hexstr(ontid);
-    }
-
-    const p1 = ontid;
-    const p2 = newrecovery;
-    const p3 = oldrecovery;
-    const struct = new Struct();
-    struct.add(p1, p2, p3);
-    const params = buildNativeCodeScript([struct]);
-
-    const tx = makeNativeContractTx(method, params, new Address(ONTID_CONTRACT),
-    gasPrice, gasLimit);
-    tx.payer = payer || oldrecovery;
     return tx;
 }
 
@@ -1325,19 +1198,15 @@ export function buildGetPublicKeyStateTx(ontid: string, pkId: number) {
  *
  *
  * @param ontid User's ONT ID
- * @param isNewPublicKey Decides if add the pubkey of ONT ID to the auth key
- * @param index If isNewPublicKey set true, this is the index of the pubkey to set as auth key
  * @param pubkey If isNewPublicKey set false, this is the new public key to set as auth key
- * @param controller ONT ID of the new pubkey
+ * @param controller ONT ID of the new auth key
  * @param signIndex Index of signer's pubkey
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer. Optional.
  */
-export function buildAddAuthKeyTx(
+export function buildAddNewAuthKeyTx(
     ontid: string,
-    ifNewPublicKey: boolean,
-    index: number,
     pubkey: PublicKey,
     controller: string,
     signIndex: number,
@@ -1346,11 +1215,11 @@ export function buildAddAuthKeyTx(
 
     payer?: Address
 ): Transaction {
-    const method = ONTID_METHOD.addAuthKey;
+    const method = ONTID_METHOD.addNewAuthKey;
     const struct1 = new Struct();
     struct1.add(pubkey.serializeHex(), str2hexstr(controller));
     const struct = new Struct();
-    struct.add(str2hexstr(ontid), ifNewPublicKey, index, struct1, signIndex);
+    struct.add(str2hexstr(ontid), struct1, signIndex);
 
     const list = [struct];
     const params = buildNativeCodeScript(list);
@@ -1372,7 +1241,7 @@ export function buildAddAuthKeyTx(
  *
  *
  * @param ontid User's ONT ID
- * @param index If isNewPublicKey set true, this is the index of the pubkey to set as auth key
+ * @param index Index of the auth key to remove
  * @param signIndex Index of signer's pubkey
  * @param gasPrice Gas price
  * @param gasLimit Gas limit
@@ -1407,6 +1276,169 @@ export function buildRemoveAuthKeyTx(
 }
 
 /**
+ * Add new auth key to ONT ID by recovery
+ *
+ *
+ * @param ontid User's ONT ID
+ * @param pubkey Pk to add as new auth key
+ * @param controller ONT ID of the new auth key
+ * @param signers Signers of recovery
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Payer. Optional.
+ */
+export function buildAddNewAuthKeyByRecoveryTx(
+    ontid: string,
+    pubkey: PublicKey,
+    controller: string,
+    signers: Signer[],
+    gasPrice: string,
+    gasLimit: string,
+
+    payer?: Address
+): Transaction {
+    const method = ONTID_METHOD.addNewAuthKeyByRecovery;
+    const struct1 = new Struct();
+    struct1.add(pubkey.serializeHex(), str2hexstr(controller));
+    const struct = new Struct();
+    struct.add(str2hexstr(ontid), struct1, serializeSigners(signers));
+
+    const list = [struct];
+    const params = buildNativeCodeScript(list);
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
+        gasPrice,
+        gasLimit,
+        payer
+    );
+
+    return tx;
+}
+
+/**
+ * remove auth key of ONT ID by recovery
+ *
+ *
+ * @param ontid User's ONT ID
+ * @param index Index of auth key to remove
+ * @param signers Signers of recovery
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Payer. Optional.
+ */
+export function buildRemoveAuthKeyByRecoveryTx(
+    ontid: string,
+    index: number,
+    signers: Signer[],
+    gasPrice: string,
+    gasLimit: string,
+
+    payer?: Address
+): Transaction {
+    const method = ONTID_METHOD.removeAuthKeyByRecovery;
+    const struct = new Struct();
+    struct.add(str2hexstr(ontid), index, serializeSigners(signers));
+
+    const list = [struct];
+    const params = buildNativeCodeScript(list);
+
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
+        gasPrice,
+        gasLimit,
+        payer
+    );
+
+    return tx;
+}
+
+/**
+ * Add new auth key to ONT ID by controller
+ *
+ *
+ * @param ontid User's ONT ID
+ * @param pubkey Pk to add as new auth key
+ * @param controller ONT ID of the new auth key
+ * @param signers Signers of controller
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Payer. Optional.
+ */
+export function buildAddNewAuthKeyByControllerTx(
+    ontid: string,
+    pubkey: PublicKey,
+    controller: string,
+    signers: Signer[],
+    gasPrice: string,
+    gasLimit: string,
+
+    payer?: Address
+): Transaction {
+    const method = ONTID_METHOD.addNewAuthKeyByController;
+    const struct1 = new Struct();
+    struct1.add(pubkey.serializeHex(), str2hexstr(controller));
+    const struct = new Struct();
+    struct.add(str2hexstr(ontid), struct1, serializeSigners(signers));
+
+    const list = [struct];
+    const params = buildNativeCodeScript(list);
+
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
+        gasPrice,
+        gasLimit,
+        payer
+    );
+
+    return tx;
+}
+
+/**
+ * remove auth key of ONT ID by controller
+ *
+ *
+ * @param ontid User's ONT ID
+ * @param index Index of auth key to remove
+ * @param signers Signers of controller
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Payer. Optional.
+ */
+export function buildRemoveAuthKeyByControllerTx(
+    ontid: string,
+    index: number,
+    signers: Signer[],
+    gasPrice: string,
+    gasLimit: string,
+
+    payer?: Address
+): Transaction {
+    const method = ONTID_METHOD.removeAuthKeyByController;
+    const struct = new Struct();
+    struct.add(str2hexstr(ontid), index, serializeSigners(signers));
+
+    const list = [struct];
+    const params = buildNativeCodeScript(list);
+
+    const tx = makeNativeContractTx(
+        method,
+        params,
+        new Address(ONTID_CONTRACT),
+        gasPrice,
+        gasLimit,
+        payer
+    );
+
+    return tx;
+}
+
+/**
  * Add service to ONT ID
  *
  *
@@ -1415,6 +1447,7 @@ export function buildRemoveAuthKeyTx(
  * @param type Type of service
  * @param serviceEndpoint Endpoint of service
  * @param index Index of signer's pubkey
+ * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer. Optional.
  */
@@ -1423,7 +1456,7 @@ export function buildAddServiceTx(
     serviceId: string,
     type: string,
     serviceEndpoint: string,
-    index: number,
+    pkIndex: number,
     gasPrice: string,
     gasLimit: string,
 
@@ -1431,7 +1464,7 @@ export function buildAddServiceTx(
 ): Transaction {
     const method = ONTID_METHOD.addService;
     const struct = new Struct();
-    struct.add(str2hexstr(ontid), str2hexstr(serviceId), str2hexstr(type), str2hexstr(serviceEndpoint), index);
+    struct.add(str2hexstr(ontid), str2hexstr(serviceId), str2hexstr(type), str2hexstr(serviceEndpoint), pkIndex);
 
     const list = [struct];
     const params = buildNativeCodeScript(list);
@@ -1456,7 +1489,8 @@ export function buildAddServiceTx(
  * @param serviceId Identifier of service
  * @param type Type of service
  * @param serviceEndpoint Endpoint of service
- * @param index Index of signer's pubkey
+ * @param pkIndex Index of signer's pubkey
+ * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer. Optional.
  */
@@ -1465,7 +1499,7 @@ export function buildUpdateServiceTx(
     serviceId: string,
     type: string,
     serviceEndpoint: string,
-    index: number,
+    pkIndex: number,
     gasPrice: string,
     gasLimit: string,
 
@@ -1473,7 +1507,7 @@ export function buildUpdateServiceTx(
 ): Transaction {
     const method = ONTID_METHOD.updateService;
     const struct = new Struct();
-    struct.add(str2hexstr(ontid), str2hexstr(serviceId), str2hexstr(type), str2hexstr(serviceEndpoint), index);
+    struct.add(str2hexstr(ontid), str2hexstr(serviceId), str2hexstr(type), str2hexstr(serviceEndpoint), pkIndex);
 
     const list = [struct];
     const params = buildNativeCodeScript(list);
@@ -1496,14 +1530,15 @@ export function buildUpdateServiceTx(
  *
  * @param ontid User's ONT ID
  * @param serviceId Identifier of service
- * @param index Index of signer's pubkey
+ * @param pkIndex Index of signer's pubkey
  * @param gasLimit Gas limit
+ * @param gasPrice Gas price
  * @param payer Payer. Optional.
  */
 export function buildRemoveServiceTx(
     ontid: string,
     serviceId: string,
-    index: number,
+    pkIndex: number,
     gasPrice: string,
     gasLimit: string,
 
@@ -1511,7 +1546,7 @@ export function buildRemoveServiceTx(
 ): Transaction {
     const method = ONTID_METHOD.removeService;
     const struct = new Struct();
-    struct.add(str2hexstr(ontid), str2hexstr(serviceId), index);
+    struct.add(str2hexstr(ontid), str2hexstr(serviceId), pkIndex);
 
     const list = [struct];
     const params = buildNativeCodeScript(list);
@@ -1533,24 +1568,27 @@ export function buildRemoveServiceTx(
  *
  *
  * @param ontid User's ONT ID
- * @param serviceId Identifier of service
- * @param index Index of signer's pubkey
+ * @param context Context to add
+ * @param pkIndex Index of pk
+ * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer. Optional.
  */
 export function buildAddContextTx(
     ontid: string,
     context: string[],
-    index: number,
+    pkIndex: number,
     gasPrice: string,
     gasLimit: string,
-
     payer?: Address
 ): Transaction {
     const method = ONTID_METHOD.addContext;
     const struct = new Struct();
     const contexts = context.map((item: string) => str2hexstr(item));
-    struct.add(str2hexstr(ontid), contexts, index);
+    struct.add(str2hexstr(ontid));
+    struct.add(contexts.length);
+    contexts.forEach((item: string) => struct.add(item));
+    struct.add(pkIndex);
 
     const list = [struct];
     const params = buildNativeCodeScript(list);
@@ -1572,15 +1610,16 @@ export function buildAddContextTx(
  *
  *
  * @param ontid User's ONT ID
- * @param serviceId Identifier of service
- * @param index Index of signer's pubkey
+ * @param context Context to remove
+ * @param pkIndex Index of signer's pubkey
+ * @param gasPrice Gas price
  * @param gasLimit Gas limit
  * @param payer Payer. Optional.
  */
 export function buildRemoveContextTx(
     ontid: string,
     context: string[],
-    index: number,
+    pkIndex: number,
     gasPrice: string,
     gasLimit: string,
     payer?: Address
@@ -1588,47 +1627,10 @@ export function buildRemoveContextTx(
     const method = ONTID_METHOD.addContext;
     const struct = new Struct();
     const contexts = context.map((item: string) => str2hexstr(item));
-    struct.add(str2hexstr(ontid), contexts, index);
-
-    const list = [struct];
-    const params = buildNativeCodeScript(list);
-
-    const tx = makeNativeContractTx(
-        method,
-        params,
-        new Address(ONTID_CONTRACT),
-        gasPrice,
-        gasLimit,
-        payer
-    );
-
-    return tx;
-}
-
-/**
- * Set key access of ONT ID
- *
- *
- * @param ontid User's ONT ID
- * @param setIndex Index of pubkey to set access
- * @param access Access to set.
- * @param signIndex Index of signer's pubkey
- * @param gasLimit Gas limit
- * @param payer Payer. Optional.
- */
-export function buildSetKeyAccessTx(
-    ontid: string,
-    setIndex: number,
-    access: string,
-    signIndex: number,
-    gasPrice: string,
-    gasLimit: string,
-
-    payer?: Address
-): Transaction {
-    const method = ONTID_METHOD.setKeyAccess;
-    const struct = new Struct();
-    struct.add(str2hexstr(ontid), setIndex, str2hexstr(access), signIndex);
+    struct.add(str2hexstr(ontid));
+    struct.add(contexts.length);
+    contexts.forEach((item: string) => struct.add(item));
+    struct.add(pkIndex);
 
     const list = [struct];
     const params = buildNativeCodeScript(list);
@@ -1651,7 +1653,6 @@ export function buildSetKeyAccessTx(
  *
  * @param ontid User's ONT ID
  * @param keyIndex Index of pubkey
- * @param gasLimit Gas limit
  */
 export function buildVerifySignatureTx(
     ontid: string,
@@ -1674,7 +1675,7 @@ export function buildVerifySignatureTx(
     return tx;
 }
 
-/**
+/** @Deprecated
  * Verify single controller
  *
  *
@@ -1765,7 +1766,6 @@ export function buildGetServiceTx(
  * Pre-exec this tx
  *
  * @param ontid User's ONT ID
- * @param signers Signers of multi controllers
  */
 export function buildGetControllerTx(
     ontid: string
@@ -1792,7 +1792,6 @@ export function buildGetControllerTx(
  * Pre-exec this tx
  *
  * @param ontid User's ONT ID
- * @param signers Signers of multi controllers
  */
 export function buildGetDocumentTx(
     ontid: string

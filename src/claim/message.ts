@@ -20,9 +20,10 @@ import * as b64 from 'base64-url';
 import * as uuid from 'uuid';
 import { PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from '../crypto';
 import RestClient from '../network/rest/restClient';
+import { buildGetDocumentTx } from '../smartcontract/nativevm/newOntidContractTxBuilder';
 import { buildGetDDOTx, buildGetPublicKeyStateTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { DDO } from '../transaction/ddo';
-import { now, str2hexstr } from '../utils';
+import { hexstr2str, now, str2hexstr } from '../utils';
 
 /**
  * Factory method type used for creating concrete instances of Message.
@@ -342,19 +343,25 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
     const keyId = extractKeyId(publicKeyId);
 
     const client = new RestClient(url);
-    const tx = buildGetDDOTx(ontId);
+    // const tx = buildGetDDOTx(ontId);
+    const tx = buildGetDocumentTx(ontId);
     const response = await client.sendRawTransaction(tx.serialize(), true);
 
     if (response.Result && response.Result.Result) {
-        const ddo = DDO.deserialize(response.Result.Result);
+        // const ddo = DDO.deserialize(response.Result.Result);
+        try {
+            const obj = JSON.parse(hexstr2str(response.Result.Result));
+            const publicKey = obj.publicKey.find((pk: any) => pk.id.split('#')[0] === ontId);
 
-        const publicKey = ddo.publicKeys.find((pk) => pk.id === keyId);
+            if (publicKey === undefined) {
+                throw new Error('Not found');
+            }
 
-        if (publicKey === undefined) {
-            throw new Error('Not found');
+            return new PublicKey(publicKey.pk);
+        } catch (err) {
+            throw new Error(err);
         }
 
-        return publicKey.pk;
     } else {
         throw new Error('Not found');
     }
