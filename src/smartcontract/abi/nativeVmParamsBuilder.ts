@@ -62,12 +62,16 @@ export function createCodeParamScript(obj: any): string {
     } else if (obj instanceof Address) {
         result += pushHexString(obj.serialize());
     } else if (obj instanceof Struct) {
+        result += pushInt(0);
+        result += num2hexstring(opcode.NEWSTRUCT);
+        result += num2hexstring(opcode.TOALTSTACK);
         for (const v of obj.list) {
             result += createCodeParamScript(v);
             result += num2hexstring(opcode.DUPFROMALTSTACK);
             result += num2hexstring(opcode.SWAP);
             result += num2hexstring(opcode.APPEND);
         }
+        result += num2hexstring(opcode.FROMALTSTACK);
     }
     return result;
 }

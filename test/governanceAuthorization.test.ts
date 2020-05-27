@@ -164,9 +164,9 @@ describe('test governance authorization', () => {
 
     test('getAuthorizeInfo', async () => {
         // const pk = stake2.peerPubkey;
-        const pk = '037acf1bb88200138b44f5d645d0e0c063043addc30db0102eea508db2585f9171';
+        const pk = '02765d98bb092962734e365bd436bdc80c5b5991dcf22b28dbb02d3b3cf74d6444';
         // const userAddr = new Address(account4.address);
-        const userAddr = new Address('ARZacyMxji4pBjP1X7KswbdiBWBhkQ3rgr');
+        const userAddr = new Address('AHbqWfCCD7M7QPYUnA5LANNfNL4itjvybF');
         const nodeUrl = 'http://dappnode1.ont.io:20334';
         const res = await getAuthorizeInfo(pk, userAddr, nodeUrl);
         console.log(res);
