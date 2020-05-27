@@ -1,12 +1,8 @@
 import * as b64 from 'base64-url';
 import { RestClient } from '../src';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildAddAttributesByIndexTx, buildAddAttributesByMultiControllerTx, buildAddAttributesBySingleControllerTx, buildAddAttributeTx,
-    buildAddPubKeyBySingleControllerTx, buildAddPubKeyTx, buildGetAttributesTx, buildGetControllerTx, buildMakeRevokeIdTx,
-    buildRegIdWithAttributesTx, buildRegIdWithMultiControllerTx, buildRegIDWithPublicKeyTx, buildRegIdWithSingleControllerTx, buildRemoveAttributesByIndexTx, buildRemoveAttributesByMultiControllerTx, buildRemoveAttributesBySingleControllerTx, buildRemoveAttributeTx, buildRemoveControllerTx, buildRevokeIdByMultiController, buildRevokeIdBySingleController
-} from '../src/smartcontract/nativevm/newOntidContractTxBuilder';
-import * as NewOntidTxBuilder from '../src/smartcontract/nativevm/newOntidContractTxBuilder';
 import Group from '../src/smartcontract/nativevm/ontid/group';
+import * as NewOntidTxBuilder from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 import { hexstr2str } from '../src/utils';
 import { Address } from './../src/crypto/address';
@@ -62,15 +58,17 @@ describe('test new ONT ID contract', () => {
     const did6 = 'did:ont:' + address6.toBase58();
     console.log('did6: ' + did6);
     test('buildRegIDWithPublicKeyTx', async () => {
-        const tx = buildRegIDWithPublicKeyTx(did1, pk1, gasPrice, gasLimit, address1);
+        const tx = NewOntidTxBuilder.buildRegIDWithPublicKeyTx(did1, pk1, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
         expect(res.Error).toEqual(0);
     }, 100000);
 
-    test('buildRegIdWithSingleControllerTx', async () => {
-        const tx = buildRegIdWithSingleControllerTx(did2, did1, 1, gasPrice, gasLimit, address2);
+    test('buildRegIdWithControllerTx', async () => {
+        const controllers = new Group([did1], 1);
+        const signers = [new Signer(did1, 1)];
+        const tx = NewOntidTxBuilder.buildRegIdWithMultiControllerTx(did2, controllers, signers, gasPrice, gasLimit, address2);
         signTransaction(tx, pri2);
         addSign(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
@@ -79,7 +77,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildGetControllerTx', async () => {
-        const tx = buildGetControllerTx(did3);
+        const tx = NewOntidTxBuilder.buildGetControllerTx(did3);
         const res = await socketClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         const controller = hexstr2str(res.Result.Result);
@@ -95,7 +93,7 @@ describe('test new ONT ID contract', () => {
     test('buildRegIdWithMultiControllerTx', async () => {
         const controllers = new Group([did1], 1);
         const signers = [new Signer(did1, 1)];
-        const tx = buildRegIdWithMultiControllerTx(did3, controllers, signers, gasPrice, gasLimit, address2);
+        const tx = NewOntidTxBuilder.buildRegIdWithMultiControllerTx(did3, controllers, signers, gasPrice, gasLimit, address2);
         signTransaction(tx, pri2); // payer's signature
         addSign(tx, privateKey1); // controllers' signatures
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
@@ -104,7 +102,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildMakeRevokeIdTx', async () => {
-        const tx = buildMakeRevokeIdTx(did1, 1, gasPrice, gasLimit, address1);
+        const tx = NewOntidTxBuilder.buildMakeRevokeIdTx(did1, 1, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -112,17 +110,9 @@ describe('test new ONT ID contract', () => {
         // TODO call get document
     }, 100000);
 
-    test('buildRevokeIdBySingleController', async () => {
-        const tx = buildRevokeIdBySingleController(did1, 1, gasPrice, gasLimit, address1);
-        signTransaction(tx, privateKey1);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        console.log(res);
-        expect(res.Error).toEqual(0);
-    }, 100000);
-
     test('buildRevokeIdByMultiController', async () => {
         const signers = [new Signer(did1, 1)];
-        const tx = buildRevokeIdByMultiController(did1, signers, gasPrice, gasLimit, address1);
+        const tx = NewOntidTxBuilder.buildRevokeIdByMultiController(did1, signers, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -130,7 +120,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildRemoveControllerTx', async () => {
-        const tx = buildRemoveControllerTx(did1, 1, gasPrice, gasLimit, address1);
+        const tx = NewOntidTxBuilder.buildRemoveControllerTx(did1, 1, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -143,7 +133,7 @@ describe('test new ONT ID contract', () => {
         attr.key = 'hello';
         attr.type = 'string',
         attr.value = 'world';
-        const tx = buildRegIdWithAttributesTx(did4, [attr], pk4, gasPrice, gasLimit, address4);
+        const tx = NewOntidTxBuilder.buildRegIdWithAttributesTx(did4, [attr], pk4, gasPrice, gasLimit, address4);
         signTransaction(tx, pri4);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -155,7 +145,7 @@ describe('test new ONT ID contract', () => {
         attr.key = 'hello2';
         attr.type = 'string',
         attr.value = 'world2';
-        const tx = buildAddAttributeTx(did4, [attr], pk4, gasPrice, gasLimit, address4);
+        const tx = NewOntidTxBuilder.buildAddAttributeTx(did4, [attr], pk4, gasPrice, gasLimit, address4);
         signTransaction(tx, pri4);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -164,7 +154,7 @@ describe('test new ONT ID contract', () => {
 
     test('buildRemoveAttributeTx', async () => {
         const key = 'hello2';
-        const tx = buildRemoveAttributeTx(did4, key, pk4, gasPrice, gasLimit, address4);
+        const tx = NewOntidTxBuilder.buildRemoveAttributeTx(did4, key, pk4, gasPrice, gasLimit, address4);
         signTransaction(tx, pri4);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -172,18 +162,19 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildGetAttributesTx', async () => {
-        const tx = buildGetAttributesTx(did4);
+        const tx = NewOntidTxBuilder.buildGetAttributesTx(did4);
         const res = await socketClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         expect(res.Error).toEqual(0);
     }, 100000);
 
-    test('buildAddAttributesBySingleControllerTx', async () => {
+    test('buildAddAttributesByControllerTx', async () => {
         const attr = new DDOAttribute();
         attr.key = 'hello3';
         attr.type = 'string',
-        attr.value = 'world3';
-        const tx = buildAddAttributesBySingleControllerTx(did2, [attr], 1, gasPrice, gasLimit, address2);
+            attr.value = 'world3';
+        const signers = [new Signer(did1, 1)];
+        const tx = NewOntidTxBuilder.buildAddAttributesByMultiControllerTx(did2, [attr], signers, gasPrice, gasLimit, address2);
         signTransaction(tx, privateKey1);
         addSign(tx, pri2);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
@@ -191,36 +182,11 @@ describe('test new ONT ID contract', () => {
         expect(res.Error).toEqual(0);
     }, 100000);
 
-    test('buildRemoveAttributesBySingleControllerTx', async () => {
+    test('buildRemoveAttributesByControllerTx', async () => {
         const key = 'hello3';
-        const tx = buildRemoveAttributesBySingleControllerTx(did2, key, 1, gasPrice, gasLimit, address2);
+        const signers = [new Signer(did1, 1)];
+        const tx = NewOntidTxBuilder.buildRemoveAttributesByMultiControllerTx(did2, key, signers, gasPrice, gasLimit, address2);
         signTransaction(tx, pri2);
-        addSign(tx, privateKey1);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        console.log(res);
-        expect(res.Error).toEqual(0);
-    }, 100000);
-
-    test('buildAddAttributesByMultiControllerTx', async () => {
-        const attr = new DDOAttribute();
-        attr.key = 'hello4';
-        attr.type = 'string',
-        attr.value = 'world4';
-        const signers = [new Signer(did1, 1)];
-        const tx = buildAddAttributesByMultiControllerTx(did3, [attr], signers, gasPrice, gasLimit, address3);
-        signTransaction(tx, pri3);
-        addSign(tx, privateKey1);
-        const res = await restClient.sendRawTransaction(tx.serialize(), false);
-        //  const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        console.log(res);
-        expect(res.Error).toEqual(0);
-    }, 100000);
-
-    test('buildRemoveAttributesByMultiControllerTx', async () => {
-        const key = 'hello4';
-        const signers = [new Signer(did1, 1)];
-        const tx = buildRemoveAttributesByMultiControllerTx(did3, key, signers, gasPrice, gasLimit, address3);
-        signTransaction(tx, pri3);
         addSign(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -232,7 +198,7 @@ describe('test new ONT ID contract', () => {
         attr.key = 'hello5';
         attr.type = 'string',
         attr.value = 'world5';
-        const tx = buildAddAttributesByIndexTx(did1, [attr], 1, gasPrice, gasLimit, address1);
+        const tx = NewOntidTxBuilder.buildAddAttributesByIndexTx(did1, [attr], 1, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -241,7 +207,7 @@ describe('test new ONT ID contract', () => {
 
     test('buildRemoveAttributesByIndexTx', async () => {
         const key = 'hello5';
-        const tx = buildRemoveAttributesByIndexTx(did1, key, 1, gasPrice, gasLimit, address1);
+        const tx = NewOntidTxBuilder.buildRemoveAttributesByIndexTx(did1, key, 1, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -258,23 +224,6 @@ describe('test new ONT ID contract', () => {
     }, 100000);
     test('buildRemovePubKeyTx', async () => {
         const tx = NewOntidTxBuilder.buildRemovePubKeyTx(did1, pk2, pk1, gasPrice, gasLimit, address1);
-        signTransaction(tx, privateKey1);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        console.log(res);
-        expect(res.Error).toEqual(0);
-    }, 100000);
-    test('buildAddKeyBySingleControllerTx', async () => {
-        const priTemp = PrivateKey.random();
-        const pkTemp = priTemp.getPublicKey();
-        const tx = NewOntidTxBuilder.buildAddKeyBySingleControllerTx(did2, pkTemp, 1, did1, gasPrice, gasLimit, address1);
-        signTransaction(tx, privateKey1);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        console.log(res);
-        expect(res.Error).toEqual(0);
-    }, 100000);
-
-    test('buildRemoveKeyBySingleControllerTx', async () => {
-        const tx = NewOntidTxBuilder.buildRemoveKeyBySingleControllerTx(did2, 1, 1, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -312,7 +261,7 @@ describe('test new ONT ID contract', () => {
         const addr = Address.fromPubKey(pk);
         const ontid = 'did:ont:' + addr.toBase58();
         console.log('ontid: ' + ontid);
-        const idTx = buildRegIDWithPublicKeyTx(ontid, pk, gasPrice, gasLimit, addr);
+        const idTx = NewOntidTxBuilder.buildRegIDWithPublicKeyTx(ontid, pk, gasPrice, gasLimit, addr);
         signTransaction(idTx, pri);
         const idRes = await socketClientNotAutoClose.sendRawTransaction(idTx.serialize(), false, true);
         console.log(idRes);
@@ -343,13 +292,43 @@ describe('test new ONT ID contract', () => {
         socketClientNotAutoClose.close();
     }, 100000);
 
+    test('buildAddKeyByIndex', async () => {
+        const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
+
+        const pri = PrivateKey.random();
+        console.log('pri: ' + pri.key);
+        const pk = pri.getPublicKey();
+        const addr = Address.fromPubKey(pk);
+        const ontid = 'did:ont:' + addr.toBase58();
+        console.log('ontid: ' + ontid);
+        const idTx = NewOntidTxBuilder.buildRegIDWithPublicKeyTx(ontid, pk, gasPrice, gasLimit, addr);
+        signTransaction(idTx, pri);
+        const idRes = await socketClientNotAutoClose.sendRawTransaction(idTx.serialize(), false, true);
+        console.log(idRes);
+
+        const tx1 = NewOntidTxBuilder.buildAddKeyByIndexTx(did1, pk, 1, gasPrice, gasLimit, address1);
+        signTransaction(tx1, privateKey1);
+        const res1 = await socketClientNotAutoClose.sendRawTransaction(tx1.serialize(), false, true);
+        console.log(res1);
+        expect(res1.Error).toEqual(0);
+
+        const tx2 = NewOntidTxBuilder.buildRemoveKeyByIndexTx(did1, pk, 1, gasPrice, gasLimit, address1);
+        signTransaction(tx2, privateKey1);
+        const res2 = await socketClientNotAutoClose.sendRawTransaction(tx2.serialize(), false, true);
+        console.log(res2);
+        expect(res2.Error).toEqual(0);
+
+        socketClientNotAutoClose.close();
+
+    }, 100000);
+
     test('buildUpdateRecoveryTx', async () => {
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
         const priTemp = PrivateKey.random();
         const pkTemp = priTemp.getPublicKey();
         const addressTemp = Address.fromPubKey(pkTemp);
         const didTemp = 'did:ont:' + addressTemp.toBase58();
-        const tx0 = buildRegIDWithPublicKeyTx(didTemp, pkTemp, gasPrice, gasLimit, addressTemp);
+        const tx0 = NewOntidTxBuilder.buildRegIDWithPublicKeyTx(didTemp, pkTemp, gasPrice, gasLimit, addressTemp);
         signTransaction(tx0, priTemp);
         const res0 = await socketClientNotAutoClose.sendRawTransaction(tx0.serialize(), false, true);
         console.log(res0);
@@ -366,12 +345,14 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildGetDocumentTx', async () => {
-        const tx = NewOntidTxBuilder.buildGetDocumentTx(did2);
+        const tx = NewOntidTxBuilder.buildGetDocumentTx(did1);
         const res = await socketClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         const obj = hexstr2str(res.Result.Result);
         console.log(obj);
         expect(res.Error).toEqual(0);
+        const doc = await NewOntidTxBuilder.getDocumentJson(did1, 'http://192.168.1.175:20334');
+        console.log(doc);
     }, 100000);
 
     test('buildGetPublicKeysTx', async () => {
@@ -416,7 +397,7 @@ describe('test new ONT ID contract', () => {
         const addr = Address.fromPubKey(pk);
         const ontid = 'did:ont:' + addr.toBase58();
         console.log('ontid: ' + ontid);
-        const idTx = buildRegIDWithPublicKeyTx(ontid, pk, gasPrice, gasLimit, addr);
+        const idTx = NewOntidTxBuilder.buildRegIDWithPublicKeyTx(ontid, pk, gasPrice, gasLimit, addr);
         signTransaction(idTx, pri);
         const idRes = await socketClientNotAutoClose.sendRawTransaction(idTx.serialize(), false, true);
         console.log(idRes);
@@ -434,14 +415,14 @@ describe('test new ONT ID contract', () => {
         const pkAuth = priAuth.getPublicKey();
         const addrAuth = Address.fromPubKey(pkAuth);
         const ontidAuth = 'did:ont:' + addrAuth.toBase58();
-        const idTx2 = buildRegIDWithPublicKeyTx(ontidAuth, pkAuth, gasPrice, gasLimit, addrAuth);
+        const idTx2 = NewOntidTxBuilder.buildRegIDWithPublicKeyTx(ontidAuth, pkAuth, gasPrice, gasLimit, addrAuth);
         signTransaction(idTx2, priAuth);
         const idRes2 = await socketClientNotAutoClose.sendRawTransaction(idTx2.serialize(), false, true);
         console.log(idRes2);
 
-        const signers = [new Signer(ontidAuth, 1)];
+        const signers = [new Signer(did1, 1)];
         const tx = NewOntidTxBuilder.buildAddNewAuthKeyByRecoveryTx(ontid, pkAuth, ontidAuth, signers, gasPrice, gasLimit, addr);
-        signTransaction(tx, priAuth);
+        signTransaction(tx, privateKey1);
         addSign(tx, pri);
         const res = await socketClientNotAutoClose.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
@@ -455,7 +436,7 @@ describe('test new ONT ID contract', () => {
         const authLen = JSON.parse(obj).authentication.length;
         console.log('authLen: ' + authLen);
         const tx2 = NewOntidTxBuilder.buildRemoveAuthKeyByRecoveryTx(ontid, authLen, signers, gasPrice, gasLimit, addr);
-        signTransaction(tx2, priAuth);
+        signTransaction(tx2, privateKey1);
         addSign(tx2, pri);
 
         const res2 = await socketClientNotAutoClose.sendRawTransaction(tx2.serialize(), false, true);
@@ -475,7 +456,7 @@ describe('test new ONT ID contract', () => {
         console.log('ontid: ' + ontid);
         const controllers = new Group([did6], 1);
         const signers = [new Signer(did6, 1)];
-        const idTx = buildRegIdWithMultiControllerTx(ontid, controllers, signers, gasPrice, gasLimit, addr);
+        const idTx = NewOntidTxBuilder.buildRegIdWithMultiControllerTx(ontid, controllers, signers, gasPrice, gasLimit, addr);
         signTransaction(idTx, pri);
         addSign(idTx, pri6);
         const idRes = await socketClientNotAutoClose.sendRawTransaction(idTx.serialize(), false, true);

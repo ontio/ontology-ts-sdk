@@ -20,7 +20,7 @@ import * as b64 from 'base64-url';
 import * as uuid from 'uuid';
 import { PrivateKey, PublicKey, PublicKeyStatus, Signature, SignatureScheme } from '../crypto';
 import RestClient from '../network/rest/restClient';
-import { buildGetDocumentTx } from '../smartcontract/nativevm/newOntidContractTxBuilder';
+import { buildGetDocumentTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { buildGetDDOTx, buildGetPublicKeyStateTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { DDO } from '../transaction/ddo';
 import { hexstr2str, now, str2hexstr } from '../utils';
@@ -343,7 +343,6 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
     const keyId = extractKeyId(publicKeyId);
 
     const client = new RestClient(url);
-    // const tx = buildGetDDOTx(ontId);
     const tx = buildGetDocumentTx(ontId);
     const response = await client.sendRawTransaction(tx.serialize(), true);
 
@@ -363,7 +362,22 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
         }
 
     } else {
-        throw new Error('Not found');
+        const tx2 = buildGetDDOTx(ontId);
+        const response2 = await client.sendRawTransaction(tx2.serialize(), true);
+
+        if (response2.Result && response2.Result.Result) {
+            const ddo = DDO.deserialize(response2.Result.Result);
+
+            const publicKey = ddo.publicKeys.find((pk) => pk.id === keyId);
+
+            if (publicKey === undefined) {
+                throw new Error('Not found');
+            }
+
+            return publicKey.pk;
+        } else {
+            throw new Error('Not found');
+        }
     }
 }
 
