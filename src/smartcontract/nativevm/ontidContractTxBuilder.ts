@@ -15,8 +15,8 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { RestClient } from '../..';
 import { Address, PublicKey } from '../../crypto';
+import RestClient from '../../network/rest/restClient';
 import { DDOAttribute } from '../../transaction/ddo';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
@@ -121,6 +121,27 @@ export function buildRegIDWithPublicKeyTx(
     );
 
     return tx;
+}
+
+/**
+ * Registers Identity.
+ *
+ * Register ontid with public key
+ *
+ * @param ontid User's ONT ID
+ * @param publicKey Public key
+ * @param gasPrice Gas price
+ * @param gasLimit Gas limit
+ * @param payer Payer
+ */
+export function buildRegisterOntidTx(
+    ontid: string,
+    publicKey: PublicKey,
+    gasPrice: string,
+    gasLimit: string,
+    payer?: Address
+) {
+    return buildRegIDWithPublicKeyTx(ontid, publicKey, gasPrice, gasLimit, payer);
 }
 
 /**
