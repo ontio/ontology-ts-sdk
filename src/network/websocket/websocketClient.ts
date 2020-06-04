@@ -83,8 +83,6 @@ export class WebsocketClient {
         const sendResult = await this.send(raw, this.autoClose && !waitNotify);
 
         if (sendResult.Error !== 0) {
-            // tslint:disable-next-line:no-console
-            console.log(sendResult);
             throw new Error(JSON.stringify(sendResult));
         }
 
