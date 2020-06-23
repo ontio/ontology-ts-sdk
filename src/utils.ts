@@ -375,6 +375,10 @@ export class StringReader {
         return parseInt(reverseHex(this.read(8)), 16);
     }
 
+    readUint128() {
+        return parseInt(reverseHex(this.read(16)), 16);
+    }
+
     /**
      * Read 4 bytes as int in littleEndian
      */
@@ -391,6 +395,10 @@ export class StringReader {
 
     readBoolean() {
         return parseInt(this.read(1), 16) !== 0;
+    }
+
+    readH256() {
+        return this.read(32);
     }
 }
 

@@ -6,12 +6,14 @@ import {
 } from '../../src/transaction/transactionBuilder';
 import { hexstr2str } from '../../src/utils';
 import { Account } from './../../src/account';
+import { Result } from './../../src/claim/attestNotifyEvent';
+import { Status } from './../../src/claim/claim';
 import { I128, I128FromBigInt, I128FromInt, maxBigU128, maxI128, minI128 } from './../../src/common/int128';
 import { Address } from './../../src/crypto/address';
 import { WebsocketClient } from './../../src/network/websocket/websocketClient';
 import { Parameter, ParameterType } from './../../src/smartcontract/abi/parameter';
 import { VmType } from './../../src/transaction/payload/deployCode';
-import { reverseHex } from './../../src/utils';
+import { reverseHex, StringReader } from './../../src/utils';
 // tslint:disable-next-line:no-var-requires
 const fs = require('fs');
 
@@ -214,4 +216,68 @@ describe('test deploy contract', () => {
         console.log(I128FromInt(2).serialize());
 
     });
+
+    test('vote', async () => {
+        const gasPrice = '500';
+        const gasLimit = '20000';
+        const contract = new Address(reverseHex('6c977ca7036c991fa430ba3b34643e146501218c'));
+        const rest = new RestClient('http://172.168.3.165:20334');
+        // 没有decimal 方法？
+        const tx = makeWasmVmInvokeTransaction('listTopics', [], contract, '500', '20000');
+        // const wsClient = new WebsocketClient('ws://13.57.184.209:20335');
+        const result = await rest.sendRawTransaction(tx.serialize(), true);
+        console.log(result);
+        const sr = new StringReader(result.Result.Result);
+        console.log(sr.readVarUint());
+        const hash = sr.read(32);
+        console.log(hash);
+        const tx2 = makeWasmVmInvokeTransaction('getTopicInfo', [
+            new Parameter('', ParameterType.H256, hash)], contract, gasPrice, gasLimit);
+        const result2 = await rest.sendRawTransaction(tx2.serialize(), true);
+        console.log(result2);
+        console.log(formatVoteInfo(result2.Result.Result));
+        expect(result.Error).toEqual(0);
+
+        function formatVoteInfo(data) {
+            const sr = new StringReader(data);
+            const hasValue = sr.readVarUint() > 0;
+            if (hasValue) {
+                const admin = new Address(sr.read(20)).toBase58();
+                // tslint:disable:variable-name
+                const topic_title_length = sr.readVarUint();
+                const topic_title = hexstr2str(sr.read(topic_title_length));
+                const topic_detail_length = sr.readVarUint();
+                const topic_detail = hexstr2str(sr.read(topic_detail_length));
+                const voters_length = sr.readVarUint();
+                const voters = [];
+                for (let i = 0; i < voters_length; i++) {
+                    const voter_addr = new Address(sr.read(20)).toBase58();
+                    const weight = sr.readUint128();
+                    voters.push({
+                        voter: voter_addr,
+                        weight
+                    });
+                }
+                const start_time = sr.readUint64();
+                const end_time = sr.readUint64();
+                const approve = sr.readUint64();
+                const reject = sr.readUint64();
+                const status = sr.readUint8();
+                const hash = sr.readH256();
+                return {
+                    admin,
+                    topic_title,
+                    topic_detail,
+                    voters,
+                    start_time,
+                    end_time,
+                    approve,
+                    reject,
+                    status,
+                    hash
+                };
+            }
+            return null;
+        }
+    }, 10000);
 });

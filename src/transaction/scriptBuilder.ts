@@ -362,6 +362,9 @@ export function buildWasmContractParam(params: Parameter[]): string {
         case ParameterType.ByteArray:
             result += writeVarBytes(p.value);
             break;
+        case ParameterType.H256:
+            result += writeH256(p.value);
+            break;
         case ParameterType.Address:
             result += writeAddress(p.value);
             break;
@@ -409,6 +412,10 @@ export function writeString(data: string): string {
 
 export function writeAddress(data: Address): string {
     return data.serialize();
+}
+
+export function writeH256(data: string) {
+    return data;
 }
 
 export function writeI128(data: I128): string {

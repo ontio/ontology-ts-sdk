@@ -28,7 +28,8 @@ export enum ParameterType  {
     Long = 'Long', // value should be string
     IntArray = 'IntArray',
     LongArray = 'LongArray',
-    Address = 'Address'
+    Address = 'Address',
+    H256 = 'H256'
 }
 
 export enum ParameterTypeVal {
