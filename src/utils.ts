@@ -20,7 +20,7 @@ import * as bip39 from 'bip39';
 import * as cryptoJS from 'crypto-js';
 import * as Long from 'long';
 import * as secureRandom from 'secure-random';
-import { ONT_TOTAL_SUPPLY, UNBOUND_GENERATION_AMOUNT, UNBOUND_TIME_INTERVAL, WEBVIEW_SCHEME } from './consts';
+import { UNBOUND_GENERATION_AMOUNT, UNBOUND_TIME_INTERVAL, WEBVIEW_SCHEME } from './consts';
 import { ERROR_CODE } from './error';
 /**
  * Turn hex string into array buffer
@@ -534,17 +534,20 @@ export function isHexString(str: string): boolean {
 }
 
 export function unboundDeadline() {
-    let count = 0;
-    for (const m of UNBOUND_GENERATION_AMOUNT) {
-        count += m;
-    }
-    count *= UNBOUND_TIME_INTERVAL;
-    const numInterval = UNBOUND_GENERATION_AMOUNT.length;
-    if (UNBOUND_GENERATION_AMOUNT[numInterval - 1] !== 1 ||
-        !((count - UNBOUND_TIME_INTERVAL < ONT_TOTAL_SUPPLY) && ONT_TOTAL_SUPPLY <= count)) {
-        throw new Error('incompatible constants setting');
-    }
-    return UNBOUND_TIME_INTERVAL * numInterval - (count - ONT_TOTAL_SUPPLY);
+    // let count = 0;
+    // for (const m of UNBOUND_GENERATION_AMOUNT) {
+    //     count += m;
+    // }
+    // count *= UNBOUND_TIME_INTERVAL;
+    // const numInterval = UNBOUND_GENERATION_AMOUNT.length;
+    // if (UNBOUND_GENERATION_AMOUNT[numInterval - 1] !== 1 ||
+    //     !((count - UNBOUND_TIME_INTERVAL < ONT_TOTAL_SUPPLY) && ONT_TOTAL_SUPPLY <= count)) {
+    //     throw new Error('incompatible constants setting');
+    // }
+    // return UNBOUND_TIME_INTERVAL * numInterval - (count - ONT_TOTAL_SUPPLY);
+    const start = Date.UTC(2018, 5, 30, 0, 0, 0)
+    const end = Date.UTC(2020, 6, 7, 0, 0, 0)
+    return end - start;
 }
 
 export function calcUnboundOng(balance: number, startOffset: number, endOffset: number) {
