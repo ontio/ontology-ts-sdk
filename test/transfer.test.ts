@@ -35,7 +35,7 @@ describe('test transfer asset', () => {
     const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
     const restClient = new RestClient('http://polaris1.ont.io:20334');
     const gasLimit = '20000';
-    const gasPrice = '500';
+    const gasPrice = '2500';
     const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
 
