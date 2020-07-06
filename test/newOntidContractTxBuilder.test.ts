@@ -8,6 +8,7 @@ import { hexstr2str } from '../src/utils';
 import { Address } from './../src/crypto/address';
 import { PrivateKey } from './../src/crypto/PrivateKey';
 import { Identity } from './../src/identity';
+import { ScryptParams } from './../src/scrypt';
 import { Signer } from './../src/smartcontract/nativevm/ontid/signer';
 import { DDOAttribute } from './../src/transaction/ddo';
 import { addSign } from './../src/transaction/transactionBuilder';
@@ -64,6 +65,41 @@ describe('test new ONT ID contract', () => {
         console.log(res);
         expect(res.Error).toEqual(0);
     }, 100000);
+
+    test('getKeystore', async () => {
+        const pri = PrivateKey.random();
+        console.log('pri: ' + pri.key);
+        const pk = pri.getPublicKey();
+        const addr = Address.fromPubKey(pk);
+        const ontid = 'did:ont:' + addr.toBase58();
+        const scrypt = {
+            n: 4096,
+            p: 8,
+            r: 8,
+            dkLen: 64
+        };
+        const identity = Identity.create(pri, '123456', 'frotest');
+        const obj = identity.toJsonObj();
+        const keystore = {
+            type : 'I',
+            label : identity.label,
+            algorithm : 'ECDSA',
+            scrypt,
+            key : obj.controls[0].key,
+            salt: obj.controls[0].salt,
+            address: obj.controls[0].address,
+            parameters : {
+                curve : 'secp256r1'
+            }
+        };
+        console.log(keystore);
+        const idTx = NewOntidTxBuilder.buildRegIDWithPublicKeyTx(ontid, pk, '500', gasLimit, address1);
+        signTransaction(idTx, pri);
+        addSign(idTx, privateKey1);
+        const socket = new WebsocketClient();
+        const idRes = await socket.sendRawTransaction(idTx.serialize(), false, true);
+        console.log(idRes);
+    });
 
     test('buildRegIdWithControllerTx', async () => {
         const controllers = new Group([did1], 1);
@@ -345,13 +381,14 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildGetDocumentTx', async () => {
-        const tx = NewOntidTxBuilder.buildGetDocumentTx(did1);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), true);
-        console.log(res);
-        const obj = hexstr2str(res.Result.Result);
-        console.log(obj);
-        expect(res.Error).toEqual(0);
-        const doc = await NewOntidTxBuilder.getDocumentJson(did1, 'http://192.168.1.175:20334');
+        // const tx = NewOntidTxBuilder.buildGetDocumentTx(did1);
+        // const res = await socketClient.sendRawTransaction(tx.serialize(), true);
+        // console.log(res);
+        // const obj = hexstr2str(res.Result.Result);
+        // console.log(obj);
+        // expect(res.Error).toEqual(0);
+        const ontid = 'did:ont:AN3iwgee5JKzZV99gknpdmQf5XUJJbQ7xQ';
+        const doc = await NewOntidTxBuilder.getDocumentJson(ontid, 'http://polaris1.ont.io:20334');
         console.log(doc);
     }, 100000);
 

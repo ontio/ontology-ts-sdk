@@ -158,16 +158,17 @@ describe('test governance authorization', () => {
         const nodeUrl = 'http://polaris1.ont.io:20334';
         const res = await getPeerPoolMap(nodeUrl);
         console.log(res);
-        // const pk = '032f6464df7c42b5a80953680165a23cb98453a1fcb5770f233664909847faf36f';
-        // console.log(res[pk]);
+        const pk = '0332c5624ebea8374199341b12d4d74ec22734ec675909ec227f55a805d406df14';
+        console.log(res[pk]);
+        console.log(res[pk].address.toBase58())
     }, 10000);
 
     test('getAuthorizeInfo', async () => {
         // const pk = stake2.peerPubkey;
-        const pk = '02765d98bb092962734e365bd436bdc80c5b5991dcf22b28dbb02d3b3cf74d6444';
+        const pk = '03131bbcf941dbac550faf1fdee064961e6ed72803692cefa2d21a019ee9dcf37f';
         // const userAddr = new Address(account4.address);
-        const userAddr = new Address('AHbqWfCCD7M7QPYUnA5LANNfNL4itjvybF');
-        const nodeUrl = 'http://dappnode1.ont.io:20334';
+        const userAddr = new Address('AViTVz9sBQMRqCiHHxNwgj8NmyjSnzKwPw');
+        const nodeUrl = 'http://polaris2.ont.io:20334';
         const res = await getAuthorizeInfo(pk, userAddr, nodeUrl);
         console.log(res);
     }, 10000);
@@ -196,7 +197,8 @@ describe('test governance authorization', () => {
     });
 
     test('getUnboundOng', async () => {
-        const addr = new Address(stake1.address);
+        const addr = new Address('AMAqR8Y8JWngDk5QsoGpa7vPhu5Tu5KKeS');
+        const nodeUrl = 'http://polaris1.ont.io:20334'
         const unbound = await getPeerUnboundOng(addr, nodeUrl);
         console.log(unbound);
     });
