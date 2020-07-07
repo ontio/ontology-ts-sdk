@@ -22,7 +22,7 @@ import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src
 import { ERROR_CODE } from '../src/error';
 import { utils } from '../src/index';
 import * as scrypt from '../src/scrypt';
-import { ab2hexstring, isBase64, str2hexstr } from '../src/utils';
+import { ab2hexstring, hexstr2str, isBase64, str2hexstr } from '../src/utils';
 import { PublicKey } from './../src/crypto/PublicKey';
 
 describe('test scrypt', () => {
@@ -120,5 +120,26 @@ describe('test scrypt', () => {
         // const key = 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd'
         // const decrypt = scrypt.decryptWithGcm(key, address, salt, '11111111');
         // console.log('decrypt: ' + decrypt);
+    });
+
+    test('utf8', () => {
+        const str1 = '你好';
+        const hexstr1 = str2hexstr(str1);
+        console.log(hexstr1);
+        console.log(hexstr2str(hexstr1));
+
+        function stringToHex(str: string) {
+            const buf = Buffer.from(str, 'utf8');
+            return buf.toString('hex');
+        }
+
+        function hexToString(str: string) {
+            const buf = Buffer.from(str, 'hex');
+            return buf.toString('utf8');
+        }
+
+        // const hex2 = stringToHex(str1);
+        // console.log(hex2);
+        // console.log(hexToString(hex2));
     });
 });
