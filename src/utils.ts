@@ -604,8 +604,8 @@ export function unboundDeadline() {
     //     throw new Error('incompatible constants setting');
     // }
     // return UNBOUND_TIME_INTERVAL * numInterval - (count - ONT_TOTAL_SUPPLY);
-    const start = Date.UTC(2018, 5, 30, 0, 0, 0);
-    const end = Date.UTC(2020, 6, 7, 0, 0, 0);
+    const start = Math.floor(Date.UTC(2018, 5, 30, 0, 0, 0) / 1000);
+    const end = Math.floor(Date.UTC(2020, 6, 7, 0, 0, 0) / 1000);
     return end - start;
 }
 
