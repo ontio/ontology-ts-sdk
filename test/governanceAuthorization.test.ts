@@ -197,8 +197,8 @@ describe('test governance authorization', () => {
     });
 
     test('getUnboundOng', async () => {
-        const addr = new Address('AMAqR8Y8JWngDk5QsoGpa7vPhu5Tu5KKeS');
-        const nodeUrl = 'http://polaris1.ont.io:20334'
+        const addr = new Address('AKVC2qzG3NwvTtuNgbt9JtYrGMWwKNDjpW');
+        const nodeUrl = 'http://dappnode1.ont.io:20334'
         const unbound = await getPeerUnboundOng(addr, nodeUrl);
         console.log(unbound);
     });
