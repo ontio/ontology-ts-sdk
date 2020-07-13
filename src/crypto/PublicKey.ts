@@ -100,7 +100,7 @@ export class PublicKey extends Key {
         case KeyType.SM2:
             result += num2hexstring(this.algorithm.hex);
             result += num2hexstring(this.parameters.curve.hex);
-            result += this.key;
+            result += Buffer.from(this.key, 'hex').toString('hex');
             break;
         }
         return result;

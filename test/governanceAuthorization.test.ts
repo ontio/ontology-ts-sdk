@@ -1,8 +1,7 @@
 import { Address } from '../src/crypto/address';
 import { PrivateKey } from '../src/crypto/PrivateKey';
-import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { PublicKey } from '../src/crypto/PublicKey';
-import { ParameterType } from '../src/smartcontract/abi/parameter';
+import { WebsocketClient } from '../src/network/websocket/websocketClient';
 
 import { RestClient } from '../src/index';
 import { Parameter } from '../src/smartcontract/abi/parameter';
@@ -12,8 +11,6 @@ import { getAttributes, getAuthorizeInfo, getConfiguration, getGlobalParam,
     makeSetPeerCostTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
 import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
-import { calcUnboundOng, reverseHex, StringReader } from '../src/utils';
-import { Key } from '../src/crypto/Key';
 
 describe('test governance authorization', () => {
     const socketClient = new WebsocketClient('ws://139.219.128.220:20335');
@@ -197,7 +194,7 @@ describe('test governance authorization', () => {
     });
 
     test('getUnboundOng', async () => {
-        const addr = new Address('AKVC2qzG3NwvTtuNgbt9JtYrGMWwKNDjpW');
+        const addr = new Address('AJiEBNzr4NeAyaQx6qn1jgNkLFCgxtTt5U');
         const nodeUrl = 'http://dappnode1.ont.io:20334'
         const unbound = await getPeerUnboundOng(addr, nodeUrl);
         console.log(unbound);
