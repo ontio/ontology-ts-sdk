@@ -1,5 +1,9 @@
 import { Transaction } from 'ontology-ts-sdk';
+import { CurveLabel } from './../src/crypto/CurveLabel';
+import { KeyParameters } from './../src/crypto/Key';
+import { KeyType } from './../src/crypto/KeyType';
 import { PublicKey } from './../src/crypto/PublicKey';
+import { WebsocketClient } from './../src/network/websocket/websocketClient';
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -18,6 +22,7 @@ import { PublicKey } from './../src/crypto/PublicKey';
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import { GovernanceTxBuilder } from '../src';
 import { Address, PrivateKey, Signature, SignatureScheme } from '../src/crypto';
 import { makeTransferTx } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { hexstr2str, str2hexstr } from '../src/utils';
@@ -83,6 +88,36 @@ describe('test transfer sign', () => {
         const sig2 = Signature.deserializeHex(sigData2);
     });
 
+    test('eddsa', async () => {
+
+        const seed = Buffer.from('05feadb3037d3afc7c878130a73b5b9e8fa6df42899dfaf874b4dfa8ab1bf4a4', 'hex').toString('hex');
+
+        const privateKey = new PrivateKey(seed, KeyType.EDDSA, KeyParameters.deserializeJson({ curve: 'ed25519' }));
+        // const privateKey = new PrivateKey(seed) // IT WORKS without EDDSA schema
+        console.log(privateKey.getEdDSAPublicKey().serializeHex());
+        // Sender's address
+        const address = new Address('APT4wZG9sFQfjhyfGALPXQj5UyrQ3ZCVkY');
+        // peers
+        const peerPubKeyList = ['030a34dcb075d144df1f65757b85acaf053395bb47b019970607d2d1cdd222525c'];
+        // Amount to stake
+        const posList = [2];
+        // Gas price and gas limit are to compute the gas costs of the transaction.
+        const gasPrice = '2500';
+        const gasLimit = '20000';
+        // Payer's address to pay for the transaction gas
+        const tx = GovernanceTxBuilder.makeAuthorizeForPeerTx(address, peerPubKeyList, posList, address, gasPrice, gasLimit);
+
+        signTransaction(tx, privateKey); // BUG with ed25519?
+
+        console.log('signed tx', tx);
+
+        // serialize tx ready to broadcast
+
+        const serialized = tx.serialize();
+        console.log('tx serialized', serialized);
+        const wb = new WebsocketClient('http://polaris2.ont.io:20335');
+        const res = await wb.sendRawTransaction(tx.serialize(), false);
+        console.log(res);
+    });
+
 });
-  fbd3965e697fb4e06c4e545a490151d74b8b6439f8ffaba7d83451c400753e502ed35cf99faa0338d466ca7a76e96066e0d11ca182b3aa5839842167f9579ce7
-01bf874cc55a1d2585d400f3b5ede05fa28e7e47ce5f481a30c78fdaf36a7e564fac5e6b113f5a8d5affb5c9d2199c37dae8620c3c6ca70a2ec84c5a73958052c5
