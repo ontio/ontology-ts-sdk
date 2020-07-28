@@ -1,6 +1,6 @@
 
 <h1 align="center">Ontology TypeScript SDK </h1>
-<h4 align="center">Version V1.1.7 </h4>
+<h4 align="center">Version V1.1.8 </h4>
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
