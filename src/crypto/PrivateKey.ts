@@ -16,10 +16,10 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { sm2 } from '@ont-dev/sm.js';
 import * as bip39 from 'bip39';
 import * as elliptic from 'elliptic';
 import * as secureRandom from 'secure-random';
-import { sm2 } from 'sm.js';
 import * as wif from 'wif';
 import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID, ONT_BIP44_PATH } from '../consts';
 import { ERROR_CODE } from '../error';

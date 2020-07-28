@@ -16,8 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { sm2 } from '@ont-dev/sm.js';
 import * as elliptic from 'elliptic';
-import { sm2 } from 'sm.js';
 import { DEFAULT_SM2_ID } from '../consts';
 import { hexstr2str, hexstring2ab, num2hexstring, StringReader } from '../utils';
 import { CurveLabel } from './CurveLabel';

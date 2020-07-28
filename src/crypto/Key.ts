@@ -16,9 +16,9 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { sm3 } from '@ont-dev/sm.js';
 import * as cryptoJS from 'crypto-js';
 import { sha3_224, sha3_256, sha3_384, sha3_512 } from 'js-sha3';
-import { sm3 } from 'sm.js';
 import { DEFAULT_ALGORITHM } from '../consts';
 import { hexstring2ab } from '../utils';
 import { CurveLabel } from './CurveLabel';

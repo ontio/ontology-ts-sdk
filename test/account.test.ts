@@ -18,7 +18,7 @@
 */
 
 import { BigNumber } from 'bignumber.js';
-import { sm2, SM2KeyPair } from 'sm.js';
+import { sm2, SM2KeyPair } from '@ont-dev/sm.js';
 import { Account } from '../src/account';
 import { Address, PublicKey } from '../src/crypto';
 import { PrivateKey } from '../src/crypto';

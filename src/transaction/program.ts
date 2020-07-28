@@ -16,8 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { sm2 } from '@ont-dev/sm.js';
 import * as elliptic from 'elliptic';
-import { sm2 } from 'sm.js';
 import BigInt from '../common/bigInt';
 import { KeyType } from '../crypto/KeyType';
 import { PublicKey } from '../crypto/PublicKey';

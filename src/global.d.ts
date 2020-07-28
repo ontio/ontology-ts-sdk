@@ -23,7 +23,7 @@
 declare module 'elliptic';
 declare module 'bn.js';
 declare module 'secure-random';
-declare module 'sm.js';
+declare module '@ont-dev/sm.js';
 declare module 'wif';
 declare module 'bip39';
 declare module 'websocket-as-promised';
