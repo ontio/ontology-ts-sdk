@@ -34,7 +34,7 @@ import { Signature } from './Signature';
 import { SignatureScheme } from './SignatureScheme';
 
 // tslint:disable-next-line:no-var-requires
-const HDKey = require('@ont-community/hdkey-secp256r1');
+const { HDKey } = require('@ont-dev/hdkey-secp256r1');
 
 export class PrivateKey extends Key {
   /**
