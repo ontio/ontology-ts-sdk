@@ -18,7 +18,7 @@
 import * as bip39 from 'bip39';
 import { Address, PrivateKey } from '../src/crypto';
 // tslint:disable-next-line:no-var-requires
-const HDKey = require('@ont-community/hdkey-secp256r1');
+const { HDKey }= require('@ont-dev/hdkey-secp256r1');
 
 // tslint:disable:no-console
 describe('test bip44', () => {

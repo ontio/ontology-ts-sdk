@@ -62,7 +62,7 @@ import { ParameterType } from './../smartcontract/abi/parameter';
 import { Oep4TxBuilder } from './../smartcontract/neovm/oep4TxBuilder';
 
 // tslint:disable-next-line:no-var-requires
-const HDKey = require('@ont-community/hdkey-secp256r1');
+const { HDKey } = require('@ont-dev/hdkey-secp256r1');
 
 // tslint:disable:no-unused-expression
 // tslint:disable:no-shadowed-variable
