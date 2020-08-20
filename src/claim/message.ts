@@ -347,9 +347,8 @@ export class SimpleMessage extends Message {
         return this.payload;
     }
 
-    // tslint:disable-next-line:no-empty
     payloadFromJSON(json: any): void {
-        return this.payload = json;
+        this.payload = json;
     }
 }
 
