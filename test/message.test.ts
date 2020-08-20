@@ -17,7 +17,7 @@
  */
 
 import { Account } from '../src/account';
-import { extractKeyId, extractOntId, Message, retrievePublicKey } from '../src/claim/message';
+import { extractKeyId, extractOntId, Message, retrievePublicKey, SimpleMessage } from '../src/claim/message';
 import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
@@ -52,14 +52,14 @@ describe('test message', () => {
         }
     }
 
-    beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-        tx.payer = account.address;
-        signTransaction(tx, privateKey);
+    // beforeAll(async () => {
+    //     const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+    //     tx.payer = account.address;
+    //     signTransaction(tx, privateKey);
 
-        const client = new WebsocketClient();
-        await client.sendRawTransaction(tx.serialize(), false, true);
-    }, 10000);
+    //     const client = new WebsocketClient();
+    //     await client.sendRawTransaction(tx.serialize(), false, true);
+    // }, 10000);
 
     test('test extractOntId and extractKeyId', () => {
         const ontId = extractOntId(publicKeyId);

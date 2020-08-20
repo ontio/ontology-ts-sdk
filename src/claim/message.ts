@@ -333,6 +333,27 @@ export abstract class Message {
 }
 
 /**
+ * Simple implementation for Message
+ */
+export class SimpleMessage extends Message {
+
+    static deserialize(jwt: string): SimpleMessage {
+        return super.deserializeInternal(jwt, (m, s) => new SimpleMessage(m, s));
+    }
+
+    payload: any = {};
+
+    payloadToJSON(): any {
+        return this.payload;
+    }
+
+    // tslint:disable-next-line:no-empty
+    payloadFromJSON(json: any): void {
+        return this.payload = json;
+    }
+}
+
+/**
  * Gets the public key associated with ONT ID from blockchain.
  *
  * @param publicKeyId The ID of a signature public key
