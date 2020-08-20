@@ -17,7 +17,7 @@
  */
 
 import { Account } from './account';
-import { Claim } from './claim';
+import { Claim, SimpleMessage } from './claim';
 import * as CONST from './consts';
 import * as Crypto from './crypto';
 import { Identity } from './identity';
@@ -158,6 +158,7 @@ export {
     CONST,
     Wallet,
     SDK,
+    SimpleMessage,
     Token,
     OntidContract,
     RestClient,
