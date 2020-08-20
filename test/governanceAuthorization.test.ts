@@ -8,7 +8,7 @@ import { Parameter } from '../src/smartcontract/abi/parameter';
 import { getAttributes, getAuthorizeInfo, getConfiguration, getGlobalParam,
     getGovernanceView, getPeerPoolMap, getPeerUnboundOng, getSplitFeeAddress,
     getTotalStake, makeAuthorizeForPeerTx, makeChangeAuthorizationTx,
-    makeSetPeerCostTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx
+    makeSetPeerCostTx, makeSetFeePercentageTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
 import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
 
@@ -86,6 +86,20 @@ describe('test governance authorization', () => {
         console.log(JSON.stringify(response));
     }, 10000);
 
+    test('setFeePercentageTx', async () => {
+        const stake = stake2;
+        const pk = stake.peerPubkey;
+        const address = new Address(stake.address);
+        const peerCost = 50;
+        const stakeCost = 50;
+        const tx = makeSetFeePercentageTx(pk, address, peerCost, stakeCost, address, gasPrice, gasLimit);
+        const pri = getPrivatekey(stake2Account, stake.addrPass);
+        signTransaction(tx, pri);
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log(JSON.stringify(response));
+    }, 10000);
+
     test('withdrawFee', async () => {
         const account = account4;
         const address = new Address(account.address);
@@ -139,8 +153,8 @@ describe('test governance authorization', () => {
     });
 
     test('getAttributes', async () => {
-        const pk = '032f6464df7c42b5a80953680165a23cb98453a1fcb5770f233664909847faf36f';
-        const url = 'http://dappnode1.ont.io:20334';
+        const pk = '024e2bffdfc248eed7cd513e330687612281ba097d9692e74ed87ca6a01629ee89';
+        const url = 'http://polaris1.ont.io:20334';
         const res = await getAttributes(pk, url);
         console.log(res);
     }, 10000);

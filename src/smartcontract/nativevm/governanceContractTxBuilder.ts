@@ -22,8 +22,10 @@ import { ERROR_CODE } from '../../error';
 import RestClient from '../../network/rest/restClient';
 import { Transaction } from '../../transaction/transaction';
 import { makeNativeContractTx } from '../../transaction/transactionUtils';
-import { bigIntFromBytes, calcUnboundOng, hex2VarBytes,
-    hexstr2str, num2hexstring, str2hexstr, str2VarBytes, StringReader, varifyPositiveInt } from '../../utils';
+import {
+    bigIntFromBytes, calcUnboundOng, hex2VarBytes,
+    hexstr2str, num2hexstring, str2hexstr, str2VarBytes, StringReader, varifyPositiveInt
+} from '../../utils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from '../abi/struct';
 
@@ -73,7 +75,7 @@ export function makeRegisterCandidateTx(
     struct.add(str2hexstr(peerPubKey), userAddr.serialize(), initPos, ontid, keyNo);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('registerCandidate', params, contractAddress,
-                                     gasPrice, gasLimit, payer);
+        gasPrice, gasLimit, payer);
 }
 
 /**
@@ -114,7 +116,7 @@ export function makeApproveCandidateTx(
     struct.add(str2hexstr(peerPubKey));
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('approveCandidate', params, contractAddress,
-                                     gasPrice, gasLimit, payer);
+        gasPrice, gasLimit, payer);
 }
 
 /**
@@ -171,7 +173,7 @@ export function makeVoteForPeerTx(
     }
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('voteForPeer', params, contractAddress,
-       gasPrice, gasLimit, payer);
+        gasPrice, gasLimit, payer);
 }
 
 /**
@@ -206,7 +208,7 @@ export function makeUnvoteForPeerTx(
     }
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('unVoteForPeer', params, contractAddress,
-         gasPrice, gasLimit, payer);
+        gasPrice, gasLimit, payer);
 }
 
 /**
@@ -282,7 +284,7 @@ export function makeChangeAuthorizationTx(
 }
 
 /**
- * Update allocation proportion of peer
+ * Update allocation proportion of peer (with peer cost)
  * @param peerPubKey
  * @param userAddr
  * @param peerCost
@@ -302,6 +304,31 @@ export function makeSetPeerCostTx(
     struct.add(str2hexstr(peerPubKey), userAddr.serialize(), peerCost);
     const params = buildNativeCodeScript([struct]);
     return makeNativeContractTx('setPeerCost', params, contractAddress, gasPrice, gasLimit, payer);
+}
+
+/**
+ * Update allocation proportion of peer (with peer cost and stake cost)
+ * @param peerPubKey
+ * @param userAddr
+ * @param peerCost
+ * @param stakeCost
+ * @param payer
+ * @param gasPrice
+ * @param gasLimit
+ */
+export function makeSetFeePercentageTx(
+    peerPubKey: string,
+    userAddr: Address,
+    peerCost: number,
+    stakeCost: number,
+    payer: Address,
+    gasPrice: string,
+    gasLimit: string
+): Transaction {
+    const struct = new Struct();
+    struct.add(str2hexstr(peerPubKey), userAddr.serialize(), peerCost, stakeCost);
+    const params = buildNativeCodeScript([struct]);
+    return makeNativeContractTx('setFeePercentage', params, contractAddress, gasPrice, gasLimit, payer);
 }
 
 /**
@@ -449,7 +476,27 @@ export async function getAttributes(peerPubKey: string, url?: string) {
     const res = await restClient.getStorage(codeHash, key);
     const result = res.Result;
     if (result) {
-        return PeerAttributes.deserialize(new StringReader(result));
+        const peerAttributes = PeerAttributes.deserialize(new StringReader(result));
+        if (peerAttributes.t2StakeCost === 0) {
+            peerAttributes.t2StakeCost = peerAttributes.t2PeerCost;
+        }
+        if (peerAttributes.t1StakeCost === 0) {
+            peerAttributes.t1StakeCost = peerAttributes.t1PeerCost;
+        }
+        if (peerAttributes.tStakeCost === 0) {
+            peerAttributes.tStakeCost = peerAttributes.tPeerCost;
+        }
+
+        if (peerAttributes.t2StakeCost === 101) {
+            peerAttributes.t2StakeCost = 0;
+        }
+        if (peerAttributes.t1StakeCost === 101) {
+            peerAttributes.t1StakeCost = 0;
+        }
+        if (peerAttributes.tStakeCost === 101) {
+            peerAttributes.tStakeCost = 0;
+        }
+        return peerAttributes;
     } else {
         return new PeerAttributes();
     }
@@ -646,12 +693,10 @@ export class PeerAttributes {
         pr.t1PeerCost = sr.readLong();
         pr.tPeerCost = sr.readLong();
 
-        if (sr.isEmpty) {
-            return pr;
-        }
-        pr.field1 = sr.readNextBytes();
-        pr.field2 = sr.readNextBytes();
-        pr.field3 = sr.readNextBytes();
+        pr.t2StakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
+        pr.t2StakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
+        pr.tStakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
+
         pr.field4 = sr.readNextBytes();
 
         return pr;
@@ -661,9 +706,9 @@ export class PeerAttributes {
     t2PeerCost: number = 100; // peer cost, active in view T + 2
     t1PeerCost: number = 100; // peer cost, active in view T + 1
     tPeerCost: number = 0; // peer cost, active in view T
-    field1: string = '';
-    field2: string = '';
-    field3: string = '';
+    t2StakeCost: number = 0;
+    t1StakeCost: number = 0;
+    tStakeCost: number = 0;
     field4: string = '';
 
     serialize(): string {
