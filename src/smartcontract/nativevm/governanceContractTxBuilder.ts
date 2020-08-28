@@ -694,7 +694,7 @@ export class PeerAttributes {
         pr.tPeerCost = sr.readLong();
 
         pr.t2StakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
-        pr.t2StakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
+        pr.t1StakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
         pr.tStakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
 
         pr.field4 = sr.readNextBytes();
@@ -705,10 +705,10 @@ export class PeerAttributes {
     maxAuthorize: number = 0;
     t2PeerCost: number = 100; // peer cost, active in view T + 2
     t1PeerCost: number = 100; // peer cost, active in view T + 1
-    tPeerCost: number = 0; // peer cost, active in view T
-    t2StakeCost: number = 0;
-    t1StakeCost: number = 0;
-    tStakeCost: number = 0;
+    tPeerCost: number = 100; // peer cost, active in view T
+    t2StakeCost: number = 100;
+    t1StakeCost: number = 100;
+    tStakeCost: number = 100;
     field4: string = '';
 
     serialize(): string {
