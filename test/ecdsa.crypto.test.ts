@@ -1,5 +1,6 @@
 import { Address } from '../src/crypto';
 import { PrivateKey } from '../src/crypto/PrivateKey';
+import { PublicKey } from '../src/crypto/PublicKey';
 import { Signature } from '../src/crypto/Signature';
 import { str2hexstr } from '../src/utils';
 import { SignatureScheme } from './../src/crypto/SignatureScheme';
@@ -55,5 +56,15 @@ describe('test sign and verify with ECDSAwithSHA256', () => {
         const sig = pri4.sign(hexMsg).serializeHex();
         req.sig = sig;
         console.log(req);
+    });
+
+    test('test verify', () => {
+        const sigHex = '0143ed76c13132e0e1e183fafe691ea530a31673d12822b1c3c9ac78b17c673f7096049a027f6124b369584f2d3c924d8e54a8a66cdc5ca836c8e0e242f9e3ec39';
+        const sig = Signature.deserializeHex(sigHex);
+        const pub = new PublicKey('03afb755bf9c9a3a7577b6d210f07aeac2730ff9800b7af443917be80ef1ddd52f');
+        const content = '1599207549194';
+        const msg = str2hexstr(content)
+        const result = pub.verify(msg, sig);
+        expect(result).toBeTruthy()
     });
 });
