@@ -153,7 +153,7 @@ describe('test governance authorization', () => {
     });
 
     test('getAttributes', async () => {
-        const pk = '024e2bffdfc248eed7cd513e330687612281ba097d9692e74ed87ca6a01629ee89';
+        const pk = '03eb7ce3df085d268b9c3d80ee262ee8ba0ed98af45d0be4197f231143ba07c41f';
         const url = 'http://polaris1.ont.io:20334';
         const res = await getAttributes(pk, url);
         console.log(res);

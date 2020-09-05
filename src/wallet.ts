@@ -94,7 +94,7 @@ export class Wallet {
     };
     identities: Identity[] = [];
     accounts: Account[] = [];
-    extra: null;
+    extra: any;
 
     addAccount(account: Account): void {
         for (const ac of this.accounts) {
@@ -142,7 +142,7 @@ export class Wallet {
             scrypt: this.scrypt,
             identities: this.identities.map((i) => i.toJsonObj()),
             accounts: this.accounts.map((a) => a.toJsonObj()),
-            extra: null
+            extra: this.extra
         };
 
         return obj;
