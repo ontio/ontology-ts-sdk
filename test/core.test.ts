@@ -19,13 +19,12 @@ import * as bip39 from 'bip39';
 import * as BN from 'bn.js';
 import * as Long from 'long';
 // tslint:disable : no-console
-import * as numberToBN from 'number-to-bn';
 import { Claim, Metadata } from '../src/claim';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
 import * as utils from '../src/utils';
 import { Signature } from './../src/crypto/Signature';
 import { SignatureScheme } from './../src/crypto/SignatureScheme';
-import { bytesToHex, hexToBytes, numberToHex, randomBytes, sha256, StringReader, toBN, toNeoBytes } from './../src/utils';
+import { bigIntFromBytes, bigIntToBytes, randomBytes } from './../src/utils';
 
 describe('test core', () => {
 
@@ -79,34 +78,30 @@ describe('test core', () => {
         expect(verifyResult).toBeTruthy();
     });
 
-//
-    test('parseBigint', () => {
-        const testCases = [
-             ['-9175052165852779861', 'abaaaaaaaaaaab80'],
-            [-1, 'FF'],
-            [1, '01'],
-            [120, '78'],
-            [128, '8000'],
-            [255, 'FF00'],
-            ['-9223372036854775808', '0000000000000080'],
-            ['9223372036854775807', 'FFFFFFFFFFFFFF7F'],
-            ['90123123981293054321', '71E975A9C4A7B5E204'],
-            ['9175052165852779861', '555555555555547f']
-        ];
-        for (const item of testCases) {
-            const hex2 = utils.bigIntToBytes(item[0]);
-            console.log(item[0], hex2);
-            // const bytes = hexToBytes(hex);
-            // console.log(bytes);
-            // expect(hex.toUpperCase()).toEqual(item[1]);
+    const BIG_INT_AND_HEX = [
+        ['0', ''],
+        ['-1', 'ff'],
+        ['-9175052165852779861', 'abaaaaaaaaaaab80'],
+        ['1', '01'],
+        ['120', '78'],
+        ['128', '8000'],
+        ['255', 'ff00'],
+        ['-255', '01ff'],
+        ['9223372036854775807', 'ffffffffffffff7f'],
+        ['90123123981293054321', '71e975a9c4a7b5e204'],
+        ['9175052165852779861', '555555555555547f'],
+        ['-9223372036854775808', '0000000000000080']
+    ];
 
-        }
-        // const bytes = toNeoBytes('90123123981293054321');
-        // console.log(bytes);
-        // const hex = bytesToHex(bytes);
-        // console.log(hex.toUpperCase());
-        // const val = numberToBN('9223372036854775808');
-        // console.log(val.neg().toString(16));
+    test('bigint to bytes', () => {
+        BIG_INT_AND_HEX.forEach((testCase) => {
+            expect(bigIntToBytes(testCase[0])).toEqual(testCase[1]);
+        });
+    });
 
+    test('bigint from bytes', () => {
+        BIG_INT_AND_HEX.forEach((testCase) => {
+            expect(bigIntFromBytes(testCase[1])).toEqual(testCase[0]);
+        });
     });
 });

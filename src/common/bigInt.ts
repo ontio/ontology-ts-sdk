@@ -17,6 +17,7 @@
 */
 
 import { BigNumber } from 'bignumber.js';
+import * as Long from 'long';
 import { ERROR_CODE } from './../error';
 import { bigIntFromBytes, bigIntToBytes } from './../utils';
 
@@ -33,7 +34,7 @@ export default class BigInt {
         // hex = reverseHex(hex);
         // const bi = new BigNumber(hex, 16).toString();
         // return new BigInt(bi);
-        const long = bigIntFromBytes(hex);
+        const long = Long.fromString(bigIntFromBytes(hex));
         return new BigInt(long.toString());
     }
 

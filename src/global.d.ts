@@ -30,4 +30,4 @@ declare module 'websocket-as-promised';
 declare module 'milagro-crypto-js';
 declare module 'base-58';
 declare module 'pkcs7';
-declare module 'number-to-bn'
+declare module 'number-to-bn';
