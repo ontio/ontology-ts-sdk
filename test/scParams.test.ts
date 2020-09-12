@@ -2,12 +2,12 @@ import { PrivateKey } from '../src/crypto/PrivateKey';
 import { RestClient, RpcClient, Struct } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { createCodeParamsScript, deserializeItem } from '../src/transaction/scriptBuilder';
-import { num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
+import { bigIntToBytes, num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
 import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
 import { PublicKey } from './../src/crypto/PublicKey';
 import { Parameter, ParameterType } from './../src/smartcontract/abi/parameter';
-import { makeInvokeTransaction, signTransaction, makeWasmVmInvokeTransaction } from './../src/transaction/transactionBuilder';
+import { makeInvokeTransaction, makeWasmVmInvokeTransaction, signTransaction } from './../src/transaction/transactionBuilder';
 
 describe('test smarct contract params', () => {
     const socketClient = new WebsocketClient();
@@ -477,4 +477,25 @@ describe('test smarct contract params', () => {
         }
         console.log(JSON.stringify(res));
     }, 10000);
+
+    test('lockWrapper', async () => {
+        const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+        const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+        const contract = new Address(reverseHex('a1ac292510459c2583079f53c150e8aa885e6b4b'));
+        const method = 'lock';
+        const params = [
+            new Parameter('', ParameterType.ByteArray, '58cb1f7c32e38e293e7975f06533436463444932'),
+            new Parameter('', ParameterType.Address, adminAddress),
+            new Parameter('', ParameterType.Integer, 2),
+            new Parameter('', ParameterType.ByteArray, 'a447c13a612747A025555f2238115FB46B2234e2'),
+            new Parameter('', ParameterType.ByteArray, bigIntToBytes('1000000000000000000')),
+            new Parameter('', ParameterType.ByteArray, bigIntToBytes(1)),
+            new Parameter('', ParameterType.ByteArray, '58cb1f7c32e38e293e7975f06533436463444932')
+        ];
+        const tx = makeInvokeTransaction(method, params, contract, '2500', '40000', adminAddress);
+        signTransaction(tx, adminPrivateKey);
+        const socket = new WebsocketClient('ws://polaris3.ont.io:20335/');
+        const res = await socket.sendRawTransaction(tx.serialize(), false, true);
+        console.log(JSON.stringify(res));
+    });
 });

@@ -304,7 +304,7 @@ export function numberToHex(value: number | string) {
     return reverseHex(hexRes);
 }
 export function hexToBytes(hex: string) {
-    hex = hex.toString(16);
+    hex = hex.toString();
 
     hex = hex.replace(/^0x/i, '');
     const bytes = [];
