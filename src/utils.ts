@@ -16,6 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import axios from 'axios';
+import { BigNumber } from 'bignumber.js';
 import * as bip39 from 'bip39';
 import * as BN from 'bn.js';
 import * as cryptoJS from 'crypto-js';
@@ -315,7 +316,7 @@ export function hexToBytes(hex: string) {
 }
 
 export function toNeoBytes(value: number | string) {
-    const num = numberToBN(value);
+    const num = numberToBN(new BigNumber(value)); // 为了兼容1e+21这种科学记数法
     const bs = num.toArray('le');
     if (bs.length === 0) {
         return '00';
