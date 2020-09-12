@@ -5,8 +5,9 @@ import { createCodeParamsScript, deserializeItem } from '../src/transaction/scri
 import { num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
 import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
+import { PublicKey } from './../src/crypto/PublicKey';
 import { Parameter, ParameterType } from './../src/smartcontract/abi/parameter';
-import { makeInvokeTransaction, signTransaction } from './../src/transaction/transactionBuilder';
+import { makeInvokeTransaction, signTransaction, makeWasmVmInvokeTransaction } from './../src/transaction/transactionBuilder';
 
 describe('test smarct contract params', () => {
     const socketClient = new WebsocketClient();
@@ -437,40 +438,43 @@ describe('test smarct contract params', () => {
 
     test('getVoteTx', async () => {
         const contractHash = {
-            MAIN_NET: 'c0df752ca786a99755b2e8950060ade9fa3d4e1b',
+            MAIN_NET: 'de25a1b31c10d466168b720fce8a457f670e1a94',
             TEST_NET: 'a088ae3b508794e666ab649d890213e66e0c3a2e'
         };
         const VOTE_HASH = [
-            '121847d3522ed25ab34e4feafe323b58482a71689aae37521dfdcf7c1502e9d5',
-            'dfadc388711923301618c02cd6d7ff66193f78935b23450fc804db38d0811b39',
-            '0ddfe94bf0fe96ca3e30eae32c95e36795ac989deade0ab46f8a1f2ac903ef96',
-            '7b56acaf09ffde0439782694c3acd5da87fc26901c978115e825e4eb9313e329',
-            '916d360b04fd52bf7d564f6167f29d25e4e6fe8df4bcd213e0db69b4f3fdd964'
+            'a878d69602671e24e33f60d00db8ae72643d6632941e0a3e1a7f334b03ac2ab5'
         ];
         const contract = new Address(reverseHex(contractHash.MAIN_NET));
 
-        const addrs = [
-            new Address('AJEAVCJpa7JmpDZsJ9vPA1r9fPZAvjec8D'),
-            new Address('AUy6TaM9wxTqo9T7FiaYMnDeVExhjsR1Pq'),
-            new Address('AGqzuKoEeDfMHPEBPJVs2h2fapxDGoGtK1'),
-            new Address('AWWChRewNcQ5nZuh8LzF8ksqPaCW8EXPBU'),
-            new Address('APSFBEbQzMUjuCtSVwHcRjiqCrDe56jAHJ'),
-            new Address('AXNxyP2HEKW7GoSqYfeqcYfCSE7XaaVVu4'),
-            new Address('AGEdeZu965DFFFwsAWcThgL6uduJf4U7ci')
+        const pks = [
+            '022e911fb5a20b4b2e4f917f10eb92f27d17cad16b916bce8fd2dd8c11ac2878c0',
+            '0253719ac66d7cafa1fe49a64f73bd864a346da92d908c19577a003a8a4160b7fa',
+            '02bcdd278a27e4969d48de95d6b7b086b65b8d1d4ff6509e7a9eab364a76115af7',
+            '02765d98bb092962734e365bd436bdc80c5b5991dcf22b28dbb02d3b3cf74d6444',
+            '022bf80145bd448d993abffa237f4cd06d9df13eaad37afce5cb71d80c47b03feb',
+            '0251f06bc247b1da94ec7d9fe25f5f913cedaecba8524140353b826cf9b1cbd9f4',
+            '03c8f63775536eb420c96228cdccc9de7d80e87f1b562a6eb93c0838064350aa53'
         ];
-
-        for (const addr of addrs) {
-            console.log('Tx for node: ' + addr.toBase58());
+        const addrs = pks.map((item: string) => Address.fromPubKey(new PublicKey(item)));
+        const res = [];
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < addrs.length; i++) {
+            // console.log('Tx for node: ' + addr.toBase58());
+            const addr = addrs[i];
             for (const hash of VOTE_HASH) {
                 const params = [
-                    new Parameter('', ParameterType.ByteArray, hash),
-                    new Parameter('', ParameterType.ByteArray, addr.serialize()),
+                    new Parameter('', ParameterType.H256, hash),
+                    new Parameter('', ParameterType.Address, addr),
                     new Parameter('', ParameterType.Boolean, true)
                 ];
-                const tx = makeInvokeTransaction('voteTopic', params, contract, '500', '200000', addr);
-                console.log(tx.serialize());
+                const tx = makeWasmVmInvokeTransaction('voteTopic', params, contract, '2500', '200000', addr);
+                res.push({
+                    node_pk_address: addrs[i].toBase58(),
+                    node_pk: pks[i],
+                    tx: tx.serialize()
+                });
             }
         }
+        console.log(JSON.stringify(res));
     }, 10000);
-
 });

@@ -1,9 +1,3 @@
-import { Transaction } from 'ontology-ts-sdk';
-import { CurveLabel } from './../src/crypto/CurveLabel';
-import { KeyParameters } from './../src/crypto/Key';
-import { KeyType } from './../src/crypto/KeyType';
-import { PublicKey } from './../src/crypto/PublicKey';
-import { WebsocketClient } from './../src/network/websocket/websocketClient';
 /*
 * Copyright (C) 2018 The ontology Authors
 * This file is part of The ontology library.
@@ -22,10 +16,15 @@ import { WebsocketClient } from './../src/network/websocket/websocketClient';
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { GovernanceTxBuilder } from '../src';
+import * as GovernanceTxBuilder from '../src//smartcontract/nativevm/governanceContractTxBuilder';
 import { Address, PrivateKey, Signature, SignatureScheme } from '../src/crypto';
 import { makeTransferTx } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
+import { Transaction } from '../src/transaction/transaction';
 import { hexstr2str, str2hexstr } from '../src/utils';
+import { KeyParameters } from './../src/crypto/Key';
+import { KeyType } from './../src/crypto/KeyType';
+import { PublicKey } from './../src/crypto/PublicKey';
+import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { signTransaction } from './../src/transaction/transactionBuilder';
 
 // tslint:disable:no-console

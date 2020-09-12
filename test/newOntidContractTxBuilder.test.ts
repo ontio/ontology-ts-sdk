@@ -17,9 +17,9 @@ import { addSign } from './../src/transaction/transactionBuilder';
 // tslint:disable:max-line-length
 describe('test new ONT ID contract', () => {
 
-    const gasPrice = '0';
+    const gasPrice = '500';
     const gasLimit = '20000';
-    const socketClient = new WebsocketClient('ws://192.168.1.175:20335');
+    const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
     const restClient = new RestClient('http://192.168.1.175:20334');
     const privateKey1 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
     const pk1 = privateKey1.getPublicKey();
