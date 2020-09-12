@@ -1,4 +1,3 @@
-import * as Long from 'long';
 import { writeVarBytes } from '../../../transaction/scriptBuilder';
 import { bigIntToBytes, str2hexstr } from '../../../utils';
 
@@ -21,7 +20,7 @@ export default class Group {
 
     public serialize(): string {
         let result = '';
-        const length = Long.fromNumber(this.members.length);
+        const length = this.members.length;
         result += writeVarBytes(bigIntToBytes(length));
         for (const obj of this.members) {
             if (typeof obj === 'string') {
@@ -30,7 +29,7 @@ export default class Group {
                 result += writeVarBytes(obj.serialize());
             }
         }
-        const th = bigIntToBytes(Long.fromNumber(this.threshold));
+        const th = bigIntToBytes(this.threshold);
         result += writeVarBytes(th);
         return result;
     }

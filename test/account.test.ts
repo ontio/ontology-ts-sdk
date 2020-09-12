@@ -87,4 +87,10 @@ describe('test account', () => {
         console.log(accJson);
         expect(accJson.algorithm).toEqual('SM2');
     });
+
+    test('memonic_import', () => {
+        const memonic = 'melody snake text depend please copper best flower cushion open marriage cool';
+        const accout = Account.importWithMnemonic('test', memonic, '123456');
+        console.log(accout);
+    });
 });

@@ -166,10 +166,10 @@ describe('test governance authorization', () => {
     }, 10000);
 
     test('getPeerPoolMap', async () => {
-        const nodeUrl = 'http://polaris1.ont.io:20334';
+        const nodeUrl = 'http://polaris2.ont.io:20334';
         const res = await getPeerPoolMap(nodeUrl);
         console.log(res);
-        const pk = '0332c5624ebea8374199341b12d4d74ec22734ec675909ec227f55a805d406df14';
+        const pk = '02f28c436b132edc663fd169c45f22d30eefe141d8413ca0045bd28fa32dcf1072';
         console.log(res[pk]);
         console.log(res[pk].address.toBase58())
     }, 10000);

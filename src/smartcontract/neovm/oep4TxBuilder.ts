@@ -15,7 +15,6 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import * as Long from 'long';
 import { createCodeParamsScript } from '../../transaction/scriptBuilder';
 import { Transaction } from '../../transaction/transaction';
 import { bigIntToBytes, str2hexstr } from '../../utils';
@@ -43,7 +42,7 @@ export const formatBigNumParameter = (amount: string): Parameter => {
     //     val = '0' + val;
     // }
     // const valHex = reverseHex(val);
-    const valHex = bigIntToBytes(Long.fromString(amount));
+    const valHex = bigIntToBytes(amount);
     const p = new Parameter('value', ParameterType.ByteArray, valHex);
     return p;
 };

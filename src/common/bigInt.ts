@@ -17,7 +17,6 @@
 */
 
 import { BigNumber } from 'bignumber.js';
-import * as Long from 'long';
 import { ERROR_CODE } from './../error';
 import { bigIntFromBytes, bigIntToBytes } from './../utils';
 
@@ -54,8 +53,8 @@ export default class BigInt {
      * Create hex string from BigInt
      */
     toHexstr(): string {
-        const bi = Long.fromValue(this.value);
-        let hex = bigIntToBytes(bi);
+        // const bi = Long.fromValue(this.value);
+        let hex = bigIntToBytes(this.value);
         if (this.ledgerCompatible && (hex.length % 2 !== 0 || hex.length < 16)) {
             hex = hex + '0'.repeat(SIZE * 2 - hex.length);
         }

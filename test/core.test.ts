@@ -16,13 +16,17 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as bip39 from 'bip39';
+import * as BN from 'bn.js';
+import * as Long from 'long';
+// tslint:disable : no-console
+import * as numberToBN from 'number-to-bn';
 import { Claim, Metadata } from '../src/claim';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
 import * as utils from '../src/utils';
 import { Signature } from './../src/crypto/Signature';
 import { SignatureScheme } from './../src/crypto/SignatureScheme';
-import { randomBytes, sha256, StringReader } from './../src/utils';
-// tslint:disable : no-console
+import { bytesToHex, hexToBytes, numberToHex, randomBytes, sha256, StringReader, toBN, toNeoBytes } from './../src/utils';
+
 describe('test core', () => {
 
     let privateKey: PrivateKey;
@@ -73,5 +77,36 @@ describe('test core', () => {
         const verifyResult = pk.verify(msg, signed);
         console.log('verifyResult: ' + verifyResult);
         expect(verifyResult).toBeTruthy();
+    });
+
+//
+    test('parseBigint', () => {
+        const testCases = [
+             ['-9175052165852779861', 'abaaaaaaaaaaab80'],
+            [-1, 'FF'],
+            [1, '01'],
+            [120, '78'],
+            [128, '8000'],
+            [255, 'FF00'],
+            ['-9223372036854775808', '0000000000000080'],
+            ['9223372036854775807', 'FFFFFFFFFFFFFF7F'],
+            ['90123123981293054321', '71E975A9C4A7B5E204'],
+            ['9175052165852779861', '555555555555547f']
+        ];
+        for (const item of testCases) {
+            const hex2 = utils.bigIntToBytes(item[0]);
+            console.log(item[0], hex2);
+            // const bytes = hexToBytes(hex);
+            // console.log(bytes);
+            // expect(hex.toUpperCase()).toEqual(item[1]);
+
+        }
+        // const bytes = toNeoBytes('90123123981293054321');
+        // console.log(bytes);
+        // const hex = bytesToHex(bytes);
+        // console.log(hex.toUpperCase());
+        // const val = numberToBN('9223372036854775808');
+        // console.log(val.neg().toString(16));
+
     });
 });
