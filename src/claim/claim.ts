@@ -210,16 +210,18 @@ export class Claim extends Message {
     protected payloadToJSON(): any {
         return {
             'ver': this.version,
-            '@context': this.context,
-            'clm': this.content,
+            'vc': {
+                '@context': this.context,
+                'credentialSubject': this.content
+            },
             'clm-rev': this.revocation
         };
     }
 
     protected payloadFromJSON(json: any): void {
         this.version = json.ver;
-        this.context = json['@context'];
-        this.content = json.clm;
+        this.context = json.vc['@context'];
+        this.content = json.vc.credentialSubject;
         this.revocation = json['clm-rev'];
     }
 
