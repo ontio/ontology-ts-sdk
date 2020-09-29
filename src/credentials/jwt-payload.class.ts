@@ -1,5 +1,4 @@
 import * as b64 from "base64-url";
-import {PayloadFactory, PayloadType} from "./payload-factory.class";
 
 export abstract class JwtPayload {
     iss: string;
@@ -29,9 +28,13 @@ export abstract class JwtPayload {
         return b64.encode(stringified, 'utf-8');
     }
 
-    static deserialize(encoded: string, payloadType: PayloadType): JwtPayload {
+    static deserialize(encoded: string, deserializeFunction: (decoded: any) => JwtPayload): JwtPayload {
         const decoded = b64.decode(encoded);
 
-        return PayloadFactory.payloadFromJson(JSON.parse(decoded), payloadType);
+        try {
+            return deserializeFunction(JSON.parse(decoded));
+        } catch (error) {
+            throw new Error("Incorrect deserialization function for: " + decoded);
+        }
     }
 }

@@ -8,4 +8,10 @@ export class VerifiablePresentation {
         this.type = ['VerifiablePresentation'];
         this.verifiableCredentials = verifiableCredentials;
     }
+
+    public static fromJson(json: any): VerifiablePresentation {
+        return new VerifiablePresentation(
+            json.verifiableCredentials
+        );
+    }
 }

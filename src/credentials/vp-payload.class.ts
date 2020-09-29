@@ -31,8 +31,8 @@ export class VpPayload extends JwtPayload {
             json.iss,
             json.jti,
             json.iat,
-            json.vp,
-            json.exp
+            VerifiablePresentation.fromJson(json.vp),
+            new Date(json.exp)
         );
     }
 }

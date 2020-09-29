@@ -34,8 +34,8 @@ export class VcPayload extends JwtPayload {
             json.iss,
             json.jti,
             json.iat,
-            json.vc,
-            json.exp
-        )
+            VerifiableCredential.fromJson(json.vc),
+            new Date(json.exp)
+        );
     }
 }

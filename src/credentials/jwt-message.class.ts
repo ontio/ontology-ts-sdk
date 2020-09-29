@@ -3,7 +3,8 @@ import {JwtPayload} from "./jwt-payload.class";
 import {PrivateKey, PublicKeyStatus, Signature, SignatureScheme} from "../crypto";
 import {now, str2hexstr} from "../utils";
 import {extractOntId, retrievePublicKey, retrievePublicKeyState} from "../claim/message";
-import {PayloadType} from "./payload-factory.class";
+import {VpPayload} from "./vp-payload.class";
+import {VcPayload} from "./vc-payload.class";
 
 export class JwtMessage {
     jwtHeader: JwtHeader;
@@ -78,14 +79,14 @@ export class JwtMessage {
     }
 
     static deserializeVc(jwt: string): JwtMessage {
-        return JwtMessage.deserialize(jwt, PayloadType.VC);
+        return JwtMessage.deserialize(jwt, VcPayload.payloadFromJson);
     }
 
     static deserializeVp(jwt: string): JwtMessage {
-        return JwtMessage.deserialize(jwt, PayloadType.VP);
+        return JwtMessage.deserialize(jwt, VpPayload.payloadFromJson);
     }
 
-    private static deserialize(jwt: string, payloadType: PayloadType): JwtMessage {
+    private static deserialize(jwt: string, deserializeFunction: (decoded: string) => JwtPayload): JwtMessage {
         const parts = jwt.split('.', 4);
 
         if (parts.length < 2) {
@@ -93,7 +94,7 @@ export class JwtMessage {
         }
 
         const header = JwtHeader.deserialize(parts[0]);
-        const payload = JwtPayload.deserialize(parts[1], payloadType);
+        const payload = JwtPayload.deserialize(parts[1], deserializeFunction);
         let signature: Signature | undefined;
 
         if (parts.length > 2) {
