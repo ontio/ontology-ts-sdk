@@ -17,9 +17,25 @@ export class VcPayload extends JwtPayload {
         this.vc = verifiableCredential;
     }
 
-    protected payloadToJSON(): any {}
+    protected payloadToJSON(): any {
+        return {
+            iss: this.iss,
+            sub: this.sub,
+            exp: this.exp,
+            nbf: this.nbf,
+            iat: this.iat,
+            jti: this.jti,
+            vc: this.vc
+        }
+    }
 
     public static payloadFromJson(json: any): JwtPayload  {
-        throw new Error("Not implemented yet");
+        return new VcPayload(
+            json.iss,
+            json.jti,
+            json.iat,
+            json.vc,
+            json.exp
+        )
     }
 }

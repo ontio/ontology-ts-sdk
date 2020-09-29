@@ -15,9 +15,24 @@ export class VpPayload extends JwtPayload {
         this.vp = verifiablePresentation;
     }
 
-    protected payloadToJSON(): any {}
+    protected payloadToJSON(): any {
+        return {
+            iss: this.iss,
+            jti: this.jti,
+            nbf: this.nbf,
+            iat: this.iat,
+            exp: this.exp,
+            vp: this.vp
+        }
+    }
 
     public static payloadFromJson(json: any): JwtPayload {
-        throw new Error("Not implemented yet");
+        return new VpPayload(
+            json.iss,
+            json.jti,
+            json.iat,
+            json.vp,
+            json.exp
+        );
     }
 }
