@@ -3,6 +3,7 @@ import {VerifiableCredential} from "../../src/credentials/verifiable-credential.
 import {JwtPayload} from "../../src/credentials/jwt-payload.class";
 import {VpPayload} from "../../src/credentials/vp-payload.class";
 import {VerifiablePresentation} from "../../src/credentials/verifiable-presentation.class";
+import {_isNotEmpty, assertPayload} from "./util-functions";
 
 describe('test jwt payload serialization', () => {
     const issuer = "issuer_ontology_id";
@@ -47,14 +48,3 @@ describe('test jwt payload serialization', () => {
     });
 });
 
-function assertPayload(jwtPayload: JwtPayload, deserialized: JwtPayload) {
-    expect(jwtPayload.iss).toBe(deserialized.iss);
-    expect(jwtPayload.exp).toBe(deserialized.exp);
-    expect(jwtPayload.nbf).toBe(deserialized.nbf);
-    expect(jwtPayload.iat).toBe(deserialized.iat);
-    expect(jwtPayload.jti).toBe(deserialized.jti);
-}
-
-function _isNotEmpty(value: string): Boolean {
-    return value.length > 0;
-}
