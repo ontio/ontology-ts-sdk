@@ -22,7 +22,7 @@ export default class Group {
     public serialize(): string {
         let result = '';
         const length = Long.fromNumber(this.members.length);
-        result += writeVarBytes(bigIntToBytes(length));
+        result += writeVarBytes(bigIntToBytes(length.toNumber()));
         for (const obj of this.members) {
             if (typeof obj === 'string') {
                 result += writeVarBytes(str2hexstr(obj));
@@ -30,7 +30,7 @@ export default class Group {
                 result += writeVarBytes(obj.serialize());
             }
         }
-        const th = bigIntToBytes(Long.fromNumber(this.threshold));
+        const th = bigIntToBytes(this.threshold);
         result += writeVarBytes(th);
         return result;
     }
