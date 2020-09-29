@@ -708,3 +708,20 @@ export function calcUnboundOng(balance: number, startOffset: number, endOffset: 
     }
     return amount * balance;
 }
+
+export function isEqual(a: any, b: any) {
+    let aProps = Object.getOwnPropertyNames(a);
+    let bProps = Object.getOwnPropertyNames(b);
+
+    if (aProps.length != bProps.length) {
+        return false;
+    }
+    for (let i = 0; i < aProps.length; i++) {
+        let propName = aProps[i];
+
+        if (a[propName] !== b[propName]) {
+            return false;
+        }
+    }
+    return true;
+}
