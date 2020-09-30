@@ -1,3 +1,6 @@
+/**
+ * Representation of Verifiable Credential according to w3c spec.
+ */
 export class VerifiableCredential {
     '@context': string[];
     type: string[];
@@ -11,6 +14,11 @@ export class VerifiableCredential {
         this.credentialSubject = credentialSubject;
     }
 
+    /**
+     * Maps json into VerifiableCredential object.
+     *
+     * @param json - verifiable-credential representation
+     */
     public static fromJson(json: any): VerifiableCredential {
         return new VerifiableCredential(
             json.type,

@@ -1,3 +1,6 @@
+/**
+ * Representation of Verifiable Presentation according to w3c spec.
+ */
 export class VerifiablePresentation {
     '@context': string[];
     type: string[];
@@ -9,6 +12,11 @@ export class VerifiablePresentation {
         this.verifiableCredentials = verifiableCredentials;
     }
 
+    /**
+     * Maps json into VerifiablePresentation object.
+     *
+     * @param json - verifiable-presentation representation
+     */
     public static fromJson(json: any): VerifiablePresentation {
         return new VerifiablePresentation(
             json.verifiableCredentials

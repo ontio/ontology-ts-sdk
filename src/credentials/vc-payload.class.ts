@@ -1,6 +1,9 @@
 import {JwtPayload} from "./jwt-payload.class";
 import {VerifiableCredential} from "./verifiable-credential.class";
 
+/**
+ * Representation of Verifiable Credential Payload according to w3c spec.
+ */
 export class VcPayload extends JwtPayload {
     sub: string;
     vc: VerifiableCredential
@@ -29,6 +32,11 @@ export class VcPayload extends JwtPayload {
         }
     }
 
+    /**
+     * Maps json into JwtPayload object.
+     *
+     * @param json - payload representation
+     */
     public static payloadFromJson(json: any): JwtPayload  {
         return new VcPayload(
             json.iss,
