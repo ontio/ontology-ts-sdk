@@ -1,4 +1,4 @@
-import {JwtPayload} from "../../src/credentials/jwt-payload.class";
+import { JwtPayload } from '../../src/credentials/jwt-payload.class';
 
 export function assertPayload(jwtPayload: JwtPayload, deserialized: JwtPayload) {
     expect(jwtPayload.iss).toBe(deserialized.iss);

@@ -1,9 +1,9 @@
-import {VcPayload} from "../../src/credentials/vc-payload.class";
-import {VerifiableCredential} from "../../src/credentials/verifiable-credential.class";
-import {JwtPayload} from "../../src/credentials/jwt-payload.class";
-import {VpPayload} from "../../src/credentials/vp-payload.class";
-import {VerifiablePresentation} from "../../src/credentials/verifiable-presentation.class";
-import {_isNotEmpty, assertPayload} from "./util-functions";
+import { VcPayload } from '../../src/credentials/vc-payload.class';
+import { VerifiableCredential } from '../../src/credentials/verifiable-credential.class';
+import { JwtPayload } from '../../src/credentials/jwt-payload.class';
+import { VpPayload } from '../../src/credentials/vp-payload.class';
+import { VerifiablePresentation } from '../../src/credentials/verifiable-presentation.class';
+import { _isNotEmpty, assertPayload } from './util-functions';
 
 describe('test jwt payload serialization', () => {
     const issuer = "issuer_ontology_id";

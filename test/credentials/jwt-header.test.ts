@@ -1,6 +1,6 @@
-import {JwtHeader} from "../../src/credentials/jwt-header.class";
-import {isEqual} from "../../src/utils";
-import {SignatureScheme} from "../../src/crypto";
+import { JwtHeader } from '../../src/credentials/jwt-header.class';
+import { SignatureScheme } from '../../src/crypto';
+import { isEqual } from './util-functions';
 
 describe('test jwt header serialization', () => {
     test('should correctly go trough serialization process without argument', () => {

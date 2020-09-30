@@ -1,10 +1,10 @@
-import {VerifiableCredential} from "../../src/credentials/verifiable-credential.class";
-import {VcPayload} from "../../src/credentials/vc-payload.class";
-import {JwtMessage} from "../../src/credentials/jwt-message.class";
-import {JwtHeader} from "../../src/credentials/jwt-header.class";
-import {_isNotEmpty, assertPayload} from "./util-functions";
-import {Address, PrivateKey} from "../../src/crypto";
-import {Identity} from "../../src";
+import { VerifiableCredential } from '../../src/credentials/verifiable-credential.class';
+import { VcPayload } from '../../src/credentials/vc-payload.class';
+import { JwtMessage } from '../../src/credentials/jwt-message.class';
+import { JwtHeader } from '../../src/credentials/jwt-header.class';
+import { _isNotEmpty, assertPayload } from './util-functions';
+import { Address, PrivateKey } from '../../src/crypto';
+import { Identity } from '../../src';
 
 describe('test jwt message functionality', () => {
     const restUrl = 'http://polaris1.ont.io:20334';
