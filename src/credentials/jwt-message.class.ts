@@ -10,6 +10,46 @@ import {VcPayload} from "./vc-payload.class";
  * Representation of JWT Message.
  */
 export class JwtMessage {
+    /**
+     * Deserializes the VerifiableCredential message from JWT.
+     *
+     * @param jwt - jwt representation of verifiable credential
+     */
+    static deserializeVc(jwt: string): JwtMessage {
+        return JwtMessage.deserialize(jwt, VcPayload.payloadFromJson);
+    }
+
+    /**
+     * Deserializes the VerifiablePresentation message from JWT.
+     *
+     * @param jwt - jwt representation of verifiable presentation
+     */
+    static deserializeVp(jwt: string): JwtMessage {
+        return JwtMessage.deserialize(jwt, VpPayload.payloadFromJson);
+    }
+
+    private static deserialize(jwt: string, deserializeFunction: (decoded: string) => JwtPayload): JwtMessage {
+        const parts = jwt.split('.', 4);
+
+        if (parts.length < 2) {
+            throw new Error('Invalid message.');
+        }
+
+        const header = JwtHeader.deserialize(parts[0]);
+        const payload = JwtPayload.deserialize(parts[1], deserializeFunction);
+        let signature: Signature | undefined;
+
+        if (parts.length > 2) {
+            if (header.alg !== undefined && header.kid !== undefined) {
+                signature = Signature.deserializeJWT(parts[2], SignatureScheme.fromLabelJWS(header.alg), header.kid);
+            } else {
+                throw new Error('Signature scheme was not specified.');
+            }
+        }
+
+        return new JwtMessage(header, payload, signature);
+    }
+
     jwtHeader: JwtHeader;
     jwtPayload: JwtPayload;
     signature?: Signature;
@@ -98,46 +138,6 @@ export class JwtMessage {
         } else {
             return this.serializeUnsigned();
         }
-    }
-
-    /**
-     * Deserializes the VerifiableCredential message from JWT.
-     *
-     * @param jwt - jwt representation of verifiable credential
-     */
-    static deserializeVc(jwt: string): JwtMessage {
-        return JwtMessage.deserialize(jwt, VcPayload.payloadFromJson);
-    }
-
-    /**
-     * Deserializes the VerifiablePresentation message from JWT.
-     *
-     * @param jwt - jwt representation of verifiable presentation
-     */
-    static deserializeVp(jwt: string): JwtMessage {
-        return JwtMessage.deserialize(jwt, VpPayload.payloadFromJson);
-    }
-
-    private static deserialize(jwt: string, deserializeFunction: (decoded: string) => JwtPayload): JwtMessage {
-        const parts = jwt.split('.', 4);
-
-        if (parts.length < 2) {
-            throw new Error('Invalid message.');
-        }
-
-        const header = JwtHeader.deserialize(parts[0]);
-        const payload = JwtPayload.deserialize(parts[1], deserializeFunction);
-        let signature: Signature | undefined;
-
-        if (parts.length > 2) {
-            if (header.alg !== undefined && header.kid !== undefined) {
-                signature = Signature.deserializeJWT(parts[2], SignatureScheme.fromLabelJWS(header.alg), header.kid);
-            } else {
-                throw new Error('Signature scheme was not specified.');
-            }
-        }
-
-        return new JwtMessage(header, payload, signature);
     }
 
     private serializeUnsigned(algorithm?: SignatureScheme, publicKeyId?: string): string {

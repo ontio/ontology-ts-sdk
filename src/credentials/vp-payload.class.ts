@@ -5,6 +5,21 @@ import {VerifiablePresentation} from "./verifiable-presentation.class";
  * Representation of Verifiable Presentation Payload according to w3c spec.
  */
 export class VpPayload extends JwtPayload {
+    /**
+     * Maps json into JwtPayload object.
+     *
+     * @param json - payload representation
+     */
+    public static payloadFromJson(json: any): JwtPayload {
+        return new VpPayload(
+            json.iss,
+            json.jti,
+            json.iat,
+            VerifiablePresentation.fromJson(json.vp),
+            new Date(json.exp)
+        );
+    }
+
     vp: VerifiablePresentation;
 
     constructor(
@@ -27,20 +42,5 @@ export class VpPayload extends JwtPayload {
             exp: this.exp,
             vp: this.vp
         }
-    }
-
-    /**
-     * Maps json into JwtPayload object.
-     *
-     * @param json - payload representation
-     */
-    public static payloadFromJson(json: any): JwtPayload {
-        return new VpPayload(
-            json.iss,
-            json.jti,
-            json.iat,
-            VerifiablePresentation.fromJson(json.vp),
-            new Date(json.exp)
-        );
     }
 }
