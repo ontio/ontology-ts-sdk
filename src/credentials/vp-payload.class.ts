@@ -1,5 +1,5 @@
-import {JwtPayload} from "./jwt-payload.class";
-import {VerifiablePresentation} from "./verifiable-presentation.class";
+import { JwtPayload } from './jwt-payload.class';
+import { VerifiablePresentation } from './verifiable-presentation.class';
 
 /**
  * Representation of Verifiable Presentation Payload according to w3c spec.
@@ -41,6 +41,6 @@ export class VpPayload extends JwtPayload {
             iat: this.iat,
             exp: this.exp,
             vp: this.vp
-        }
+        };
     }
 }
