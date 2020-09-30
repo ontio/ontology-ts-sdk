@@ -1,10 +1,11 @@
-import {JwtHeader} from "./jwt-header.class";
-import {JwtPayload} from "./jwt-payload.class";
-import {PrivateKey, PublicKeyStatus, Signature, SignatureScheme} from "../crypto";
-import {now, str2hexstr} from "../utils";
-import {extractOntId, retrievePublicKey, retrievePublicKeyState} from "../claim/message";
-import {VpPayload} from "./vp-payload.class";
-import {VcPayload} from "./vc-payload.class";
+import { extractOntId, retrievePublicKey, retrievePublicKeyState } from '../claim/message';
+import { PrivateKey, PublicKeyStatus, Signature, SignatureScheme } from '../crypto';
+import { JwtHeader } from './jwt-header.class';
+import { JwtPayload } from './jwt-payload.class';
+import { VcPayload } from './vc-payload.class';
+import { VpPayload } from './vp-payload.class';
+
+import { now, str2hexstr } from '../utils';
 
 /**
  * Representation of JWT Message.
