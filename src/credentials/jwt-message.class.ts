@@ -102,7 +102,11 @@ export class JwtMessage {
 
         if (signature !== undefined && signature.publicKeyId !== undefined) {
             try {
-                if(this.jwtPayload.exp !== undefined && this.jwtPayload.exp < Date.now()) {
+                const now = Date.now();
+                if(this.jwtPayload.iat > now) {
+                    return false;
+                }
+                if(this.jwtPayload.exp !== undefined && this.jwtPayload.exp < now) {
                     return false;
                 }
                 if (!this.verifyKeyOwnership()) {

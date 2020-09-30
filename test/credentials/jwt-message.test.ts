@@ -24,7 +24,7 @@ describe('test jwt message functionality', () => {
         ontologyDid,
         credentialSubject
     );
-    const vcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredential, subjectId, new Date(2022, 12));
+    const vcPayload = new VcPayload(ontologyDid, new Date(2018, 12).getTime(), verifiableCredential, subjectId, new Date(2022, 12));
 
     test('Should correctly go trough serialization process', () => {
         const jwtMessage = new JwtMessage(new JwtHeader(), vcPayload, undefined);
@@ -45,23 +45,24 @@ describe('test jwt message functionality', () => {
     test('Should correctly go trough signing process', async ()  => {
         const jwtMessage = new JwtMessage(new JwtHeader(), vcPayload, undefined);
 
-        await jwtMessage.sign(
-            restUrl,
-            publicKeyId,
-            privateKey
-        );
-        expect(jwtMessage.signature).toBeDefined();
-        expect(jwtMessage.signature!!.publicKeyId).toBeDefined();
-        expect(jwtMessage.signature!!.publicKeyId).toBe(publicKeyId);
-
-        const isVerified = await jwtMessage.verify(restUrl);
-        expect(isVerified).toBeTruthy();
+        await assertJwtMessage(jwtMessage, true);
     });
 
-    test('Should return false for verifying verifiable credential with outdated exp property', async () => {
+    test('Should return false for verifying verifiable credential with outdated expiration date', async () => {
         const outdatedVcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredential, subjectId, new Date(2018, 12));
         const jwtMessage = new JwtMessage(new JwtHeader(), outdatedVcPayload, undefined);
 
+        await assertJwtMessage(jwtMessage, false);
+    });
+
+    test('Should return false for verifying verifiable credential with future issuance date', async () => {
+        const futureVcPayload = new VcPayload(ontologyDid, new Date(2020, 11).getTime(), verifiableCredential, subjectId, new Date(2020, 12));
+        const jwtMessage = new JwtMessage(new JwtHeader(), futureVcPayload, undefined);
+
+        await assertJwtMessage(jwtMessage, false);
+    });
+
+    async function assertJwtMessage(jwtMessage: JwtMessage, expectedVerifyResult: boolean): Promise<void> {
         await jwtMessage.sign(
             restUrl,
             publicKeyId,
@@ -72,7 +73,9 @@ describe('test jwt message functionality', () => {
         expect(jwtMessage.signature!!.publicKeyId).toBe(publicKeyId);
 
         const isVerified = await jwtMessage.verify(restUrl);
-        expect(isVerified).toBeFalsy();
-    });
+        expect(isVerified).toBe(expectedVerifyResult);
+    }
 });
+
+
 
