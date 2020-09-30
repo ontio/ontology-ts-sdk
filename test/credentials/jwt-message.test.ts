@@ -24,7 +24,7 @@ describe('test jwt message functionality', () => {
         ontologyDid,
         credentialSubject
     );
-    const vcPayload = new VcPayload(ontologyDid, subjectId, Date.now(), verifiableCredential, new Date());
+    const vcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredential, subjectId, new Date());
 
     test('Should correctly go trough serialization process', () => {
         const jwtMessage = new JwtMessage(new JwtHeader(), vcPayload, undefined);

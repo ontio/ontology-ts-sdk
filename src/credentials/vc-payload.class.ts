@@ -13,24 +13,24 @@ export class VcPayload extends JwtPayload {
     public static payloadFromJson(json: any): JwtPayload  {
         return new VcPayload(
             json.iss,
-            json.jti,
             json.iat,
             VerifiableCredential.fromJson(json.vc),
+            json.jti,
             new Date(json.exp)
         );
     }
 
-    sub: string;
+    sub?: string;
     vc: VerifiableCredential;
 
     constructor(
         issuer: string,
-        subject: string,
         issuanceDate: number,
         verifiableCredential: VerifiableCredential,
-        expirationDate: Date
+        subject?: string,
+        expirationDate?: Date
     ) {
-        super(issuer, subject, issuanceDate, expirationDate);
+        super(issuer, issuanceDate, subject, expirationDate);
         this.sub = subject;
         this.vc = verifiableCredential;
     }

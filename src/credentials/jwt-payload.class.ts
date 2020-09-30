@@ -21,15 +21,15 @@ export abstract class JwtPayload {
     }
 
     iss: string;
-    jti: string;
+    jti?: string;
     nbf: number;
     iat: number;
     exp?: number;
 
     protected constructor(
         issuer: string,
-        subject: string,
         issuanceDate: number,
+        subject?: string,
         expirationDate?: Date
     ) {
         this.iss = issuer;

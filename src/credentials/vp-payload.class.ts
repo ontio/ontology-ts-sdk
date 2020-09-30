@@ -13,23 +13,27 @@ export class VpPayload extends JwtPayload {
     public static payloadFromJson(json: any): JwtPayload {
         return new VpPayload(
             json.iss,
-            json.jti,
             json.iat,
             VerifiablePresentation.fromJson(json.vp),
+            json.aud,
+            json.jti,
             new Date(json.exp)
         );
     }
 
+    aud?: string;
     vp: VerifiablePresentation;
 
     constructor(
         issuer: string,
-        subject: string,
         issuanceDate: number,
         verifiablePresentation: VerifiablePresentation,
-        expirationDate: Date
+        audience?: string,
+        subject?: string,
+        expirationDate?: Date
     ) {
-        super(issuer, subject, issuanceDate, expirationDate);
+        super(issuer, issuanceDate, subject, expirationDate);
+        this.aud = audience;
         this.vp = verifiablePresentation;
     }
 
@@ -37,6 +41,7 @@ export class VpPayload extends JwtPayload {
         return {
             iss: this.iss,
             jti: this.jti,
+            aud: this.aud,
             nbf: this.nbf,
             iat: this.iat,
             exp: this.exp,

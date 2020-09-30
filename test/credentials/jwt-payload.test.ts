@@ -18,7 +18,7 @@ describe('test jwt payload serialization', () => {
         credentialSubject
     );
     test('Should correctly go trough serialization process for verifiable credentials payload', () => {
-        const vcPayload = new VcPayload(issuer, subjectId, Date.now(), verifiableCredential, new Date());
+        const vcPayload = new VcPayload(issuer, Date.now(), verifiableCredential, subjectId, new Date());
 
         const serialized = vcPayload.serialize();
         expect(_isNotEmpty(serialized)).toBeTruthy();
@@ -34,13 +34,13 @@ describe('test jwt payload serialization', () => {
 
     test('Should correctly go trough serialization process for verifiable presentation payload', () => {
      const verifiablePresentation = new VerifiablePresentation(["stringified_verifiable_credential"]);
-     const vpPayload = new VpPayload(issuer, subjectId, Date.now(), verifiablePresentation, new Date());
+     const vpPayload = new VpPayload(issuer, Date.now(), verifiablePresentation, "did:ont:audience", subjectId, new Date());
 
      const serialized = vpPayload.serialize();
      expect(_isNotEmpty(serialized)).toBeTruthy();
 
      const deserialized = JwtPayload.deserialize(serialized, VpPayload.payloadFromJson) as VpPayload;
-
+        console.log(JSON.stringify(deserialized));
      assertPayload(vpPayload, deserialized);
      expect(vpPayload.vp.type[0]).toBe(deserialized.vp.type[0]);
      expect(vpPayload.vp.verifiableCredentials[0]).toBe(deserialized.vp.verifiableCredentials[0]);
