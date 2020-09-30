@@ -24,7 +24,7 @@ describe('test jwt message functionality', () => {
         ontologyDid,
         credentialSubject
     );
-    const vcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredential, subjectId, new Date());
+    const vcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredential, subjectId, new Date(2022, 12));
 
     test('Should correctly go trough serialization process', () => {
         const jwtMessage = new JwtMessage(new JwtHeader(), vcPayload, undefined);
@@ -56,6 +56,23 @@ describe('test jwt message functionality', () => {
 
         const isVerified = await jwtMessage.verify(restUrl);
         expect(isVerified).toBeTruthy();
+    });
+
+    test('Should return false for verifying verifiable credential with outdated exp property', async () => {
+        const outdatedVcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredential, subjectId, new Date(2018, 12));
+        const jwtMessage = new JwtMessage(new JwtHeader(), outdatedVcPayload, undefined);
+
+        await jwtMessage.sign(
+            restUrl,
+            publicKeyId,
+            privateKey
+        );
+        expect(jwtMessage.signature).toBeDefined();
+        expect(jwtMessage.signature!!.publicKeyId).toBeDefined();
+        expect(jwtMessage.signature!!.publicKeyId).toBe(publicKeyId);
+
+        const isVerified = await jwtMessage.verify(restUrl);
+        expect(isVerified).toBeFalsy();
     });
 });
 
