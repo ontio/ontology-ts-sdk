@@ -40,11 +40,6 @@ export abstract class JwtPayload {
     }
 
     /**
-     * Converts data to JSON for serialization.
-     */
-    protected abstract payloadToJSON(): any;
-
-    /**
      * Serializes the payload into JWT format - Base64 encoded string.
      */
     public serialize(): string {
@@ -52,4 +47,9 @@ export abstract class JwtPayload {
 
         return b64.encode(stringified, 'utf-8');
     }
+
+    /**
+     * Converts data to JSON for serialization.
+     */
+    protected abstract payloadToJSON(): any;
 }

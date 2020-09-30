@@ -1,5 +1,5 @@
-import {SignatureScheme} from "../crypto";
-import * as b64 from "base64-url";
+import { decode, encode } from 'base64-url';
+import { SignatureScheme } from '../crypto';
 
 /**
  * Representation of JWT Header.
@@ -11,7 +11,7 @@ export class JwtHeader {
      * @param encoded - JWT encoded header
      */
     public static deserialize(encoded: string): JwtHeader {
-        const decoded = b64.decode(encoded);
+        const decoded = decode(encoded);
         const header = JSON.parse(decoded);
 
         return new JwtHeader(
@@ -49,6 +49,6 @@ export class JwtHeader {
                 typ: 'JWT'
             };
         }
-        return b64.encode(JSON.stringify(header), 'utf-8');
+        return encode(JSON.stringify(header), 'utf-8');
     }
 }
