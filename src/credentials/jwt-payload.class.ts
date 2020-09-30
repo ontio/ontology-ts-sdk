@@ -24,19 +24,19 @@ export abstract class JwtPayload {
     jti: string;
     nbf: number;
     iat: number;
-    exp: number;
+    exp?: number;
 
     protected constructor(
         issuer: string,
         subject: string,
         issuanceDate: number,
-        expirationDate: Date
+        expirationDate?: Date
     ) {
         this.iss = issuer;
         this.jti = subject;
         this.nbf = issuanceDate;
         this.iat = issuanceDate;
-        this.exp = expirationDate.getTime();
+        this.exp = expirationDate?.getTime();
     }
 
     /**
