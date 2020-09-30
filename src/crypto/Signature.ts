@@ -58,7 +58,7 @@ export class Signature {
         if (data.length < 4) {
             throw new Error('Invalid params.');
         }
-        if(data.length == 130) {
+        if (data.length === 130) {
             const sr = new StringReader(data);
             const scheme = parseInt(sr.read(1), 16);
             const sigScheme = SignatureScheme.fromHex(scheme);
@@ -66,7 +66,7 @@ export class Signature {
 
             return new Signature(sigScheme, value);
         } else {
-            if(data.length != 128) {
+            if (data.length !== 128) {
                 throw new Error('Signature Error,invalid signature data length');
             }
             const sigScheme = SignatureScheme.fromHex(1);
