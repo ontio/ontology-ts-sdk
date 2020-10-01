@@ -1,5 +1,5 @@
 import { JwtPayload } from './jwt-payload.class';
-import { VerifiablePresentation } from './verifiable-presentation.class';
+import { VerifiablePresentationAttribute } from './verifiable-presentation-attribute.class';
 
 /**
  * Representation of Verifiable Presentation Payload according to w3c spec.
@@ -14,7 +14,7 @@ export class VpPayload extends JwtPayload {
         return new VpPayload(
             json.iss,
             json.iat,
-            VerifiablePresentation.fromJson(json.vp),
+            VerifiablePresentationAttribute.fromJson(json.vp),
             json.aud,
             json.jti,
             new Date(json.exp)
@@ -22,12 +22,12 @@ export class VpPayload extends JwtPayload {
     }
 
     aud?: string;
-    vp: VerifiablePresentation;
+    vp: VerifiablePresentationAttribute;
 
     constructor(
         issuer: string,
         issuanceDate: number,
-        verifiablePresentation: VerifiablePresentation,
+        verifiablePresentation: VerifiablePresentationAttribute,
         audience?: string,
         subject?: string,
         expirationDate?: Date

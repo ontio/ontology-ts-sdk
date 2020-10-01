@@ -1,4 +1,4 @@
-import { VerifiableCredential } from '../../src/credentials/verifiable-credential.class';
+import { VerifiableCredentialAttribute } from '../../src/credentials/verifiable-credential-attribute.class';
 import { VcPayload } from '../../src/credentials/vc-payload.class';
 import { JwtMessage } from '../../src/credentials/jwt-message.class';
 import { JwtHeader } from '../../src/credentials/jwt-header.class';
@@ -19,12 +19,12 @@ describe('test jwt message functionality', () => {
         "id": subjectId,
         "isDriverLicenseValid": true
     };
-    const verifiableCredential = new VerifiableCredential(
+    const verifiableCredentialAttribute = new VerifiableCredentialAttribute(
         ['DriverLicense'],
         ontologyDid,
         credentialSubject
     );
-    const vcPayload = new VcPayload(ontologyDid, new Date(2018, 12).getTime(), verifiableCredential, subjectId, new Date(2022, 12));
+    const vcPayload = new VcPayload(ontologyDid, new Date(2018, 12).getTime(), verifiableCredentialAttribute, subjectId, new Date(2022, 12));
 
     test('Should correctly go trough serialization process', () => {
         const jwtMessage = new JwtMessage(new JwtHeader(), vcPayload, undefined);
@@ -49,14 +49,14 @@ describe('test jwt message functionality', () => {
     });
 
     test('Should return false for verifying verifiable credential with outdated expiration date', async () => {
-        const outdatedVcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredential, subjectId, new Date(2018, 12));
+        const outdatedVcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredentialAttribute, subjectId, new Date(2018, 12));
         const jwtMessage = new JwtMessage(new JwtHeader(), outdatedVcPayload, undefined);
 
         await assertJwtMessage(jwtMessage, false);
     });
 
     test('Should return false for verifying verifiable credential with future issuance date', async () => {
-        const futureVcPayload = new VcPayload(ontologyDid, new Date(2020, 11).getTime(), verifiableCredential, subjectId, new Date(2020, 12));
+        const futureVcPayload = new VcPayload(ontologyDid, new Date(2020, 11).getTime(), verifiableCredentialAttribute, subjectId, new Date(2020, 12));
         const jwtMessage = new JwtMessage(new JwtHeader(), futureVcPayload, undefined);
 
         await assertJwtMessage(jwtMessage, false);

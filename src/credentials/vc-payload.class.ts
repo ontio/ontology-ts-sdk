@@ -1,5 +1,5 @@
 import { JwtPayload } from './jwt-payload.class';
-import { VerifiableCredential } from './verifiable-credential.class';
+import { VerifiableCredentialAttribute } from './verifiable-credential-attribute.class';
 
 /**
  * Representation of Verifiable Credential Payload according to w3c spec.
@@ -14,19 +14,19 @@ export class VcPayload extends JwtPayload {
         return new VcPayload(
             json.iss,
             json.iat,
-            VerifiableCredential.fromJson(json.vc),
+            VerifiableCredentialAttribute.fromJson(json.vc),
             json.jti,
             new Date(json.exp)
         );
     }
 
     sub?: string;
-    vc: VerifiableCredential;
+    vc: VerifiableCredentialAttribute;
 
     constructor(
         issuer: string,
         issuanceDate: number,
-        verifiableCredential: VerifiableCredential,
+        verifiableCredential: VerifiableCredentialAttribute,
         subject?: string,
         expirationDate?: Date
     ) {

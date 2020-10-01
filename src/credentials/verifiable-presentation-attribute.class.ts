@@ -1,14 +1,14 @@
 /**
  * Representation of Verifiable Presentation according to w3c spec.
  */
-export class VerifiablePresentation {
+export class VerifiablePresentationAttribute {
     /**
      * Maps json into VerifiablePresentation object.
      *
      * @param json - verifiable-presentation representation
      */
-    public static fromJson(json: any): VerifiablePresentation {
-        return new VerifiablePresentation(
+    public static fromJson(json: any): VerifiablePresentationAttribute {
+        return new VerifiablePresentationAttribute(
             json.verifiableCredentials
         );
     }

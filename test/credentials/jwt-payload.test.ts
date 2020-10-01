@@ -1,8 +1,8 @@
 import { VcPayload } from '../../src/credentials/vc-payload.class';
-import { VerifiableCredential } from '../../src/credentials/verifiable-credential.class';
+import { VerifiableCredentialAttribute } from '../../src/credentials/verifiable-credential-attribute.class';
 import { JwtPayload } from '../../src/credentials/jwt-payload.class';
 import { VpPayload } from '../../src/credentials/vp-payload.class';
-import { VerifiablePresentation } from '../../src/credentials/verifiable-presentation.class';
+import { VerifiablePresentationAttribute } from '../../src/credentials/verifiable-presentation-attribute.class';
 import { _isNotEmpty, assertPayload } from './util-functions';
 
 describe('test jwt payload serialization', () => {
@@ -12,13 +12,13 @@ describe('test jwt payload serialization', () => {
         "id": subjectId,
         "isDriverLicenseValid": true
     };
-    const verifiableCredential = new VerifiableCredential(
+    const verifiableCredentialAttribute = new VerifiableCredentialAttribute(
         ['DriverLicense'],
         issuer,
         credentialSubject
     );
     test('Should correctly go trough serialization process for verifiable credentials payload', () => {
-        const vcPayload = new VcPayload(issuer, Date.now(), verifiableCredential, subjectId, new Date());
+        const vcPayload = new VcPayload(issuer, Date.now(), verifiableCredentialAttribute, subjectId, new Date());
 
         const serialized = vcPayload.serialize();
         expect(_isNotEmpty(serialized)).toBeTruthy();
@@ -33,8 +33,8 @@ describe('test jwt payload serialization', () => {
     });
 
     test('Should correctly go trough serialization process for verifiable presentation payload', () => {
-     const verifiablePresentation = new VerifiablePresentation(["stringified_verifiable_credential"]);
-     const vpPayload = new VpPayload(issuer, Date.now(), verifiablePresentation, "did:ont:audience", subjectId, new Date());
+     const verifiablePresentationAttribute = new VerifiablePresentationAttribute(["stringified_verifiable_credential"]);
+     const vpPayload = new VpPayload(issuer, Date.now(), verifiablePresentationAttribute, "did:ont:audience", subjectId, new Date());
 
      const serialized = vpPayload.serialize();
      expect(_isNotEmpty(serialized)).toBeTruthy();
