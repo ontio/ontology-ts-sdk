@@ -87,7 +87,7 @@ export class JwtMessage {
             algorithm = privateKey.algorithm.defaultSchema;
         }
 
-        const message = this.serializeUnsigned(algorithm, publicKeyId);
+        const message = this.serializeHeaderAndPayload(algorithm, publicKeyId);
         this.signature = await privateKey.signAsync(str2hexstr(message), algorithm, publicKeyId);
     }
 
@@ -109,7 +109,7 @@ export class JwtMessage {
                 if (this.jwtPayload.exp !== undefined && this.jwtPayload.exp < nowTimestamp) {
                     return false;
                 }
-                if (!this.verifyKeyOwnership()) {
+                if (!this.verifyIssuerKey()) {
                     return false;
                 }
                 if (!this.verifyExpiration()) {
@@ -123,7 +123,7 @@ export class JwtMessage {
                 }
 
                 const publicKey = await retrievePublicKey(signature.publicKeyId, url);
-                const msg = this.serializeUnsigned(signature.algorithm, signature.publicKeyId);
+                const msg = this.serializeHeaderAndPayload(signature.algorithm, signature.publicKeyId);
                 const msgHex = str2hexstr(msg);
                 return publicKey.verify(msgHex, signature);
             } catch (e) {
@@ -141,20 +141,20 @@ export class JwtMessage {
 
         if (signature !== undefined) {
             const signatureEncoded = signature.serializeJWT();
-            return this.serializeUnsigned(signature.algorithm, signature.publicKeyId) + '.' + signatureEncoded;
+            return this.serializeHeaderAndPayload(signature.algorithm, signature.publicKeyId) + '.' + signatureEncoded;
         } else {
-            return this.serializeUnsigned();
+            return this.serializeHeaderAndPayload();
         }
     }
 
-    private serializeUnsigned(algorithm?: SignatureScheme, publicKeyId?: string): string {
+    private serializeHeaderAndPayload(algorithm?: SignatureScheme, publicKeyId?: string): string {
         const headerEncoded = this.jwtHeader.serialize(algorithm, publicKeyId);
         const payloadEncoded = this.jwtPayload.serialize();
 
         return headerEncoded + '.' + payloadEncoded;
     }
 
-    private verifyKeyOwnership(): boolean {
+    private verifyIssuerKey(): boolean {
         const signature = this.signature;
 
         if (signature !== undefined && signature.publicKeyId !== undefined) {
