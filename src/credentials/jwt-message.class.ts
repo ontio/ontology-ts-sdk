@@ -1,5 +1,5 @@
-import { extractOntId, retrievePublicKey, retrievePublicKeyState } from '../claim/message';
 import { PrivateKey, PublicKeyStatus, Signature, SignatureScheme } from '../crypto';
+import { extractOntId, retrievePublicKey, retrievePublicKeyState } from './functions/public-key.functions';
 import { JwtHeader } from './jwt-header.class';
 import { JwtPayload } from './jwt-payload.class';
 import { VcPayload } from './vc-payload.class';
