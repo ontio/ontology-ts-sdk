@@ -103,7 +103,7 @@ export class JwtMessage {
         if (signature !== undefined && signature.publicKeyId !== undefined) {
             try {
                 const nowTimestamp = Date.now();
-                if (this.jwtPayload.iat > nowTimestamp) {
+                if (this.jwtPayload.iat !== undefined && this.jwtPayload.iat > nowTimestamp) {
                     return false;
                 }
                 if (this.jwtPayload.exp !== undefined && this.jwtPayload.exp < nowTimestamp) {
