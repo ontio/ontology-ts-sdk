@@ -7,9 +7,9 @@ import { _isNotEmpty, assertPayload } from './util-functions';
 
 describe('test jwt payload serialization', () => {
     const issuer = "issuer_ontology_id";
-    const subjectId = "unique_subject_id";
+    const verifiableAttributeId = "unique_subject_id";
     const credentialSubject = {
-        "id": subjectId,
+        "id": verifiableAttributeId,
         "isDriverLicenseValid": true
     };
     const verifiableCredentialAttribute = new VerifiableCredentialAttribute(
@@ -18,7 +18,7 @@ describe('test jwt payload serialization', () => {
         credentialSubject
     );
     test('Should correctly go trough serialization process for verifiable credentials payload', () => {
-        const vcPayload = new VcPayload(issuer, Date.now(), verifiableCredentialAttribute, subjectId, new Date());
+        const vcPayload = new VcPayload(issuer, verifiableCredentialAttribute, Date.now(), verifiableAttributeId, new Date());
 
         const serialized = vcPayload.serialize();
         expect(_isNotEmpty(serialized)).toBeTruthy();
@@ -34,7 +34,7 @@ describe('test jwt payload serialization', () => {
 
     test('Should correctly go trough serialization process for verifiable presentation payload', () => {
      const verifiablePresentationAttribute = new VerifiablePresentationAttribute(["stringified_verifiable_credential"]);
-     const vpPayload = new VpPayload(issuer, Date.now(), verifiablePresentationAttribute, "did:ont:audience", subjectId, new Date());
+     const vpPayload = new VpPayload(issuer, verifiablePresentationAttribute, Date.now(), "did:ont:audience", verifiableAttributeId, new Date());
 
      const serialized = vpPayload.serialize();
      expect(_isNotEmpty(serialized)).toBeTruthy();

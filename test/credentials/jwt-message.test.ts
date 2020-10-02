@@ -14,9 +14,9 @@ describe('test jwt message functionality', () => {
     const identity = Identity.create(privateKey, '123456', '');
     const publicKeyId = identity.ontid + '#keys-1'
 
-    const subjectId = "unique_subject_id";
+    const verifiableAttributeId = "unique_subject_id";
     const credentialSubject = {
-        "id": subjectId,
+        "id": verifiableAttributeId,
         "isDriverLicenseValid": true
     };
     const verifiableCredentialAttribute = new VerifiableCredentialAttribute(
@@ -24,7 +24,7 @@ describe('test jwt message functionality', () => {
         ontologyDid,
         credentialSubject
     );
-    const vcPayload = new VcPayload(ontologyDid, new Date(2018, 12).getTime(), verifiableCredentialAttribute, subjectId, new Date(2022, 12));
+    const vcPayload = new VcPayload(ontologyDid, verifiableCredentialAttribute, new Date(2018, 12).getTime(), verifiableAttributeId, new Date(2022, 12));
 
     test('Should correctly go trough serialization process', () => {
         const jwtMessage = new JwtMessage(new JwtHeader(), vcPayload, undefined);
@@ -49,14 +49,14 @@ describe('test jwt message functionality', () => {
     });
 
     test('Should return false for verifying verifiable credential with outdated expiration date', async () => {
-        const outdatedVcPayload = new VcPayload(ontologyDid, Date.now(), verifiableCredentialAttribute, subjectId, new Date(2018, 12));
+        const outdatedVcPayload = new VcPayload(ontologyDid, verifiableCredentialAttribute, Date.now(), verifiableAttributeId, new Date(2018, 12));
         const jwtMessage = new JwtMessage(new JwtHeader(), outdatedVcPayload, undefined);
 
         await assertJwtMessage(jwtMessage, false);
     });
 
     test('Should return false for verifying verifiable credential with future issuance date', async () => {
-        const futureVcPayload = new VcPayload(ontologyDid, new Date(2020, 11).getTime(), verifiableCredentialAttribute, subjectId, new Date(2020, 12));
+        const futureVcPayload = new VcPayload(ontologyDid, verifiableCredentialAttribute, new Date(2020, 11).getTime(), verifiableAttributeId, new Date(2020, 12));
         const jwtMessage = new JwtMessage(new JwtHeader(), futureVcPayload, undefined);
 
         await assertJwtMessage(jwtMessage, false);

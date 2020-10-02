@@ -28,14 +28,15 @@ export abstract class JwtPayload {
 
     protected constructor(
         issuer: string,
-        issuanceDate: number,
-        subjectId?: string,
+        issuanceDate?: number,
+        verifiableAttributeId?: string,
         expirationDate?: Date
     ) {
+        const date = issuanceDate ?? Date.now();
         this.iss = issuer;
-        this.jti = subjectId;
-        this.nbf = issuanceDate;
-        this.iat = issuanceDate ?? Date.now();
+        this.jti = verifiableAttributeId;
+        this.nbf = date;
+        this.iat = date;
         this.exp = expirationDate?.getTime();
     }
 
@@ -53,6 +54,3 @@ export abstract class JwtPayload {
      */
     protected abstract payloadToJSON(): any;
 }
-// q: jti should be mandatory for VC and optional for VP ?
-// jti - MUST represent the id property of the verifiable credential or verifiable presentation
-// nbf - represent issuanceDate which MUST be
