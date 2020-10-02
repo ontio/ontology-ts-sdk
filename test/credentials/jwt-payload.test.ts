@@ -40,7 +40,7 @@ describe('test jwt payload serialization', () => {
      expect(_isNotEmpty(serialized)).toBeTruthy();
 
      const deserialized = JwtPayload.deserialize(serialized, VpPayload.payloadFromJson) as VpPayload;
-        console.log(JSON.stringify(deserialized));
+
      assertPayload(vpPayload, deserialized);
      expect(vpPayload.vp.type[0]).toBe(deserialized.vp.type[0]);
      expect(vpPayload.vp.verifiableCredentials[0]).toBe(deserialized.vp.verifiableCredentials[0]);
