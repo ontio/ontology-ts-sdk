@@ -18,7 +18,6 @@
 
 import { Account } from '../src/account';
 import { Claim, RevocationType } from '../src/claim/claim';
-import { ClaimProof } from '../src/claim/claimProof';
 import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { constructMerkleProof } from '../src/merkle';
@@ -27,11 +26,12 @@ import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContrac
 import { addSign, signTransaction } from '../src/transaction/transactionBuilder';
 
 import * as b64 from 'base64-url';
-import { Base64  } from 'js-base64';
 import { str2hexstr } from '../src/utils';
-describe('test claim', () => {
-    const restUrl = 'http://polaris1.ont.io:20334';
+import {TEST_ONT_URL_1} from "../src/consts";
 
+describe('test claim', () => {
+    const restUrl = TEST_ONT_URL_1.REST_URL;
+    const socketUrl = TEST_ONT_URL_1.SOCKET_URL;
     const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
     const account = Account.create(privateKey, '123456', '');
@@ -137,7 +137,6 @@ describe('test claim', () => {
 
     
     test('test_claim', async () => {
-        const restUrl = 'http://polaris1.ont.io:20334';
         const ontid = 'did:ont:AeXrnQ7jvo3HbSPgiThkgJ7ifPQkzXhtpL';
         const publicKeyId = ontid + '#keys-1';
         const privateKey = new PrivateKey('4a8d6d61060998cf83acef4d6e7976d538b16ddeaa59a96752a4a7c0f7ec4860');
@@ -159,7 +158,6 @@ describe('test claim', () => {
         };
 
         await claim.sign(restUrl, publicKeyId, privateKey);
-        const socketUrl = 'ws://polaris1.ont.io:20335';
         const res = await claim.attest(socketUrl, '500', '20000', adminAddress, adminPrivateKey);
         const contract = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
         const proof = await constructMerkleProof(restUrl, res.Result.TxHash, contract);
