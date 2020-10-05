@@ -59,15 +59,19 @@ export class Signature {
             throw new Error('Invalid params.');
         }
         if (data.length === 130) {
-            const sr = new StringReader(data);
-            const scheme = parseInt(sr.read(1), 16);
-            const sigScheme = SignatureScheme.fromHex(scheme);
-            const value = data.substr(2);
+            try {
+                const sr = new StringReader(data);
+                const scheme = parseInt(sr.read(1), 16);
+                const sigScheme = SignatureScheme.fromHex(scheme);
+                const value = data.substr(2);
 
-            return new Signature(sigScheme, value);
+                return new Signature(sigScheme, value);
+            } catch (error) {
+                throw new Error('Signature error, incorrect format');
+            }
         } else {
             if (data.length !== 128) {
-                throw new Error('Signature Error,invalid signature data length');
+                throw new Error('Signature error, invalid signature data length');
             }
             const sigScheme = SignatureScheme.fromHex(1);
             const value = data.substr(2);
