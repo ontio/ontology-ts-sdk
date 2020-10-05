@@ -3,10 +3,7 @@ import { PrivateKey } from '../src/crypto';
 import { Address } from '../src/crypto/address';
 import { Identity } from '../src/identity';
 import RestClient from '../src/network/rest/restClient';
-import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
-import { signTransaction } from '../src/transaction/transactionBuilder';
-import { addSign } from './../src/transaction/transactionBuilder';
+import { buildGetDDOTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 
 // tslint:disable:no-console
 describe('test restClient', () => {
