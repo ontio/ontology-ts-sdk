@@ -11,7 +11,7 @@ export class VerifiableCredentialAttribute {
         return new VerifiableCredentialAttribute(
             json.type,
             json.issuer,
-            json.credentialSubject,
+            json.credentialSubject
         );
     }
 

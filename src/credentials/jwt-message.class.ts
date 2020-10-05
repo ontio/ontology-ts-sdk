@@ -143,7 +143,7 @@ export class JwtMessage {
             const signatureEncoded = signature.serializeJWT();
             return this.serializeHeaderAndPayload(signature.algorithm, signature.publicKeyId) + '.' + signatureEncoded;
         } else {
-            throw new Error('Cannot serialize message without present signature')
+            throw new Error('Cannot serialize message without present signature');
         }
     }
 
