@@ -17,15 +17,12 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { BigNumber } from 'bignumber.js';
-import { sm2, SM2KeyPair } from '@ont-dev/sm.js';
 import { Account } from '../src/account';
 import { Address, PublicKey } from '../src/crypto';
 import { PrivateKey } from '../src/crypto';
 import { CurveLabel } from '../src/crypto/CurveLabel';
 import { KeyParameters } from '../src/crypto/Key';
 import { ERROR_CODE } from '../src/error';
-import * as utils from '../src/utils';
 import { KeyType } from './../src/crypto/KeyType';
 
 describe('test account', () => {
