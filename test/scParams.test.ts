@@ -1,13 +1,14 @@
 import { PrivateKey } from '../src/crypto/PrivateKey';
-import { RestClient, RpcClient, Struct } from '../src/index';
+import { RestClient, RpcClient } from '../src/index';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { createCodeParamsScript, deserializeItem } from '../src/transaction/scriptBuilder';
-import { bigIntToBytes, num2hexstring, reverseHex, str2hexstr, StringReader } from '../src/utils';
+import { deserializeItem } from '../src/transaction/scriptBuilder';
+import { bigIntToBytes, reverseHex, str2hexstr, StringReader } from '../src/utils';
 import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
 import { PublicKey } from './../src/crypto/PublicKey';
 import { Parameter, ParameterType } from './../src/smartcontract/abi/parameter';
 import { makeInvokeTransaction, makeWasmVmInvokeTransaction, signTransaction } from './../src/transaction/transactionBuilder';
+import {MAIN_ONT_URL} from "../src/consts";
 
 describe('test smarct contract params', () => {
     const socketClient = new WebsocketClient();
@@ -252,7 +253,7 @@ describe('test smarct contract params', () => {
 
         const tx = makeInvokeTransaction('PutItem', params, contractAddr, '500', '20000', account.address);
         signTransaction(tx, privateKey);
-        const socket = new WebsocketClient('ws://13.57.184.209:20335');
+        const socket = new WebsocketClient('ws://13.57.184.209:20335'); //TODO extract to const-config file
         const res = await socket.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
     }, 10000);
@@ -269,8 +270,8 @@ describe('test smarct contract params', () => {
         const tx = makeInvokeTransaction('getActivityTime', [], contractAddr, '500', '20000', account.address);
         // console.log(tx.payload.code);
         // signTransaction(tx, privateKey);
-        const socket = new WebsocketClient('ws://13.57.184.209:20335');
-        const rpcClient = new RpcClient('http://dappnode1.ont.io:20336');
+        const socket = new WebsocketClient('ws://13.57.184.209:20335'); // TODO extract to const-config file
+        const rpcClient = new RpcClient(MAIN_ONT_URL.RPC_URL); // TODO should we use main node in tests ?
         // const res = await socket.sendRawTransaction(tx.serialize(), true);
         const res = await rpcClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
@@ -288,8 +289,8 @@ describe('test smarct contract params', () => {
         const tx = makeInvokeTransaction('listAdmins', [], contractAddr, '500', '20000', account.address);
         // console.log(tx.payload.code);
         // signTransaction(tx, privateKey);
-        const socket = new WebsocketClient('ws://13.57.184.209:20335');
-        const rpcClient = new RpcClient('http://dappnode1.ont.io:20336');
+        const socket = new WebsocketClient('ws://13.57.184.209:20335'); // TODO extract to const-config file
+        const rpcClient = new RpcClient(MAIN_ONT_URL.RPC_URL); // TODO should we use main node in tests ?
         // const res = await socket.sendRawTransaction(tx.serialize(), true);
         const res = await rpcClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
