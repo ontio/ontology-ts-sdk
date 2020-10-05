@@ -18,7 +18,7 @@ describe('test neo tx', () => {
     const contractHash = '5bb169f915c916a5e30a3c13a5e0cd228ea26826';
     // const contractHash = 'ceab719b8baa2310f232ee0d277c061704541cfb';
     const contractAddr = new Address(reverseHex(contractHash));
-    const node = 'http://seed2.neo.org:20332';
+    const node = 'http://seed2.neo.org:20332';  // TODO extract to const-config file
     // const node = 'http://52.224.162.48:10332';
     const account1 = Account.create(private1, '123456');
     console.log(account1.toJsonObj());
