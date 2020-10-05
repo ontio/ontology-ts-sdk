@@ -24,6 +24,7 @@ import { Transaction } from '../src/transaction/transaction';
 import { makeInvokeTransaction, makeTransactionsByJson } from '../src/transaction/transactionBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
 import { reverseHex } from '../src/utils';
+import {TEST_ONT_URL_1} from "../src/consts";
 
 describe('test AbiInfo', () => {
 
@@ -150,7 +151,7 @@ describe('test AbiInfo', () => {
     });
 
     test('makeTxFromJSON_transferONG', async () => {
-        const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
+        const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
         const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
         const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
         // tslint:disable:align
@@ -191,7 +192,7 @@ describe('test AbiInfo', () => {
     });
 
     test('makeTxFromJSON_regOntid', async () => {
-        const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
+        const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
         const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
         const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
         const pk = adminPrivateKey.getPublicKey().key;
