@@ -17,7 +17,7 @@
 */
 
 import * as GovernanceTxBuilder from '../src//smartcontract/nativevm/governanceContractTxBuilder';
-import { Address, PrivateKey, Signature, SignatureScheme } from '../src/crypto';
+import { Address, PrivateKey, Signature } from '../src/crypto';
 import { makeTransferTx } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { Transaction } from '../src/transaction/transaction';
 import { hexstr2str, str2hexstr } from '../src/utils';
@@ -26,6 +26,7 @@ import { KeyType } from './../src/crypto/KeyType';
 import { PublicKey } from './../src/crypto/PublicKey';
 import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { signTransaction } from './../src/transaction/transactionBuilder';
+import {TEST_ONT_URL_2} from "../src/consts";
 
 // tslint:disable:no-console
 // tslint:disable:max-line-length
@@ -114,7 +115,7 @@ describe('test transfer sign', () => {
 
         const serialized = tx.serialize();
         console.log('tx serialized', serialized);
-        const wb = new WebsocketClient('http://polaris2.ont.io:20335');
+        const wb = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         const res = await wb.sendRawTransaction(tx.serialize(), false);
         console.log(res);
     });
