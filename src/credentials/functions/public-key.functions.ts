@@ -20,11 +20,10 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
     const keyId = extractKeyId(publicKeyId);
 
     const client = new RestClient(url);
-    const tx = buildGetDocumentTx(ontId);
-    const response = await client.sendRawTransaction(tx.serialize(), true);
+    const getDocumentTx = buildGetDocumentTx(ontId);
+    const response = await client.sendRawTransaction(getDocumentTx.serialize(), true);
 
     if (response.Result && response.Result.Result) {
-        // const ddo = DDO.deserialize(response.Result.Result);
         try {
             const obj = JSON.parse(hexstr2str(response.Result.Result));
             const publicKey = obj.publicKey.find((pk: any) => pk.id.split('#')[0] === ontId);
@@ -39,8 +38,8 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
         }
 
     } else {
-        const tx2 = buildGetDDOTx(ontId);
-        const response2 = await client.sendRawTransaction(tx2.serialize(), true);
+        const getDDOTx = buildGetDDOTx(ontId);
+        const response2 = await client.sendRawTransaction(getDDOTx.serialize(), true);
 
         if (response2.Result && response2.Result.Result) {
             const ddo = DDO.deserialize(response2.Result.Result);
@@ -69,8 +68,8 @@ export async function retrievePublicKeyState(publicKeyId: string, url: string): 
     const keyId = extractKeyId(publicKeyId);
 
     const client = new RestClient(url);
-    const tx = buildGetPublicKeyStateTx(ontId, keyId);
-    const response = await client.sendRawTransaction(tx.serialize(), true);
+    const getPublicKeyStateTx = buildGetPublicKeyStateTx(ontId, keyId);
+    const response = await client.sendRawTransaction(getPublicKeyStateTx.serialize(), true);
     if (response.Result && response.Result.Result) {
         return PublicKeyStatus.fromHexLabel(response.Result.Result);
     } else {
