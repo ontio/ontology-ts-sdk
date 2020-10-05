@@ -8,10 +8,10 @@ import { hexstr2str } from '../src/utils';
 import { Address } from './../src/crypto/address';
 import { PrivateKey } from './../src/crypto/PrivateKey';
 import { Identity } from './../src/identity';
-import { ScryptParams } from './../src/scrypt';
 import { Signer } from './../src/smartcontract/nativevm/ontid/signer';
 import { DDOAttribute } from './../src/transaction/ddo';
 import { addSign } from './../src/transaction/transactionBuilder';
+import {TEST_ONT_URL_1} from "../src/consts";
 
 // tslint:disable:no-console
 // tslint:disable:max-line-length
@@ -19,8 +19,8 @@ describe('test new ONT ID contract', () => {
 
     const gasPrice = '500';
     const gasLimit = '20000';
-    const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
-    const restClient = new RestClient('http://192.168.1.175:20334');
+    const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
+    const restClient = new RestClient('http://192.168.1.175:20334');  // TODO extract to const-config file
     const privateKey1 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
     const pk1 = privateKey1.getPublicKey();
     const address1 = Address.fromPubKey(pk1);
@@ -167,7 +167,7 @@ describe('test new ONT ID contract', () => {
     test('buildRegIdWithAttributesTx', async () => {
         const attr = new DDOAttribute();
         attr.key = 'hello';
-        attr.type = 'string',
+        attr.type = 'string';
         attr.value = 'world';
         const tx = NewOntidTxBuilder.buildRegIdWithAttributesTx(did4, [attr], pk4, gasPrice, gasLimit, address4);
         signTransaction(tx, pri4);
@@ -179,7 +179,7 @@ describe('test new ONT ID contract', () => {
     test('buildAddAttributeTx', async () => {
         const attr = new DDOAttribute();
         attr.key = 'hello2';
-        attr.type = 'string',
+        attr.type = 'string';
         attr.value = 'world2';
         const tx = NewOntidTxBuilder.buildAddAttributeTx(did4, [attr], pk4, gasPrice, gasLimit, address4);
         signTransaction(tx, pri4);
@@ -207,8 +207,8 @@ describe('test new ONT ID contract', () => {
     test('buildAddAttributesByControllerTx', async () => {
         const attr = new DDOAttribute();
         attr.key = 'hello3';
-        attr.type = 'string',
-            attr.value = 'world3';
+        attr.type = 'string';
+        attr.value = 'world3';
         const signers = [new Signer(did1, 1)];
         const tx = NewOntidTxBuilder.buildAddAttributesByMultiControllerTx(did2, [attr], signers, gasPrice, gasLimit, address2);
         signTransaction(tx, privateKey1);
@@ -232,7 +232,7 @@ describe('test new ONT ID contract', () => {
     test('buildAddAttributesByIndexTx', async () => {
         const attr = new DDOAttribute();
         attr.key = 'hello5';
-        attr.type = 'string',
+        attr.type = 'string';
         attr.value = 'world5';
         const tx = NewOntidTxBuilder.buildAddAttributesByIndexTx(did1, [attr], 1, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
@@ -289,6 +289,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildSetRecoveryTx', async () => {
+        // TODO extract socket url to const-config file
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
 
         const pri = PrivateKey.random();
@@ -329,6 +330,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildAddKeyByIndex', async () => {
+        // TODO extract socket url to const-config file
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
 
         const pri = PrivateKey.random();
@@ -359,6 +361,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildUpdateRecoveryTx', async () => {
+        // TODO extract socket url to const-config file
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
         const priTemp = PrivateKey.random();
         const pkTemp = priTemp.getPublicKey();
@@ -411,6 +414,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildAddAuthKeyTx', async () => {
+        // TODO extract socket url to const-config file
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
         const tx = NewOntidTxBuilder.buildAddNewAuthKeyTx(did1, pk2, did2, 1, gasPrice, gasLimit, address1);
         signTransaction(tx, privateKey1);
@@ -426,6 +430,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildAddNewAuthKeyByRecoveryTx', async () => {
+        // TODO extract socket url to const-config file
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
 
         const pri = PrivateKey.random();
@@ -483,6 +488,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildAddNewAuthKeyByControllerTx', async () => {
+        // TODO extract socket url to const-config file
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
 
         const pri = PrivateKey.random();
@@ -525,6 +531,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('buildAddServiceTx', async () => {
+        // TODO extract socket url to const-config file
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
 
         const tx = NewOntidTxBuilder.buildAddServiceTx(did1, 'test_service', 'test_type', 'http://test.com', 1, gasPrice, gasLimit, address1);
@@ -555,6 +562,7 @@ describe('test new ONT ID contract', () => {
     }, 100000);
 
     test('contenxtTx', async () => {
+        // TODO extract socket url to const-config file
         const socketClientNotAutoClose = new WebsocketClient('ws://192.168.1.175:20335', false, false);
         const context = ['context_test'];
         const tx = NewOntidTxBuilder.buildAddContextTx(did1, context, 1, gasPrice, gasLimit, address1);
