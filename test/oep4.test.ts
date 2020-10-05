@@ -1,5 +1,4 @@
 import { BigNumber } from 'bignumber.js';
-import { Account } from '../src';
 import RestClient from '../src/network/rest/restClient';
 import { Address } from './../src/crypto/address';
 import { PrivateKey } from './../src/crypto/PrivateKey';
@@ -7,6 +6,7 @@ import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { Oep4State, Oep4TxBuilder } from './../src/smartcontract/neovm/oep4TxBuilder';
 import { addSign, signTransaction } from './../src/transaction/transactionBuilder';
 import { hexstr2str, reverseHex } from './../src/utils';
+import {TEST_ONT_URL_2} from "../src/consts";
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -40,10 +40,8 @@ describe('test oep4', () => {
     const oep4 = new Oep4TxBuilder(contractAddr);
     const gasPrice = '500';
     const gasLimit = '200000';
-    // const url = TEST_ONT_URL.REST_URL;
-    const url = 'http://polaris2.ont.io:';
-    const restClient = new RestClient(url + '20334');
-    const socketClient = new WebsocketClient(url + '20335');
+    const restClient = new RestClient(TEST_ONT_URL_2.REST_URL)
+    const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
 
     test('init', async () => {
         const tx = oep4.init(gasPrice, gasLimit, address1);
