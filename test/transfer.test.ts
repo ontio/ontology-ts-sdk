@@ -30,10 +30,11 @@ import { addSign } from '../src/transaction/transactionBuilder';
 import { reverseHex } from '../src/utils';
 import { WebsocketClient } from './../src/network/websocket/websocketClient';
 import { signTransaction, signTx } from './../src/transaction/transactionBuilder';
+import {TEST_ONT_URL_1} from "../src/consts";
 
 describe('test transfer asset', () => {
-    const socketClient = new WebsocketClient('ws://polaris1.ont.io:20335');
-    const restClient = new RestClient('http://polaris1.ont.io:20334');
+    const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
+    const restClient = new RestClient(TEST_ONT_URL_1.REST_URL);
     const gasLimit = '20000';
     const gasPrice = '2500';
     const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
