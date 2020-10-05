@@ -16,16 +16,16 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import * as uuid from 'uuid';
-import { Claim, RevocationType } from '../src/claim/claim';
-import { Address, KeyType, PrivateKey, Signature } from '../src/crypto';
+import { Claim } from '../src/claim/claim';
+import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { now } from '../src/utils';
 import { Account } from './../src/account';
+import { TEST_ONT_URL_1} from "../src/consts";
 
 describe('test attest claim', () => {
-    const sockUrl = 'ws://polaris1.ont.io:20335';
-    const restUrl = 'http://polaris1.ont.io:20334';
+    const sockUrl = TEST_ONT_URL_1.SOCKET_URL;
+    const restUrl = TEST_ONT_URL_1.REST_URL;
 
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
     const publicKey = privateKey.getPublicKey();
