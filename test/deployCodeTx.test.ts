@@ -17,25 +17,16 @@ import { VmType } from './../src/transaction/payload/deployCode';
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import DeployCode from '../src/transaction/payload/deployCode';
-import { Transaction, TxType } from '../src/transaction/transaction';
+import { makeDeployCodeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
+import { reverseHex } from '../src/utils';
 
-import { buildRestfulParam, buildRpcParam, buildTxParam, Default_params, makeDeployCodeTransaction,
-     makeInvokeTransaction, sendRawTxRestfulUrl, signTransaction
-    } from '../src/transaction/transactionBuilder';
-import { ab2hexstring, ab2str, num2hexstring , reverseHex, str2hexstr } from '../src/utils';
-
-import axios from 'axios';
-import { MAIN_NODE, MAIN_ONT_URL, ONT_NETWORK, TEST_NODE, TEST_ONT_URL } from '../src/consts';
-import AbiFunction from '../src/smartcontract/abi/abiFunction';
+import { MAIN_ONT_URL, TEST_ONT_URL } from '../src/consts';
 import AbiInfo from '../src/smartcontract/abi/abiInfo';
-import { Parameter } from '../src/smartcontract/abi/parameter';
 import TxSender from '../src/transaction/txSender';
 
 import { Address } from '../src/crypto';
 import { RestClient } from '../src/index';
 import json from '../src/smartcontract/data/idContract.abi';
-import { VmCode } from '../src/transaction/vmcode';
 import { Account } from './../src/account';
 import { PrivateKey } from './../src/crypto/PrivateKey';
 // tslint:disable-next-line:no-var-requires
@@ -57,7 +48,7 @@ describe('test deploy contract', () => {
     const attestClaimAvmCode = '58c56b6a00527ac46a51527ac46a00c30548656c6c6f9c6416006a51c300c36a52527ac46a52c3650b006c756661006c756655c56b6a00527ac46a00c3681253797374656d2e52756e74696d652e4c6f6761516c7566';
 
     // const url = 'http://polaris1.ont.io:20334';
-    const url = 'http://127.0.0.1:20334';
+    const url = 'http://127.0.0.1:20334'; //TODO Why is it localhost address ?
     const restClient = new RestClient(url);
     test('test deploy with avm code', async () => {
 
@@ -83,7 +74,7 @@ describe('test deploy contract', () => {
     }, 10000);
 
     test('getContract', async () => {
-        const restClient = new RestClient(MAIN_ONT_URL.REST_URL);
+        const restClient = new RestClient(MAIN_ONT_URL.REST_URL);   //TODO Should we use MAIN_ONT_URL in tests ?
         const hash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
         const contract = reverseHex(hash);
         const res = await restClient.getContract(hash);
