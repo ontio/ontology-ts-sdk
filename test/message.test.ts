@@ -17,15 +17,16 @@
  */
 
 import { Account } from '../src/account';
-import { extractKeyId, extractOntId, Message, retrievePublicKey, SimpleMessage } from '../src/claim/message';
-import { Address, PrivateKey } from '../src/crypto';
+import { extractKeyId, extractOntId, Message, retrievePublicKey } from '../src/claim/message';
+import { PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 import { buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../src/transaction/transactionBuilder';
+import { TEST_ONT_URL_1 } from "../src/consts";
 
 describe('test message', () => {
-    const restUrl = 'http://polaris1.ont.io:20334';
+    const restUrl = TEST_ONT_URL_1.REST_URL;
 
     const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
