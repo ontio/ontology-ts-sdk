@@ -2,9 +2,7 @@ import { Signature } from '../src/crypto';
 import { Address } from '../src/crypto/address';
 import { deserializeTransferTx,
     makeTransferTx, makeWithdrawOngTx } from '../src/smartcontract/nativevm/ontAssetTxBuilder';
-import opcode from '../src/transaction/opcode';
 import { addSign, signTransaction } from '../src/transaction/transactionBuilder';
-import { num2hexstring, str2hexstr, StringReader } from '../src/utils';
 import { PrivateKey } from './../src/crypto/PrivateKey';
 import { PublicKey } from './../src/crypto/PublicKey';
 import { WebsocketClient } from './../src/network/websocket/websocketClient';
