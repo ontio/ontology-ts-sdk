@@ -18,15 +18,13 @@
 import AbiFunction from '../src/smartcontract/abi/abiFunction';
 import AbiInfo from '../src/smartcontract/abi/abiInfo';
 import { Parameter, ParameterType } from '../src/smartcontract/abi/parameter';
-import { PublicKey } from './../src/crypto/PublicKey';
 
 import json from '../src/smartcontract/data/idContract.abi';
 import { Transaction } from '../src/transaction/transaction';
-import { VmType } from './../src/transaction/vmcode';
 
 import { Address } from '../src/crypto';
 import { makeInvokeTransaction } from '../src/transaction/transactionBuilder';
-import { num2hexstring, reverseHex, str2hexstr } from '../src/utils';
+import { str2hexstr } from '../src/utils';
 
 describe('test AbiInfo', () => {
 
