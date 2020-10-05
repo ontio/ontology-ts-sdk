@@ -15,15 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as CryptoJS from 'crypto-js';
 import * as secureRandom from 'secure-random';
-import { Account } from '../src/account';
-import { Address, CurveLabel, KeyParameters, KeyType , PrivateKey } from '../src/crypto';
-import { ERROR_CODE } from '../src/error';
+import { Address, PrivateKey } from '../src/crypto';
 import { utils } from '../src/index';
 import * as scrypt from '../src/scrypt';
 import { ab2hexstring, hexstr2str, isBase64, str2hexstr } from '../src/utils';
-import { PublicKey } from './../src/crypto/PublicKey';
 
 describe('test scrypt', () => {
     test('test_encryptCtr', () => {
