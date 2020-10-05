@@ -12,7 +12,6 @@ export class VerifiableCredentialAttribute {
             json.type,
             json.issuer,
             json.credentialSubject,
-            true
         );
     }
 
@@ -21,9 +20,9 @@ export class VerifiableCredentialAttribute {
     issuer: string;
     credentialSubject: any;
 
-    constructor(type: string[], issuer: string, credentialSubject: any, isDeserialized: boolean = false) {
+    constructor(type: string[], issuer: string, credentialSubject: any) {
         this['@context'] = ['https://www.w3.org/2018/credentials/v1'];
-        this.type = isDeserialized ? type : [...['VerifiableCredential'], ...type] ;
+        this.type = type.includes('VerifiableCredential') ? type : [...['VerifiableCredential'], ...type] ;
         this.issuer = issuer;
         this.credentialSubject = credentialSubject;
     }

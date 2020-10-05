@@ -27,8 +27,14 @@ describe('test jwt message functionality', () => {
     );
     const vcPayload = new VcPayload(ontologyDid, verifiableCredentialAttribute, new Date(2018, 12).getTime(), verifiableAttributeId, new Date(2022, 12));
 
-    test('Should correctly go trough serialization process', () => {
+    test('Should correctly go trough serialization process', async () => {
         const jwtMessage = new JwtMessage(new JwtHeader(), vcPayload, undefined);
+
+        await jwtMessage.sign(
+            restUrl,
+            publicKeyId,
+            privateKey
+        );
 
         const serialized = jwtMessage.serialize();
         expect(_isNotEmpty(serialized)).toBeTruthy();
@@ -36,11 +42,11 @@ describe('test jwt message functionality', () => {
         const deserialized = JwtMessage.deserializeVc(serialized);
 
         expect(deserialized.jwtHeader.typ).toBe('JWT');
-        expect(deserialized.jwtHeader.kid).toBeUndefined();
-        expect(deserialized.jwtHeader.alg).toBeUndefined();
+        expect(deserialized.jwtHeader.kid).toBeDefined();
+        expect(deserialized.jwtHeader.alg).toBeDefined();
 
         assertPayload(vcPayload, deserialized.jwtPayload);
-        expect(jwtMessage.signature).toBeUndefined();
+        expect(jwtMessage.signature).toBeDefined();
     });
 
     test('Should correctly go trough signing process', async ()  => {
@@ -62,6 +68,12 @@ describe('test jwt message functionality', () => {
 
         await assertJwtMessage(jwtMessage, false);
     });
+
+    test('Should throw error for serializing message without signature', () => {
+        const jwtMessage = new JwtMessage(new JwtHeader(), vcPayload, undefined);
+
+        expect(function () {jwtMessage.serialize()}).toThrow('Cannot serialize message without present signature');
+    })
 
     async function assertJwtMessage(jwtMessage: JwtMessage, expectedVerifyResult: boolean): Promise<void> {
         await jwtMessage.sign(
