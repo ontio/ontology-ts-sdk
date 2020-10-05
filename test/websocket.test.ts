@@ -1,5 +1,5 @@
 import { Account } from '../src/account';
-import { TEST_ONT_URL } from '../src/consts';
+import { TEST_ONT_URL_1} from '../src/consts';
 import { Address, PrivateKey } from '../src/crypto';
 import { Identity } from '../src/identity';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
@@ -8,7 +8,7 @@ import { signTransaction } from '../src/transaction/transactionBuilder';
 import { addSign } from './../src/transaction/transactionBuilder';
 
 describe('test websocket', () => {
-    const client = new WebsocketClient(TEST_ONT_URL.SOCKET_URL, true, false);
+    const client = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL, true, false);
     client.addNotifyListener((result) => {
         console.log('listener: ' + result);
     });
