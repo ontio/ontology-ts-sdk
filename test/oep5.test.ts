@@ -6,6 +6,7 @@ import { Oep5Param, Oep5TxBuilder } from './../src/smartcontract/neovm/oep5TxBui
 
 import { addSign, signTransaction } from './../src/transaction/transactionBuilder';
 import { hexstr2str, reverseHex } from './../src/utils';
+import { TEST_ONT_URL_1 } from "../src/consts";
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -40,9 +41,8 @@ describe('test oep5', () => {
     const gasPrice = '500';
     const gasLimit = '281571';
     // const url = TEST_ONT_URL.REST_URL;
-    const url = 'http://polaris1.ont.io:';
-    const restClient = new RestClient(url + '20334');
-    const socketClient = new WebsocketClient(url + '20335');
+    const restClient = new RestClient(TEST_ONT_URL_1.REST_URL);
+    const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
     let tokenId1 = '';
     let tokenId2 = '';
     let tokenId3 = '';
