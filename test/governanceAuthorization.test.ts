@@ -4,15 +4,16 @@ import { PublicKey } from '../src/crypto/PublicKey';
 import { WebsocketClient } from '../src/network/websocket/websocketClient';
 
 import { RestClient } from '../src/index';
-import { Parameter } from '../src/smartcontract/abi/parameter';
 import { getAttributes, getAuthorizeInfo, getConfiguration, getGlobalParam,
     getGovernanceView, getPeerPoolMap, getPeerUnboundOng, getSplitFeeAddress,
     getTotalStake, makeAuthorizeForPeerTx, makeChangeAuthorizationTx,
     makeSetPeerCostTx, makeSetFeePercentageTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx
 } from '../src/smartcontract/nativevm/governanceContractTxBuilder';
-import { makeInvokeTransaction, signTransaction } from '../src/transaction/transactionBuilder';
+import { signTransaction } from '../src/transaction/transactionBuilder';
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../src/consts";
 
 describe('test governance authorization', () => {
+    // TODO Extract hardcoded ip values to const-config file
     const socketClient = new WebsocketClient('ws://139.219.128.220:20335');
     const nodeUrl = 'http://139.219.128.220:20334';
     const restClient = new RestClient(nodeUrl);
@@ -154,8 +155,7 @@ describe('test governance authorization', () => {
 
     test('getAttributes', async () => {
         const pk = '03eb7ce3df085d268b9c3d80ee262ee8ba0ed98af45d0be4197f231143ba07c41f';
-        const url = 'http://polaris1.ont.io:20334';
-        const res = await getAttributes(pk, url);
+        const res = await getAttributes(pk, TEST_ONT_URL_1.REST_URL);
         console.log(res);
     }, 10000);
 
@@ -166,8 +166,7 @@ describe('test governance authorization', () => {
     }, 10000);
 
     test('getPeerPoolMap', async () => {
-        const nodeUrl = 'http://polaris2.ont.io:20334';
-        const res = await getPeerPoolMap(nodeUrl);
+        const res = await getPeerPoolMap(TEST_ONT_URL_2.REST_URL);
         console.log(res);
         const pk = '02f28c436b132edc663fd169c45f22d30eefe141d8413ca0045bd28fa32dcf1072';
         console.log(res[pk]);
@@ -179,8 +178,7 @@ describe('test governance authorization', () => {
         const pk = '03131bbcf941dbac550faf1fdee064961e6ed72803692cefa2d21a019ee9dcf37f';
         // const userAddr = new Address(account4.address);
         const userAddr = new Address('AViTVz9sBQMRqCiHHxNwgj8NmyjSnzKwPw');
-        const nodeUrl = 'http://polaris2.ont.io:20334';
-        const res = await getAuthorizeInfo(pk, userAddr, nodeUrl);
+        const res = await getAuthorizeInfo(pk, userAddr, TEST_ONT_URL_2.REST_URL);
         console.log(res);
     }, 10000);
 
@@ -202,14 +200,13 @@ describe('test governance authorization', () => {
 
     test('getTotalStake', async () => {
         const addr = new Address('AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve');
-        const nodeUrl = 'http://polaris1.ont.io:20334';
-        const ts = await getTotalStake(addr, nodeUrl);
+        const ts = await getTotalStake(addr, TEST_ONT_URL_1.REST_URL);
         console.log(ts);
     });
 
     test('getUnboundOng', async () => {
         const addr = new Address('AJiEBNzr4NeAyaQx6qn1jgNkLFCgxtTt5U');
-        const nodeUrl = 'http://dappnode1.ont.io:20334'
+        const nodeUrl = 'http://dappnode1.ont.io:20334' // TODO Should we use main node url in tests ?
         const unbound = await getPeerUnboundOng(addr, nodeUrl);
         console.log(unbound);
     });
@@ -225,7 +222,7 @@ describe('test governance authorization', () => {
     });
 
     test('getConfiguration', async () => {
-        const url = 'http://dappnode1.ont.io:20334';
+        const url = 'http://dappnode1.ont.io:20334';  // TODO Should we use main node url in tests ?
         const config = await getConfiguration(url);
         console.log(config);
     });
