@@ -16,10 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { sm2 } from '@ont-dev/sm.js';
 import { CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey, Signature, SignatureScheme } from '../src/crypto';
-import { Address } from '../src/crypto/address';
-import { ab2hexstring, ab2str, str2ab, str2hexstr } from '../src/utils';
+import { str2hexstr } from '../src/utils';
 
 describe('SM2 and SM3 cryptographics functions tests', () => {
     test('test SM3 hash', () => {
