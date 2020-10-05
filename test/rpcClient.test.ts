@@ -3,14 +3,13 @@ import { PrivateKey } from '../src/crypto';
 import { Address } from '../src/crypto/address';
 import { Identity } from '../src/identity';
 import RpcClient from '../src/network/rpc/rpcClient';
-import { WebsocketClient } from '../src/network/websocket/websocketClient';
-import { buildGetDDOTx, buildRegisterOntidTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
-import { signTransaction } from '../src/transaction/transactionBuilder';
-import { addSign } from './../src/transaction/transactionBuilder';
+import { buildGetDDOTx } from '../src/smartcontract/nativevm/ontidContractTxBuilder';
+import {TEST_ONT_URL_1} from "../src/consts";
+
 
 // tslint:disable:no-console
 describe('test rpc client', () => {
-    const rpcClient = new RpcClient('http://polaris1.ont.io:20336');
+    const rpcClient = new RpcClient(TEST_ONT_URL_1.RPC_URL);
 
     const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
 
