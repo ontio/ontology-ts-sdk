@@ -17,14 +17,11 @@
  */
 
 import { BigNumber } from 'bignumber.js';
-import { Account } from '../src/account';
-import { TEST_ONT_URL } from '../src/consts';
 import { PrivateKey } from '../src/crypto/PrivateKey';
 import { RestClient, WebsocketClient } from '../src/index';
 import { Oep8TxBuilder } from '../src/smartcontract/neovm/oep8TxBuilder';
 import { addSign, signTransaction } from '../src/transaction/transactionBuilder';
 import { hexstr2str, reverseHex } from '../src/utils';
-import { Result } from './../src/claim/attestNotifyEvent';
 import { Address } from './../src/crypto/address';
 import { Oep8State, TransferFrom } from './../src/smartcontract/neovm/oep8TxBuilder';
 
@@ -50,7 +47,7 @@ describe('test oep8', () => {
     const gasPrice = '500';
     const gasLimit = '200000';
     // const url = TEST_ONT_URL.REST_URL;
-    const url = 'http://127.0.0.1:';
+    const url = 'http://127.0.0.1:';    //TODO Why is it localhost url ?
     const restClient = new RestClient();
     const socketClient = new WebsocketClient();
     // tokenId is from 1 to 7;
