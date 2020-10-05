@@ -1,8 +1,6 @@
 import { PrivateKey } from '../src/crypto/PrivateKey';
-import { str2hexstr } from '../src/utils';
 import { Account } from './../src/account';
 import { Address } from './../src/crypto/address';
-import { PublicKey } from './../src/crypto/PublicKey';
 
 describe('private', () => {
 
