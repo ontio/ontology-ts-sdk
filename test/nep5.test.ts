@@ -41,8 +41,8 @@ describe('test nep5', () => {
     const contractAddr = new Address(reverseHex(codeHash));
     const gasPrice = '500';
     const gasLimit = '30000';
-    const restClient = new RestClient('http://127.0.0.1:20334');
-    const socketClient = new WebsocketClient('http://127.0.0.1:20335');
+    const restClient = new RestClient('http://127.0.0.1:20334');    // TODO why is it localhost ?
+    const socketClient = new WebsocketClient('http://127.0.0.1:20335'); // TODO why is it localhost ?
 
     test('test_init', async () => {
         const tx = Nep5TxBuilder.init(contractAddr, gasPrice, gasLimit, account1.address);
