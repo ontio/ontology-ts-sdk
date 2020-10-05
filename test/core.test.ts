@@ -15,17 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as bip39 from 'bip39';
-import * as BN from 'bn.js';
-import * as Long from 'long';
-// tslint:disable : no-console
-import * as numberToBN from 'number-to-bn';
-import { Claim, Metadata } from '../src/claim';
-import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey, PublicKey } from '../src/crypto';
+
+import { Address, PrivateKey } from '../src/crypto';
 import * as utils from '../src/utils';
-import { Signature } from './../src/crypto/Signature';
-import { SignatureScheme } from './../src/crypto/SignatureScheme';
-import { bytesToHex, hexToBytes, numberToHex, randomBytes, sha256, StringReader, toBN, toNeoBytes } from './../src/utils';
+import { randomBytes } from './../src/utils';
 
 describe('test core', () => {
 
