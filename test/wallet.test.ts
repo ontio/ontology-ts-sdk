@@ -18,10 +18,7 @@
 
 import { Account } from '../src/account';
 import { PrivateKey } from '../src/crypto';
-import { Address } from '../src/crypto/address';
 import { Identity } from '../src/identity';
-import * as scrypt from '../src/scrypt';
-import * as utils from '../src/utils';
 import { Wallet } from '../src/wallet';
 
 // tslint:disable:no-console
