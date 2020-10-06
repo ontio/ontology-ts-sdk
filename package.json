@@ -5,6 +5,9 @@
     "main": "./lib/index.js",
     "types": "./lib/types/index.d.ts",
     "scripts": {
+        "test:unit": "jest --testPathPattern=test/unit",
+        "test:integration": "jest --testPathPattern=test/integration",
+        "test:example": "jest --testPathPattern=test/example",
         "test": "jest",
         "lint": "tslint --project ./",
         "build:dev": "cross-env NODE_ENV=development webpack --mode development --display-error-details --progress --color",
