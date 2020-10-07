@@ -76,7 +76,7 @@ export const TEST_ONT_URL_1 = {
     REST_URL: `http://${TEST_NODE_1}:${HTTP_REST_PORT}`,
 
     sendRawTxByRestful: `http://${TEST_NODE_1}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
-}
+};
 
 export const TEST_ONT_URL_2 = {
     SOCKET_URL: `ws://${TEST_NODE_2}:${HTTP_WS_PORT}`,
@@ -86,7 +86,7 @@ export const TEST_ONT_URL_2 = {
     REST_URL: `http://${TEST_NODE_2}:${HTTP_REST_PORT}`,
 
     sendRawTxByRestful: `http://${TEST_NODE_2}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
-}
+};
 
 export const TEST_ONT_URL = {
     SOCKET_URL: `ws://${TEST_NODE}:${HTTP_WS_PORT}`,

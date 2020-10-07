@@ -16,7 +16,6 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import * as bip39 from 'bip39';
 // tslint:disable-next-line:no-var-requires
 const { HDKey } = require('@ont-dev/hdkey-secp256r1');
 
