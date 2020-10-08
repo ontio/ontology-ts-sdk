@@ -3,13 +3,15 @@ import { PrivateKey } from '../../src/crypto';
 import { Address } from '../../src/crypto/address';
 import { Identity } from '../../src/identity';
 import RpcClient from '../../src/network/rpc/rpcClient';
-import { buildGetDDOTx } from '../../src/smartcontract/nativevm/ontidContractTxBuilder';
-import {TEST_ONT_URL_1} from "../../src/consts";
+import {buildGetDDOTx, buildRegisterOntidTx} from '../../src/smartcontract/nativevm/ontidContractTxBuilder';
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
+import {addSign, signTransaction} from "../../src/transaction/transactionBuilder";
+import {WebsocketClient} from "../../src";
 
 
 // tslint:disable:no-console
 describe('test rpc client', () => {
-    const rpcClient = new RpcClient(TEST_ONT_URL_1.RPC_URL);
+    const rpcClient = new RpcClient(TEST_ONT_URL_2.RPC_URL);
 
     const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
 
@@ -30,16 +32,16 @@ describe('test rpc client', () => {
     /**
      * Registers new ONT ID to create transaction with Events and new block
      */
-    // beforeAll(async () => {
-    //     const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
-    //     tx.payer = adminAddress;
-    //     signTransaction(tx, adminPrivateKey);
-    //     addSign(tx, privateKey);
+    beforeAll(async () => {
+        const tx = buildRegisterOntidTx(ontid, publicKey, '2500', '30000');
+        tx.payer = adminAddress;
+        signTransaction(tx, adminPrivateKey);
+        addSign(tx, privateKey);
 
-    //     const client = new WebsocketClient();
-    //     const result = await client.sendRawTransaction(tx.serialize(), false, true);
-    //     txHash = result.Result.TxHash;
-    // }, 10000);
+        const client = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
+        const result = await client.sendRawTransaction(tx.serialize(), false, true);
+        txHash = result.Result.TxHash;
+    }, 10000);
 
     /**
      * Gets current block height to be used by following tests.

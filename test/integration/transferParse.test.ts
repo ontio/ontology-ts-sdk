@@ -34,7 +34,7 @@ describe('parse transfer tx', () => {
     test('transfer 0.33 ONG', () => {
         const tx = makeTransferTx('ONG', from, to, 0.33 * 1e9, '500', '20000', from);
         const transfer = deserializeTransferTx(tx.serialize());
-        expect(transfer.amount).toEqual(0.33 * 1e9);
+        expect(transfer.amount).toEqual((0.33 * 1e9).toString());
         expect(transfer.from.toBase58()).toEqual('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
         expect(transfer.to.toBase58()).toEqual('ALFZykMAYibLoj66jcBdbpTnrBCyczf4CL');
         expect(transfer.tokenType).toEqual('ONG');
@@ -44,7 +44,7 @@ describe('parse transfer tx', () => {
     test('transfer 123 ONG', () => {
         const tx = makeTransferTx('ONG', from, to, 123 * 1e9, '500', '20000', from);
         const transfer = deserializeTransferTx(tx.serialize());
-        expect(transfer.amount).toEqual(123 * 1e9);
+        expect(transfer.amount).toEqual((123 * 1e9).toString());
         expect(transfer.from.toBase58()).toEqual('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
         expect(transfer.to.toBase58()).toEqual('ALFZykMAYibLoj66jcBdbpTnrBCyczf4CL');
         expect(transfer.tokenType).toEqual('ONG');
@@ -54,7 +54,7 @@ describe('parse transfer tx', () => {
     test('transferFrom 1.533 ONG', () => {
         const tx = makeWithdrawOngTx(from, from, 1.533 * 1e9, from, '500', '20000');
         const transfer = deserializeTransferTx(tx.serialize());
-        expect(transfer.amount).toEqual(1.533 * 1e9);
+        expect(transfer.amount).toEqual((1.533 * 1e9).toString());
         expect(transfer.from.toBase58()).toEqual('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
         expect(transfer.to.toBase58()).toEqual('AJAhnApxyMTBTHhfpizua48EEFUxGg558x');
         expect(transfer.tokenType).toEqual('ONG');

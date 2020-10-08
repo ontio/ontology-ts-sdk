@@ -24,7 +24,7 @@ import { Transaction } from '../../src/transaction/transaction';
 import { makeInvokeTransaction, makeTransactionsByJson } from '../../src/transaction/transactionBuilder';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
 import { reverseHex } from '../../src/utils';
-import {TEST_ONT_URL_1} from "../../src/consts";
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
 
 describe('test AbiInfo', () => {
 
@@ -151,7 +151,7 @@ describe('test AbiInfo', () => {
     });
 
     test('makeTxFromJSON_transferONG', async () => {
-        const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
+        const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
         const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
         // tslint:disable:align
@@ -180,7 +180,7 @@ describe('test AbiInfo', () => {
                     }],
                     payer: 'AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz',
                     gasLimit: 20000,
-                    gasPrice: 500
+                    gasPrice: 2500
                 }
             }
         };
@@ -191,8 +191,9 @@ describe('test AbiInfo', () => {
         expect(res.Error).toEqual(0);
     });
 
+    //TODO error: register ONT ID error: already registered
     test('makeTxFromJSON_regOntid', async () => {
-        const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
+        const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
         const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
         const pk = adminPrivateKey.getPublicKey().key;
@@ -218,7 +219,7 @@ describe('test AbiInfo', () => {
                     }],
                     payer: 'AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz',
                     gasLimit: 20000,
-                    gasPrice: 500
+                    gasPrice: 2500
                 }
             }
         };
@@ -252,7 +253,7 @@ describe('test AbiInfo', () => {
                     }],
                     payer: 'AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz',
                     gasLimit: 20000,
-                    gasPrice: 500
+                    gasPrice: 2500
                 }
             }
         };

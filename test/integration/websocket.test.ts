@@ -1,5 +1,5 @@
 import { Account } from '../../src/account';
-import { TEST_ONT_URL_1} from '../../src/consts';
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from '../../src/consts';
 import { Address, PrivateKey } from '../../src/crypto';
 import { Identity } from '../../src/identity';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
@@ -8,7 +8,7 @@ import { signTransaction } from '../../src/transaction/transactionBuilder';
 import { addSign } from '../../src/transaction/transactionBuilder';
 
 describe('test websocket', () => {
-    const client = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL, true, false);
+    const client = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL, true, false);
     client.addNotifyListener((result) => {
         console.log('listener: ' + result);
     });
@@ -34,7 +34,7 @@ describe('test websocket', () => {
      * Registers new ONT ID to create transaction with Events and new block
      */
     beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+        const tx = buildRegisterOntidTx(ontid, publicKey, '2500', '30000');
         tx.payer = adminAddress;
         signTransaction(tx, privateKey);
         addSign(tx, adminPrivateKey);
