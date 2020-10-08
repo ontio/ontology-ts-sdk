@@ -27,11 +27,11 @@ import { addSign, signTransaction } from '../../src/transaction/transactionBuild
 
 import * as b64 from 'base64-url';
 import { str2hexstr } from '../../src/utils';
-import {TEST_ONT_URL_1} from "../../src/consts";
+import { TEST_ONT_URL_2} from "../../src/consts";
 
 describe('test claim', () => {
-    const restUrl = TEST_ONT_URL_1.REST_URL;
-    const socketUrl = TEST_ONT_URL_1.SOCKET_URL;
+    const restUrl = TEST_ONT_URL_2.REST_URL;
+    const socketUrl = TEST_ONT_URL_2.SOCKET_URL;
     const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
     const account = Account.create(privateKey, '123456', '');
@@ -52,12 +52,12 @@ describe('test claim', () => {
      * Registers new ONT ID to create transaction with Events and new block
      */
     beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+        const tx = buildRegisterOntidTx(ontid, publicKey, '2500', '30000');
         tx.payer = adminAddress;
         signTransaction(tx, adminPrivateKey);
         addSign(tx, privateKey);
 
-        const client = new WebsocketClient();
+        const client = new WebsocketClient(socketUrl);
         await client.sendRawTransaction(tx.serialize(), false, true);
     }, 10000);
 
@@ -158,7 +158,7 @@ describe('test claim', () => {
         };
 
         await claim.sign(restUrl, publicKeyId, privateKey);
-        const res = await claim.attest(socketUrl, '500', '20000', adminAddress, adminPrivateKey);
+        const res = await claim.attest(socketUrl, '2500', '20000', adminAddress, adminPrivateKey);
         const contract = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
         const proof = await constructMerkleProof(restUrl, res.Result.TxHash, contract);
         claim.proof = proof;

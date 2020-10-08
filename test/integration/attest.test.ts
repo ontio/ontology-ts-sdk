@@ -21,11 +21,11 @@ import { Address, PrivateKey } from '../../src/crypto';
 import { Identity } from '../../src/identity';
 import { now } from '../../src/utils';
 import { Account } from '../../src/account';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
+import { TEST_ONT_URL_2} from "../../src/consts";
 
 describe('test attest claim', () => {
-    const sockUrl = TEST_ONT_URL_1.SOCKET_URL;
-    const restUrl = TEST_ONT_URL_1.REST_URL;
+    const sockUrl = TEST_ONT_URL_2.SOCKET_URL;
+    const restUrl = TEST_ONT_URL_2.REST_URL;
 
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
     const publicKey = privateKey.getPublicKey();
@@ -37,7 +37,7 @@ describe('test attest claim', () => {
     const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
 
-    const gasPrice = '500';
+    const gasPrice = '2500';
     const gasLimit = '30000';
 
     function randomClaim(): Claim {
