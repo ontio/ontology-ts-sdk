@@ -24,6 +24,7 @@ import { addSign, signTransaction } from '../../src/transaction/transactionBuild
 import { hexstr2str, reverseHex } from '../../src/utils';
 import { Address } from '../../src/crypto/address';
 import { Oep8State, TransferFrom } from '../../src/smartcontract/neovm/oep8TxBuilder';
+import {TEST_ONT_URL, TEST_ONT_URL_2} from "../../src/consts";
 
 describe('test oep8', () => {
     const private1 = new PrivateKey('5f2fe68215476abb9852cfa7da31ef00aa1468782d5ca809da5c4e1390b8ee45');
@@ -44,12 +45,13 @@ describe('test oep8', () => {
 
     const contractAddr = new Address(reverseHex(codeHash));
     const oep8 = new Oep8TxBuilder(contractAddr);
-    const gasPrice = '500';
+    const gasPrice = '2500';
     const gasLimit = '200000';
-    // const url = TEST_ONT_URL.REST_URL;
-    const url = 'http://127.0.0.1:';    //TODO Why is it localhost url ?
-    const restClient = new RestClient();
-    const socketClient = new WebsocketClient();
+
+    const url = TEST_ONT_URL.REST_URL;
+    //const url = 'http://127.0.0.1:';    //TODO Why is it localhost url ?
+    const restClient = new RestClient(url);
+    const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
     // tokenId is from 1 to 7;
     const tokenIds = [1, 2, 3, 4, 5, 6, 7];
 
@@ -154,7 +156,7 @@ describe('test oep8', () => {
         expect(val).toBeTruthy();
     }, 10000);
 
-     // Amount to approve can not exceed balance.
+    // Amount to approve can not exceed balance.
     test('test_approve', async () => {
         const tx = oep8.makeApproveTx(address1, address3, 1, '10', gasPrice, gasLimit, address1);
         signTransaction(tx, private1);

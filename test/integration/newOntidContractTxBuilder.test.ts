@@ -11,15 +11,15 @@ import { Identity } from '../../src/identity';
 import { Signer } from '../../src/smartcontract/nativevm/ontid/signer';
 import { DDOAttribute } from '../../src/transaction/ddo';
 import { addSign } from '../../src/transaction/transactionBuilder';
-import {TEST_ONT_URL_1} from "../../src/consts";
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
 
 // tslint:disable:no-console
 // tslint:disable:max-line-length
 describe('test new ONT ID contract', () => {
 
-    const gasPrice = '500';
+    const gasPrice = '2500';
     const gasLimit = '20000';
-    const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
+    const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
     const restClient = new RestClient('http://192.168.1.175:20334');  // TODO extract to const-config file
     const privateKey1 = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
     const pk1 = privateKey1.getPublicKey();

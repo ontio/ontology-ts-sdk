@@ -6,7 +6,7 @@ import { Oep5Param, Oep5TxBuilder } from '../../src/smartcontract/neovm/oep5TxBu
 
 import { addSign, signTransaction } from '../../src/transaction/transactionBuilder';
 import { hexstr2str, reverseHex } from '../../src/utils';
-import { TEST_ONT_URL_1 } from "../../src/consts";
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -38,11 +38,11 @@ describe('test oep5', () => {
 
     const contractAddr = new Address(reverseHex(codeHash));
     const oep5 = new Oep5TxBuilder(contractAddr);
-    const gasPrice = '500';
+    const gasPrice = '2500';
     const gasLimit = '281571';
     // const url = TEST_ONT_URL.REST_URL;
     const restClient = new RestClient(TEST_ONT_URL_1.REST_URL);
-    const socketClient = new WebsocketClient(TEST_ONT_URL_1.SOCKET_URL);
+    const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
     let tokenId1 = '';
     let tokenId2 = '';
     let tokenId3 = '';

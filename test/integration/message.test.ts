@@ -23,8 +23,9 @@ import { Identity } from '../../src/identity';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
 import { buildRegisterOntidTx } from '../../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
-import { TEST_ONT_URL_1 } from "../../src/consts";
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
 
+//TODO transactor 02f2f708bfd84d60f6125883df93ce66f0dc35ea has no balance enough
 describe('test message', () => {
     const restUrl = TEST_ONT_URL_1.REST_URL;
 
@@ -54,11 +55,11 @@ describe('test message', () => {
     }
 
     beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '500', '30000');
+        const tx = buildRegisterOntidTx(ontid, publicKey, '2500', '30000');
         tx.payer = account.address;
         signTransaction(tx, privateKey);
 
-        const client = new WebsocketClient();
+        const client = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         await client.sendRawTransaction(tx.serialize(), false, true);
     }, 10000);
 

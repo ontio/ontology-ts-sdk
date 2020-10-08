@@ -5,9 +5,10 @@ import { constructClaimProof, getProofNodes, verifyClaimProof, verifyLeafHashInc
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
 import { buildRegisterOntidTx } from '../../src/smartcontract/nativevm/ontidContractTxBuilder';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
+import {TEST_ONT_URL_2} from "../../src/consts";
 
 // tslint:disable:no-console
-
+//TODO transactor fcaeca48566fb6738d72937ebf8f9e47da54efb5 has no balance enough
 describe('test merkle proofs', () => {
     let txHash: string;
 
@@ -22,11 +23,11 @@ describe('test merkle proofs', () => {
      * Registers new ONT ID to create transaction
      */
     beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontId, publicKey, '0', '30000');
+        const tx = buildRegisterOntidTx(ontId, publicKey, '2500', '30000');
         tx.payer = account.address;
         signTransaction(tx, privateKey);
 
-        const client = new WebsocketClient();
+        const client = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         const result = await client.sendRawTransaction(tx.serialize(), false, true);
         txHash = result.Result.TxHash;
     }, 10000);
