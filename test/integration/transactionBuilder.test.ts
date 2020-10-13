@@ -191,7 +191,6 @@ describe('test AbiInfo', () => {
         expect(res.Error).toEqual(0);
     });
 
-    //TODO error: register ONT ID error: already registered
     test('makeTxFromJSON_regOntid', async () => {
         const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');

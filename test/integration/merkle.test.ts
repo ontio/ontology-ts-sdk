@@ -12,25 +12,12 @@ import {TEST_ONT_URL_2} from "../../src/consts";
 describe('test merkle proofs', () => {
     let txHash: string;
 
-    const privateKey = PrivateKey.random();
+    const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
     const publicKey = privateKey.getPublicKey();
     const account = Account.create(privateKey, '123456', '');
     const identity = Identity.create(privateKey, '123456', '');
     const ontId =  identity.ontid;
     const address = account.address;
-
-    /**
-     * Registers new ONT ID to create transaction
-     */
-    beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontId, publicKey, '2500', '30000');
-        tx.payer = account.address;
-        signTransaction(tx, privateKey);
-
-        const client = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
-        const result = await client.sendRawTransaction(tx.serialize(), false, true);
-        txHash = result.Result.TxHash;
-    }, 10000);
 
     test('test verify leaf in tree', () => {
         const merkle = {

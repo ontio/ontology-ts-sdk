@@ -29,14 +29,14 @@ import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
 describe('test message', () => {
     const restUrl = TEST_ONT_URL_1.REST_URL;
 
-    const privateKey = PrivateKey.random();
+    const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
     const publicKey = privateKey.getPublicKey();
     const account = Account.create(privateKey, '123456', '');
     const identity = Identity.create(privateKey, '123456', '');
     const ontid =  identity.ontid;
+    const address = account.address;
     const publicKeyId = ontid + '#keys-1';
     const publicKeyId2 = ontid + '#keys-2';
-    const address = account.address;
 
     let serialized: string;
     let signed: string;
@@ -53,15 +53,6 @@ describe('test message', () => {
         payloadFromJSON(json: any): void {
         }
     }
-
-    beforeAll(async () => {
-        const tx = buildRegisterOntidTx(ontid, publicKey, '2500', '30000');
-        tx.payer = account.address;
-        signTransaction(tx, privateKey);
-
-        const client = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
-        await client.sendRawTransaction(tx.serialize(), false, true);
-    }, 10000);
 
     test('test extractOntId and extractKeyId', () => {
         const ontId = extractOntId(publicKeyId);
