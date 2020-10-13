@@ -8,7 +8,6 @@ import { signTransaction } from '../../src/transaction/transactionBuilder';
 import {TEST_ONT_URL_2} from "../../src/consts";
 
 // tslint:disable:no-console
-//TODO transactor fcaeca48566fb6738d72937ebf8f9e47da54efb5 has no balance enough
 describe('test merkle proofs', () => {
     let txHash: string;
 

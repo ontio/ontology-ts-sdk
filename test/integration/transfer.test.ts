@@ -31,6 +31,7 @@ import { reverseHex } from '../../src/utils';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
 import { signTransaction, signTx } from '../../src/transaction/transactionBuilder';
 import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
+import {Account} from "../../src";
 
 describe('test transfer asset', () => {
     const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
@@ -38,7 +39,9 @@ describe('test transfer asset', () => {
     const gasLimit = '20000';
     const gasPrice = '2500';
     const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
-    const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+    const account = Account.create(adminPrivateKey, '123456', '');
+    const adminAddress = account.address
+    // const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
 
     const sm2Account = {
         'address': 'ATk57i8rMXFSBpHAdX3UQ4TNe48BBrfCoc',
@@ -54,7 +57,6 @@ describe('test transfer asset', () => {
         'signatureScheme': 'SM3withSM2'
     };
 
-    //TODO error: balance insufficient
     test('test_transfer_asset_ONT', async () => {
         const from = adminAddress;
         const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');

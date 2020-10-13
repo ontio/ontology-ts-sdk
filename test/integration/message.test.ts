@@ -25,7 +25,6 @@ import { buildRegisterOntidTx } from '../../src/smartcontract/nativevm/ontidCont
 import { signTransaction } from '../../src/transaction/transactionBuilder';
 import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
 
-//TODO transactor 02f2f708bfd84d60f6125883df93ce66f0dc35ea has no balance enough
 describe('test message', () => {
     const restUrl = TEST_ONT_URL_1.REST_URL;
 
