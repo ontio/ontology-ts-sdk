@@ -78,15 +78,33 @@ This will create a compiled version of the SDK in the `lib` directory.
 
 #### Testing
 
-To run the tests in the `test` directory, use:
+The tests can be found in the `test` directory. They are distinguished into three categories stored in separate subfolders:
+* `unit`: unit tests that can be run without external or network dependencies
+* `integration`: integration tests that require access to one or more Blockchain nodes and test the actual interaction with the Blockchain
+* `example`: pure sample code without test assertations that can be used for explorative testing or documentation purposes
+
+To run the tests, use one of:
 
 ```
+# unit tests
+npm run test:unit
+# integration tests
+npm run test:integration
+# examples
+npm run test:example
+# all
 npm run test
 ```
 
 or
 
 ```
+yarn run test:unit
+# integration tests
+yarn run test:integration
+# examples
+yarn run test:example
+# all
 yarn run test
 ```
 
