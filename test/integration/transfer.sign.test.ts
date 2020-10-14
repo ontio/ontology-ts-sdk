@@ -16,7 +16,7 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import * as GovernanceTxBuilder from '../src//smartcontract/nativevm/governanceContractTxBuilder';
+import * as GovernanceTxBuilder from '../../src//smartcontract/nativevm/governanceContractTxBuilder';
 import { Address, PrivateKey, Signature } from '../../src/crypto';
 import { makeTransferTx } from '../../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { Transaction } from '../../src/transaction/transaction';

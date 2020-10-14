@@ -23,7 +23,9 @@ import Nep5TxBuilder from '../../src/smartcontract/neovm/nep5TxBuilder';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
 import { hexstr2str, reverseHex } from '../../src/utils';
 import { Address } from '../../src/crypto/address';
+import {TEST_ONT_URL_2} from '../../src/consts';
 
+// tslint:disable:no-console
 describe('test nep5', () => {
     const private1 = new PrivateKey('523c5fcf74823831756f0bcb3634234f10b3beb1c05595058534577752ad2d9f');
     const private2 = new PrivateKey('49855b16636e70f100cc5f4f42bc20a6535d7414fb8845e7310f8dd065a97221');
@@ -39,16 +41,15 @@ describe('test nep5', () => {
     const codeHash = 'cacbaf1024af9eb19f981c084548df14510d85ae';
 
     const contractAddr = new Address(reverseHex(codeHash));
-    const gasPrice = '500';
+    const gasPrice = '2500';
     const gasLimit = '30000';
-    const restClient = new RestClient('http://127.0.0.1:20334');    // TODO why is it localhost ?
-    const socketClient = new WebsocketClient('http://127.0.0.1:20335'); // TODO why is it localhost ?
+    const restClient = new RestClient();
+    const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
 
     test('test_init', async () => {
         const tx = Nep5TxBuilder.init(contractAddr, gasPrice, gasLimit, account1.address);
         signTransaction(tx, private1);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // tslint:disable:no-console
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     });
@@ -56,8 +57,8 @@ describe('test nep5', () => {
     test('test_queryBalance', async () => {
         const tx = Nep5TxBuilder.queryBalanceOf(contractAddr, account1.address);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
+        console.log(res.Result);
         const val = parseInt(reverseHex(res.Result.Result), 16);
-        // tslint:disable-next-line:no-console
         console.log(val);
         expect(val).toBeGreaterThan(0);
     }, 10000);
@@ -67,12 +68,9 @@ describe('test nep5', () => {
             1000000000, gasPrice, gasLimit, account2.address);
         signTransaction(tx, private2);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // tslint:disable:no-console
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
-        // const response = await restClient.sendRawTransaction(tx.serialize());
-        // console.log(response);
-        // expect(response.Error).toEqual(0);
+        expect(response.Error).toEqual(0);
     }, 10000);
 
     test('test_totalSupply', async () => {
@@ -80,7 +78,6 @@ describe('test nep5', () => {
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         const val = parseInt(reverseHex(res.Result.Result), 16);
-        // tslint:disable-next-line:no-console
         expect(val).toBeGreaterThan(0);
     }, 10000);
 
@@ -89,7 +86,6 @@ describe('test nep5', () => {
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         const val =  hexstr2str(res.Result.Result);
         console.log(val);
-        // tslint:disable-next-line:no-console
         expect(val).toEqual('CPX Token');
     }, 10000);
 
@@ -97,7 +93,6 @@ describe('test nep5', () => {
         const tx = Nep5TxBuilder.querySymbol(contractAddr);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         const val = hexstr2str(res.Result.Result);
-        // tslint:disable-next-line:no-console
         console.log(val);
         expect(val).toEqual('CPX');
     });
@@ -108,7 +103,6 @@ describe('test nep5', () => {
         console.log(res);
         const val = res.Result;
         console.log(val);
-        // tslint:disable-next-line:no-console
         expect(val).toBeTruthy();
     }, 10000);
 
