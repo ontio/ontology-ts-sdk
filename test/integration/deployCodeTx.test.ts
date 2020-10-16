@@ -32,17 +32,12 @@ import { PrivateKey } from '../../src/crypto/PrivateKey';
 // tslint:disable-next-line:no-var-requires
 const fs = require('fs');
 
+// tslint:disable:no-console
 describe('test deploy contract', () => {
 
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93');
     const account = Account.create(privateKey, '123456', 'test');
     console.log(account.address.toBase58());
-
-    const ontid = '6469643a6f6e743a5452616a31684377615135336264525450635a78596950415a364d61376a6351564b';
-
-    const abiInfo = AbiInfo.parseJson(JSON.stringify(json));
-
-    const txSender = new TxSender(TEST_ONT_URL.SOCKET_URL);
 
     // tslint:disable-next-line:max-line-length
     const attestClaimAvmCode = '58c56b6a00527ac46a51527ac46a00c30548656c6c6f9c6416006a51c300c36a52527ac46a52c3650b006c756661006c756655c56b6a00527ac46a00c3681253797374656d2e52756e74696d652e4c6f6761516c7566';
@@ -56,7 +51,6 @@ describe('test deploy contract', () => {
         tx.payer = account.address;
         signTransaction(tx, privateKey);
         const result = await restClient.sendRawTransaction(tx.serialize());
-        // tslint:disable:no-console
         console.log(result);
         expect(result.Error).toEqual(0);
     }, 10000);
@@ -64,7 +58,6 @@ describe('test deploy contract', () => {
     test('get_contract', async () => {
         const contract = Address.fromVmCode(attestClaimAvmCode);
         const codeHash = contract.toHexString();
-        // tslint:disable:no-console
         console.log('contract address: ' + contract.serialize());
         console.log('codeHash: ' + codeHash);
         const result = await restClient.getContract(codeHash);
@@ -73,10 +66,9 @@ describe('test deploy contract', () => {
     }, 10000);
 
     test('getContract', async () => {
-        const restClient = new RestClient(MAIN_ONT_URL.REST_URL);   //TODO Should we use MAIN_ONT_URL in tests ?
+        const restClientMain = new RestClient(MAIN_ONT_URL.REST_URL);
         const hash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
-        const contract = reverseHex(hash);
-        const res = await restClient.getContract(hash);
+        const res = await restClientMain.getContract(hash);
         console.log(res);
     });
 });

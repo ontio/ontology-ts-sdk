@@ -15,13 +15,13 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { DDO } from '../../src';
-import { Address, PrivateKey } from '../../src/crypto';
+import { Account, DDO, Identity } from '../../src';
+import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey } from '../../src/crypto';
 import RestClient from '../../src/network/rest/restClient';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
 import { Parameter, ParameterType } from '../../src/smartcontract/abi/parameter';
 import { Transaction } from '../../src/transaction/transaction';
-import { makeInvokeTransaction, makeTransactionsByJson } from '../../src/transaction/transactionBuilder';
+import { addSign, makeInvokeTransaction, makeTransactionsByJson } from '../../src/transaction/transactionBuilder';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
 import { reverseHex } from '../../src/utils';
 import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
@@ -195,7 +195,15 @@ describe('test AbiInfo', () => {
         const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
         const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
-        const pk = adminPrivateKey.getPublicKey().key;
+        const privateKey = PrivateKey.random(
+            KeyType.ECDSA,
+            new KeyParameters(CurveLabel.SECP256R1)
+        );
+        const identity = Identity.create(
+            privateKey,
+            '123456',
+            'test'
+        );
         // tslint:disable:align
         const json = {
             action: 'invoke',
@@ -206,17 +214,18 @@ describe('test AbiInfo', () => {
                     contractHash: '0300000000000000000000000000000000000000',
                     functions: [{
                         operation: 'regIDWithPublicKey',
-                        args: [{
-                            name: 'arg0-ontid',
-                            value: 'String:did:ont:AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz'
-                        },
-                        {
-                            name: 'arg1-publickey',
-                            value: 'ByteArray:' + pk
-                        }
+                        args: [
+                            {
+                                name: 'arg0-ontid',
+                                value: 'String:' + identity.ontid
+                            },
+                            {
+                                name: 'arg1-publickey',
+                                value: 'ByteArray:' + privateKey.getPublicKey().key
+                            }
                         ]
                     }],
-                    payer: 'AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz',
+                    payer: adminAddress.value,
                     gasLimit: 20000,
                     gasPrice: 2500
                 }
@@ -224,6 +233,7 @@ describe('test AbiInfo', () => {
         };
         const txs = makeTransactionsByJson(json);
         signTransaction(txs[0], adminPrivateKey);
+        addSign(txs[0], privateKey);
         const res = await socketClient.sendRawTransaction(txs[0].serialize(), false);
         console.log(res);
         expect(res.Error).toEqual(0);

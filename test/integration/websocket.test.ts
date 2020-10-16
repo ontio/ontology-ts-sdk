@@ -29,6 +29,7 @@ describe('test websocket', () => {
 
     const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+    const adminOntId = Identity.create(adminPrivateKey, '123456', '').ontid;
 
     /**
      * Registers new ONT ID to create transaction with Events and new block
@@ -144,7 +145,7 @@ describe('test websocket', () => {
 
         expect(result.Action).toBe('heartbeat');
         expect(result.Desc).toBe('SUCCESS');
-        expect(result.Result.ConstractsFilter).toBeNull();
+        expect(result.Result.ContractsFilter).toBeNull();
         expect(result.Result.SubscribeEvent).toBeFalsy();
         expect(result.Result.SubscribeJsonBlock).toBeFalsy();
         expect(result.Result.SubscribeRawBlock).toBeFalsy();
@@ -156,7 +157,7 @@ describe('test websocket', () => {
 
         expect(result.Action).toBe('subscribe');
         expect(result.Desc).toBe('SUCCESS');
-        expect(result.Result.ConstractsFilter).toBeNull();
+        expect(result.Result.ContractsFilter).toBeNull();
         expect(result.Result.SubscribeEvent).toBeFalsy();
         expect(result.Result.SubscribeJsonBlock).toBeFalsy();
         expect(result.Result.SubscribeRawBlock).toBeFalsy();
@@ -164,7 +165,7 @@ describe('test websocket', () => {
     });
 
     test('send sendRawTransaction', async () => {
-        const tx = buildGetDDOTx(ontid);
+        const tx = buildGetDDOTx(adminOntId);
         const result = await client.sendRawTransaction(tx.serialize(), true);
 
         expect(result.Action).toBe('sendrawtransaction');
@@ -253,7 +254,7 @@ describe('test websocket', () => {
 
         expect(result.Action).toBe('getsmartcodeeventbyheight');
         expect(result.Desc).toBe('SUCCESS');
-        expect(typeof result.Result).toBe('string');
+        expect(typeof result.Result).toBe('object');
     });
 
     test.skip('test getSmartCodeEvent by txHash', async () => {

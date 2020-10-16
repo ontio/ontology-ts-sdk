@@ -18,6 +18,7 @@
 
 import { Account } from '../../src/account';
 import { Claim, RevocationType } from '../../src/claim/claim';
+import { TEST_ONT_URL_2 } from '../../src/consts';
 import { Address, PrivateKey } from '../../src/crypto';
 import { Identity } from '../../src/identity';
 import { constructMerkleProof } from '../../src/merkle';
@@ -27,7 +28,6 @@ import { addSign, signTransaction } from '../../src/transaction/transactionBuild
 
 import * as b64 from 'base64-url';
 import { str2hexstr } from '../../src/utils';
-import { TEST_ONT_URL_2} from "../../src/consts";
 
 describe('test claim', () => {
     const restUrl = TEST_ONT_URL_2.REST_URL;
@@ -44,7 +44,7 @@ describe('test claim', () => {
     const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
 
     let serialized: string;
-    let signed: string;
+    let jwtClaim: string;
 
     // tslint:disable:no-console
     console.log('did:' + ontid);
@@ -122,15 +122,16 @@ describe('test claim', () => {
 
         await claim.sign(restUrl, publicKeyId, privateKey);
 
-        signed = claim.serialize();
+        jwtClaim = claim.serialize();
 
         expect(claim.signature).toBeDefined();
     });
 
     test('test verify', async () => {
-        const msg = Claim.deserialize(signed);
+        const deserializedClaim = Claim.deserialize(jwtClaim);
+        console.log(deserializedClaim);
 
-        const result = await msg.verify(restUrl, false);
+        const result = await deserializedClaim.verify(restUrl, false);
 
         expect(result).toBeTruthy();
     });

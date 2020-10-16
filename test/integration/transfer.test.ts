@@ -30,8 +30,8 @@ import { addSign } from '../../src/transaction/transactionBuilder';
 import { reverseHex } from '../../src/utils';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
 import { signTransaction, signTx } from '../../src/transaction/transactionBuilder';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
-import {Account} from "../../src";
+import { TEST_ONT_URL_1, TEST_ONT_URL_2 } from '../../src/consts';
+import { Account } from '../../src';
 
 describe('test transfer asset', () => {
     const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
@@ -98,6 +98,7 @@ describe('test transfer asset', () => {
             new Address('AcprovRtJETffQTFZKEdUrc1tEJebtrPyP'), 100, gasPrice, gasLimit);
         signTransaction(tx, sm2Pri, SignatureScheme.SM2withSM3);
         const result = await restClient.sendRawTransaction(tx.serialize());
+        console.log(result);
         expect(result.Error).toEqual(0);
     }, 10000);
 

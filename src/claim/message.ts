@@ -376,7 +376,7 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
                 throw new Error('Not found');
             }
 
-            return new PublicKey(publicKey.pk);
+            return new PublicKey(publicKey.publicKeyHex);
         } catch (err) {
             throw new Error(err);
         }

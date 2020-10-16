@@ -24,7 +24,7 @@ import { addSign, signTransaction } from '../../src/transaction/transactionBuild
 import { hexstr2str, reverseHex } from '../../src/utils';
 import { Address } from '../../src/crypto/address';
 import { Oep8State, TransferFrom } from '../../src/smartcontract/neovm/oep8TxBuilder';
-import {TEST_ONT_URL, TEST_ONT_URL_2} from "../../src/consts";
+import {TEST_ONT_URL, TEST_ONT_URL_2} from '../../src/consts';
 
 describe('test oep8', () => {
     const private1 = new PrivateKey('5f2fe68215476abb9852cfa7da31ef00aa1468782d5ca809da5c4e1390b8ee45');
@@ -49,7 +49,6 @@ describe('test oep8', () => {
     const gasLimit = '200000';
 
     const url = TEST_ONT_URL.REST_URL;
-    //const url = 'http://127.0.0.1:';    //TODO Why is it localhost url ?
     const restClient = new RestClient(url);
     const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
     // tokenId is from 1 to 7;
@@ -198,9 +197,9 @@ describe('test oep8', () => {
         const tx = oep8.makeTransferMultiTx([state1, state2], gasPrice, gasLimit, address3);
         signTransaction(tx, private3);
         addSign(tx, private1);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        const res = await restClient.sendRawTransaction(tx.serialize(), false);
         console.log(JSON.stringify(res));
-        expect(res.Result.State).toEqual(1);
+        expect(res.Error).toEqual(0);
     });
 
     test('test_approveMulti', async () => {
@@ -221,15 +220,15 @@ describe('test oep8', () => {
         signTransaction(tx, private3);
         addSign(tx, private2); // spender1
         addSign(tx, private2); // spender2
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        const res = await restClient.sendRawTransaction(tx.serialize(), false);
         console.log(JSON.stringify(res));
-        expect(res.Result.State).toEqual(1);
+        expect(res.Error).toEqual(0);
     });
 
     test('test_compound', async () => {
         const tx = oep8.makeCompoundTx(address1, 100000, gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        const res = await restClient.sendRawTransaction(tx.serialize(), false);
         console.log(JSON.stringify(res));
         /*
 {"Action":"Notify","Desc":"SUCCESS","Error":0,"Result":{"TxHash":"1a2186eac5bdf214706c71cf3e889a1141c3fd76a70d261e5de2e931554e3482","State":1,"GasConsumed":0,"Notify":[{"Contra

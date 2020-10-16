@@ -25,6 +25,7 @@ import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+ // tslint:disable:no-console
 describe('test oep5', () => {
     const private1 = new PrivateKey('5f2fe68215476abb9852cfa7da31ef00aa1468782d5ca809da5c4e1390b8ee45');
     const private2 = new PrivateKey('49855b16636e70f100cc5f4f42bc20a6535d7414fb8845e7310f8dd065a97221');
@@ -41,7 +42,7 @@ describe('test oep5', () => {
     const gasPrice = '2500';
     const gasLimit = '281571';
     // const url = TEST_ONT_URL.REST_URL;
-    const restClient = new RestClient(TEST_ONT_URL_1.REST_URL);
+    const restClient = new RestClient(TEST_ONT_URL_2.REST_URL);
     const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
     let tokenId1 = '';
     let tokenId2 = '';
@@ -70,7 +71,6 @@ describe('test oep5', () => {
         const tx = oep5.makeInitTx(gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // tslint:disable:no-console
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     });
@@ -80,7 +80,6 @@ describe('test oep5', () => {
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
         const val = res.Result.Result ? parseInt(reverseHex(res.Result.Result), 16) : 0;
-        // tslint:disable-next-line:no-console
         console.log(val);
         expect(val).toBeGreaterThan(0);
     });
@@ -91,7 +90,6 @@ describe('test oep5', () => {
         console.log(JSON.stringify(res));
         tokenId1 = res.Result.Result;
         console.log(tokenId1);
-        // tslint:disable-next-line:no-console
         expect(tokenId1).toBeDefined();
     });
 
@@ -100,7 +98,6 @@ describe('test oep5', () => {
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
         tokenId2 = res.Result.Result;
-        // tslint:disable-next-line:no-console
         expect(tokenId2).toBeDefined();
     });
     test('queryTokenID_3_ByIndex', async () => {
@@ -108,7 +105,6 @@ describe('test oep5', () => {
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
         tokenId3 = res.Result.Result;
-        // tslint:disable-next-line:no-console
         expect(tokenId3).toBeDefined();
     });
 
@@ -119,7 +115,6 @@ describe('test oep5', () => {
         signTransaction(tx, private2); // payer's signature
         addSign(tx, private1); // add owner's signature if payer and owner are not the same
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // tslint:disable:no-console
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     }, 10000);
@@ -129,7 +124,6 @@ describe('test oep5', () => {
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         const val = parseInt(reverseHex(res.Result.Result), 16);
-        // tslint:disable-next-line:no-console
         expect(val).toBeGreaterThan(0);
     }, 10000);
 
@@ -138,7 +132,6 @@ describe('test oep5', () => {
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         const val = hexstr2str(res.Result.Result);
         console.log(val);
-        // tslint:disable-next-line:no-console
         expect(val).toBeDefined();
     }, 10000);
 
@@ -146,7 +139,6 @@ describe('test oep5', () => {
         const tx = oep5.makeQuerySymbolTx();
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         const val = hexstr2str(res.Result.Result);
-        // tslint:disable-next-line:no-console
         console.log(val);
         expect(val).toBeDefined();
     });
@@ -157,7 +149,6 @@ describe('test oep5', () => {
         console.log(JSON.stringify(res));
         const address = new Address(res.Result.Result).toBase58();
         console.log(address);
-        // tslint:disable-next-line:no-console
         expect(res).toBeTruthy();
     }, 10000);
 
@@ -165,7 +156,6 @@ describe('test oep5', () => {
         const tx = oep5.makeApproveTx(new Oep5Param(address3, tokenId3), gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // tslint:disable:no-console
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     });
@@ -174,10 +164,10 @@ describe('test oep5', () => {
         const tx = oep5.makeGetApprovedTx(tokenId3);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
+        expect(res.Result.Result).toBeTruthy();
         const address = new Address(res.Result.Result).toBase58();
         console.log(address);
-        // tslint:disable-next-line:no-console
-        expect(res).toBeTruthy();
+        expect(address).toBe(address3);
     }, 10000);
 
     test('test_takeOwnership', async () => {
@@ -196,8 +186,7 @@ describe('test oep5', () => {
         const tx = oep5.makeTransferMultiTx([param1, param2], gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
         // addSign(tx, private1);
-        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
-        // tslint:disable:no-console
+        const response = await restClient.sendRawTransaction(tx.serialize(), false);
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
     });

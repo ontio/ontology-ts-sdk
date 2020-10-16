@@ -4,9 +4,9 @@ import { Address } from '../../src/crypto/address';
 import { Identity } from '../../src/identity';
 import RpcClient from '../../src/network/rpc/rpcClient';
 import {buildGetDDOTx, buildRegisterOntidTx} from '../../src/smartcontract/nativevm/ontidContractTxBuilder';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
-import {addSign, signTransaction} from "../../src/transaction/transactionBuilder";
-import {WebsocketClient} from "../../src";
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from '../../src/consts';
+import {addSign, signTransaction} from '../../src/transaction/transactionBuilder';
+import {WebsocketClient} from '../../src';
 
 
 // tslint:disable:no-console
@@ -28,6 +28,7 @@ describe('test rpc client', () => {
 
     const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+    const adminOntId = Identity.create(adminPrivateKey, '123456', '').ontid;
 
     /**
      * Registers new ONT ID to create transaction with Events and new block
@@ -49,8 +50,8 @@ describe('test rpc client', () => {
     test('test getBlockHeight', async () => {
         const res = await rpcClient.getBlockHeight();
         console.log(res);
-        expect(res.result).toBeDefined();
-        height = res.result - 1;
+        expect(res).toBeDefined();
+        height = res - 1;
     });
 
     /**
@@ -72,7 +73,7 @@ describe('test rpc client', () => {
     });
 
     test('test sendRawTransaction', async () => {
-        const tx = buildGetDDOTx(ontid);
+        const tx = buildGetDDOTx(adminOntId);
         const res = await rpcClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         expect(res.desc).toEqual('SUCCESS');

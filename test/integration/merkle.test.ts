@@ -1,22 +1,9 @@
-import { Account } from '../../src/account';
-import { PrivateKey } from '../../src/crypto';
-import { Identity } from '../../src/identity';
-import { constructClaimProof, getProofNodes, verifyClaimProof, verifyLeafHashInclusion } from '../../src/merkle';
-import { WebsocketClient } from '../../src/network/websocket/websocketClient';
-import { buildRegisterOntidTx } from '../../src/smartcontract/nativevm/ontidContractTxBuilder';
-import { signTransaction } from '../../src/transaction/transactionBuilder';
-import {TEST_ONT_URL_2} from "../../src/consts";
+import { TEST_ONT_URL_2 } from '../../src/consts';
+import { constructMerkleProof, getProofNodes, verifyClaimProof, verifyLeafHashInclusion } from '../../src/merkle';
 
 // tslint:disable:no-console
 describe('test merkle proofs', () => {
-    let txHash: string;
-
-    const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
-    const publicKey = privateKey.getPublicKey();
-    const account = Account.create(privateKey, '123456', '');
-    const identity = Identity.create(privateKey, '123456', '');
-    const ontId =  identity.ontid;
-    const address = account.address;
+    const txHash = 'e491b1a077f08315a34d5c684494ecad6a8c63813ff84f51686b7ee2867b0896';
 
     test('test verify leaf in tree', () => {
         const merkle = {
@@ -50,7 +37,7 @@ describe('test merkle proofs', () => {
 
     test('test verifyMerkleProof with wrong contractAddr', async () => {
         const contractAddr = '1234567890';
-        const claimProof = await constructClaimProof(txHash, contractAddr);
+        const claimProof = await constructMerkleProof(TEST_ONT_URL_2.REST_URL, txHash, contractAddr);
         console.log(claimProof);
         const result = verifyClaimProof(claimProof.TxnHash, claimProof.MerkleRoot, claimProof.Nodes);
         console.log(result);

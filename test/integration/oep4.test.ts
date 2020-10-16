@@ -1,12 +1,13 @@
 import { BigNumber } from 'bignumber.js';
-import RestClient from '../../src/network/rest/restClient';
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from '../../src/consts';
 import { Address } from '../../src/crypto/address';
 import { PrivateKey } from '../../src/crypto/PrivateKey';
+import RestClient from '../../src/network/rest/restClient';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
 import { Oep4State, Oep4TxBuilder } from '../../src/smartcontract/neovm/oep4TxBuilder';
 import { addSign, signTransaction } from '../../src/transaction/transactionBuilder';
 import { hexstr2str, reverseHex } from '../../src/utils';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
+
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -40,7 +41,7 @@ describe('test oep4', () => {
     const oep4 = new Oep4TxBuilder(contractAddr);
     const gasPrice = '2500';
     const gasLimit = '200000';
-    const restClient = new RestClient(TEST_ONT_URL_1.REST_URL)
+    const restClient = new RestClient(TEST_ONT_URL_1.REST_URL);
     const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
 
     test('init', async () => {

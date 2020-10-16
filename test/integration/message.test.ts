@@ -18,12 +18,9 @@
 
 import { Account } from '../../src/account';
 import { extractKeyId, extractOntId, Message, retrievePublicKey } from '../../src/claim/message';
+import { TEST_ONT_URL_1 } from '../../src/consts';
 import { PrivateKey } from '../../src/crypto';
 import { Identity } from '../../src/identity';
-import { WebsocketClient } from '../../src/network/websocket/websocketClient';
-import { buildRegisterOntidTx } from '../../src/smartcontract/nativevm/ontidContractTxBuilder';
-import { signTransaction } from '../../src/transaction/transactionBuilder';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
 
 describe('test message', () => {
     const restUrl = TEST_ONT_URL_1.REST_URL;
@@ -54,10 +51,11 @@ describe('test message', () => {
     }
 
     test('test extractOntId and extractKeyId', () => {
-        const ontId = extractOntId(publicKeyId);
+        const extractedOntId = extractOntId(publicKeyId);
         const keyId = extractKeyId(publicKeyId);
+        console.log('extracted ont id ' + extractedOntId);
 
-        expect(ontId).toBe(ontid);
+        expect(extractedOntId).toBe(ontid);
         expect(keyId).toBe(1);
     });
 

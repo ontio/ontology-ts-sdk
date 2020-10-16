@@ -8,10 +8,10 @@ import { Address } from '../../src/crypto/address';
 import { PublicKey } from '../../src/crypto/PublicKey';
 import { Parameter, ParameterType } from '../../src/smartcontract/abi/parameter';
 import { makeInvokeTransaction, makeWasmVmInvokeTransaction, signTransaction } from '../../src/transaction/transactionBuilder';
-import {MAIN_ONT_URL} from "../../src/consts";
+import { MAIN_ONT_URL, TEST_ONT_URL_2 } from '../../src/consts';
 
 describe('test smarct contract params', () => {
-    const socketClient = new WebsocketClient();
+    const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
     const restClient = new RestClient();
 
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93');

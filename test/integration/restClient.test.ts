@@ -11,7 +11,7 @@ describe('test restClient', () => {
 
     const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
 
-    let txHash: string;
+    const txHash = 'e491b1a077f08315a34d5c684494ecad6a8c63813ff84f51686b7ee2867b0896';
     let blockHash: string;
     let height: number = 10000;
 
@@ -179,8 +179,8 @@ describe('test restClient', () => {
         expect(res).toBeDefined();
     });
 
-    test('test_getGrangOng', async () => {
-        const res = await rest.getGrangOng(adminAddress);
+    test('test_getGrantOng', async () => {
+        const res = await rest.getGrantOng(adminAddress);
         console.log(res);
         expect(res).toBeDefined();
     });
