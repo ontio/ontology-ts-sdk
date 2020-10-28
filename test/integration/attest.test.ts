@@ -21,7 +21,7 @@ import { Address, PrivateKey } from '../../src/crypto';
 import { Identity } from '../../src/identity';
 import { now } from '../../src/utils';
 import { Account } from '../../src/account';
-import { TEST_ONT_URL_2} from "../../src/consts";
+import { TEST_ONT_URL_2} from '../../src/consts';
 
 describe('test attest claim', () => {
     const sockUrl = TEST_ONT_URL_2.SOCKET_URL;

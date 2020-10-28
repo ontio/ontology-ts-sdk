@@ -24,7 +24,7 @@ import { Transaction } from '../../src/transaction/transaction';
 import { addSign, makeInvokeTransaction, makeTransactionsByJson } from '../../src/transaction/transactionBuilder';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
 import { reverseHex } from '../../src/utils';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
+import { TEST_ONT_URL_2 } from '../../src/consts';
 
 describe('test AbiInfo', () => {
 

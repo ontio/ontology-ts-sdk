@@ -26,8 +26,7 @@ import { KeyType } from '../../src/crypto/KeyType';
 import { PublicKey } from '../../src/crypto/PublicKey';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
-import {TEST_ONT_URL_2} from "../../src/consts";
-import { OntidContract, RestClient } from '../../src';
+import {TEST_ONT_URL_2} from '../../src/consts';
 
 // tslint:disable:no-console
 // tslint:disable:max-line-length
