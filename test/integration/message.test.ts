@@ -25,7 +25,7 @@ import { Identity } from '../../src/identity';
 describe('test message', () => {
     const restUrl = TEST_ONT_URL_1.REST_URL;
 
-    const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b95');
+    const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const publicKey = privateKey.getPublicKey();
     const account = Account.create(privateKey, '123456', '');
     const identity = Identity.create(privateKey, '123456', '');
@@ -71,11 +71,11 @@ describe('test message', () => {
         }).toThrowError();
     });
 
-    test('test retrievePublicKey', async () => {
+    test('test retrievePublicKey successful', async () => {
         await expect(retrievePublicKey(publicKeyId, restUrl)).resolves.toBeDefined();
     }, 10000);
 
-    test('test retrievePublicKey', async () => {
+    test('test retrievePublicKey error', async () => {
         await expect(retrievePublicKey(publicKeyId2, restUrl)).rejects.toThrowError();
     });
 
@@ -167,7 +167,7 @@ describe('test message', () => {
         expect(result).toBeFalsy();
     });
 
-    test('test verify expired', async () => {
+    test('test verify JWT with invalid key id', async () => {
         const serializedLocal = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
             'wb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9' +
             'udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW' +
@@ -181,14 +181,8 @@ describe('test message', () => {
         expect(result).toBeFalsy();
     });
 
-    test('test verify not expired', async () => {
-        const serializedLocal = 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRpZDpvbnQ6VEd' +
-            'wb0tHbzI2eG1uQTFpbWdMd0x2WUgybmhXbk42Mkc5dyNrZXlzLTEifQ.eyJqdGkiOiIxIiwiaXNzIjoiZGlkOm9' +
-            'udDpUR3BvS0dvMjZ4bW5BMWltZ0x3THZZSDJuaFduTjYyRzl3Iiwic3ViIjoiZGlkOm9udDpUR3BvS0dvMjZ4bW' +
-            '5BMWltZ0x3THZZSDJuaFduTjYyRzl3IiwiaWF0IjoxNTI1ODAwODIzLCJleHAiOjE4NDkwNDY0MDB9.n0vL2Zhs' +
-            'BBuo_whyesuoKSW3R7X4PRIs68NVX42A87u12AuaTFc7xpx67Z-PW2DsURQ1t8lGqe3jV3CgcmajCw';
-
-        const msg = TestMessage.deserialize(serializedLocal);
+    test('test verify JWT with valid key id', async () => {
+        const msg = TestMessage.deserialize(signed);
 
         const result = await msg.verify(restUrl);
 

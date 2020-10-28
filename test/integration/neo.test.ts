@@ -12,7 +12,7 @@ import { SignatureScheme } from '../../src/crypto/SignatureScheme';
 import { ParameterType } from '../../src/smartcontract/abi/parameter';
 
 // tslint:disable:no-console
-describe('test neo tx', () => {
+xdescribe('test neo tx', () => {
     const private1 = new PrivateKey('1094e90dd7c4fdfd849c14798d725ac351ae0d924b29a279a9ffa77d5737bd96');
     const private2 = new PrivateKey('bc254cf8d3910bc615ba6bf09d4553846533ce4403bc24f58660ae150a6d64cf');
     const contractHash = '5bb169f915c916a5e30a3c13a5e0cd228ea26826';

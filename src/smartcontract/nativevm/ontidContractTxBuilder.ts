@@ -44,9 +44,9 @@ const ONTID_METHOD  = {
     addAttributes: 'addAttributes',
     removeAttribute: 'removeAttribute',
     addAttributesByController: 'addAttributesByController',
-    removeAttributesByController: 'removeAttributesByController',
+    removeAttributeByController: 'removeAttributeByController',
     addAttributesByIndex: 'addAttributesByIndex',
-    removeAttributesByIndex: 'removeAttributesByIndex',
+    removeAttributeByIndex: 'removeAttributeByIndex',
     getAttributes: 'getAttributes',
     getDDO: 'getDDO',
     addKey: 'addKey',
@@ -531,7 +531,7 @@ export function buildAddAttributesByIndexTx(
  * @param gasLimit Gas limit
  * @param payer Payer
  */
-export function buildRemoveAttributesByMultiControllerTx(
+export function buildRemoveAttributeByMultiControllerTx(
     ontid: string,
     key: string,
     signers: Signer[],
@@ -539,7 +539,7 @@ export function buildRemoveAttributesByMultiControllerTx(
     gasLimit: string,
     payer?: Address
 ): Transaction {
-    const method = ONTID_METHOD.removeAttributesByController;
+    const method = ONTID_METHOD.removeAttributeByController;
 
     const struct = new Struct();
 
@@ -568,7 +568,7 @@ export function buildRemoveAttributesByMultiControllerTx(
  * @param gasLimit Gas limit
  * @param payer Payer
  */
-export function buildRemoveAttributesByIndexTx(
+export function buildRemoveAttributeByIndexTx(
     ontid: string,
     key: string,
     index: number,
@@ -576,7 +576,7 @@ export function buildRemoveAttributesByIndexTx(
     gasLimit: string,
     payer?: Address
 ): Transaction {
-    const method = ONTID_METHOD.removeAttributesByController;
+    const method = ONTID_METHOD.removeAttributeByIndex;
 
     const struct = new Struct();
 
@@ -1546,7 +1546,6 @@ export function buildVerifySignatureTx(
  *
  * @param ontid User's ONT ID
  * @param signers Signers of multi controllers
- * @param gasLimit Gas limit
  */
 export function buildVerifyMultiControllerTx(
     ontid: string,

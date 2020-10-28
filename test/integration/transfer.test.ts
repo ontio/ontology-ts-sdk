@@ -70,7 +70,7 @@ describe('test transfer asset', () => {
         expect(response.Result.State).toEqual(1);
     }, 10000);
 
-    test('test_transfer_asset_ONG', async () => {
+    xtest('test_transfer_asset_ONG', async () => {
         const from = adminAddress;
         const to = new Address('AVDEiCVQzm7EffYH6vBQNXKYXR7RdVGNsA');
         const tx = makeTransferTx('ONG', from, to, 0.00003321 * 1e9, gasPrice, gasLimit);
@@ -90,7 +90,7 @@ describe('test transfer asset', () => {
         expect(result).toBeTruthy();
     }, 10000);
 
-    test('test transfer assets with sm2 account', async () => {
+    xtest('test transfer assets with sm2 account', async () => {
         const sm2PriEnc = new PrivateKey(sm2Account.key, KeyType.SM2, new KeyParameters(CurveLabel.SM2P256V1));
         const sm2Pri = sm2PriEnc.decrypt('123456', new Address(sm2Account.address), sm2Account.salt);
         console.log('pri: ' + sm2Pri.key);
@@ -219,7 +219,7 @@ describe('test transfer asset', () => {
         expect(response.Result.State).toEqual(1);
     }, 10000);
 
-    test('transferStateTx', async () => {
+    xtest('transferStateTx', async () => {
         const pris = [new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b91'),
             new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b92'),
             new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93'),

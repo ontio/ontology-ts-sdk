@@ -225,7 +225,7 @@ describe('test oep8', () => {
         expect(res.Error).toEqual(0);
     });
 
-    test('test_compound', async () => {
+    xtest('test_compound', async () => {
         const tx = oep8.makeCompoundTx(address1, 100000, gasPrice, gasLimit, address1);
         signTransaction(tx, private1);
         const res = await restClient.sendRawTransaction(tx.serialize(), false);

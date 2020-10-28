@@ -370,7 +370,7 @@ export async function retrievePublicKey(publicKeyId: string, url: string): Promi
         // const ddo = DDO.deserialize(response.Result.Result);
         try {
             const obj = JSON.parse(hexstr2str(response.Result.Result));
-            const publicKey = obj.publicKey.find((pk: any) => pk.id.split('#')[0] === ontId);
+            const publicKey = obj.publicKey.find((pk: any) => pk.id === publicKeyId);
 
             if (publicKey === undefined) {
                 throw new Error('Not found');

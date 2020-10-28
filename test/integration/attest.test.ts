@@ -68,7 +68,8 @@ describe('test attest claim', () => {
         const claim = claimWithId('4df086e3-713d-489d-96fe-8c1bb08ce3eb');
         const result = await claim.attest(sockUrl, gasPrice, gasLimit, account.address, privateKey);
 
-        expect(result).toBeFalsy();
+        expect(result.Result).toBeTruthy();
+        expect(JSON.stringify(result.Result).includes('existed!')).toBeTruthy();
     }, 10000);
 
     test('test revoke existing', async () => {

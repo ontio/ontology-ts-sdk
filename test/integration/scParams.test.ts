@@ -17,6 +17,10 @@ describe('test smarct contract params', () => {
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b93');
     const account = Account.create(privateKey, '123456', 'test');
     console.log(account.address.serialize());
+
+    const gasPrice = '2500';
+    const gasLimit = '20000';
+
     test('test_params_Array', async () => {
         const contract = reverseHex('ab01641c418af066402075c78dc8cb8279a7c074');
         const contractAddr = new Address(contract);
@@ -35,7 +39,7 @@ describe('test smarct contract params', () => {
             )
         ];
 
-        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction(method, params, contractAddr, gasPrice, gasLimit, account.address);
         signTransaction(tx, privateKey);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
@@ -55,10 +59,12 @@ describe('test smarct contract params', () => {
             )
         ];
         console.log(JSON.stringify(params));
-        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction(method, params, contractAddr, gasPrice, gasLimit, account.address);
         signTransaction(tx, privateKey);
-        const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        const res = await restClient.sendRawTransaction(tx.serialize(), false);
         console.log(JSON.stringify(res));
+        expect(res.Error).toBe(0);
+        expect(res.Result).toBeTruthy();
     }, 10000);
 
     test('test_map', async () => {
@@ -73,7 +79,7 @@ describe('test smarct contract params', () => {
                 }
             )
         ];
-        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction(method, params, contractAddr, gasPrice, gasLimit, account.address);
         signTransaction(tx, privateKey);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
@@ -91,7 +97,7 @@ describe('test smarct contract params', () => {
                 }
             )
         ];
-        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction(method, params, contractAddr, gasPrice, gasLimit, account.address);
         signTransaction(tx, privateKey);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
@@ -122,7 +128,7 @@ describe('test smarct contract params', () => {
 
             )
         ];
-        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction(method, params, contractAddr, gasPrice, gasLimit, account.address);
         signTransaction(tx, privateKey);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
@@ -162,7 +168,7 @@ describe('test smarct contract params', () => {
                 ])
             })
         ];
-        const tx = makeInvokeTransaction(method, params, contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction(method, params, contractAddr, gasPrice, gasLimit, account.address);
         signTransaction(tx, privateKey);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
@@ -176,7 +182,7 @@ describe('test smarct contract params', () => {
         console.log(val);
     });
 
-    test('exchange', async () => {
+    xtest('exchange', async () => {
         const contract = '7dffd39e53be06f104f443857f9115ec55212b43';
         const contractAddr = new Address(reverseHex(contract));
         const method = 'Exchange';
@@ -187,12 +193,12 @@ describe('test smarct contract params', () => {
             new Parameter('toSymbol', ParameterType.String, 'Token2'),
             new Parameter('value', ParameterType.Integer, 10)
         ];
-        const tx = makeInvokeTransaction(method, parameters, contractAddr, '500', '20000');
+        const tx = makeInvokeTransaction(method, parameters, contractAddr, gasPrice, gasLimit);
         const res = await socketClient.sendRawTransaction(tx.serialize(), true, false);
         console.log(JSON.stringify(res));
     });
 
-    test('fomo3dBuy', async () => {
+    xtest('fomo3dBuy', async () => {
         console.log('hex: ' + str2hexstr(''));
         const contract = '9361fc1e3a628e1aa46b3d58dde051530f0f5aa0';
         const contractAddr = new Address(reverseHex(contract));
@@ -204,7 +210,7 @@ describe('test smarct contract params', () => {
             new Parameter('useVault', ParameterType.Boolean, false),
             new Parameter('referrer', ParameterType.String, '')
         ];
-        const tx = makeInvokeTransaction(method, parameters, contractAddr, '500', '20000');
+        const tx = makeInvokeTransaction(method, parameters, contractAddr, gasPrice, gasLimit);
         signTransaction(tx, privateKey);
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
@@ -235,7 +241,7 @@ describe('test smarct contract params', () => {
 
         ];
 
-        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr, '500', '20000', null, false);
+        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr, gasPrice, gasLimit, null, false);
         const rest = new RestClient();
         const res = await rest.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
@@ -251,9 +257,9 @@ describe('test smarct contract params', () => {
 
         ];
 
-        const tx = makeInvokeTransaction('PutItem', params, contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction('PutItem', params, contractAddr, gasPrice, gasLimit, account.address);
         signTransaction(tx, privateKey);
-        const socket = new WebsocketClient('ws://13.57.184.209:20335'); //TODO extract to const-config file
+        const socket = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         const res = await socket.sendRawTransaction(tx.serialize(), false, true);
         console.log(JSON.stringify(res));
     }, 10000);
@@ -267,7 +273,7 @@ describe('test smarct contract params', () => {
 
         ];
 
-        const tx = makeInvokeTransaction('getActivityTime', [], contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction('getActivityTime', [], contractAddr, gasPrice, gasLimit, account.address);
         // console.log(tx.payload.code);
         // signTransaction(tx, privateKey);
         const socket = new WebsocketClient('ws://13.57.184.209:20335'); // TODO extract to const-config file
@@ -286,7 +292,7 @@ describe('test smarct contract params', () => {
 
         ];
 
-        const tx = makeInvokeTransaction('listAdmins', [], contractAddr, '500', '20000', account.address);
+        const tx = makeInvokeTransaction('listAdmins', [], contractAddr, gasPrice, gasLimit, account.address);
         // console.log(tx.payload.code);
         // signTransaction(tx, privateKey);
         const socket = new WebsocketClient('ws://13.57.184.209:20335'); // TODO extract to const-config file
@@ -327,7 +333,7 @@ describe('test smarct contract params', () => {
             )))
         ];
 
-        const tx1 = makeInvokeTransaction(method, params, contractAddr, '500', '200000', addr);
+        const tx1 = makeInvokeTransaction(method, params, contractAddr, gasPrice, '200000', addr);
         // tslint:disable:no-console
         console.log('vote1 tx: ');
         console.log(tx1.serialize());
@@ -353,7 +359,7 @@ describe('test smarct contract params', () => {
             )))
         ];
 
-        const tx2 = makeInvokeTransaction(method, params2, contractAddr, '500', '200000', addr);
+        const tx2 = makeInvokeTransaction(method, params2, contractAddr, gasPrice, '200000', addr);
         // tslint:disable:no-console
         console.log('vote2 tx: ');
         console.log(tx2.serialize());
@@ -379,7 +385,7 @@ describe('test smarct contract params', () => {
             )))
         ];
 
-        const tx3 = makeInvokeTransaction(method, params3, contractAddr, '500', '200000', addr);
+        const tx3 = makeInvokeTransaction(method, params3, contractAddr, gasPrice, '200000', addr);
         // tslint:disable:no-console
         console.log('vote3 tx: ');
         console.log(tx3.serialize());
@@ -405,7 +411,7 @@ describe('test smarct contract params', () => {
             )))
         ];
 
-        const tx4 = makeInvokeTransaction(method, params4, contractAddr, '500', '200000', addr);
+        const tx4 = makeInvokeTransaction(method, params4, contractAddr, gasPrice, '200000', addr);
         // tslint:disable:no-console
         console.log('vote4 tx: ');
         console.log(tx4.serialize());
@@ -430,7 +436,7 @@ describe('test smarct contract params', () => {
             )))
         ];
 
-        const tx5 = makeInvokeTransaction(method, params5, contractAddr, '500', '200000', addr);
+        const tx5 = makeInvokeTransaction(method, params5, contractAddr, gasPrice, '200000', addr);
         // tslint:disable:no-console
         console.log('vote5 tx: ');
         console.log(tx5.serialize());
@@ -468,7 +474,7 @@ describe('test smarct contract params', () => {
                     new Parameter('', ParameterType.Address, addr),
                     new Parameter('', ParameterType.Boolean, true)
                 ];
-                const tx = makeWasmVmInvokeTransaction('voteTopic', params, contract, '2500', '200000', addr);
+                const tx = makeWasmVmInvokeTransaction('voteTopic', params, contract, gasPrice, '200000', addr);
                 res.push({
                     node_pk_address: addrs[i].toBase58(),
                     node_pk: pks[i],
@@ -493,7 +499,7 @@ describe('test smarct contract params', () => {
             new Parameter('', ParameterType.ByteArray, bigIntToBytes(1)),
             new Parameter('', ParameterType.ByteArray, '58cb1f7c32e38e293e7975f06533436463444932')
         ];
-        const tx = makeInvokeTransaction(method, params, contract, '2500', '40000', adminAddress);
+        const tx = makeInvokeTransaction(method, params, contract, gasPrice, '40000', adminAddress);
         signTransaction(tx, adminPrivateKey);
         const socket = new WebsocketClient('ws://polaris3.ont.io:20335/');
         const res = await socket.sendRawTransaction(tx.serialize(), false, true);

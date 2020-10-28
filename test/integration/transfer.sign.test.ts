@@ -27,6 +27,7 @@ import { PublicKey } from '../../src/crypto/PublicKey';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
 import {TEST_ONT_URL_2} from "../../src/consts";
+import { OntidContract, RestClient } from '../../src';
 
 // tslint:disable:no-console
 // tslint:disable:max-line-length
@@ -88,7 +89,7 @@ describe('test transfer sign', () => {
         const sig2 = Signature.deserializeHex(sigData2);
     });
 
-    test('eddsa', async () => {
+    xtest('eddsa', async () => {
 
         const seed = Buffer.from('05feadb3037d3afc7c878130a73b5b9e8fa6df42899dfaf874b4dfa8ab1bf4a4', 'hex').toString('hex');
 
@@ -104,7 +105,7 @@ describe('test transfer sign', () => {
         // Gas price and gas limit are to compute the gas costs of the transaction.
         const gasPrice = '2500';
         const gasLimit = '20000';
-        // Payer's address to pay for the transaction gas
+
         const tx = GovernanceTxBuilder.makeAuthorizeForPeerTx(address, peerPubKeyList, posList, address, gasPrice, gasLimit);
 
         signTransaction(tx, privateKey); // BUG with ed25519?

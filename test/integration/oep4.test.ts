@@ -26,7 +26,7 @@ import { hexstr2str, reverseHex } from '../../src/utils';
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-describe('test oep4', () => {
+xdescribe('test oep4', () => {
     const private1 = new PrivateKey('5f2fe68215476abb9852cfa7da31ef00aa1468782d5ca809da5c4e1390b8ee45');
     const private2 = new PrivateKey('49855b16636e70f100cc5f4f42bc20a6535d7414fb8845e7310f8dd065a97221');
     const private3 = new PrivateKey('1094e90dd7c4fdfd849c14798d725ac351ae0d924b29a279a9ffa77d5737bd96');

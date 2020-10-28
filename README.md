@@ -108,6 +108,19 @@ yarn run test:example
 yarn run test
 ```
 
+The integration tests use several accounts on the testnet that require funding of ONG tokens in order to pay for the transactions. If there are any test failures with error messages like "insufficient funds" or similar, make sure the following accounts are properly funded:
+
+* APT4wZG9sFQfjhyfGALPXQj5UyrQ3ZCVkY
+* ANH5bHrrt111XwNEnuPZj6u95Dd6u7G4D6
+* AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX
+* AVXf5w8WD2y6jV1Lzi36oSKYNif1C7Surc
+* AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz
+* AJkkLbouowk6teTaxz1F2DYKfJh24PVk3r
+* ATk57i8rMXFSBpHAdX3UQ4TNe48BBrfCoc
+* AU9TioM24rXk5E3tUGrv8jwgBA1aZVVKDW
+* AHTdWzj4jYBzbU48YBCfovvouTMc45M6iP
+* AJym8dF7wZLjtoiY8C3mmYt8f2tZDxq5iz
+
 ### Use in Project
 
 #### Import

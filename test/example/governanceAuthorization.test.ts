@@ -10,13 +10,13 @@ import { getAttributes, getAuthorizeInfo, getConfiguration, getGlobalParam,
     makeSetPeerCostTx, makeSetFeePercentageTx, makeUnauthorizeForPeerTx, makeWithdrawFeeTx, makeWithdrawPeerUnboundOngTx, makeWithdrawTx
 } from '../../src/smartcontract/nativevm/governanceContractTxBuilder';
 import { signTransaction } from '../../src/transaction/transactionBuilder';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from "../../src/consts";
+import {TEST_ONT_URL_1, TEST_ONT_URL_2} from '../../src/consts';
 
 describe('test governance authorization', () => {
-    // TODO Extract hardcoded ip values to const-config file
+    // replace with values according to node that uses staking accounts below
     const socketClient = new WebsocketClient('ws://139.219.128.220:20335');
     const nodeUrl = 'http://139.219.128.220:20334';
-    const restClient = new RestClient(nodeUrl);
+
     const gasPrice = '0';
     const gasLimit = '20000';
     const stake1 = {
@@ -26,7 +26,6 @@ describe('test governance authorization', () => {
         address: 'AHqbLqY8wCXFcEGK5cKZzQig2bAfxTrpnL',
         addrPass: '123456'
     };
-    const stake1Account = { 'address': 'AHqbLqY8wCXFcEGK5cKZzQig2bAfxTrpnL', 'label': 'wwww', 'lock': false, 'algorithm': 'ECDSA', 'parameters': { curve: 'P-256' }, 'key': 'p6+xORnKA3uWYOpLECWJ5tCMmxeK/0ZD2m7mOO10i+nx6KuPBtnsCe9tls0J68+f', 'enc-alg': 'aes-256-gcm', 'salt': '1b8neI2vZr8rUVEbmRCzWQ==', 'isDefault': true, 'publicKey': '02f2a7a368f515a40e1c9a626d29df2b845e73aaec742a20ca968a8fe542a674e9', 'signatureScheme': 'SHA256withECDSA' };
 
     const stake2 = {
         ontid: 'did:ont:AUEKhXNsoAT27HJwwqFGbpRy8QLHUMBMPz',
@@ -35,7 +34,20 @@ describe('test governance authorization', () => {
         address: 'ANYR5cPbKfSeHJXHrK1fP6q5uzqXsg1MmF',
         addrPass: '123456'
     };
-    const stake2Account = { 'address': 'ANYR5cPbKfSeHJXHrK1fP6q5uzqXsg1MmF', 'label': 'qqqq', 'lock': false, 'algorithm': 'ECDSA', 'parameters': { curve: 'P-256' }, 'key': 'CjO1FcDRCq/aT7kcWZAsv3mOLxtDnJ+enFdLHKhLLLHI8JK9ivuL2e1RXfSWy0gZ', 'enc-alg': 'aes-256-gcm', 'salt': 'pztdtlWov/o2GKH4SSU3nQ==', 'isDefault': true, 'publicKey': '02f4c0a18ae38a65b070820e3e51583fd3aea06fee2dc4c03328e4b4115c622567', 'signatureScheme': 'SHA256withECDSA' };
+    const stake2Account = {
+        'address': 'ANYR5cPbKfSeHJXHrK1fP6q5uzqXsg1MmF',
+        'label': 'qqqq',
+        'lock': false,
+        'algorithm': 'ECDSA',
+        'parameters': { curve: 'P-256' },
+        'key': 'CjO1FcDRCq/aT7kcWZAsv3mOLxtDnJ+enFdLHKhLLLHI8JK9ivuL2e1RXfSWy0gZ',
+        'enc-alg': 'aes-256-gcm',
+        'salt': 'pztdtlWov/o2GKH4SSU3nQ==',
+        'isDefault': true,
+        'publicKey':
+        '02f4c0a18ae38a65b070820e3e51583fd3aea06fee2dc4c03328e4b4115c622567',
+        'signatureScheme': 'SHA256withECDSA'
+    };
 
     const account1 = { 'address': 'AaMHKcpRUuFbhDtrc2raf6K2629LkLWEfL', 'label': 'testHex64', 'lock': false, 'algorithm': 'ECDSA', 'parameters': { curve: 'P-256' }, 'key': 'FCmwz1ukdUkhqnJThCYAgxf6Xx2oZ/PSBPi/wl4w32IR+RMrMzwDrIGNbNBhnd1c', 'enc-alg': 'aes-256-gcm', 'salt': 'ku63qE/TwEAlEyTxJTSHkg==', 'isDefault': true, 'publicKey': '02301589d59d6b78ca23dcc0f674a5210a4745d8e42d5b42ee1c4e720d3e05f4b3', 'signatureScheme': 'SHA256withECDSA' };
     const account2 = { 'address': 'ATfw74wvyQGSxbA7EZNXYN9wj74GNnTtXT', 'label': '托尔斯泰', 'lock': false, 'algorithm': 'ECDSA', 'parameters': { curve: 'P-256' }, 'key': '6B1j4kkclNgJMBYiYJ74Ogh0PJ4f7UA8alAVk58kkotMC7u/VVjKJ9159RMO/C9Y', 'enc-alg': 'aes-256-gcm', 'salt': 'rhZrBuUgGM5iMGX/nmuz+Q==', 'isDefault': true, 'publicKey': '02815af6fc10ec59ac387287265d6a9cb963b8c6fb446ae4ba3e00eb479d83a6c8', 'signatureScheme': 'SHA256withECDSA' };
@@ -206,8 +218,8 @@ describe('test governance authorization', () => {
 
     test('getUnboundOng', async () => {
         const addr = new Address('AJiEBNzr4NeAyaQx6qn1jgNkLFCgxtTt5U');
-        const nodeUrl = 'http://dappnode1.ont.io:20334' // TODO Should we use main node url in tests ?
-        const unbound = await getPeerUnboundOng(addr, nodeUrl);
+        const mainNodeUrl = 'http://dappnode1.ont.io:20334';
+        const unbound = await getPeerUnboundOng(addr, mainNodeUrl);
         console.log(unbound);
     });
 
@@ -222,8 +234,8 @@ describe('test governance authorization', () => {
     });
 
     test('getConfiguration', async () => {
-        const url = 'http://dappnode1.ont.io:20334';  // TODO Should we use main node url in tests ?
-        const config = await getConfiguration(url);
+        const mainUrl = 'http://dappnode1.ont.io:20334';
+        const config = await getConfiguration(mainUrl);
         console.log(config);
     });
 

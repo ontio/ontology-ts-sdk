@@ -6,7 +6,7 @@
     "types": "./lib/types/index.d.ts",
     "scripts": {
         "test:unit": "jest --testPathPattern=test/unit",
-        "test:integration": "jest --testPathPattern=test/integration",
+        "test:integration": "jest --testPathPattern=test/integration --forceExit",
         "test:example": "jest --testPathPattern=test/example",
         "test": "jest",
         "lint": "tslint --project ./",
