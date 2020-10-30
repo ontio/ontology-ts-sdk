@@ -1,6 +1,6 @@
 
 <h1 align="center">Ontology TypeScript SDK </h1>
-<h4 align="center">Version V1.1.17 </h4>
+<h4 align="center">Version V1.1.18 </h4>
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
@@ -59,7 +59,7 @@ yarn
 Compile the project with the:
 
 ```
-yarn run build:dev // or yarn run build:prod
+yarn build:dev // or yarn build:prod
 ```
 
 This will create a compiled version of the SDK in the `lib` directory.
@@ -69,7 +69,7 @@ This will create a compiled version of the SDK in the `lib` directory.
 To run the tests in the `test` directory, use:
 
 ```
-yarn run test
+yarn test
 ```
 
 ### Use in Project
