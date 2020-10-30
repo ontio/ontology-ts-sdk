@@ -5,10 +5,10 @@ import { JwtHeader } from '../../src/credentials/jwt-header.class';
 import { _isNotEmpty, assertPayload } from '../unit/util-functions';
 import { Address, PrivateKey } from '../../src/crypto';
 import { Identity } from '../../src';
-import {TEST_ONT_URL} from "../../src/consts";
+import {TEST_ONT_URL_2 } from '../../src/consts';
 
 describe('test jwt message functionality', () => {
-    const restUrl = TEST_ONT_URL.REST_URL;
+    const restUrl = TEST_ONT_URL_2.REST_URL;
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const address = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
     const ontologyDid = 'did:ont:' + address.value;

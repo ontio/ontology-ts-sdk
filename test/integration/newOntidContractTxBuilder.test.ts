@@ -181,6 +181,9 @@ describe('test new ONT ID contract', () => {
         const res = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         console.log(res);
         expect(res.Error).toEqual(0);
+        const attributeInDocument = await waitForConditionInDidDocument(did3,
+            (document) => !!document.attribute && document.attribute.some((a) => a.key === did3 + '#hello3'));
+        expect(attributeInDocument).toBeTruthy();
     });
 
     test('buildRemoveAttributeByControllerTx', async () => {
@@ -206,6 +209,9 @@ describe('test new ONT ID contract', () => {
         const getTx = NewOntidTxBuilder.buildGetAttributesTx(did4);
         const getRes = await restClient.sendRawTransaction(getTx.serialize(), true);
         console.log(getRes);
+        const attributeInDocument = await waitForConditionInDidDocument(did4,
+            (document) => !!document.attribute && document.attribute.some((a) => a.key === did4 + '#hello5'));
+        expect(attributeInDocument).toBeTruthy();
     });
 
     test('buildRemoveAttributeByIndexTx', async () => {
@@ -224,6 +230,9 @@ describe('test new ONT ID contract', () => {
         const res = await restClient.sendRawTransaction(tx.serialize(), false);
         console.log(res);
         expect(res.Error).toEqual(0);
+        const publicKeyInDocument = await waitForConditionInDidDocument(did1,
+            (document) => !!document.publicKey && document.publicKey.some((pk) => pk.publicKeyHex === pk2.serializeHex()));
+        expect(publicKeyInDocument).toBeTruthy();
     });
 
     test('buildRemovePubKeyTx', async () => {

@@ -1,5 +1,5 @@
 import { BigNumber } from 'bignumber.js';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from '../../src/consts';
+import { TEST_ONT_URL_2 } from '../../src/consts';
 import { Address } from '../../src/crypto/address';
 import { PrivateKey } from '../../src/crypto/PrivateKey';
 import RestClient from '../../src/network/rest/restClient';
@@ -42,7 +42,7 @@ xdescribe('test oep4', () => {
     const gasPrice = '2500';
     const gasLimit = '200000';
 
-    const restClient = new RestClient(TEST_ONT_URL_1.REST_URL);
+    const restClient = new RestClient(TEST_ONT_URL_2.REST_URL);
     const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
 
     test('init', async () => {
