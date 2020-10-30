@@ -4,7 +4,7 @@ import { Address } from '../../src/crypto/address';
 import { Identity } from '../../src/identity';
 import RpcClient from '../../src/network/rpc/rpcClient';
 import {buildGetDDOTx, buildRegisterOntidTx} from '../../src/smartcontract/nativevm/ontidContractTxBuilder';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from '../../src/consts';
+import { TEST_ONT_URL_2 } from '../../src/consts';
 import {addSign, signTransaction} from '../../src/transaction/transactionBuilder';
 import {WebsocketClient} from '../../src';
 
@@ -144,7 +144,7 @@ describe('test rpc client', () => {
             if (Array.isArray(txs) && txs.length > 0) {
                 for (const item of txs) {
                     if (item && item.Notify) {
-                        const notify = item.Notify.find((it) => it.ContractAddress === 'f0c0f68795cac1b501be66499e449933c11a7b6e');
+                        const notify = item.Notify.find((it: any) => it.ContractAddress === 'f0c0f68795cac1b501be66499e449933c11a7b6e');
                         if (notify) {
                             temp_txs.push(item);
                         }

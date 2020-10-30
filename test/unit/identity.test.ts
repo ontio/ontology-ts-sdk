@@ -49,19 +49,14 @@ describe('test identity', () => {
     test('test import with correct password', () => {
         // tslint:disable:no-console
         console.log('encryptedkey: ' + encryptedPrivateKey.key);
-        let a: Identity;
-
-        try {
-            a = Identity.importIdentity('mickey', encryptedPrivateKey, '123456', address, identity.controls[0].salt);
-        } catch (err) {
-            console.log(err);
-        }
+        const a = Identity.importIdentity('mickey', encryptedPrivateKey, '123456', address, identity.controls[0].salt);
         expect(a.label).toBe('mickey');
     });
 
     test('test import with incorrect password', () => {
         try {
-            const a = Identity.importIdentity('', encryptedPrivateKey, '123457', address, identity.controls[0].salt);
+            Identity.importIdentity('', encryptedPrivateKey, '123457', address, identity.controls[0].salt);
+            fail(new Error('Expected to throw an error'));
         } catch (err) {
             console.log(err);
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR);

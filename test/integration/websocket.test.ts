@@ -1,5 +1,5 @@
 import { Account } from '../../src/account';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from '../../src/consts';
+import { TEST_ONT_URL_2 } from '../../src/consts';
 import { Address, PrivateKey } from '../../src/crypto';
 import { Identity } from '../../src/identity';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';

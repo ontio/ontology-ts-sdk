@@ -1,7 +1,8 @@
+import * as Long from 'long';
 import { writeVarBytes } from '../../../transaction/scriptBuilder';
 import { bigIntToBytes, str2hexstr } from '../../../utils';
 
-type GroupType = string | Group;
+export type GroupType = string | Group;
 
 export default class Group {
     members: GroupType[];
@@ -20,8 +21,8 @@ export default class Group {
 
     public serialize(): string {
         let result = '';
-        const length = this.members.length;
-        result += writeVarBytes(bigIntToBytes(length));
+        const length = Long.fromNumber(this.members.length);
+        result += writeVarBytes(bigIntToBytes(length.toNumber()));
         for (const obj of this.members) {
             if (typeof obj === 'string') {
                 result += writeVarBytes(str2hexstr(obj));

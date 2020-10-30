@@ -109,10 +109,6 @@ describe('test scrypt', () => {
             parallel: 8,
             size: 64});
         console.log('decrypted: ' + decrypted.serializeWIF());
-        const params = {
-
-        };
-
         // const key = 'dRiHlKa16kKGuWEYWhXUxvHcPlLiJcorAN3ocZ9fQ8p832p4OdIIiy+kR6eImjYd'
         // const decrypt = scrypt.decryptWithGcm(key, address, salt, '11111111');
         // console.log('decrypt: ' + decrypt);
@@ -124,7 +120,7 @@ describe('test scrypt', () => {
         console.log(hexstr1);
         console.log(hexstr2str(hexstr1));
 
-        function stringToHex(str: string) {
+        /*function stringToHex(str: string) {
             const buf = Buffer.from(str, 'utf8');
             return buf.toString('hex');
         }
@@ -134,8 +130,8 @@ describe('test scrypt', () => {
             return buf.toString('utf8');
         }
 
-        // const hex2 = stringToHex(str1);
-        // console.log(hex2);
-        // console.log(hexToString(hex2));
+        const hex2 = stringToHex(str1);
+        console.log(hex2);
+        console.log(hexToString(hex2)); */
     });
 });

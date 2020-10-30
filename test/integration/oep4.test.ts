@@ -41,6 +41,7 @@ xdescribe('test oep4', () => {
     const oep4 = new Oep4TxBuilder(contractAddr);
     const gasPrice = '2500';
     const gasLimit = '200000';
+
     const restClient = new RestClient(TEST_ONT_URL_1.REST_URL);
     const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
 
@@ -164,7 +165,7 @@ xdescribe('test oep4', () => {
         const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
         // tslint:disable:no-console
         console.log(JSON.stringify(response));
-        const notify = response.Result.Notify.find((item) => item.ContractAddress !== '0200000000000000000000000000000000000000');
+        const notify = response.Result.Notify.find((item: any) => item.ContractAddress !== '0200000000000000000000000000000000000000');
         if (notify) {
             const val = new BigNumber(reverseHex(notify.States[3]), 16).toString();
             console.log('val: ', val);
@@ -175,5 +176,20 @@ xdescribe('test oep4', () => {
         console.log('balance after transfer: ', res.Result);
         const val2 = res.Result.Result ? new BigNumber(reverseHex(res.Result.Result), 16).toString() : 0;
         console.log('balance : ', val2);
+    }, 10000);
+
+    test('transferDapi', async () => {
+        const newOep4 = new Oep4TxBuilder(new Address(reverseHex('3249446364433365f075793e298ee3327c1fcb58')));
+        let amountBN = new BigNumber(1000);
+        amountBN = amountBN.shiftedBy(18);
+        const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+        const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
+        const amount = amountBN.toString();
+        const tx = newOep4.makeTransferTx(adminAddress, new Address('AWuqAh23z13874ovnPW2BiHt9kMAEqs4ag'),
+            amount, '2500', '40000', adminAddress);
+        signTransaction(tx, adminPrivateKey);
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log(JSON.stringify(response));
     }, 10000);
 });

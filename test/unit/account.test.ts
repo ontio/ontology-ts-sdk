@@ -55,12 +55,7 @@ describe('test account', () => {
         console.log('Address: ' + Address.fromPubKey(new PublicKey(pub)).toBase58());
     });
     test('test import account with correct password', () => {
-        let a: Account;
-        try {
-            a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address, account.salt);
-        } catch (err) {
-            console.log(err);
-        }
+        const a = Account.importAccount('mickey', encryptedPrivateKey, '123456', account.address, account.salt);
         const pri = a.exportPrivateKey('123456');
         expect(pri.key).toEqual(privateKey.key);
         expect(a.label).toBe('mickey');
@@ -68,7 +63,8 @@ describe('test account', () => {
     });
     test('test import  with incorrect password', () => {
         try {
-            const a = Account.importAccount('mickey', encryptedPrivateKey, '1234567', account.address, account.salt);
+            Account.importAccount('mickey', encryptedPrivateKey, '1234567', account.address, account.salt);
+            fail(new Error('Expected to throw an error'));
         } catch (err) {
             expect(err).toEqual(ERROR_CODE.Decrypto_ERROR);
         }

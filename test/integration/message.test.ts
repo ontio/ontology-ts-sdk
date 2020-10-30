@@ -16,21 +16,17 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Account } from '../../src/account';
 import { extractKeyId, extractOntId, Message, retrievePublicKey } from '../../src/claim/message';
-import { TEST_ONT_URL_1 } from '../../src/consts';
+import { TEST_ONT_URL_2 } from '../../src/consts';
 import { PrivateKey } from '../../src/crypto';
 import { Identity } from '../../src/identity';
 
 describe('test message', () => {
-    const restUrl = TEST_ONT_URL_1.REST_URL;
+    const restUrl = TEST_ONT_URL_2.REST_URL;
 
     const privateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
-    const publicKey = privateKey.getPublicKey();
-    const account = Account.create(privateKey, '123456', '');
     const identity = Identity.create(privateKey, '123456', '');
     const ontid =  identity.ontid;
-    const address = account.address;
     const publicKeyId = ontid + '#keys-1';
     const publicKeyId2 = ontid + '#keys-2';
 
@@ -144,9 +140,10 @@ describe('test message', () => {
         expect(msg.metadata.issuer).toEqual(ontid);
         expect(msg.metadata.subject).toEqual(ontid);
         expect(msg.metadata.issuedAt).toEqual(1525800823015);
-        expect(msg.signature.algorithm).toBeDefined();
-        expect(msg.signature.publicKeyId).toBe(publicKeyId);
-        expect(msg.signature.value).toBeDefined();
+        expect(msg.signature).toBeDefined();
+        expect(msg.signature!!.algorithm).toBeDefined();
+        expect(msg.signature!!.publicKeyId).toBe(publicKeyId);
+        expect(msg.signature!!.value).toBeDefined();
     });
 
     test('test verify', async () => {

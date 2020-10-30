@@ -30,11 +30,7 @@ export default class BigInt {
      * @param hex Byte string value
      */
     static fromHexstr(hex: string): BigInt {
-        // hex = reverseHex(hex);
-        // const bi = new BigNumber(hex, 16).toString();
-        // return new BigInt(bi);
-        const long = bigIntFromBytes(hex);
-        return new BigInt(long.toString());
+        return new BigInt(bigIntFromBytes(hex));
     }
 
     value: string | number;
@@ -53,7 +49,6 @@ export default class BigInt {
      * Create hex string from BigInt
      */
     toHexstr(): string {
-        // const bi = Long.fromValue(this.value);
         let hex = bigIntToBytes(this.value);
         if (this.ledgerCompatible && (hex.length % 2 !== 0 || hex.length < 16)) {
             hex = hex + '0'.repeat(SIZE * 2 - hex.length);

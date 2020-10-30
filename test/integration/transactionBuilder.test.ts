@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
-import { Account, DDO, Identity } from '../../src';
+import { DDO, Identity } from '../../src';
 import { Address, CurveLabel, KeyParameters, KeyType, PrivateKey } from '../../src/crypto';
 import RestClient from '../../src/network/rest/restClient';
 import { WebsocketClient } from '../../src/network/websocket/websocketClient';
@@ -30,7 +30,6 @@ describe('test AbiInfo', () => {
 
     test('makeTransactionByJson', async () => {
         const private2 = new PrivateKey('49855b16636e70f100cc5f4f42bc20a6535d7414fb8845e7310f8dd065a97221');
-        const address2 = new Address('AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX');
         const restClient = new RestClient();
         const json = {
             action: 'invoke',
@@ -62,20 +61,20 @@ describe('test AbiInfo', () => {
             }
         };
         const txs = makeTransactionsByJson(json);
-        signTransaction(txs[0], private2);
+        const actualTx = txs[0] as Transaction;
+        signTransaction(actualTx, private2);
 
         const raw = '00d16009495df401000000000000204e000000000000aa6e06c79f864152ab7f3139074aad822ffea8555e0400ca9a3b14fa88f5244be19659bbd24477caeeacac7cbf781b14aa6e06c79f864152ab7f3139074aad822ffea855036f6e7454c1137472616e736665724e6174697665417373657467e9f31031588538c9404149f5d411cfff408394cd0001414043443452de4b5374af440118b0a0c9f25fc31324ea23e9c5754fa335cfac776a795893d3accb6386a8d54ef616b2c9ead411704e3328a3e124584be8b174e5de232102df6f28e327352a44720f2b384e55034c1a7f54ba31785aa3a338f613a5b7cc26ac';
         const expectedTx = Transaction.deserialize(raw);
-        const match = txs[0].payload.code === expectedTx.payload.code;
+        const match = actualTx.payload.code === expectedTx.payload.code;
         expect(match).toEqual(false);
 
-        const res = await restClient.sendRawTransaction(txs[0].serialize(), false);
+        const res = await restClient.sendRawTransaction(actualTx.serialize(), false);
         console.log(res);
     });
 
     test('makeTransactionByJsonLedgerIncompatible', async () => {
         const private2 = new PrivateKey('49855b16636e70f100cc5f4f42bc20a6535d7414fb8845e7310f8dd065a97221');
-        const address2 = new Address('AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX');
         const restClient = new RestClient();
         const json = {
             action: 'invoke',
@@ -107,14 +106,15 @@ describe('test AbiInfo', () => {
             }
         };
         const txs = makeTransactionsByJson(json, false);
-        signTransaction(txs[0], private2);
+        const actualTx = txs[0] as Transaction;
+        signTransaction(actualTx, private2);
 
         const raw = '00d16009495df401000000000000204e000000000000aa6e06c79f864152ab7f3139074aad822ffea8555e0400ca9a3b14fa88f5244be19659bbd24477caeeacac7cbf781b14aa6e06c79f864152ab7f3139074aad822ffea855036f6e7454c1137472616e736665724e6174697665417373657467e9f31031588538c9404149f5d411cfff408394cd0001414043443452de4b5374af440118b0a0c9f25fc31324ea23e9c5754fa335cfac776a795893d3accb6386a8d54ef616b2c9ead411704e3328a3e124584be8b174e5de232102df6f28e327352a44720f2b384e55034c1a7f54ba31785aa3a338f613a5b7cc26ac';
         const expectedTx = Transaction.deserialize(raw);
-        const match = txs[0].payload.code === expectedTx.payload.code;
+        const match = actualTx.payload.code === expectedTx.payload.code;
         expect(match).toEqual(true);
 
-        const res = await restClient.sendRawTransaction(txs[0].serialize(), false);
+        const res = await restClient.sendRawTransaction(actualTx.serialize(), false);
         console.log(res);
     });
 
@@ -135,8 +135,8 @@ describe('test AbiInfo', () => {
         const contractHash = 'cd948340ffcf11d4f5494140c93885583110f3e9';
         const contractAddr = new Address(reverseHex(contractHash));
 
-        const tx = makeInvokeTransaction('transferNativeAsset', args, contractAddr, 500, 20000, addressParam1);
-        const tx2 = makeInvokeTransaction('transferNativeAsset', args, contractAddr, 500, 20000, addressParam1, false);
+        const tx = makeInvokeTransaction('transferNativeAsset', args, contractAddr, '2500', '20000', addressParam1);
+        const tx2 = makeInvokeTransaction('transferNativeAsset', args, contractAddr, '2500', '20000', addressParam1, false);
 
         signTransaction(tx, privateKey);
         signTransaction(tx2, privateKey);
@@ -153,7 +153,6 @@ describe('test AbiInfo', () => {
     test('makeTxFromJSON_transferONG', async () => {
         const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
         const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
-        const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
         // tslint:disable:align
         const json = {
             action: 'invoke',
@@ -185,8 +184,9 @@ describe('test AbiInfo', () => {
             }
         };
         const txs = makeTransactionsByJson(json);
-        signTransaction(txs[0], adminPrivateKey);
-        const res = await socketClient.sendRawTransaction(txs[0].serialize(), false);
+        const firstTx = txs[0] as Transaction;
+        signTransaction(firstTx, adminPrivateKey);
+        const res = await socketClient.sendRawTransaction(firstTx.serialize(), false);
         console.log(res);
         expect(res.Error).toEqual(0);
     });
@@ -232,18 +232,16 @@ describe('test AbiInfo', () => {
             }
         };
         const txs = makeTransactionsByJson(json);
-        signTransaction(txs[0], adminPrivateKey);
-        addSign(txs[0], privateKey);
-        const res = await socketClient.sendRawTransaction(txs[0].serialize(), false);
+        const firstTx = txs[0] as Transaction;
+        signTransaction(firstTx, adminPrivateKey);
+        addSign(firstTx, privateKey);
+        const res = await socketClient.sendRawTransaction(firstTx.serialize(), false);
         console.log(res);
         expect(res.Error).toEqual(0);
     });
 
     test('makeTxFromJSON_getDDO', async () => {
         const restClient = new RestClient();
-        const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
-        const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
-        const pk = adminPrivateKey.getPublicKey().key;
         // tslint:disable:align
         const json = {
             action: 'invoke',
@@ -267,7 +265,7 @@ describe('test AbiInfo', () => {
             }
         };
         const txs = makeTransactionsByJson(json);
-        const res = await restClient.sendRawTransaction(txs[0].serialize(), true);
+        const res = await restClient.sendRawTransaction((txs[0] as Transaction).serialize(), true);
         const ddo = DDO.deserialize(res.Result.Result);
         console.log(ddo);
         expect(res.Error).toEqual(0);

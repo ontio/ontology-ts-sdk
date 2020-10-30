@@ -241,7 +241,7 @@ describe('test smarct contract params', () => {
 
         ];
 
-        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr, gasPrice, gasLimit, null, false);
+        const tx = makeInvokeTransaction('checkNumberList', params, contractAddr, gasPrice, gasLimit, undefined, false);
         const rest = new RestClient();
         const res = await rest.sendRawTransaction(tx.serialize(), true);
         console.log(JSON.stringify(res));
@@ -268,15 +268,10 @@ describe('test smarct contract params', () => {
         const contract = reverseHex('b1e8b6485ac1a5426b4dbe4c9b3c7b1988a00e3f');
         const contractAddr = new Address(contract);
 
-        const params = [
-            new Parameter('', ParameterType.Address, new Address('AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ'))
-
-        ];
-
         const tx = makeInvokeTransaction('getActivityTime', [], contractAddr, gasPrice, gasLimit, account.address);
         // console.log(tx.payload.code);
         // signTransaction(tx, privateKey);
-        const socket = new WebsocketClient('ws://13.57.184.209:20335'); // TODO extract to const-config file
+        // const socket = new WebsocketClient('ws://13.57.184.209:20335'); // TODO extract to const-config file
         const rpcClient = new RpcClient(MAIN_ONT_URL.RPC_URL); // TODO should we use main node in tests ?
         // const res = await socket.sendRawTransaction(tx.serialize(), true);
         const res = await rpcClient.sendRawTransaction(tx.serialize(), true);
@@ -287,15 +282,10 @@ describe('test smarct contract params', () => {
         const contract = reverseHex('c0df752ca786a99755b2e8950060ade9fa3d4e1b');
         const contractAddr = new Address(contract);
 
-        const params = [
-            new Parameter('', ParameterType.Address, new Address('AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ'))
-
-        ];
-
         const tx = makeInvokeTransaction('listAdmins', [], contractAddr, gasPrice, gasLimit, account.address);
         // console.log(tx.payload.code);
         // signTransaction(tx, privateKey);
-        const socket = new WebsocketClient('ws://13.57.184.209:20335'); // TODO extract to const-config file
+        // const socket = new WebsocketClient('ws://13.57.184.209:20335'); // TODO extract to const-config file
         const rpcClient = new RpcClient(MAIN_ONT_URL.RPC_URL); // TODO should we use main node in tests ?
         // const res = await socket.sendRawTransaction(tx.serialize(), true);
         const res = await rpcClient.sendRawTransaction(tx.serialize(), true);

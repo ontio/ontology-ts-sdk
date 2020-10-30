@@ -693,9 +693,9 @@ export class PeerAttributes {
         pr.t1PeerCost = sr.readLong();
         pr.tPeerCost = sr.readLong();
 
-        pr.t2StakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
-        pr.t1StakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
-        pr.tStakeCost = bigIntFromBytes(sr.readNextBytes()).toInt();
+        pr.t2StakeCost = Number(bigIntFromBytes(sr.readNextBytes()));
+        pr.t1StakeCost = Number(bigIntFromBytes(sr.readNextBytes()));
+        pr.tStakeCost = Number(bigIntFromBytes(sr.readNextBytes()));
 
         pr.field4 = sr.readNextBytes();
 
@@ -807,14 +807,14 @@ export class Configuration {
 
     static deserialize(sr: StringReader): Configuration {
         const config = new Configuration();
-        config.N = bigIntFromBytes(sr.readNextBytes()).toInt();
-        config.C = bigIntFromBytes(sr.readNextBytes()).toInt();
-        config.K = bigIntFromBytes(sr.readNextBytes()).toInt();
-        config.L = bigIntFromBytes(sr.readNextBytes()).toInt();
-        config.BlockMsgDelay = bigIntFromBytes(sr.readNextBytes()).toInt();
-        config.HashMsgDelay = bigIntFromBytes(sr.readNextBytes()).toInt();
-        config.PeerHandShakeTimeout = bigIntFromBytes(sr.readNextBytes()).toInt();
-        config.MaxBlockChangeView = bigIntFromBytes(sr.readNextBytes()).toInt();
+        config.N = Number(bigIntFromBytes(sr.readNextBytes()));
+        config.C = Number(bigIntFromBytes(sr.readNextBytes()));
+        config.K = Number(bigIntFromBytes(sr.readNextBytes()));
+        config.L = Number(bigIntFromBytes(sr.readNextBytes()));
+        config.BlockMsgDelay = Number(bigIntFromBytes(sr.readNextBytes()));
+        config.HashMsgDelay = Number(bigIntFromBytes(sr.readNextBytes()));
+        config.PeerHandShakeTimeout = Number(bigIntFromBytes(sr.readNextBytes()));
+        config.MaxBlockChangeView = Number(bigIntFromBytes(sr.readNextBytes()));
         return config;
     }
     N: number;

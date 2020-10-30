@@ -51,8 +51,10 @@ describe('test oep8', () => {
     const url = TEST_ONT_URL.REST_URL;
     const restClient = new RestClient(url);
     const socketClient = new WebsocketClient(TEST_ONT_URL_2.SOCKET_URL);
-    // tokenId is from 1 to 7;
-    const tokenIds = [1, 2, 3, 4, 5, 6, 7];
+
+    beforeAll(async () => {
+        jest.setTimeout(20000);
+    });
 
     test('test_init', async () => {
         const tx = oep8.makeInitTx(gasPrice, gasLimit, address1);
@@ -77,20 +79,20 @@ describe('test oep8', () => {
         console.log(val);
         // tslint:disable-next-line:no-console
         expect(val).toBeGreaterThan(0);
-    }, 10000);
+    });
 
     test('test_queryBalances', async () => {
         const tx = oep8.makeQueryBalancesTx(address1);
         const res = await restClient.sendRawTransaction(tx.serialize(), true);
         console.log(res);
         if (res.Result.Result) { // balance is 0
-            const vals = res.Result.Result.map((v) => v ? parseInt(reverseHex(v), 16) : 0);
+            const vals = res.Result.Result.map((v: string) => v ? parseInt(reverseHex(v), 16) : 0);
             console.log('Token Ids: ["1", "2", "3", "4", "5", "6", "7", "8"]');
             console.log('Balances: ' + vals);
             expect(vals[0]).toBeGreaterThan(0);
         }
         // tslint:disable-next-line:no-console
-    }, 10000);
+    });
 
     test('test_totalBalance', async () => {
         const tx = oep8.makeQueryTotalBalanceTx(address2);
@@ -106,7 +108,7 @@ describe('test oep8', () => {
         console.log(val);
         // tslint:disable-next-line:no-console
         expect(val).toBeGreaterThan(0);
-    }, 10000);
+    });
 
     test('test_makeTransfer', async () => {
         const tx = oep8.makeTransferTx(address1, address2, 1, '1', gasPrice, gasLimit, address2);
@@ -116,7 +118,7 @@ describe('test oep8', () => {
         // tslint:disable:no-console
         console.log(JSON.stringify(response));
         expect(response.Result.State).toEqual(1);
-    }, 10000);
+    });
 
     test('test_totalSupply', async () => {
         const tx = oep8.makeQueryTotalSupplyTx(1);
@@ -125,7 +127,7 @@ describe('test oep8', () => {
         const val = parseInt(reverseHex(res.Result.Result), 16);
         // tslint:disable-next-line:no-console
         expect(val).toBeGreaterThan(0);
-    }, 10000);
+    });
 
     test('test_name', async () => {
         const tx = oep8.makeQueryNameTx(1);
@@ -134,7 +136,7 @@ describe('test oep8', () => {
         console.log(val);
         // tslint:disable-next-line:no-console
         expect(val).toBeDefined();
-    }, 10000);
+    });
 
     test('test_symbol', async () => {
         const tx = oep8.makeQuerySymbolTx(1);
@@ -153,7 +155,7 @@ describe('test oep8', () => {
         console.log(val);
         // tslint:disable-next-line:no-console
         expect(val).toBeTruthy();
-    }, 10000);
+    });
 
     // Amount to approve can not exceed balance.
     test('test_approve', async () => {

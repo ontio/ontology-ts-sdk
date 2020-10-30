@@ -28,7 +28,6 @@ describe('test wallet', () => {
         walletDataStr: string;
     beforeAll(() => {
         console.log(Wallet);
-        const privateKey = PrivateKey.random();
         wallet = Wallet.create('mickey');
         walletDataStr = wallet.toJson();
     });

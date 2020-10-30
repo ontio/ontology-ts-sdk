@@ -31,9 +31,9 @@ export class Signature {
         }
 
         return new Signature(
-        algorithm,
-        decoded,
-        publicKeyId
+            algorithm,
+            decoded,
+            publicKeyId
         );
     }
 
@@ -45,7 +45,7 @@ export class Signature {
         const value = new Buffer(pgpSignature.Value, 'base64').toString('hex');
         const deserialzedValue = Signature.deserializeHex(value).value;
         return new Signature(
-        SignatureScheme.fromLabel(pgpSignature.Algorithm),
+            SignatureScheme.fromLabel(pgpSignature.Algorithm),
             deserialzedValue
         );
     }
@@ -58,12 +58,25 @@ export class Signature {
         if (data.length < 4) {
             throw new Error('Invalid params.');
         }
-        const sr = new StringReader(data);
-        const scheme = parseInt(sr.read(1), 16);
-        const sigScheme = SignatureScheme.fromHex(scheme);
-        const value = data.substr(2);
-        const sig = new Signature(sigScheme, value);
-        return sig;
+        if (data.length === 130) {
+            try {
+                const sr = new StringReader(data);
+                const scheme = parseInt(sr.read(1), 16);
+                const sigScheme = SignatureScheme.fromHex(scheme);
+                const value = data.substr(2);
+
+                return new Signature(sigScheme, value);
+            } catch (error) {
+                throw new Error('Signature error, incorrect format');
+            }
+        } else {
+            if (data.length !== 128) {
+                throw new Error('Signature error, invalid signature data length');
+            }
+            const sigScheme = SignatureScheme.fromHex(1);
+            const value = data.substr(2);
+            return new Signature(sigScheme, value);
+        }
     }
 
     algorithm: SignatureScheme;

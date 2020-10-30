@@ -6,7 +6,7 @@ import { Oep5Param, Oep5TxBuilder } from '../../src/smartcontract/neovm/oep5TxBu
 
 import { addSign, signTransaction } from '../../src/transaction/transactionBuilder';
 import { hexstr2str, reverseHex } from '../../src/utils';
-import {TEST_ONT_URL_1, TEST_ONT_URL_2} from '../../src/consts';
+import { TEST_ONT_URL_2} from '../../src/consts';
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.

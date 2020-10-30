@@ -36,7 +36,6 @@ describe('test transfer sign', () => {
         const mnemonics = 'immune annual decorate major humble surprise dismiss trend edit suit alert uncover release transfer suit torch small timber lock mind tomorrow north lend diet';
         const privateKey = PrivateKey.generateFromMnemonic(mnemonics, "m/44'/888'/0'/0/0");
         const publicKey = privateKey.getPublicKey();
-        const address = Address.fromPubKey(publicKey);
 
         const from = new Address('AGn8JFPGM5S4jkWhTC89Xtz1Y76sPz29Rc');
         const to = new Address('AcyLq3tokVpkMBMLALVMWRdVJ83TTgBUwU');
@@ -85,7 +84,6 @@ describe('test transfer sign', () => {
         const txRight = Transaction.deserialize(rightTx);
         const sigData2 = txRight.sigs[0].sigData[0];
         console.log(JSON.stringify(sigData2));
-        const sig2 = Signature.deserializeHex(sigData2);
     });
 
     xtest('eddsa', async () => {

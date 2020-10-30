@@ -16,7 +16,6 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Account } from '../../src/account';
 import { Claim, RevocationType } from '../../src/claim/claim';
 import { TEST_ONT_URL_2 } from '../../src/consts';
 import { Address, PrivateKey } from '../../src/crypto';
@@ -34,10 +33,8 @@ describe('test claim', () => {
     const socketUrl = TEST_ONT_URL_2.SOCKET_URL;
     const privateKey = PrivateKey.random();
     const publicKey = privateKey.getPublicKey();
-    const account = Account.create(privateKey, '123456', '');
     const identity = Identity.create(privateKey, '123456', '');
     const ontid =  identity.ontid;
-    const address = account.address;
     const publicKeyId = ontid + '#keys-1';
 
     const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
@@ -97,9 +94,10 @@ describe('test claim', () => {
         expect(msg.context).toEqual('https://example.com/template/v1');
         expect(msg.content.Name).toEqual('Bob Dylan');
         expect(msg.content.Age).toEqual('22');
-        expect(msg.revocation.type).toEqual(RevocationType.AttestContract);
-        expect(msg.revocation.addr).toEqual('8055b362904715fd84536e754868f4c8d27ca3f6');
-        expect(msg.revocation.url).toBeUndefined();
+        expect(msg.revocation).toBeDefined();
+        expect(msg.revocation!!.type).toEqual(RevocationType.AttestContract);
+        expect(msg.revocation!!.addr).toEqual('8055b362904715fd84536e754868f4c8d27ca3f6');
+        expect(msg.revocation!!.url).toBeUndefined();
     });
 
     test('test signature', async () => {
@@ -173,7 +171,7 @@ describe('test claim', () => {
         const strs = signed.split('.');
 
         const signData = str2hexstr(strs[0] + '.' + strs[1]);
-        const result2 = pk.verify(signData, msg.signature);
+        const result2 = pk.verify(signData, msg.signature!!);
         console.log('result1: ' + result);
         console.log( 'result2: ' + result2);
         

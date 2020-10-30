@@ -1,4 +1,4 @@
-import { VmType } from '../../src/transaction/payload/deployCode';
+
 /*
  * Copyright (C) 2018 The ontology Authors
  * This file is part of The ontology library.
@@ -18,19 +18,13 @@ import { VmType } from '../../src/transaction/payload/deployCode';
  */
 
 import { makeDeployCodeTransaction, signTransaction } from '../../src/transaction/transactionBuilder';
-import { reverseHex } from '../../src/utils';
 
-import {MAIN_ONT_URL, TEST_ONT_URL, TEST_ONT_URL_1 } from '../../src/consts';
-import AbiInfo from '../../src/smartcontract/abi/abiInfo';
-import TxSender from '../../src/transaction/txSender';
+import { MAIN_ONT_URL, TEST_ONT_URL_1 } from '../../src/consts';
 
 import { Address } from '../../src/crypto';
 import { RestClient } from '../../src';
-import json from '../../src/smartcontract/data/idContract.abi';
 import { Account } from '../../src/account';
 import { PrivateKey } from '../../src/crypto/PrivateKey';
-// tslint:disable-next-line:no-var-requires
-const fs = require('fs');
 
 // tslint:disable:no-console
 describe('test deploy contract', () => {

@@ -1,6 +1,6 @@
 
 <h1 align="center">Ontology TypeScript SDK </h1>
-<h4 align="center">Version V1.1.15 </h4>
+<h4 align="center">Version V1.1.18 </h4>
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
@@ -51,12 +51,6 @@ git clone 'https://github.com/ontio/ontology-ts-sdk.git'
 Then install the dependencies with:
 
 ```
-npm install
-```
-
-or
-
-```
 yarn
 ```
 
@@ -64,14 +58,8 @@ yarn
 
 Compile the project with the:
 
-````
-npm run build:dev // or npm run build:prod
-````
-
-or
-
 ```
-yarn run build:dev // or yarn run build:prod
+yarn build:dev // or yarn build:prod
 ```
 
 This will create a compiled version of the SDK in the `lib` directory.
@@ -105,7 +93,7 @@ yarn run test:integration
 # examples
 yarn run test:example
 # all
-yarn run test
+yarn test
 ```
 
 The integration tests use several accounts on the testnet that require funding of ONG tokens in order to pay for the transactions. If there are any test failures with error messages like "insufficient funds" or similar, make sure the following accounts are properly funded:

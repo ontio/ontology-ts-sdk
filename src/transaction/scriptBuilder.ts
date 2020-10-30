@@ -241,7 +241,7 @@ export function deserializeItem(sr: StringReader): any {
     } else if (t === ParameterTypeVal.Boolean) {
         return sr.readBoolean();
     } else if (t === ParameterTypeVal.Integer) {
-        const v = bigIntFromBytes(sr.readNextBytes()).toNumber();
+        const v = Number(bigIntFromBytes(sr.readNextBytes()));
         return v;
     } else if (t === ParameterTypeVal.Array || t === ParameterTypeVal.Struct ) {
         const length = sr.readNextLen();

@@ -1,4 +1,5 @@
 import { Account } from '../../src/account';
+import { TEST_ONT_URL_2 } from '../../src/consts';
 import { PrivateKey } from '../../src/crypto';
 import { Address } from '../../src/crypto/address';
 import { Identity } from '../../src/identity';
@@ -7,7 +8,7 @@ import { buildGetDDOTx } from '../../src/smartcontract/nativevm/ontidContractTxB
 
 // tslint:disable:no-console
 describe('test restClient', () => {
-    const rest = new RestClient();
+    const rest = new RestClient(TEST_ONT_URL_2.REST_URL);
 
     const codeHash = '36bb5c053b6b839c8f6b923fe852f91239b9fccc';
 
@@ -16,13 +17,11 @@ describe('test restClient', () => {
     let height: number = 10000;
 
     const privateKey = PrivateKey.random();
-    const publicKey = privateKey.getPublicKey();
     const account = Account.create(privateKey, '123456', '');
     const identity = Identity.create(privateKey, '123456', '');
     const ontid =  identity.ontid;
     const address = account.address;
 
-    const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
     const adminAddress = new Address('AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz');
 
     /**

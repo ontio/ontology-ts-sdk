@@ -16,10 +16,10 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 import axios from 'axios';
+import { BigNumber } from 'bignumber.js';
 import * as bip39 from 'bip39';
 import * as BN from 'bn.js';
 import * as cryptoJS from 'crypto-js';
-import * as Long from 'long';
 import * as numberToBN from 'number-to-bn';
 import * as secureRandom from 'secure-random';
 import { UNBOUND_GENERATION_AMOUNT, UNBOUND_TIME_INTERVAL, WEBVIEW_SCHEME } from './consts';
@@ -273,116 +273,30 @@ export const reverseHex = (hex: string) => {
     return out;
 };
 
-export function bigIntFromBytes(bytes: string): Long {
-    const buff = Buffer.from(bytes, 'hex');
-    let data = Array.from(buff.subarray(0));
-    const b = data[data.length - 1];
-
-    if (b >> 7 === 1) {
-        data = data.concat(Array(8 - data.length).fill(255));
-    }
-    return Long.fromBytesLE(data);
-}
-
-export function toBN(num: number | string) {
-    try {
-        return numberToBN.apply(null, arguments);
-    } catch (e) {
-        throw new Error(e + ' Given value: "' + num + '"');
-    }
-}
-
-export function numberToHex(value: number | string) {
-    const num = toBN(value);
-    const result = num.toString(16);
-
-    // return num.lt(new BN(0)) ? '-0x' + result.substr(1) : '0x' + result;
-    let hexRes = num.lt(new BN(0)) ? result.substr(1) : result;
-    if (hexRes.length % 2 !== 0) {
-        hexRes = '0' + hexRes;
-    }
-    return reverseHex(hexRes);
-}
-export function hexToBytes(hex: string) {
-    hex = hex.toString();
-
-    hex = hex.replace(/^0x/i, '');
-    const bytes = [];
-    for (let c = 0; c < hex.length; c += 2) {
-        bytes.push(parseInt(hex.substr(c, 2), 16));
-    }
-    return bytes;
-}
-
-export function toNeoBytes(value: number | string) {
-    const num = numberToBN(value);
-    const bs = num.toArray('le');
+export function bigIntFromBytes(bytes: string): string {
+    const bs = Buffer.from(bytes, 'hex').reverse();
     if (bs.length === 0) {
-        return '00';
+        return '0';
     }
-    if (num.isNeg()) {
-        for (let i = 0; i < bs.length; i++) {
-            bs[i] ^= bs[i];
-        }
-        for (let i = 0; i < bs.length; i++) {
-            if (bs[i] === 255) {
-                bs[i] = 0;
-            } else {
-                bs[i] += 1;
-                break;
-            }
-        }
-        if (bs[bs.length - 1] < 128) {
-            bs.push(255);
-        }
-    } else {
-        if (bs[bs.length - 1] > 128) {
-            bs.push(0);
-        }
-    }
-    return bs;
-    // return new Buffer(bs).toString('hex');
+    const bn = new BN(bs).fromTwos(bs.length * 8);
+    return bn.toString();
 }
 
-export function bytesToHex(bytes: number[]) {
-    const hex = [];
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < bytes.length; i++) {
-        hex.push((bytes[i] >>> 4).toString(16));
-        hex.push((bytes[i] & 0xF).toString(16));
+export function bigIntToBytes(value: number | string): string {
+    const bn = numberToBN(new BigNumber(value));
+    if (bn.isZero()) {
+        return '';
     }
-    return hex.join('');
+    const bs = bn.toTwos(bn.byteLength() * 8).toArray();
+    if (bn.isNeg()) {
+        if (bs[0] < 128) {
+            bs.unshift(255);
+        }
+    } else if (bs[0] >= 128) {
+        bs.unshift(0);
+    }
+    return Buffer.from(bs.reverse()).toString('hex');
 }
-export function bigIntToBytes(value: number | string) {
-    return bytesToHex(toNeoBytes(value));
-    // return new Buffer(toNeoBytes(value)).toString('hex');
-}
-
-// export function bigIntToBytes(value: Long) {
-//     let data = value.toBytesLE();
-//     const negData = value.neg().toBytesLE();
-//     let stop;
-//     if (value.isNegative()) {
-//         stop = 255;
-//     } else {
-//         stop = 0;
-//     }
-//     let b = stop;
-//     let pos = 0;
-//     for (let i = data.length - 1; i >= 0; i--) {
-//         if (data[i] !== stop) {
-//             b = value.isNegative() ? negData[i] : data[i];
-//             pos = i + 1;
-//             break;
-//         }
-//     }
-//     data = data.slice(0, pos);
-
-//     if (b >> 7 === 1) {
-//         data.push(value.isNegative() ? 255 : 0);
-//     }
-//     return new Buffer(data).toString('hex');
-// }
 
 /**
  * @class StringReader

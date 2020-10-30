@@ -55,20 +55,22 @@ describe('test new ONT ID contract', () => {
         did: string,
         condition: (didDocument: NewOntidTxBuilder.Document) => boolean): Promise<boolean> {
         let numberOfAttempts = 0;
+        let result = false;
         while (numberOfAttempts < 10) {
             await wait(1000);
             const didDocument = await NewOntidTxBuilder.getDocumentJson(did, TEST_ONT_URL_2.REST_URL);
             if (condition(didDocument)) {
-                return true;
+                result = true;
+                break;
             }
             numberOfAttempts++;
             console.log('condition not met, waiting and trying again');
             console.log(didDocument);
         }
-        return false;
+        return result;
     }
 
-    async function wait(ms) {
+    async function wait(ms: number) {
         return new Promise((resolve, _) => {
             setTimeout(() => {
                 resolve(ms);
@@ -148,7 +150,7 @@ describe('test new ONT ID contract', () => {
         console.log(res);
         expect(res.Error).toEqual(0);
         const attributeInDocument = await waitForConditionInDidDocument(did4,
-            (document) => document.attribute && document.attribute.some((a) => a.key === did4 + '#hello2'));
+            (document) => !!document.attribute && document.attribute.some((a) => a.key === did4 + '#hello2'));
         expect(attributeInDocument).toBeTruthy();
     });
 
@@ -237,7 +239,7 @@ describe('test new ONT ID contract', () => {
         const priTemp = PrivateKey.random();
         const pkTemp = priTemp.getPublicKey();
         const signers = [new Signer(did2, 1)];
-        const tx = NewOntidTxBuilder.buildAddKeyByMultiControllerTx(did3, pkTemp, signers, null, gasPrice, gasLimit, address2);
+        const tx = NewOntidTxBuilder.buildAddKeyByMultiControllerTx(did3, pkTemp, signers, '', gasPrice, gasLimit, address2);
         signTransaction(tx, pri2);
         const res = await restClient.sendRawTransaction(tx.serialize(), false);
         console.log(res);
