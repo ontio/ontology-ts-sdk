@@ -1,6 +1,6 @@
 
 <h1 align="center">Ontology TypeScript SDK </h1>
-<h4 align="center">Version V1.1.16 </h4>
+<h4 align="center">Version V1.1.17 </h4>
 
 - [Overview](#overview)
 - [Getting Started](#getting-started)
@@ -51,24 +51,12 @@ git clone 'https://github.com/ontio/ontology-ts-sdk.git'
 Then install the dependencies with:
 
 ```
-npm install
-```
-
-or
-
-```
 yarn
 ```
 
 #### Compiling
 
 Compile the project with the:
-
-````
-npm run build:dev // or npm run build:prod
-````
-
-or
 
 ```
 yarn run build:dev // or yarn run build:prod
@@ -79,12 +67,6 @@ This will create a compiled version of the SDK in the `lib` directory.
 #### Testing
 
 To run the tests in the `test` directory, use:
-
-```
-npm run test
-```
-
-or
 
 ```
 yarn run test
