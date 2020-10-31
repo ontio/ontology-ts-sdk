@@ -16,6 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 export default abstract class Payload {
+    code: string;
+
     abstract serialize(): string;
 
     // static can not use with abstract

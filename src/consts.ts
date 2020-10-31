@@ -48,6 +48,9 @@ export const TEST_NODE = 'polaris1.ont.io'; // 0.9
 // export const TEST_NODE = '192.168.50.74';
 // export const TEST_NODE = '127.0.0.1';
 
+export const TEST_NODE_1 = 'polaris1.ont.io';
+export const TEST_NODE_2 = 'polaris2.ont.io';
+
 export const MAIN_NODE = 'dappnode1.ont.io';
 
 export const HTTP_REST_PORT = '20334';
@@ -63,6 +66,26 @@ export const REST_API = {
 export const ONT_NETWORK = {
     MAIN: 'MainNet',
     TEST: 'TestNet'
+};
+
+export const TEST_ONT_URL_1 = {
+    SOCKET_URL: `ws://${TEST_NODE_1}:${HTTP_WS_PORT}`,
+
+    RPC_URL: `http://${TEST_NODE_1}:${HTTP_JSON_PORT}`,
+
+    REST_URL: `http://${TEST_NODE_1}:${HTTP_REST_PORT}`,
+
+    sendRawTxByRestful: `http://${TEST_NODE_1}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+};
+
+export const TEST_ONT_URL_2 = {
+    SOCKET_URL: `ws://${TEST_NODE_2}:${HTTP_WS_PORT}`,
+
+    RPC_URL: `http://${TEST_NODE_2}:${HTTP_JSON_PORT}`,
+
+    REST_URL: `http://${TEST_NODE_2}:${HTTP_REST_PORT}`,
+
+    sendRawTxByRestful: `http://${TEST_NODE_2}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
 };
 
 export const TEST_ONT_URL = {

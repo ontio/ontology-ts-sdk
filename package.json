@@ -5,6 +5,9 @@
     "main": "./lib/index.js",
     "types": "./lib/types/index.d.ts",
     "scripts": {
+        "test:unit": "jest --testPathPattern=test/unit",
+        "test:integration": "jest --testPathPattern=test/integration --forceExit",
+        "test:example": "jest --testPathPattern=test/example",
         "test": "jest",
         "lint": "tslint --project ./",
         "build:dev": "cross-env NODE_ENV=development webpack --mode development --display-error-details --progress --color",
@@ -45,7 +48,7 @@
         "@types/ecurve": "^1.0.0",
         "@types/jest": "^22.1.2",
         "@types/long": "^4.0.0",
-        "@types/node": "^8.5.2",
+        "@types/node": "11.15.20",
         "@types/promise-timeout": "^1.3.0",
         "@types/scrypt-async": "^1.3.0",
         "@types/uuid": "^3.4.3",
@@ -57,7 +60,7 @@
         "clean-webpack-plugin": "^0.1.19",
         "cross-env": "^5.2.0",
         "jest": "^26.4.2",
-        "ts-jest": "^26.4.1",
+        "ts-jest": "^26.4.3",
         "ts-loader": "^4.3.0",
         "tslint": "^5.20.1",
         "tslint-eslint-rules": "^5.3.1",
@@ -66,7 +69,7 @@
         "typedoc-webpack-plugin": "^1.1.4",
         "typescript": "^4.0.2",
         "webpack": "^4.8.3",
-        "webpack-cli": "^2.1.4",
+        "webpack-cli": "^3.0.0",
         "webpack-node-externals": "^1.7.2"
     },
     "dependencies": {

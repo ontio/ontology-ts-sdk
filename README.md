@@ -66,11 +66,48 @@ This will create a compiled version of the SDK in the `lib` directory.
 
 #### Testing
 
-To run the tests in the `test` directory, use:
+The tests can be found in the `test` directory. They are distinguished into three categories stored in separate subfolders:
+* `unit`: unit tests that can be run without external or network dependencies
+* `integration`: integration tests that require access to one or more Blockchain nodes and test the actual interaction with the Blockchain
+* `example`: pure sample code without test assertations that can be used for explorative testing or documentation purposes
+
+To run the tests, use one of:
 
 ```
+# unit tests
+npm run test:unit
+# integration tests
+npm run test:integration
+# examples
+npm run test:example
+# all
+npm run test
+```
+
+or
+
+```
+yarn run test:unit
+# integration tests
+yarn run test:integration
+# examples
+yarn run test:example
+# all
 yarn test
 ```
+
+The integration tests use several accounts on the testnet that require funding of ONG tokens in order to pay for the transactions. If there are any test failures with error messages like "insufficient funds" or similar, make sure the following accounts are properly funded:
+
+* APT4wZG9sFQfjhyfGALPXQj5UyrQ3ZCVkY
+* ANH5bHrrt111XwNEnuPZj6u95Dd6u7G4D6
+* AXK2KtCfcJnSMyRzSwTuwTKgNrtx5aXfFX
+* AVXf5w8WD2y6jV1Lzi36oSKYNif1C7Surc
+* AdLUBSSHUuFaak9j169hiamXUmPuCTnaRz
+* AJkkLbouowk6teTaxz1F2DYKfJh24PVk3r
+* ATk57i8rMXFSBpHAdX3UQ4TNe48BBrfCoc
+* AU9TioM24rXk5E3tUGrv8jwgBA1aZVVKDW
+* AHTdWzj4jYBzbU48YBCfovvouTMc45M6iP
+* AJym8dF7wZLjtoiY8C3mmYt8f2tZDxq5iz
 
 ### Use in Project
 
