@@ -282,8 +282,8 @@ export function bigIntFromBytes(bytes: string): string {
     return bn.toString();
 }
 
-export function bigIntToBytes(value: number | string): string {
-    const bn = numberToBN(new BigNumber(value));
+export function bigIntToBytes(value: number | string | BigNumber): string {
+    const bn = value instanceof BigNumber ? numberToBN(value) : numberToBN(new BigNumber(value));
     if (bn.isZero()) {
         return '';
     }

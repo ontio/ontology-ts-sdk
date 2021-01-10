@@ -15,6 +15,7 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
+import BigNumber from 'bignumber.js';
 import { createCodeParamsScript } from '../../transaction/scriptBuilder';
 import { Transaction } from '../../transaction/transaction';
 import { bigIntToBytes, str2hexstr } from '../../utils';
@@ -36,7 +37,7 @@ const functionNames = {
     Name: 'name'
 };
 
-export const formatBigNumParameter = (amount: string): Parameter => {
+export const formatBigNumParameter = (amount: string | BigNumber): Parameter => {
     // let val = new BigNumber(amount).toString(16);
     // if (val.length % 2 === 1) {
     //     val = '0' + val;
@@ -92,7 +93,7 @@ export class Oep4TxBuilder {
     makeTransferTx(
         from: Address,
         to: Address,
-        amount: string,
+        amount: string | BigNumber,
         gasPrice: string,
         gasLimit: string,
         payer: Address
