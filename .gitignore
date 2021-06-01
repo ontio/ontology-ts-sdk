@@ -16,7 +16,7 @@ lib/
 # IDE specific
 /.vscode
 /.idea
-*.idea
+.idea/*
 
 /.DS_Store
 src/.DS_Store
