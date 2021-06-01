@@ -47,6 +47,7 @@ import { Transfer } from './transaction/transfer';
 import { TxSignature } from './transaction/txSignature';
 import * as utils from './utils';
 import { Wallet } from './wallet';
+import * as Credentials from './credentials';
 
 class ONT {
     Account: any;
@@ -82,6 +83,7 @@ class ONT {
     Oep8: any;
     Oep5: any;
     Merkle: any;
+    Credentials: any;
 
     constructor() {
         this.Account = Account;
@@ -117,6 +119,7 @@ class ONT {
         this.Oep8 = Oep8;
         this.Oep5 = Oep5;
         this.Merkle = Merkle;
+        this.Credentials = Credentials;
     }
     setNode(url: string) {
         this.CONST.TEST_NODE = url;
@@ -171,5 +174,6 @@ export {
     Oep4,
     Oep8,
     Oep5,
-    Merkle
+    Merkle,
+    Credentials
 };
