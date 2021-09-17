@@ -43,7 +43,7 @@ describe('test jwt payload serialization', () => {
 
      assertPayload(vpPayload, deserialized);
      expect(vpPayload.vp.type[0]).toBe(deserialized.vp.type[0]);
-     expect(vpPayload.vp.verifiableCredentials[0]).toBe(deserialized.vp.verifiableCredentials[0]);
+     expect(vpPayload.vp.verifiableCredential[0]).toBe(deserialized.vp.verifiableCredential[0]);
      expect(vpPayload.vp["@context"][0]).toBe(deserialized.vp["@context"][0]);
     });
 });
