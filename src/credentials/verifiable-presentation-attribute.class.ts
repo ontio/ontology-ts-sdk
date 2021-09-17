@@ -9,17 +9,17 @@ export class VerifiablePresentationAttribute {
      */
     public static fromJson(json: any): VerifiablePresentationAttribute {
         return new VerifiablePresentationAttribute(
-            json.verifiableCredentials
+            json.verifiableCredential
         );
     }
 
     '@context': string[];
     type: string[];
-    verifiableCredentials: string[];
+    verifiableCredential: string[];
 
-    constructor(verifiableCredentials: string[]) {
+    constructor(verifiableCredential: string[]) {
         this['@context'] = ['https://www.w3.org/2018/credentials/v1'];
         this.type = ['VerifiablePresentation'];
-        this.verifiableCredentials = verifiableCredentials;
+        this.verifiableCredential = verifiableCredential;
     }
 }
