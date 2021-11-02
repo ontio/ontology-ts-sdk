@@ -71,6 +71,19 @@ export default class RpcClient {
     }
 
     /**
+     * Get the balance of some address.
+     * The result contains ONT and ONG.
+     * @param address Address
+     */
+    getBalanceV2(address: Address): Promise<any> {
+        const req = this.makeRequest('getbalancev2', address.toBase58());
+
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    /**
      * Send ran transaction to blockchain.
      * @param data Hex encoded data.
      * @param preExec Decides if it is a pre-execute transaction.
@@ -288,6 +301,22 @@ export default class RpcClient {
             throw ERROR_CODE.INVALID_PARAMS;
         }
         const req = this.makeRequest('getallowance', asset, from.toBase58(), to.toBase58());
+        return axios.post(this.url, req).then((res) => {
+            return res.data;
+        });
+    }
+
+    /**
+     * Get allowanece
+     * @param asset Asset's type.Only ONT and ONG supported.
+     * @param from Address of allowance's sender.
+     * @param to Address of allowance's receiver.
+     */
+    getAllowanceV2(asset: string, from: Address, to: Address): Promise<any> {
+        if (asset !== 'ont' && asset !== 'ong') {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        const req = this.makeRequest('getallowancev2', asset, from.toBase58(), to.toBase58());
         return axios.post(this.url, req).then((res) => {
             return res.data;
         });

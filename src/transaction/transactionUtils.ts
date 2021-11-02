@@ -38,7 +38,7 @@ export function makeNativeContractTx(
     payload.code = code;
 
     let tx: Transaction;
-    if (funcName === 'transfer' || funcName === 'transferFrom') {
+    if (['transfer', 'transferV2', 'transferFrom', 'transferFromV2'].includes(funcName)) {
         tx = new Transfer();
     } else {
         tx = new Transaction();

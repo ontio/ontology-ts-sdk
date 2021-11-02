@@ -301,6 +301,18 @@ export default class RestClient {
     }
 
     /**
+     * Get balance of some address
+     * The result contains balance of ONT and ONG
+     * @param address Address
+     */
+    getBalanceV2(address: Address): Promise<any> {
+        const url = this.url + UrlConsts.Url_get_account_balance_v2 + address.toBase58();
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+    /**
      * Get block info by block's height or hash.
      * @param value Block's height or hash
      */
@@ -330,6 +342,25 @@ export default class RestClient {
         }
         const url = this.url + UrlConsts.Url_get_allowance +
                     asset.toLowerCase() + '/' + from.toBase58() + '/' + to.toBase58();
+        return axios.get(url).then((res) => {
+            return res.data;
+        });
+    }
+
+
+    /**
+     * Get allowance by address
+     * @param asset Asset type. Only ONT or ONG.
+     * @param from Address of allowance sender.
+     * @param to Address of allowance receiver.
+     */
+    getAllowanceV2(asset: string, from: Address, to: Address): Promise<any> {
+        asset = asset.toLowerCase();
+        if (asset !== 'ont' && asset !== 'ong') {
+            throw ERROR_CODE.INVALID_PARAMS;
+        }
+        const url = this.url + UrlConsts.Url_get_allowance_v2 +
+            asset.toLowerCase() + '/' + from.toBase58() + '/' + to.toBase58();
         return axios.get(url).then((res) => {
             return res.data;
         });

@@ -150,6 +150,15 @@ export function getBalance(address: Address) {
     return param;
 }
 
+export function getBalanceV2(address: Address) {
+    const param = {
+        Action: 'getbalancev2',
+        Version: '1.0.0',
+        Addr: address.toBase58()
+    };
+    return param;
+}
+
 export function getUnboundOng(address: Address) {
     const param = {
         Action: 'getunboundong',
@@ -228,6 +237,17 @@ export function getMerkleProof(hash: string) {
 export function getAllowance(asset: string, from: Address, to: Address) {
     const param = {
         Action: 'getallowance',
+        Version: '1.0.0',
+        Asset: asset,
+        From: from.toBase58(),
+        To: to.toBase58()
+    };
+    return param;
+}
+
+export function getAllowanceV2(asset: string, from: Address, to: Address) {
+    const param = {
+        Action: 'getallowancev2',
         Version: '1.0.0',
         Asset: asset,
         From: from.toBase58(),
