@@ -19,6 +19,7 @@
 import { Account } from './account';
 import { Claim, SimpleMessage } from './claim';
 import * as CONST from './consts';
+import * as Credentials from './credentials';
 import * as Crypto from './crypto';
 import { Identity } from './identity';
 import * as Merkle from './merkle';
@@ -47,7 +48,6 @@ import { Transfer } from './transaction/transfer';
 import { TxSignature } from './transaction/txSignature';
 import * as utils from './utils';
 import { Wallet } from './wallet';
-import * as Credentials from './credentials';
 
 class ONT {
     Account: any;
