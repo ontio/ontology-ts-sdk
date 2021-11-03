@@ -36,7 +36,7 @@ import { comparePublicKeys } from './program';
 import { buildWasmContractParam, createCodeParamsScript, serializeAbiFunction, writeVarBytes } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 
-import {makeTransferTx, makeTransferTxV2} from '../smartcontract/nativevm/ontAssetTxBuilder';
+import { makeTransferTx, makeTransferTxV2 } from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { VmType } from './payload/deployCode';
 import { TxSignature } from './txSignature';
