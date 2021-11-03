@@ -42,7 +42,12 @@ import * as scrypt from '../scrypt';
 import { ScryptParams } from '../scrypt';
 import AbiInfo from '../smartcontract/abi/abiInfo';
 import { Parameter } from '../smartcontract/abi/parameter';
-import { makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT } from '../smartcontract/nativevm/ontAssetTxBuilder';
+import {
+    makeTransferTx,
+    makeTransferTxV2,
+    makeWithdrawOngTx, makeWithdrawOngTxV2,
+    ONT_CONTRACT
+} from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildAddAttributeTx, buildGetDDOTx, buildRegisterOntidTx
 } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { Oep8TxBuilder } from '../smartcontract/neovm/oep8TxBuilder';
@@ -845,6 +850,45 @@ export class SDK {
         });
     }
 
+    static getBalanceV2(address: string, callback?: string) {
+        const addressObj = new Address(address);
+        const request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalanceV2}/${addressObj.toBase58()}`;
+        return axios.get(request).then((res: any) => {
+            if (res.data.Error === 0) {
+                const result = res.data.Result;
+                const obj = {
+                    error : 0,
+                    result
+                };
+
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(obj), callback);
+                }
+                return obj;
+            } else {
+                const obj = {
+                    error: res.data.Error,
+                    result : ''
+                };
+
+                if (callback) {
+                    sendBackResult2Native(JSON.stringify(obj), callback);
+                }
+                return obj;
+            }
+        }).catch( (err: any) => {
+            const obj = {
+                error: ERROR_CODE.NETWORK_ERROR,
+                result: ''
+            };
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(obj), callback);
+            }
+            return Promise.reject(obj);
+        });
+    }
+
     // pls check balance before transfer
     static transferAssets(
         token: string,
@@ -907,6 +951,68 @@ export class SDK {
         return result;
     }
 
+    // pls check balance before transfer
+    static transferAssetsV2(
+        token: string,
+        from: string,
+        to: string,
+        value: string,
+        encryptedPrivateKey: string,
+        password: string,
+        salt: string,
+        gasPrice: string,
+        gasLimit: string,
+        payer: string,
+        callback?: string) {
+
+        let fromAddress: Address;
+        let toAddress: Address;
+        password = this.transformPassword(password);
+        try {
+            fromAddress = new Address(from);
+            toAddress = new Address(to);
+        } catch (err) {
+            const result = {
+                error : ERROR_CODE.INVALID_PARAMS,
+                result : ''
+            };
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+
+        let privateKey: PrivateKey;
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        try {
+            const addr = new Address(from);
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addr, saltHex);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+
+        const tx = makeTransferTxV2(token, fromAddress, toAddress, value, gasPrice, gasLimit);
+        tx.payer = new Address(payer);
+        signTransaction(tx, privateKey);
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: '',
+            tx: tx.serialize(),
+            txHash: reverseHex(tx.getSignContent())
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
+    }
+
     static claimOng(
         address: string,
         value: string,
@@ -949,6 +1055,62 @@ export class SDK {
         }
 
         const tx = makeWithdrawOngTx(addressObj, addressObj, value, new Address(payer), gasPrice, gasLimit);
+        signTransaction(tx, privateKey);
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            result: '',
+            tx: tx.serialize(),
+            txHash: reverseHex(tx.getSignContent())
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        // clear privateKey and password
+        privateKey.key = '';
+        password = '';
+        return result;
+    }
+
+    static claimOngV2(
+        address: string,
+        value: string,
+        encryptedPrivateKey: string,
+        password: string,
+        salt: string,
+        gasPrice: string,
+        gasLimit: string,
+        payer: string,
+        callback?: string
+    ) {
+        let addressObj: Address;
+        password = this.transformPassword(password);
+        try {
+            addressObj = new Address(address);
+
+        } catch (err) {
+            const result = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+
+        let privateKey: PrivateKey;
+        const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
+        try {
+            const saltHex = Buffer.from(salt, 'base64').toString('hex');
+            privateKey = encryptedPrivateKeyObj.decrypt(password, addressObj, saltHex);
+        } catch (err) {
+            const result = this.getDecryptError(err);
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+
+        const tx = makeWithdrawOngTxV2(addressObj, addressObj, value, new Address(payer), gasPrice, gasLimit);
         signTransaction(tx, privateKey);
         const result = {
             error: ERROR_CODE.SUCCESS,
@@ -1239,6 +1401,29 @@ export class SDK {
         });
     }
 
+    static getUnclaimedOngV2(address: string, callback?: string) {
+        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        return restClient.getAllowanceV2('ong', new Address(ONT_CONTRACT), new Address(address)).then((res) => {
+            const result = {
+                error: ERROR_CODE.SUCCESS,
+                result: res.Result
+            };
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }).catch((err) => {
+            const result = {
+                error: err.Error,
+                result: ''
+            };
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        });
+    }
+
     static querySmartCodeEventByTxhash(txHash: string, callback?: string) {
         const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.getSmartCodeEvent(txHash).then((res) => {
@@ -1324,6 +1509,35 @@ export class SDK {
             return result;
         }
         const tx = makeTransferTx(asset, fromAddress, toAddress, amount, gasPrice, gasLimit);
+        tx.payer = fromAddress;
+        const result = {
+            error: ERROR_CODE.SUCCESS,
+            txHash: reverseHex(tx.getSignContent()),
+            txData: tx.serialize()
+        };
+        callback && sendBackResult2Native(JSON.stringify(result), callback);
+        return result;
+    }
+
+    static makeMultiSignTransactionV2(asset: string, from: string, to: string, amount: string, gasPrice: string,
+                                    gasLimit: string, callback?: string) {
+        let fromAddress: Address;
+        let toAddress: Address;
+        try {
+            fromAddress = new Address(from);
+            toAddress = new Address(to);
+        } catch (err) {
+            const result = {
+                error: ERROR_CODE.INVALID_PARAMS,
+                result: ''
+            };
+
+            if (callback) {
+                sendBackResult2Native(JSON.stringify(result), callback);
+            }
+            return result;
+        }
+        const tx = makeTransferTxV2(asset, fromAddress, toAddress, amount, gasPrice, gasLimit);
         tx.payer = fromAddress;
         const result = {
             error: ERROR_CODE.SUCCESS,

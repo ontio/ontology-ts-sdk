@@ -173,6 +173,16 @@ export class WebsocketClient {
     }
 
     /**
+     * Get the balance of some address.
+     * The result contains ONT and ONG.
+     * @param address Address
+     */
+    async getBalanceV2(address: Address): Promise<any> {
+        const raw = Builder.getBalanceV2(address);
+        return this.send(raw);
+    }
+
+    /**
      * Get unbound ong of this address
      * The result contains ONG.
      * @param address Address
@@ -249,6 +259,17 @@ export class WebsocketClient {
      */
     async getAllowance(asset: string, from: Address, to: Address) {
         const raw = Builder.getAllowance(asset, from, to);
+        return this.send(raw);
+    }
+
+    /**
+     * Get allowanece
+     * @param asset Asset's type.Only ONT and ONG supported.
+     * @param from Address of allowance's sender.
+     * @param to Address of allowance's receiver.
+     */
+    async getAllowanceV2(asset: string, from: Address, to: Address) {
+        const raw = Builder.getAllowanceV2(asset, from, to);
         return this.send(raw);
     }
 

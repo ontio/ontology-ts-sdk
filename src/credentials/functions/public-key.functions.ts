@@ -1,4 +1,3 @@
-import { DDO } from '../..';
 import { extractKeyId } from '../../claim/message';
 import { PublicKey, PublicKeyStatus } from '../../crypto';
 import RestClient from '../../network/rest/restClient';
@@ -7,6 +6,7 @@ import {
     buildGetDocumentTx,
     buildGetPublicKeyStateTx
 } from '../../smartcontract/nativevm/ontidContractTxBuilder';
+import { DDO } from '../../transaction/ddo';
 import { hexstr2str } from '../../utils';
 
 /**
