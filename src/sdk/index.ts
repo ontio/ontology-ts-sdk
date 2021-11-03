@@ -1520,7 +1520,7 @@ export class SDK {
     }
 
     static makeMultiSignTransactionV2(asset: string, from: string, to: string, amount: string, gasPrice: string,
-                                    gasLimit: string, callback?: string) {
+                                      gasLimit: string, callback?: string) {
         let fromAddress: Address;
         let toAddress: Address;
         try {

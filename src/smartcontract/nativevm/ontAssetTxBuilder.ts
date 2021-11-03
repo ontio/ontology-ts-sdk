@@ -21,9 +21,9 @@ import { TOKEN_TYPE } from '../../consts';
 import { Address } from '../../crypto';
 import { ERROR_CODE } from '../../error';
 import { Transaction } from '../../transaction/transaction';
+import { makeNativeContractTx } from '../../transaction/transactionUtils';
 import { Transfer } from '../../transaction/transfer';
 import { hex2VarBytes, hexstr2str, StringReader } from '../../utils';
-import { makeNativeContractTx } from '../../transaction/transactionUtils';
 import { buildNativeCodeScript } from '../abi/nativeVmParamsBuilder';
 import Struct from './../abi/struct';
 import { State } from './token';
@@ -327,7 +327,7 @@ export function makeWithdrawOngTx(from: Address, to: Address, amount: number | s
  * @param gasLimit Gas limit
  */
 export function makeWithdrawOngTxV2(from: Address, to: Address, amount: number | string, payer: Address,
-                                  gasPrice: string, gasLimit: string): Transfer {
+                                    gasPrice: string, gasLimit: string): Transfer {
     verifyAmount(amount);
     const num = new BigNumber(amount);
 

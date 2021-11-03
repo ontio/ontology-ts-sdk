@@ -347,7 +347,6 @@ export default class RestClient {
         });
     }
 
-
     /**
      * Get allowance by address
      * @param asset Asset type. Only ONT or ONG.
