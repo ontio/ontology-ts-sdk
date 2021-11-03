@@ -126,15 +126,15 @@ class ONT {
     }
 
     setRpcPort(port: string) {
-        this.CONST.HTTP_JSON_PORT = port;
+        this.CONST.HTTPS_JSON_PORT = port;
     }
 
     setRestPort(port: string) {
-        this.CONST.HTTP_REST_PORT = port;
+        this.CONST.HTTPS_REST_PORT = port;
     }
 
     setSocketPort(port: string) {
-        this.CONST.HTTP_WS_PORT = port;
+        this.CONST.HTTPS_WS_PORT = port;
     }
 }
 
