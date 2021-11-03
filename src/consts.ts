@@ -59,6 +59,7 @@ export const HTTP_JSON_PORT = '20336';
 
 export const REST_API = {
     getBalance: '/api/v1/balance',
+    getBalanceV2: '/api/v1/balancev2',
     sendRawTx: '/api/v1/transaction',
     getMerkleProof: '/api/v1/merkleproof' // end with /txHash
 };

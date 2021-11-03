@@ -36,7 +36,7 @@ import { comparePublicKeys } from './program';
 import { buildWasmContractParam, createCodeParamsScript, serializeAbiFunction, writeVarBytes } from './scriptBuilder';
 import { Transaction, TxType } from './transaction';
 
-import { makeTransferTx } from '../smartcontract/nativevm/ontAssetTxBuilder';
+import {makeTransferTx, makeTransferTxV2} from '../smartcontract/nativevm/ontAssetTxBuilder';
 import { buildGetDDOTx, buildRegisterOntidTx } from '../smartcontract/nativevm/ontidContractTxBuilder';
 import { VmType } from './payload/deployCode';
 import { TxSignature } from './txSignature';
@@ -505,6 +505,45 @@ export function makeTransactionsByJson(json: any, ledgerCompatible: boolean = tr
     return txList;
 }
 
+export function makeTransactionsByJsonV2(json: any, ledgerCompatible: boolean = true) {
+    if (!json) {
+        throw new Error('Invalid parameter. Expect JSON object');
+    }
+    if (!json.action ||
+        (json.action !== 'invoke' &&
+            json.action !== 'invokeRead' &&
+            json.action !== 'invokePasswordFree')) {
+        throw new Error('Invalid parameter. The action type must be "invoke or invokeRead"');
+    }
+    if (!json.params || !json.params.invokeConfig) {
+        throw new Error('Invalid parameter. The params can not be empty.');
+    }
+    const invokeConfig = json.params.invokeConfig;
+    // tslint:disable-next-line:prefer-const
+    let { payer, gasPrice, gasLimit, contractHash } = invokeConfig;
+    if (!contractHash) {
+        throw new Error('Invalid parameter. The contractHash can not be empty.');
+    }
+    const contractAddr = new Address(reverseHex(contractHash));
+    payer = payer ? new Address(payer) : null;
+    gasPrice = gasPrice + '' || '500';
+    gasLimit = gasLimit + '' || '200000';
+    const txList = [];
+    if (contractHash.indexOf('00000000000000000000000000000000000000') > -1) { // native contract
+        const tx = buildNativeTxFromJsonV2(invokeConfig);
+        txList.push(tx);
+    } else {
+        const parameters = buildParamsByJson(invokeConfig);
+        for (const list of parameters) {
+            const params = createCodeParamsScript(list, ledgerCompatible);
+            const tx = makeInvokeTransaction('', params, contractAddr, gasPrice, gasLimit, payer, ledgerCompatible);
+            txList.push(tx);
+        }
+    }
+
+    return txList;
+}
+
 export function buildNativeTxFromJson(json: any) {
     const funcArgs = json.functions[0];
     const args = funcArgs.args;
@@ -516,6 +555,34 @@ export function buildNativeTxFromJson(json: any) {
             const amount = args[2].value.split(':')[1] + ''; // convert to string
             const payer = new Address(json.payer);
             const tx = makeTransferTx(tokenType, from, to, amount, json.gasPrice, json.gasLimit, payer);
+            return tx;
+        }
+    } else if (json.contractHash.indexOf('03') > -1) { // ONT ID contract
+        if (funcArgs.operation === 'regIDWithPublicKey') {
+            const ontid = args[0].value.substr(args[0].value.indexOf(':') + 1);
+            const pk = new PublicKey(args[1].value.split(':')[1]);
+            const payer = new Address(json.payer);
+            const tx = buildRegisterOntidTx(ontid, pk, json.gasPrice, json.gasLimit, payer);
+            return tx;
+        } else if (funcArgs.operation === 'getDDO') {
+            const ontid = args[0].value.substr(args[0].value.indexOf(':') + 1);
+            const tx = buildGetDDOTx(ontid);
+            return tx;
+        }
+    }
+}
+
+export function buildNativeTxFromJsonV2(json: any) {
+    const funcArgs = json.functions[0];
+    const args = funcArgs.args;
+    if (json.contractHash.indexOf('02') > -1 || json.contractHash.indexOf('01') > -1) { // ONT ONG contract
+        const tokenType = json.contractHash.indexOf('02') > -1 ? 'ONG' : 'ONT';
+        if (funcArgs.operation === 'transfer') {
+            const from = new Address(args[0].value.split(':')[1]);
+            const to = new Address(args[1].value.split(':')[1]);
+            const amount = args[2].value.split(':')[1] + ''; // convert to string
+            const payer = new Address(json.payer);
+            const tx = makeTransferTxV2(tokenType, from, to, amount, json.gasPrice, json.gasLimit, payer);
             return tx;
         }
     } else if (json.contractHash.indexOf('03') > -1) { // ONT ID contract
