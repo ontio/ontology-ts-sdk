@@ -29,7 +29,13 @@ import axios from 'axios';
 import * as bip39 from 'bip39';
 import { Account } from '../account';
 import { Claim } from '../claim/claim';
-import { HTTP_REST_PORT, HTTP_WS_PORT, ONT_BIP44_PATH, REST_API, TEST_NODE } from '../consts';
+import {
+    HTTPS_REST_PORT,
+    HTTPS_WS_PORT,
+    ONT_BIP44_PATH,
+    REST_API,
+    TEST_NODE
+} from '../consts';
 import { Address, PgpSignature, PrivateKey, PublicKey } from '../crypto';
 import { ERROR_CODE } from '../error';
 import { Identity } from '../identity';
@@ -75,7 +81,7 @@ const { HDKey } = require('@ont-dev/hdkey-secp256r1');
 // neo contract
 const CONTRACT_HASH = 'ceab719b8baa2310f232ee0d277c061704541cfb';
 // neo node
-const NEO_NODE = 'http://neonode1.ont.network:10332';
+const NEO_NODE = 'https://neonode1.ont.network:10332'; // todo unsupported https NEO_NODE
 // neo abi
 // tslint:disable-next-line:max-line-length
 const NEP5_ABI = '{"hash":"0x5bb169f915c916a5e30a3c13a5e0cd228ea26826","entrypoint":"Main","functions":[{"name":"Name","parameters":[],"returntype":"String"},{"name":"Symbol","parameters":[],"returntype":"String"},{"name":"Decimals","parameters":[],"returntype":"Integer"},{"name":"Main","parameters":[{"name":"operation","type":"String"},{"name":"args","type":"Array"}],"returntype":"Any"},{"name":"Init","parameters":[],"returntype":"Boolean"},{"name":"TotalSupply","parameters":[],"returntype":"Integer"},{"name":"Transfer","parameters":[{"name":"from","type":"ByteArray"},{"name":"to","type":"ByteArray"},{"name":"value","type":"Integer"}],"returntype":"Boolean"},{"name":"BalanceOf","parameters":[{"name":"address","type":"ByteArray"}],"returntype":"Integer"}],"events":[{"name":"transfer","parameters":[{"name":"arg1","type":"ByteArray"},{"name":"arg2","type":"ByteArray"},{"name":"arg3","type":"Integer"}],"returntype":"Void"}]}';
@@ -86,16 +92,16 @@ const NEO_TRAN = 100000000;
 
 export class SDK {
     static SERVER_NODE: string = TEST_NODE;
-    static REST_PORT: string = HTTP_REST_PORT;
-    static SOCKET_PORT: string = HTTP_WS_PORT;
+    static REST_PORT: string = HTTPS_REST_PORT;
+    static SOCKET_PORT: string = HTTPS_WS_PORT;
     static restClient: RestClient = new RestClient();
     static socketClient: WebsocketClient = new WebsocketClient();
 
     static setServerNode(node: string) {
         if (node) {
             let url = '';
-            if (node.indexOf('http') > -1) {
-                url = node.substr('http://'.length);
+            if (node.indexOf('https') > -1) {
+                url = node.substr('https://'.length);
             } else {
                 url = node;
             }
@@ -109,7 +115,7 @@ export class SDK {
     static setRestPort(port: string) {
         if (port) {
             SDK.REST_PORT = port;
-            SDK.restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+            SDK.restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
             return;
         }
 
@@ -119,7 +125,7 @@ export class SDK {
     static setSocketPort(port: string) {
         if (port) {
             SDK.SOCKET_PORT = port;
-            SDK.socketClient = new WebsocketClient(`ws://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`);
+            SDK.socketClient = new WebsocketClient(`wss://${SDK.SERVER_NODE}:${SDK.SOCKET_PORT}`);
             return;
         }
         throw new Error('Can not set ' + port + 'as socket port');
@@ -168,7 +174,7 @@ export class SDK {
         privateKey.key = '';
         password = '';
         // add preExec
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             // preExec success, send real request
             if (res.Result.Result === '01') {
@@ -226,7 +232,7 @@ export class SDK {
             result: identity.toJson()
         };
         const tx = buildGetDDOTx(identity.ontid);
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             const result = res.Result;
             if (result.Result) {
@@ -278,7 +284,7 @@ export class SDK {
             result: identity.toJson()
         };
         const tx = buildGetDDOTx(identity.ontid);
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             const result = res.Result;
             if (result.Result) {
@@ -366,7 +372,7 @@ export class SDK {
         // check ontid on chain
         const tx = buildGetDDOTx(identity.ontid);
         const param = buildRestfulParam(tx);
-        const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`;
+        const restUrl = `https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`;
         const url = sendRawTxRestfulUrl(restUrl, true);
         // clear privateKey and password
         password = '';
@@ -423,7 +429,7 @@ export class SDK {
             // check ontid on chain
             const tx = buildGetDDOTx(identity.ontid);
             const param = buildRestfulParam(tx);
-            const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`;
+            const restUrl = `https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`;
             const url = sendRawTxRestfulUrl(restUrl, true);
             return axios.post(url, param).then((res: any) => {
                 const result = res.data.Result;
@@ -479,7 +485,7 @@ export class SDK {
         signTransaction(tx, privateKey);
         password = '';
         privateKey.key = '';
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             // preExec success, send real request
             if (res.Result.Result === '01') {
@@ -612,7 +618,7 @@ export class SDK {
         let privateKey: PrivateKey;
         password = this.transformPassword(password);
         const encryptedPrivateKeyObj = new PrivateKey(encryptedPrivateKey);
-        const restUrl = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`;
+        const restUrl = `https://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.sendRawTx}`;
         try {
             const addr = new Address(address);
             const saltHex = Buffer.from(salt, 'base64').toString('hex');
@@ -732,7 +738,7 @@ export class SDK {
         const tx = buildAddAttributeTx(subject, [attr], publicKey, gasPrice, gasLimit);
         tx.payer = new Address(payer);
         signTransaction(tx, privateKey);
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(tx.serialize(), true).then((res: any) => {
             if (res.Result.Result === '01') {
                 // user agent will do this
@@ -813,7 +819,7 @@ export class SDK {
 
     static getBalance(address: string, callback?: string) {
         const addressObj = new Address(address);
-        const request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalance}/${addressObj.toBase58()}`;
+        const request = `https://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalance}/${addressObj.toBase58()}`;
         return axios.get(request).then((res: any) => {
             if (res.data.Error === 0) {
                 const result = res.data.Result;
@@ -852,7 +858,7 @@ export class SDK {
 
     static getBalanceV2(address: string, callback?: string) {
         const addressObj = new Address(address);
-        const request = `http://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalanceV2}/${addressObj.toBase58()}`;
+        const request = `https://${SDK.SERVER_NODE}:${SDK.REST_PORT}${REST_API.getBalanceV2}/${addressObj.toBase58()}`;
         return axios.get(request).then((res: any) => {
             if (res.data.Error === 0) {
                 const result = res.data.Result;
@@ -1379,7 +1385,7 @@ export class SDK {
     }
 
     static getUnclaimedOng(address: string, callback?: string) {
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.getAllowance('ong', new Address(ONT_CONTRACT), new Address(address)).then((res) => {
             const result = {
                 error: ERROR_CODE.SUCCESS,
@@ -1402,7 +1408,7 @@ export class SDK {
     }
 
     static getUnclaimedOngV2(address: string, callback?: string) {
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.getAllowanceV2('ong', new Address(ONT_CONTRACT), new Address(address)).then((res) => {
             const result = {
                 error: ERROR_CODE.SUCCESS,
@@ -1425,7 +1431,7 @@ export class SDK {
     }
 
     static querySmartCodeEventByTxhash(txHash: string, callback?: string) {
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.getSmartCodeEvent(txHash).then((res) => {
             const obj = {
                 error: ERROR_CODE.SUCCESS,
@@ -1661,7 +1667,7 @@ export class SDK {
     }
 
     static sendTransaction(txData: string, callback?: string) {
-        const restClient = new RestClient(`http://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
+        const restClient = new RestClient(`https://${SDK.SERVER_NODE}:${SDK.REST_PORT}`);
         return restClient.sendRawTransaction(txData).then((res) => {
             const obj = {
                 error: ERROR_CODE.SUCCESS,

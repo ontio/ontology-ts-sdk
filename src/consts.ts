@@ -43,19 +43,16 @@ export const DEFAULT_ALGORITHM = {
 
 export const DEFAULT_SM2_ID = '1234567812345678';
 
-export const TEST_NODE = 'polaris1.ont.io'; // 0.9
-// export const TEST_NODE = '139.219.129.26'; // 0.81
-// export const TEST_NODE = '192.168.50.74';
-// export const TEST_NODE = '127.0.0.1';
+export const TEST_NODE = 'polaris1.ont.io';
 
 export const TEST_NODE_1 = 'polaris1.ont.io';
 export const TEST_NODE_2 = 'polaris2.ont.io';
 
 export const MAIN_NODE = 'dappnode1.ont.io';
 
-export const HTTP_REST_PORT = '20334';
-export const HTTP_WS_PORT = '20335';
-export const HTTP_JSON_PORT = '20336';
+export const HTTPS_REST_PORT = '10334';
+export const HTTPS_WS_PORT = '10335';
+export const HTTPS_JSON_PORT = '10336';
 
 export const REST_API = {
     getBalance: '/api/v1/balance',
@@ -70,43 +67,43 @@ export const ONT_NETWORK = {
 };
 
 export const TEST_ONT_URL_1 = {
-    SOCKET_URL: `ws://${TEST_NODE_1}:${HTTP_WS_PORT}`,
+    SOCKET_URL: `wss://${TEST_NODE_1}:${HTTPS_WS_PORT}`,
 
-    RPC_URL: `http://${TEST_NODE_1}:${HTTP_JSON_PORT}`,
+    RPC_URL: `https://${TEST_NODE_1}:${HTTPS_JSON_PORT}`,
 
-    REST_URL: `http://${TEST_NODE_1}:${HTTP_REST_PORT}`,
+    REST_URL: `https://${TEST_NODE_1}:${HTTPS_REST_PORT}`,
 
-    sendRawTxByRestful: `http://${TEST_NODE_1}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+    sendRawTxByRestful: `https://${TEST_NODE_1}:${HTTPS_REST_PORT}${REST_API.sendRawTx}`
 };
 
 export const TEST_ONT_URL_2 = {
-    SOCKET_URL: `ws://${TEST_NODE_2}:${HTTP_WS_PORT}`,
+    SOCKET_URL: `wss://${TEST_NODE_2}:${HTTPS_WS_PORT}`,
 
-    RPC_URL: `http://${TEST_NODE_2}:${HTTP_JSON_PORT}`,
+    RPC_URL: `https://${TEST_NODE_2}:${HTTPS_JSON_PORT}`,
 
-    REST_URL: `http://${TEST_NODE_2}:${HTTP_REST_PORT}`,
+    REST_URL: `https://${TEST_NODE_2}:${HTTPS_REST_PORT}`,
 
-    sendRawTxByRestful: `http://${TEST_NODE_2}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+    sendRawTxByRestful: `https://${TEST_NODE_2}:${HTTPS_REST_PORT}${REST_API.sendRawTx}`
 };
 
 export const TEST_ONT_URL = {
-    SOCKET_URL: `ws://${TEST_NODE}:${HTTP_WS_PORT}`,
+    SOCKET_URL: `wss://${TEST_NODE}:${HTTPS_WS_PORT}`,
 
-    RPC_URL: `http://${TEST_NODE}:${HTTP_JSON_PORT}`,
+    RPC_URL: `https://${TEST_NODE}:${HTTPS_JSON_PORT}`,
 
-    REST_URL: `http://${TEST_NODE}:${HTTP_REST_PORT}`,
+    REST_URL: `https://${TEST_NODE}:${HTTPS_REST_PORT}`,
 
-    sendRawTxByRestful: `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+    sendRawTxByRestful: `https://${TEST_NODE}:${HTTPS_REST_PORT}${REST_API.sendRawTx}`
 };
 
 export const MAIN_ONT_URL = {
-    SOCKET_URL: `ws://${MAIN_NODE}:${HTTP_WS_PORT}`,
+    SOCKET_URL: `wss://${MAIN_NODE}:${HTTPS_WS_PORT}`,
 
-    RPC_URL: `http://${MAIN_NODE}:${HTTP_JSON_PORT}/`,
+    RPC_URL: `https://${MAIN_NODE}:${HTTPS_JSON_PORT}/`,
 
-    REST_URL: `http://${MAIN_NODE}:${HTTP_REST_PORT}/`,
+    REST_URL: `https://${MAIN_NODE}:${HTTPS_REST_PORT}/`,
 
-    sendRawTxByRestful: `http://${TEST_NODE}:${HTTP_REST_PORT}${REST_API.sendRawTx}`
+    sendRawTxByRestful: `https://${TEST_NODE}:${HTTPS_REST_PORT}${REST_API.sendRawTx}`
 
 };
 
