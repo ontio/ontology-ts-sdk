@@ -76,7 +76,7 @@
         "@ont-community/html5-websocket": "^2.0.2",
         "@ont-dev/hdkey-secp256r1": "^1.1.2",
         "@ont-dev/sm.js": "^0.1.7",
-        "axios": "^0.19.0",
+        "axios": "^0.21.2",
         "babel-polyfill": "^6.26.0",
         "base-58": "^0.0.1",
         "base64-url": "^2.2.0",
