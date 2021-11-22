@@ -16,27 +16,33 @@
 * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import {Address, PrivateKey} from '../../src/crypto';
+import {Address, PrivateKey} from '../../../src/crypto';
 import {
-    deserializeTransferTxV2,
     makeTransferTxV2,
-} from '../../src/smartcontract/nativevm/ontAssetTxBuilder';
-import {Account} from '../../src';
+} from '../../../src/smartcontract/nativevm/ontAssetTxBuilder';
+import {Account, WebsocketClient} from '../../../src';
+import {signTransaction} from "../../../src/transaction/transactionBuilder";
+
+// from ATrsfFRuAEcHNznnuLmJgC5A4Gm2Yit9XZ
+// to AV88PcsdFk2MTcPkuyPNEkpgLFiKHtCM1r
 
 describe('test ont/ong v2', () => {
+    const socketClient = new WebsocketClient('http://172.168.3.73:20335');
     const gasLimit = '20000';
     const gasPrice = '2500';
-    const adminPrivateKey = new PrivateKey('7c47df9664e7db85c1308c080f398400cb24283f5d922e76b478b5429e821b97');
+    const adminPrivateKey = new PrivateKey('861dd2bd18cc61483b3f9bab4a62de945279c8f9c9fdd6318e09031634bc2e1b');
     const account = Account.create(adminPrivateKey, '123456', '');
     const adminAddress = account.address;
 
-    test('test deserializeTransferTxV2', async () => {
+    test('makeTransferTxV2', async () => {
         const from = adminAddress;
-        const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
-        const tx = makeTransferTxV2('ONT', from, to, 100000000, gasPrice, gasLimit);
-        const serializedTx = tx.serialize();
-        const deserializedTx = deserializeTransferTxV2(serializedTx);
-        expect(deserializedTx.method === 'transferV2' && deserializedTx.amount === 100000000);
-    });
+        const to = new Address('AV88PcsdFk2MTcPkuyPNEkpgLFiKHtCM1r');
+        const tx = makeTransferTxV2('ONG', from, to, 1e19, gasPrice, gasLimit);
+        signTransaction(tx, adminPrivateKey);
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log('response', JSON.stringify(response));
+        expect(response.Result.State).toEqual(1);
+    }, 10000);
 });
 
