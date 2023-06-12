@@ -21,7 +21,7 @@ import { PublicKey } from '../../src/crypto/PublicKey';
 import { SignatureScheme } from '../../src/crypto/SignatureScheme';
 import RestClient from '../../src/network/rest/restClient';
 import { deserializeTransferTx, makeQueryAllowanceTx,
-    makeTransferStateTx, makeTransferToMany, makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT
+    makeTransferStateTx, makeTransferToMany, makeTransferTx, makeWithdrawOngTx, ONT_CONTRACT, makeApproveTx
 } from '../../src/smartcontract/nativevm/ontAssetTxBuilder';
 import { State } from '../../src/smartcontract/nativevm/token';
 import { comparePublicKeys } from '../../src/transaction/program';
@@ -154,11 +154,31 @@ describe('test transfer asset', () => {
         // expect(result.Error).toEqual(0);
     }, 10000);
 
+    test('test approve ont tx', async () => {
+        const from = adminAddress;
+        const to = new Address('AH9B261xeBXdKH4jPyafcHcLkS2EKETbUj');
+        const amount = 10;
+        const tx = makeApproveTx('ont', from , to, amount, gasPrice, gasLimit);
+        signTransaction(tx, adminPrivateKey);
+        const response = await socketClient.sendRawTransaction(tx.serialize(), false, true);
+        // tslint:disable:no-console
+        console.log('response',JSON.stringify(response));
+        const tx2 = makeQueryAllowanceTx('ont',from, to);
+        const result = await restClient.sendRawTransaction(tx2.serialize(), true);
+        console.log('makeQueryAllowanceTx: ',result);
+        if (result.Result) {
+            const num = parseInt(reverseHex(result.Result.Result), 16);
+            console.log(num);
+            expect(num).toEqual(amount)
+        }
+        expect(result).toBeTruthy();
+    })
+
     test('test get allowance with tx', async () => {
         const from = adminAddress;
         const tx = makeQueryAllowanceTx('ong', new Address(ONT_CONTRACT), from);
         const result = await restClient.sendRawTransaction(tx.serialize(), true);
-        console.log(result);
+        console.log('makeQueryAllowanceTx: ',result);
         if (result.Result) {
             const num = parseInt(reverseHex(result.Result.Result), 16);
             console.log(num);
