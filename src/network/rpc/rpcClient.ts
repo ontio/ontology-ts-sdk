@@ -16,7 +16,8 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
+import fetchAdapter from "@vespaiach/axios-fetch-adapter";
 import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
 import { ERROR_CODE } from '../../error';
@@ -30,8 +31,12 @@ export default class RpcClient {
      */
     url: string;
 
-    constructor( url ?: string ) {
+    config: undefined | AxiosRequestConfig;
+
+    constructor( url ?: string, useFetch?: boolean ) {
         this.url = url || TEST_ONT_URL.RPC_URL;
+
+        this.config = useFetch ? { adapter: fetchAdapter } : undefined;
     }
 
     /**
@@ -65,7 +70,7 @@ export default class RpcClient {
     getBalance(address: Address): Promise<any> {
         const req = this.makeRequest('getbalance', address.toBase58());
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -78,7 +83,7 @@ export default class RpcClient {
     getBalanceV2(address: Address): Promise<any> {
         const req = this.makeRequest('getbalancev2', address.toBase58());
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -97,7 +102,7 @@ export default class RpcClient {
             req = this.makeRequest('sendrawtransaction', data);
         }
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -110,7 +115,7 @@ export default class RpcClient {
     getRawTransaction(txHash: string): Promise<any> {
         const req = this.makeRequest('getrawtransaction', txHash);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -123,7 +128,7 @@ export default class RpcClient {
     getRawTransactionJson(txHash: string): Promise<any> {
         const req = this.makeRequest('getrawtransaction', txHash, 1);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -146,7 +151,7 @@ export default class RpcClient {
     getNodeCount(): Promise<any> {
         const req = this.makeRequest('getconnectioncount');
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -157,7 +162,7 @@ export default class RpcClient {
     getBlockHeight(): Promise<any> {
         const req = this.makeRequest('getblockcount');
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             if (res.data && res.data.result) {
                 return res.data.result - 1;
             } else {
@@ -172,7 +177,7 @@ export default class RpcClient {
     getBlockCount(): Promise<any> {
         const req = this.makeRequest('getblockcount');
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -185,7 +190,7 @@ export default class RpcClient {
     getBlockJson(value: string | number): Promise<any> {
         const req = this.makeRequest('getblock', value, 1);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -198,7 +203,7 @@ export default class RpcClient {
     getContract(hash: string): Promise<any> {
         const req = this.makeRequest('getcontractstate', hash);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -211,7 +216,7 @@ export default class RpcClient {
     getContractJson(codeHash: string): Promise<any> {
         const req = this.makeRequest('getcontractstate', codeHash, 1);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -225,7 +230,7 @@ export default class RpcClient {
     getBlock(value: string | number): Promise<any> {
         const req = this.makeRequest('getblock', value);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -240,7 +245,7 @@ export default class RpcClient {
     getSmartCodeEvent(value: string | number): Promise<any> {
         const req = this.makeRequest('getsmartcodeevent', value);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -252,7 +257,7 @@ export default class RpcClient {
     getBlockHeightByTxHash(txHash: string): Promise<any> {
         const req = this.makeRequest('getblockheightbytxhash', txHash);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -268,7 +273,7 @@ export default class RpcClient {
         // tslint:disable-next-line:no-console
         console.log(req);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -285,7 +290,7 @@ export default class RpcClient {
         // tslint:disable-next-line:no-console
         console.log(req);
 
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -301,7 +306,7 @@ export default class RpcClient {
             throw ERROR_CODE.INVALID_PARAMS;
         }
         const req = this.makeRequest('getallowance', asset, from.toBase58(), to.toBase58());
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
@@ -317,56 +322,56 @@ export default class RpcClient {
             throw ERROR_CODE.INVALID_PARAMS;
         }
         const req = this.makeRequest('getallowancev2', asset, from.toBase58(), to.toBase58());
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
 
     getUnboundOng(address: Address): Promise<any> {
         const req = this.makeRequest('getunboundong', 'ong', address.toBase58(), address.toBase58());
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
 
     getBlockTxsByHeight(height: number): Promise<any> {
         const req = this.makeRequest('getblocktxsbyheight', height);
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
 
     getGasPrice(): Promise<any> {
         const req = this.makeRequest('getgasprice');
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
 
     getGrantOng(address: Address): Promise<any> {
         const req = this.makeRequest('getgrantong', address.toBase58());
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
 
     getMempoolTxCount(): Promise<any> {
         const req = this.makeRequest('getmempooltxcount');
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
 
     getMempoolTxState(txHash: string): Promise<any> {
         const req = this.makeRequest('getmempooltxstate', txHash);
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }
 
     getVersion(): Promise<any> {
         const req = this.makeRequest('getversion');
-        return axios.post(this.url, req).then((res) => {
+        return axios.post(this.url, req, this.config).then((res) => {
             return res.data;
         });
     }

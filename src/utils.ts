@@ -545,7 +545,16 @@ export function hash160(SignatureScript: string): string {
  * @param len Length of the array to generate
  */
 export function generateRandomArray(len: number): ArrayBuffer {
-    return secureRandom(len);
+    try {
+        return secureRandom(len);
+    } catch (err) {
+        // 兼容在Chrome插件V3环境下使用的情况
+        // 在V3下不能使用window变量，可直接访问crypto变量
+        const nativeArr = new Uint8Array(len);
+        crypto.getRandomValues(nativeArr);
+        const res = [].slice.call(nativeArr) as any as ArrayBuffer;
+        return res;
+    }
 }
 
 /**

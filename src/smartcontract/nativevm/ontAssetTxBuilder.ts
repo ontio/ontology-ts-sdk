@@ -415,6 +415,7 @@ export function makeApproveTx(
 ): Transaction {
   asset = asset.toLowerCase();
   if (asset !== "ont" && asset !== "ong") {
+    /* tslint:disable */
     throw "ERROR_CODE.INVALID_PARAMS";
   }
 

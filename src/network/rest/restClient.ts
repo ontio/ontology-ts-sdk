@@ -17,7 +17,8 @@ import { ERROR_CODE } from './../../error';
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
+import fetchAdapter from "@vespaiach/axios-fetch-adapter";
 import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
 import UrlConsts from './urlConsts';
@@ -31,6 +32,8 @@ export default class RestClient {
      */
     url: string;
 
+    config: undefined | AxiosRequestConfig;
+
     /**
      * Version of restful api
      */
@@ -41,8 +44,9 @@ export default class RestClient {
      */
     action: string = 'sendrawtransaction';
 
-    constructor(url ?: string) {
+    constructor(url ?: string, useFetch?: boolean) {
         this.url = url || TEST_ONT_URL.REST_URL;
+        this.config = useFetch ? { adapter: fetchAdapter } : undefined;
         if (this.url[this.url.length - 1] === '/') {
             this.url = this.url.substring(0, this.url.length - 1);
         }
@@ -102,7 +106,7 @@ export default class RestClient {
             Data    : hexData
         };
 
-        return axios.post(url, body).then((res) => {
+        return axios.post(url, body, this.config).then((res) => {
             return res.data;
         });
     }
@@ -129,7 +133,8 @@ export default class RestClient {
         param.set('raw', '1');
         let url = this.url + UrlConsts.Url_get_transaction + txHash;
         url += this.concatParams(param);
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -144,7 +149,8 @@ export default class RestClient {
         param.set('raw', '0');
         let url = this.url + UrlConsts.Url_get_transaction + txHash;
         url += this.concatParams(param);
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -165,7 +171,8 @@ export default class RestClient {
      */
     getNodeCount(): Promise<any> {
         const url = this.url + UrlConsts.Url_get_node_count;
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -175,7 +182,8 @@ export default class RestClient {
      */
     getBlockHeight(): Promise<any> {
         const url = this.url + UrlConsts.Url_get_block_height;
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -196,7 +204,7 @@ export default class RestClient {
         }
         url += this.concatParams(params);
 
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -213,7 +221,7 @@ export default class RestClient {
         url += this.concatParams(params);
 
             // console.log('url: '+url);
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -227,7 +235,8 @@ export default class RestClient {
         params.set('raw', '0');
         let url = this.url + UrlConsts.Url_get_contract_state + codeHash;
         url += this.concatParams(params);
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -245,7 +254,8 @@ export default class RestClient {
         } else if (typeof value === 'number') {
             url = this.url + UrlConsts.Url_get_smartcodeevent_txs_by_height + value;
         }
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -256,7 +266,8 @@ export default class RestClient {
      */
     getBlockHeightByTxHash(hash: string): Promise<any> {
         const url = this.url + UrlConsts.Url_get_block_height_by_txhash + hash;
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -268,7 +279,8 @@ export default class RestClient {
      */
     getStorage(codeHash: string, key: string): Promise<any> {
         const url = this.url + UrlConsts.Url_get_storage + codeHash + '/' + key;
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -283,7 +295,7 @@ export default class RestClient {
             // tslint:disable-next-line:no-console
         // console.log('url: ' + url);
 
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -295,7 +307,8 @@ export default class RestClient {
      */
     getBalance(address: Address): Promise<any> {
         const url = this.url + UrlConsts.Url_get_account_balance + address.toBase58();
-        return axios.get(url).then((res) => {
+
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -307,7 +320,7 @@ export default class RestClient {
      */
     getBalanceV2(address: Address): Promise<any> {
         const url = this.url + UrlConsts.Url_get_account_balance_v2 + address.toBase58();
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -324,7 +337,7 @@ export default class RestClient {
             url = this.url + UrlConsts.Url_get_block_by_hash + value;
         }
 
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -342,7 +355,7 @@ export default class RestClient {
         }
         const url = this.url + UrlConsts.Url_get_allowance +
                     asset.toLowerCase() + '/' + from.toBase58() + '/' + to.toBase58();
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
@@ -360,56 +373,56 @@ export default class RestClient {
         }
         const url = this.url + UrlConsts.Url_get_allowance_v2 +
             asset.toLowerCase() + '/' + from.toBase58() + '/' + to.toBase58();
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
 
     getUnboundOng(address: Address): Promise<any> {
         const url = this.url + UrlConsts.Url_get_unbound_ong + address.toBase58();
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
 
     getBlockTxsByHeight(height: number): Promise<any> {
         const url = this.url + UrlConsts.Url_get_block_txs_by_height + height;
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
 
     getGasPrice(): Promise<any> {
         const url = this.url + UrlConsts.Url_get_gasprice ;
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
 
     getGrantOng(address: Address): Promise<any> {
         const url = this.url + UrlConsts.Url_get_grant_ong + address.toBase58();
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
 
     getMempoolTxCount(): Promise<any> {
         const url = this.url + UrlConsts.Url_get_mempool_txcount;
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
 
     getMempoolTxState(hash: string): Promise<any> {
         const url = this.url + UrlConsts.Url_get_mempool_txstate + hash;
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }
 
     getVersion(): Promise<any> {
         const url = this.url + UrlConsts.Url_get_version;
-        return axios.get(url).then((res) => {
+        return axios.get(url, this.config).then((res) => {
             return res.data;
         });
     }

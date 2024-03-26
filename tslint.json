@@ -5,8 +5,8 @@
   ],
   "jsRules": {},
   "rules": {
-    "quotemark": [true, "single"],
-    "ter-indent": [true, 4],
+    "quotemark": [false, "single"],
+    "ter-indent": [false, 4],
     "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
     "interface-name" : [true, "never-prefix"],
     "member-access": false,
@@ -25,6 +25,7 @@
       "check-type-operator",
       "check-preblock"
     ],
+    "ordered-imports": false,
     "no-bitwise": false
   },
   "rulesDirectory": []
