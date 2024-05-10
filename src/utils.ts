@@ -631,3 +631,24 @@ export function calcUnboundOng(balance: number, startOffset: number, endOffset: 
     }
     return amount * balance;
 }
+
+// 判断是否需要使用fetch方法请求数据，在Chrome V3中只能使用fetch
+export function needUseFetch() {
+    let useFetch = false;
+    try {
+        // 不能使用XMLHttpRequest
+        // @ts-ignore
+        const tt = new XMLHttpRequest();
+    } catch (e) {
+        try {
+            // 且可以使用fetch
+            // @ts-ignore
+            const tmp = fetch;
+            useFetch = true;
+        } catch (err) {
+            //
+        }
+    }
+
+    return useFetch;
+}

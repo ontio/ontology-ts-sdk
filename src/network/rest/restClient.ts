@@ -22,6 +22,7 @@ import fetchAdapter from "@vespaiach/axios-fetch-adapter";
 import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
 import UrlConsts from './urlConsts';
+import { needUseFetch } from '../../utils';
 
 /**
  * Wrapper class for restful api.
@@ -46,7 +47,8 @@ export default class RestClient {
 
     constructor(url ?: string, useFetch?: boolean) {
         this.url = url || TEST_ONT_URL.REST_URL;
-        this.config = useFetch ? { adapter: fetchAdapter } : undefined;
+        const isUseFetch = useFetch || needUseFetch();
+        this.config = isUseFetch ? { adapter: fetchAdapter } : undefined;
         if (this.url[this.url.length - 1] === '/') {
             this.url = this.url.substring(0, this.url.length - 1);
         }

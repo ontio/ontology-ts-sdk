@@ -21,6 +21,7 @@ import fetchAdapter from "@vespaiach/axios-fetch-adapter";
 import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
 import { ERROR_CODE } from '../../error';
+import { needUseFetch } from '../../utils';
 
 /**
  * Wrapper class for RPC apis.
@@ -36,7 +37,8 @@ export default class RpcClient {
     constructor( url ?: string, useFetch?: boolean ) {
         this.url = url || TEST_ONT_URL.RPC_URL;
 
-        this.config = useFetch ? { adapter: fetchAdapter } : undefined;
+        const isUseFetch = useFetch || needUseFetch();
+        this.config = isUseFetch ? { adapter: fetchAdapter } : undefined;
     }
 
     /**
