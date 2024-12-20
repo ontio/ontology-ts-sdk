@@ -18,12 +18,12 @@
 
 import { sm2 } from '@ont-dev/sm.js';
 import * as elliptic from 'elliptic';
-import { DEFAULT_SM2_ID } from '../consts';
-import { hexstr2str, hexstring2ab, num2hexstring, StringReader } from '../utils';
+import { DEFAULT_SM2_ID, MESSAGE_PREFIX } from '../consts';
+import { hexstr2str, hexstring2ab, num2hexstring, StringReader, str2hexstr } from '../utils';
 import { CurveLabel } from './CurveLabel';
 import { Key, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
-import { Signable } from './signable';
+import { Signable } from './signable';
 import { Signature } from './Signature';
 import { SignatureScheme } from './SignatureScheme';
 
@@ -64,25 +64,34 @@ export class PublicKey extends Key {
      * @param msg Hex encoded input data or Signable object
      * @param signature Signature object
      */
-    verify(msg: string | Signable, signature: Signature): boolean {
+    verify(msgHex: string | Signable, signature: Signature): boolean {
         if (!this.isSchemaSupported(signature.algorithm)) {
             throw new Error('Signature schema does not match key type.');
         }
 
         // retrieves content to sign if not provided directly
-        if (typeof msg !== 'string') {
-            msg = msg.getSignContent();
+        if (typeof msgHex !== 'string') {
+            msgHex = msgHex.getSignContent();
         }
 
         let hash: string;
         if (signature.algorithm === SignatureScheme.SM2withSM3) {
             // library sm.js (SM2withSM3) has implemented hashing as part of verification, therefore it is skipped
-            hash = msg;
+            hash = msgHex;
         } else {
-            hash = this.computeHash(msg, signature.algorithm);
+            hash = this.computeHash(msgHex, signature.algorithm);
         }
 
         return this.verifySignature(hash, signature.value, signature.algorithm);
+    }
+
+    verifyPersonalMsg(msg: string | Signable, signature: Signature): boolean {
+        if (typeof msg !== 'string') {
+            msg = msg.getSignContent();
+        }
+        const personalMsg = MESSAGE_PREFIX + String(msg.length) + msg;
+        const msgHex = str2hexstr(personalMsg);
+        return this.verify(msgHex, signature);
     }
 
     /**
@@ -93,15 +102,15 @@ export class PublicKey extends Key {
     serializeHex(): string {
         let result = '';
         switch (this.algorithm) {
-        case KeyType.ECDSA:
-            result += this.key;
-            break;
-        case KeyType.EDDSA:
-        case KeyType.SM2:
-            result += num2hexstring(this.algorithm.hex);
-            result += num2hexstring(this.parameters.curve.hex);
-            result += Buffer.from(this.key, 'hex').toString('hex');
-            break;
+            case KeyType.ECDSA:
+                result += this.key;
+                break;
+            case KeyType.EDDSA:
+            case KeyType.SM2:
+                result += num2hexstring(this.algorithm.hex);
+                result += num2hexstring(this.parameters.curve.hex);
+                result += Buffer.from(this.key, 'hex').toString('hex');
+                break;
         }
         return result;
     }
@@ -114,22 +123,22 @@ export class PublicKey extends Key {
      */
     verifySignature(hash: string, signature: string, schema: SignatureScheme): boolean {
         switch (schema) {
-        case SignatureScheme.ECDSAwithSHA224:
-        case SignatureScheme.ECDSAwithSHA256:
-        case SignatureScheme.ECDSAwithSHA384:
-        case SignatureScheme.ECDSAwithSHA512:
-        case SignatureScheme.ECDSAwithSHA3_224:
-        case SignatureScheme.ECDSAwithSHA3_256:
-        case SignatureScheme.ECDSAwithSHA3_384:
-        case SignatureScheme.ECDSAwithSHA3_512:
-        case SignatureScheme.ECDSAwithRIPEMD160:
-            return this.verifyEcDSASignature(hash, signature);
-        case SignatureScheme.EDDSAwithSHA512:
-            return this.verifyEdDSASignature(hash, signature);
-        case SignatureScheme.SM2withSM3:
-            return this.verifySM2Signature(hash, signature);
-        default:
-            throw new Error('Unsupported signature schema.');
+            case SignatureScheme.ECDSAwithSHA224:
+            case SignatureScheme.ECDSAwithSHA256:
+            case SignatureScheme.ECDSAwithSHA384:
+            case SignatureScheme.ECDSAwithSHA512:
+            case SignatureScheme.ECDSAwithSHA3_224:
+            case SignatureScheme.ECDSAwithSHA3_256:
+            case SignatureScheme.ECDSAwithSHA3_384:
+            case SignatureScheme.ECDSAwithSHA3_512:
+            case SignatureScheme.ECDSAwithRIPEMD160:
+                return this.verifyEcDSASignature(hash, signature);
+            case SignatureScheme.EDDSAwithSHA512:
+                return this.verifyEdDSASignature(hash, signature);
+            case SignatureScheme.SM2withSM3:
+                return this.verifySM2Signature(hash, signature);
+            default:
+                throw new Error('Unsupported signature schema.');
         }
     }
 
