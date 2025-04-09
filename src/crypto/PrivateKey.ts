@@ -143,7 +143,7 @@ export class PrivateKey extends Key {
         if (typeof msg !== 'string') {
             msg = msg.getSignContent();
         }
-        const personalMsg = MESSAGE_PREFIX + String(msg.length) + msg;
+        const personalMsg = MESSAGE_PREFIX + String(Buffer.from(msg).length) + msg;
         const msgHex = str2hexstr(personalMsg);
         return this.sign(msgHex, schema, publicKeyId);
     }
