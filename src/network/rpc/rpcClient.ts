@@ -17,7 +17,8 @@
  */
 
 import axios, { AxiosRequestConfig } from 'axios';
-import fetchAdapter from "@vespaiach/axios-fetch-adapter";
+// import fetchAdapter from "@vespaiach/axios-fetch-adapter";
+import fetchAdapter from "../fetchAdapter";
 import { TEST_ONT_URL } from '../../consts';
 import { Address } from '../../crypto/address';
 import { ERROR_CODE } from '../../error';

@@ -22,6 +22,7 @@ import * as CONST from './consts';
 import * as Credentials from './credentials';
 import * as Crypto from './crypto';
 import { Identity } from './identity';
+import { IdentityForBrowser } from './identityForBrowser';
 import * as Merkle from './merkle';
 import * as NeoCore from './neocore';
 import RestClient from './network/rest/restClient';
@@ -52,6 +53,7 @@ import { Wallet } from './wallet';
 class ONT {
     Account: any;
     Identity: any;
+    IdentityForBrowser: any;
     Claim: any;
     DDO: any;
     DDOAttribute: any;
@@ -88,6 +90,7 @@ class ONT {
     constructor() {
         this.Account = Account;
         this.Identity = Identity;
+        this.IdentityForBrowser = IdentityForBrowser;
         this.Claim = Claim;
         this.DDO = DDO;
         this.DDOAttribute = DDOAttribute;
@@ -143,6 +146,7 @@ export default ONT;
 export {
     Account,
     Identity,
+    IdentityForBrowser,
     Claim,
     DDO,
     DDOAttribute,

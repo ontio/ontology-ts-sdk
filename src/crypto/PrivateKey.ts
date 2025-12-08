@@ -23,7 +23,7 @@ import * as secureRandom from 'secure-random';
 import * as wif from 'wif';
 import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID, ONT_BIP44_PATH } from '../consts';
 import { ERROR_CODE } from '../error';
-import { decryptWithGcm, encryptWithGcm, ScryptParams } from '../scrypt';
+import { decryptWithGcm, encryptWithGcm, ScryptParams, decryptWithGcmForBrowser, encryptWithGcmForBrowser } from '../scrypt';
 import { ab2hexstring, hexstring2ab, isBase64, str2hexstr } from '../utils';
 import { Address } from './address';
 import { Key, KeyParameters } from './Key';
@@ -182,6 +182,35 @@ export class PrivateKey extends Key {
     }
 
     /**
+     * Decrypts encrypted private key with supplied password. same as decrypt, but for browser.
+     *
+     * @param keyphrase Password to decrypt with
+     * @param address For aad in decryption
+     * @param 16 secure random bytes
+     * @param params Optional Scrypt params
+     */
+    async decryptForBrowser(
+        keyphrase: string,
+        address: Address,
+        salt: string,
+        params?: ScryptParams
+    ): Promise<PrivateKey> {
+        // const decrypted = decrypt(this.key, keyphrase, checksum, params);
+        if (salt.length === 24 && isBase64(salt)) {
+            salt = Buffer.from(salt, 'base64').toString('hex');
+        }
+        const decrypted = await decryptWithGcmForBrowser(this.key, address, salt, keyphrase, params);
+        const decryptedKey = new PrivateKey(decrypted, this.algorithm, this.parameters);
+        // checkDecrypted(checksum, decryptedKey.getPublicKey().serializeHex());
+        const pk = decryptedKey.getPublicKey();
+        const addrTmp = Address.fromPubKey(pk);
+        if (addrTmp.toBase58() !== address.toBase58()) {
+            throw ERROR_CODE.Decrypto_ERROR;
+        }
+        return decryptedKey;
+    }
+
+    /**
      * Encrypts private key with supplied password.
      *
      * @param keyphrase Password to encrypt with
@@ -197,6 +226,30 @@ export class PrivateKey extends Key {
             throw ERROR_CODE.INVALID_ADDR;
         }
         const encrypted = encryptWithGcm(this.key, address, salt, keyphrase, params);
+        return new PrivateKey(encrypted, this.algorithm, this.parameters);
+    }
+
+    /**
+     * Encrypts private key with supplied password for browser. same as encrypt, but for browser.
+     *
+     * @param keyphrase Password to encrypt with
+     * @param address For aad in encryption
+     * @param salt 16 secure random bytes
+     * @param params Optional Scrypt params
+     */
+    async encryptForBrowser(
+        keyphrase: string,
+        address: Address,
+        salt: string,
+        params?: ScryptParams
+    ): Promise<PrivateKey> {
+        // add address check
+        const publicKey = this.getPublicKey();
+        const addr = Address.fromPubKey(publicKey).toBase58();
+        if (addr !== address.toBase58()) {
+            throw ERROR_CODE.INVALID_ADDR;
+        }
+        const encrypted = await encryptWithGcmForBrowser(this.key, address, salt, keyphrase, params);
         return new PrivateKey(encrypted, this.algorithm, this.parameters);
     }
 

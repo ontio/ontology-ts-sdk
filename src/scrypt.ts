@@ -345,6 +345,7 @@ export function encryptWithGcm(
     const key = derived2;
     const iv = derived1;
     const aad = new Buffer(address.toBase58());
+
     const cipher = createCipheriv('aes-256-gcm', key, iv);
     cipher.setAAD(aad);
     const plainText = Buffer.from(privateKey, 'hex');
@@ -356,6 +357,61 @@ export function encryptWithGcm(
 
     const result = Buffer.concat([ciphertext, authTag]);
     return result.toString('base64');
+}
+
+/**
+ * Encrypt with window.crypto, same as encryptWithGcm
+ * This is the default encryption algorithm for private key
+ * @param privateKey Private key to encpryt with
+ * @param address Adderss to encrypt with
+ * @param salt Salt to encrypt with
+ * @param keyphrase User's password
+ * @param scryptParams Optional params to encrypt
+ */
+export async function encryptWithGcmForBrowser(
+    privateKey: string,
+    address: Address,
+    salt: string,
+    keyphrase: string,
+    scryptParams: ScryptParams = DEFAULT_SCRYPT
+) {
+    if (!isHexString(privateKey)) {
+        throw new Error(ERROR_CODE.INVALID_PARAMS + ', Invalid private key');
+    }
+    const derived = scrypt(keyphrase, salt, scryptParams);
+    const derived1 = derived.slice(0, 12);
+    const derived2 = derived.slice(32);
+    const key = derived2;
+    const iv = derived1;
+    const aad = new Buffer(address.toBase58());
+    const plainText = Buffer.from(privateKey, 'hex');
+
+    // Node 环境：使用 crypto
+    if (typeof window === 'undefined') {
+        throw new Error('encryptWithGcmForBrowser is not supported in Node.js');
+    } else {
+        // 浏览器环境
+        const cryptoKey = await window.crypto.subtle.importKey(
+            'raw',
+            key,
+            { name: 'AES-GCM' },
+            false,
+            ['encrypt']
+        );
+
+        const encryptedBuffer = await window.crypto.subtle.encrypt(
+            {
+                name: 'AES-GCM',
+                iv,
+                additionalData: aad,
+                tagLength: 128
+            },
+            cryptoKey,
+            plainText
+        );
+
+        return Buffer.from(encryptedBuffer).toString('base64');
+    }
 }
 
 /**
@@ -399,4 +455,62 @@ export function decryptWithGcm(
         throw ERROR_CODE.Decrypto_ERROR;
     }
     return decrypted;
+}
+
+/**
+ * Decrypt with window.crypto, same as decryptWithGcm
+ * @param encrypted Encrypted private key
+ * @param address Address to decrypt with
+ * @param salt Salt to decrypt with
+ * @param keyphrase User's password
+ * @param scryptParams Optioanl params to decrypt with
+ */
+export async function decryptWithGcmForBrowser(
+    // ciphertext: string,
+    // authTag: string,
+    encrypted: string,
+    address: Address,
+    salt: string,
+    keyphrase: string,
+    scryptParams: ScryptParams = DEFAULT_SCRYPT
+) {
+    if (salt.length !== 32) {
+        throw ERROR_CODE.INVALID_PARAMS;
+    }
+    const result = Buffer.from(encrypted, 'base64');
+    const ciphertext = result.slice(0, result.length - 16);
+    const authTag = result.slice(result.length - 16);
+    const derived = scrypt(keyphrase, salt, scryptParams);
+    const derived1 = derived.slice(0, 12);
+    const derived2 = derived.slice(32);
+    const key = derived2;
+    const iv = derived1;
+    const aad = new Buffer(address.toBase58());
+    // const auth = new Buffer(authTag, 'hex');
+    if (typeof window === 'undefined') {
+        throw new Error('decryptWithGcmForBrowser is not supported in Node.js');
+    } else {
+        const cryptoKey = await window.crypto.subtle.importKey(
+            'raw',
+            key,
+            { name: 'AES-GCM' },
+            false,
+            ['decrypt']
+        );
+
+        const data = new Uint8Array([...ciphertext, ...authTag]);
+
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+            {
+                name: 'AES-GCM',
+                iv,
+                additionalData: aad,
+                tagLength: 128
+            },
+            cryptoKey,
+            data
+        );
+
+        return Buffer.from(decryptedBuffer).toString('hex');
+    }
 }
