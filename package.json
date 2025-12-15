@@ -12,8 +12,8 @@
         "test:identity": "jest --testPathPattern=test/unit/identity.test.ts ",
         "test": "jest",
         "lint": "tslint --project ./",
-        "build:dev": "cross-env NODE_ENV=development webpack --mode development --display-error-details --progress --color",
-        "build:prod": "cross-env NODE_ENV=production webpack --mode production --progress --color",
+        "build:dev": "export NODE_OPTIONS=--openssl-legacy-provider && cross-env NODE_ENV=development webpack --mode development --display-error-details --progress --color",
+        "build:prod": "export NODE_OPTIONS=--openssl-legacy-provider && cross-env NODE_ENV=production webpack --mode production --progress --color",
         "prepublish": "npm run lint && npm run build:prod"
     },
     "jest": {

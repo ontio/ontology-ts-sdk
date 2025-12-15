@@ -21,7 +21,7 @@ import * as bip39 from 'bip39';
 import * as elliptic from 'elliptic';
 import * as secureRandom from 'secure-random';
 import * as wif from 'wif';
-import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID, ONT_BIP44_PATH } from '../consts';
+import { DEFAULT_ALGORITHM, DEFAULT_SM2_ID, MESSAGE_PREFIX, ONT_BIP44_PATH } from '../consts';
 import { ERROR_CODE } from '../error';
 import { decryptWithGcm, encryptWithGcm, ScryptParams, decryptWithGcmForBrowser, encryptWithGcmForBrowser } from '../scrypt';
 import { ab2hexstring, hexstring2ab, isBase64, str2hexstr } from '../utils';
@@ -29,7 +29,7 @@ import { Address } from './address';
 import { Key, KeyParameters } from './Key';
 import { KeyType } from './KeyType';
 import { PublicKey } from './PublicKey';
-import { Signable } from './signable';
+import { Signable } from './signable';
 import { Signature } from './Signature';
 import { SignatureScheme } from './SignatureScheme';
 
@@ -37,14 +37,14 @@ import { SignatureScheme } from './SignatureScheme';
 const { HDKey } = require('@ont-dev/hdkey-secp256r1');
 
 export class PrivateKey extends Key {
-  /**
-   * Generates random Private key using supplied Key type and parameters.
-   *
-   * If no Key type or parameters is supplied, default SDK key type with default parameters will be used.
-   *
-   * @param keyType The key type
-   * @param parameters The parameters for the key type
-   */
+    /**
+     * Generates random Private key using supplied Key type and parameters.
+     *
+     * If no Key type or parameters is supplied, default SDK key type with default parameters will be used.
+     *
+     * @param keyType The key type
+     * @param parameters The parameters for the key type
+     */
     static random(keyType?: KeyType, parameters?: KeyParameters): PrivateKey {
         if (keyType === undefined) {
             keyType = KeyType.fromLabel(DEFAULT_ALGORITHM.algorithm);
@@ -96,11 +96,11 @@ export class PrivateKey extends Key {
      *
      * This method is not suitable, if external keys (Ledger, TPM, ...) support is required.
      *
-     * @param msg Hex encoded input data or Signable object
+     * @param msgHex Hex encoded input data or Signable object
      * @param schema Signing schema to use
      * @param publicKeyId Id of public key
      */
-    sign(msg: string | Signable, schema?: SignatureScheme, publicKeyId?: string): Signature {
+    sign(msgHex: string | Signable, schema?: SignatureScheme, publicKeyId?: string): Signature {
         if (schema === undefined) {
             schema = this.algorithm.defaultSchema;
         }
@@ -110,20 +110,42 @@ export class PrivateKey extends Key {
         }
 
         // retrieves content to sign if not provided directly
-        if (typeof msg !== 'string') {
-            msg = msg.getSignContent();
+        if (typeof msgHex !== 'string') {
+            msgHex = msgHex.getSignContent();
         }
 
         let hash: string;
         if (schema === SignatureScheme.SM2withSM3) {
             // library sm.js (SM2withSM3) has implemented hashing as part of signing, therefore it is skipped
-            hash = msg;
+            hash = msgHex;
         } else {
-            hash = this.computeHash(msg, schema);
+            hash = this.computeHash(msgHex, schema);
         }
 
         const signed = this.computeSignature(hash, schema);
         return new Signature(schema, signed, publicKeyId);
+    }
+
+
+
+    /**
+     * Sign a signature with a prefix.
+     *
+     * If the signature schema is not provided, the default schema for this key type is used.
+     *
+     * This method is suitable, if external keys (Ledger, TPM, ...) support is required.
+     *
+     * @param msg input string or Signable object
+     * @param schema Signing schema to use
+     * @param publicKeyId Id of public key
+     */
+    personalSign(msg: string | Signable, schema?: SignatureScheme, publicKeyId?: string) {
+        if (typeof msg !== 'string') {
+            msg = msg.getSignContent();
+        }
+        const personalMsg = MESSAGE_PREFIX + String(Buffer.from(msg).length) + msg;
+        const msgHex = str2hexstr(personalMsg);
+        return this.sign(msgHex, schema, publicKeyId);
     }
 
     /**
@@ -146,14 +168,14 @@ export class PrivateKey extends Key {
      */
     getPublicKey(): PublicKey {
         switch (this.algorithm) {
-        case KeyType.ECDSA:
-            return this.getEcDSAPublicKey();
-        case KeyType.EDDSA:
-            return this.getEdDSAPublicKey();
-        case KeyType.SM2:
-            return this.getSM2PublicKey();
-        default:
-            throw new Error('Unsupported signature schema.');
+            case KeyType.ECDSA:
+                return this.getEcDSAPublicKey();
+            case KeyType.EDDSA:
+                return this.getEdDSAPublicKey();
+            case KeyType.SM2:
+                return this.getSM2PublicKey();
+            default:
+                throw new Error('Unsupported signature schema.');
         }
     }
 
@@ -293,22 +315,22 @@ export class PrivateKey extends Key {
      */
     computeSignature(hash: string, schema: SignatureScheme): string {
         switch (schema) {
-        case SignatureScheme.ECDSAwithSHA224:
-        case SignatureScheme.ECDSAwithSHA256:
-        case SignatureScheme.ECDSAwithSHA384:
-        case SignatureScheme.ECDSAwithSHA512:
-        case SignatureScheme.ECDSAwithSHA3_224:
-        case SignatureScheme.ECDSAwithSHA3_256:
-        case SignatureScheme.ECDSAwithSHA3_384:
-        case SignatureScheme.ECDSAwithSHA3_512:
-        case SignatureScheme.ECDSAwithRIPEMD160:
-            return this.computeEcDSASignature(hash);
-        case SignatureScheme.EDDSAwithSHA512:
-            return this.computeEdDSASignature(hash);
-        case SignatureScheme.SM2withSM3:
-            return this.computeSM2Signature(hash);
-        default:
-            throw new Error('Unsupported signature schema.');
+            case SignatureScheme.ECDSAwithSHA224:
+            case SignatureScheme.ECDSAwithSHA256:
+            case SignatureScheme.ECDSAwithSHA384:
+            case SignatureScheme.ECDSAwithSHA512:
+            case SignatureScheme.ECDSAwithSHA3_224:
+            case SignatureScheme.ECDSAwithSHA3_256:
+            case SignatureScheme.ECDSAwithSHA3_384:
+            case SignatureScheme.ECDSAwithSHA3_512:
+            case SignatureScheme.ECDSAwithRIPEMD160:
+                return this.computeEcDSASignature(hash);
+            case SignatureScheme.EDDSAwithSHA512:
+                return this.computeEdDSASignature(hash);
+            case SignatureScheme.SM2withSM3:
+                return this.computeSM2Signature(hash);
+            default:
+                throw new Error('Unsupported signature schema.');
         }
     }
 

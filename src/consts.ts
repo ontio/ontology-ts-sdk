@@ -128,3 +128,5 @@ export const UNBOUND_TIME_INTERVAL = 31536000;
 export const ONT_TOTAL_SUPPLY = 1000000000;
 
 export const GENESIS_BLOCK_TIMESTAMP = 1530316800;
+
+export const MESSAGE_PREFIX: string = "\x19Ontology Signed Message:\n";
