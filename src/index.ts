@@ -21,6 +21,7 @@ import { Claim, SimpleMessage } from './claim';
 import * as CONST from './consts';
 import * as Credentials from './credentials';
 import * as Crypto from './crypto';
+import * as FS from './fs';
 import { Identity } from './identity';
 import { IdentityForBrowser } from './identityForBrowser';
 import * as Merkle from './merkle';
@@ -36,6 +37,7 @@ import { Parameter, ParameterType } from './smartcontract/abi/parameter';
 import Struct from './smartcontract/abi/struct';
 import * as GovernanceTxBuilder from './smartcontract/nativevm/governanceContractTxBuilder';
 import * as OntAssetTxBuilder from './smartcontract/nativevm/ontAssetTxBuilder';
+import * as OntfsContractTxBuilder from './smartcontract/nativevm/ontfsContractTxBuilder';
 import * as OntidContract from './smartcontract/nativevm/ontidContractTxBuilder';
 import * as Token from './smartcontract/nativevm/token';
 import * as Oep4 from './smartcontract/neovm/oep4TxBuilder';
@@ -57,11 +59,13 @@ class ONT {
     Claim: any;
     DDO: any;
     DDOAttribute: any;
+    FS: any;
     Transaction: any;
     Transfer: any;
     TxSignature: any;
     TransactionBuilder: any;
     OntAssetTxBuilder: any;
+    OntfsContractTxBuilder: any;
     Parameter: any;
     ParameterType: any;
     AbiFunction: any;
@@ -94,12 +98,14 @@ class ONT {
         this.Claim = Claim;
         this.DDO = DDO;
         this.DDOAttribute = DDOAttribute;
+        this.FS = FS;
         this.Transaction = Transaction;
         this.Transfer = Transfer;
         this.TxSignature = TxSignature;
         this.TransactionBuilder = TransactionBuilder;
         this.OntAssetTxBuilder = OntAssetTxBuilder;
         this.GovernanceTxBuilder = GovernanceTxBuilder;
+        this.OntfsContractTxBuilder = OntfsContractTxBuilder;
         this.Parameter = Parameter;
         this.ParameterType = ParameterType;
         this.AbiFunction = AbiFunction;
@@ -150,6 +156,7 @@ export {
     Claim,
     DDO,
     DDOAttribute,
+    FS,
     Transaction,
     Transfer,
     TxSignature,
@@ -160,6 +167,7 @@ export {
     TransactionBuilder,
     OntAssetTxBuilder,
     GovernanceTxBuilder,
+    OntfsContractTxBuilder,
     utils,
     scrypt,
     CONST,
