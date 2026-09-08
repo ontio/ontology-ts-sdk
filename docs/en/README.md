@@ -13,5 +13,4 @@ The official Ontology TypeScript SDK is a comprehensive library for developing w
 - [Wallet File Specification](Wallet_File_Specification.md)
 - [Digtal Identity and Verifiable Claim](identity_claim.md)
 - [Digtal Assets](asset.md)
-- [Deploy and Invoke Smart Contract](smart_contract.md)
 - [Error Code](errorcode.md)
