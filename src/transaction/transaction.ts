@@ -18,13 +18,13 @@
 
 import * as cryptoJS from 'crypto-js';
 import Fixed64 from '../common/fixed64';
+import { TX_MAX_SIG_SIZE } from '../consts';
 import { Address } from '../crypto/address';
 import { Signable } from '../crypto/signable';
 import { ab2hexstring, generateRandomArray, num2hexstring, StringReader } from '../utils';
 import DeployCode from './payload/deployCode';
 import InvokeCode from './payload/invokeCode';
 import Payload from './payload/payload';
-import { TransactionAttribute } from './txAttribute';
 import { TxSignature } from './txSignature';
 
 export enum TxType  {
@@ -99,14 +99,22 @@ export class Transaction implements Signable {
         }
         payload.deserialize(ss);
         tx.payload = payload;
-        tx.txAttributes = [];
         tx.sigs = [];
 
-        const attributeLength = ss.readNextLen();
-        for (let i = 0; i < attributeLength; i++) {
-            const txAttribute = new TransactionAttribute();
-            txAttribute.deserialize(ss);
-            tx.txAttributes.push(txAttribute);
+        // At most 15 entries: the canonical varuint is always one byte.
+        const extraSignerLength = parseInt(ss.read(1), 16);
+        if (extraSignerLength > TX_MAX_SIG_SIZE - 1) {
+            throw new Error('Too many extra signers');
+        }
+        const seen = new Set<string>([tx.payer.serialize().toLowerCase()]);
+        for (let i = 0; i < extraSignerLength; i++) {
+            const signer = Address.deserialize(ss);
+            const value = signer.serialize().toLowerCase();
+            if (seen.has(value)) {
+                throw new Error('Duplicate signer');
+            }
+            seen.add(value);
+            tx.extraSigners.push(signer);
         }
 
         const sigLength = ss.readNextLen();
@@ -138,11 +146,6 @@ export class Transaction implements Signable {
     nonce: string;
 
     /**
-     * @deprecated
-     */
-    txAttributes: TransactionAttribute[] = [];
-
-    /**
      * Gas price
      */
     gasPrice: Fixed64;
@@ -156,6 +159,9 @@ export class Transaction implements Signable {
      * Address to pay for gas
      */
     payer: Address;
+
+    /** Additional signer addresses committed to by every signature. */
+    extraSigners: Address[] = [];
 
     /**
      * Array of signatures
@@ -198,21 +204,19 @@ export class Transaction implements Signable {
         result += this.payer.serialize();
         result += this.payload.serialize();
 
-        // serialize transaction attributes
-        result += num2hexstring(this.txAttributes.length);
-        // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < this.txAttributes.length; i++) {
-            result += this.txAttributes[i].serialize();
+        if (this.extraSigners.length > TX_MAX_SIG_SIZE - 1) {
+            throw new Error('Too many extra signers');
         }
-        // result += num2hexstring(this.fee.length)
-        // for (let i=0 ; i< this.fee.length; i++) {
-        //     result += this.fee[i].amount.serialize()
-        //     result += this.fee[i].payer.serialize()
-        // }
-
-        // if(this.networkFee) {
-        //     result += this.networkFee.serialize()
-        // }
+        const seen = new Set<string>([this.payer.serialize().toLowerCase()]);
+        result += num2hexstring(this.extraSigners.length);
+        for (const signer of this.extraSigners) {
+            const value = signer.serialize().toLowerCase();
+            if (seen.has(value)) {
+                throw new Error('Duplicate signer');
+            }
+            seen.add(value);
+            result += signer.serialize();
+        }
 
         return result;
     }
