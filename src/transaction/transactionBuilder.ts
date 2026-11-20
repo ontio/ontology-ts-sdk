@@ -49,6 +49,54 @@ export const Default_params = {
     Op: 'test'
 };
 
+/** Finalize the payer and complete signer set before signing. */
+export const setSignerAddresses = (tx: Transaction, ...signers: Address[]) => {
+    if (tx.sigs.length !== 0) {
+        throw new Error('Signer set must be finalized before signing');
+    }
+    if (signers.length === 0) {
+        throw new Error('Payer or signers must be set');
+    }
+    const seen = new Set<string>();
+    const addresses = signers.filter((address) => {
+        const value = address.serialize().toLowerCase();
+        if (seen.has(value)) {
+            return false;
+        }
+        seen.add(value);
+        return true;
+    });
+    if (addresses.length > TX_MAX_SIG_SIZE) {
+        throw new Error('Too many extra signers');
+    }
+    tx.payer = addresses[0];
+    tx.extraSigners = addresses.slice(1);
+};
+
+const appendSignerAddress = (tx: Transaction, address: Address) => {
+    const value = address.serialize().toLowerCase();
+    if (tx.sigs.length === 0) {
+        const payer = tx.payer.serialize() === '0000000000000000000000000000000000000000'
+            ? [] : [tx.payer];
+        setSignerAddresses(tx, ...payer, ...tx.extraSigners, address);
+    } else if (![tx.payer, ...tx.extraSigners].some((signer) => signer.serialize().toLowerCase() === value)) {
+        throw new Error('Signer is not declared in extraSigners; call setSignerAddresses before signing');
+    }
+};
+
+/** Finalize all signer addresses, then append each distinct signature. */
+export const signAllToTransaction = (tx: Transaction, ...privateKeys: PrivateKey[]) => {
+    setSignerAddresses(tx, ...privateKeys.map((key) => Address.fromPubKey(key.getPublicKey())));
+    const seen = new Set<string>();
+    for (const key of privateKeys) {
+        const address = Address.fromPubKey(key.getPublicKey()).serialize();
+        if (!seen.has(address)) {
+            addSign(tx, key);
+            seen.add(address);
+        }
+    }
+};
+
 /**
  * Signs the transaction object.
  *
@@ -60,6 +108,7 @@ export const Default_params = {
  * @param schema Signature Schema to use
  */
 export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
+    appendSignerAddress(tx, Address.fromPubKey(privateKey.getPublicKey()));
     const signature = TxSignature.create(tx, privateKey, schema);
 
     tx.sigs = [signature];
@@ -76,6 +125,7 @@ export const signTransaction = (tx: Transaction, privateKey: PrivateKey, schema?
  * @param schema Signature Schema to use
  */
 export const signTransactionAsync = async (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
+    appendSignerAddress(tx, Address.fromPubKey(privateKey.getPublicKey()));
     const signature = await TxSignature.createAsync(tx, privateKey, schema);
 
     tx.sigs = [signature];
@@ -92,6 +142,7 @@ export const signTransactionAsync = async (tx: Transaction, privateKey: PrivateK
  * @param schema Signature Schema to use
  */
 export const addSign = (tx: Transaction, privateKey: PrivateKey, schema?: SignatureScheme) => {
+    appendSignerAddress(tx, Address.fromPubKey(privateKey.getPublicKey()));
     const signature = TxSignature.create(tx, privateKey, schema);
 
     tx.sigs.push(signature);
@@ -129,6 +180,7 @@ const equalPks = (pks1: PublicKey[], pks2: PublicKey[]): boolean => {
 export const signTx = (tx: Transaction, M: number, pubKeys: PublicKey[],
                        privateKey: PrivateKey, scheme?: SignatureScheme) => {
 
+    appendSignerAddress(tx, Address.fromMultiPubKeys(M, pubKeys));
     if (tx.sigs.length === 0) {
         tx.sigs = [];
     } else {
